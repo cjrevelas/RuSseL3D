@@ -1,10 +1,15 @@
- module mdata
-    integer,allocatable::ix(:,:)
-    real(8), allocatable ::xc(:,:)
-    integer::dmnum, dmel
-    integer numel, nel, ndm,numnp  
-    integer:: fcnum,fcel
-    integer, allocatable::fcelement(:,:)
-    integer,allocatable::fcentity(:)
-    
-end module
+module mdata
+!--------------------------------------------------------------------!
+implicit none
+!--------------------------------------------------------------------!
+integer :: dmnum, dmel
+
+integer :: numel, nel, ndm, numnp 
+
+integer :: fcnum, fcel
+ 
+integer, allocatable :: ix(:,:), fcelement(:,:), fcentity(:)
+
+real(8), allocatable :: xc(:,:)
+!--------------------------------------------------------------------!	 
+end module mdata
