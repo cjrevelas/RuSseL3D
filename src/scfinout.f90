@@ -11,10 +11,10 @@ open(unit=ior, file = 'gaussdat.txt')
 write(iow,'(''Polymer FEM Bulk v.1.2  27 Jun 19 '')')
 write(iow,'(''numnp='',I6,'' ns='',I6 )') numnp, ns
 write(iow,'(''Polumer Bulk with solid surfaces   ''/  &
-            ''---------------------------------''/    &
-            ''SCF theory, Gaussian string model''/    &
-            ''Finite Element solution with     ''/    &
-            ''successive substitutions         '')')
+          & ''---------------------------------''/    &
+          & ''SCF theory, Gaussian string model''/    &
+          & ''Finite Element solution with     ''/    &
+          & ''successive substitutions         '')')
 !***********************************************************!
 !                      CHOOSE THE MODEL                     !
 !***********************************************************!
@@ -42,7 +42,9 @@ endif
 
 allocate(wa(numnp),wa_new(numnp),wa_in(numnp),Ufield(numnp))
 
+!APS 17/08/19: BUGFIX (Possible).
 allocate(qf(numnp,2),qf_final(numnp,ns+1))
+!allocate(qf(numnp,2),qf_final(numnp,ns))
       
 allocate(phia_new(numnp),phi(numnp))
       
