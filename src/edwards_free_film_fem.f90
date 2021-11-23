@@ -29,8 +29,8 @@ do i1 = 1,numnp
      qf_final(i1,1) = 1.d0
 enddo
 
-g_m%value  = c_m%value + ds*(k_m%value + w_m%value) 
-   
+g_m%value  = c_m%value + ds*(k_m%value + w_m%value)
+
 rh_m%value = c_m%value
 
 call CPU_TIME(t_1)
@@ -40,27 +40,43 @@ do j = 1, fcel
     if ((fcentity(j)==3).or.(fcentity(j)==4))then
         do i = 1, fcnum
             idummy= fcelement(i,j)
-  
             r_true(idummy) = .True.
-         write(*,*)445
         enddo 
     endif 
 enddo
- 
-do i = 1, numnp
-    if (r_true(i)) then
-        do f = 1, numnp
-           do i1 = 1, all_el
-               if (f==rh_m%col(i1).and.i==rh_m%row(i1)) then
-                    g_m%value(i1) = 0.
-                    if (i==rh_m%col(i1).and. i==rh_m%row(i1)) then
-                        g_m%value(i1) = 1.
-                    endif
-               endif 
-            enddo
-        enddo
-    endif 
-enddo 
+
+! APS 16/08/19: OPTIMIZE
+
+! new section
+do i1 = 1, all_el
+  f = rh_m%col(i1)
+  i = rh_m%row(i1)
+
+  if (r_true(i)) then
+     g_m%value(i1) = 0.
+     if (i==f) then
+        g_m%value(i1) = 1.
+     endif
+  endif
+enddo
+!/ new section
+
+! old section
+!do i = 1, numnp
+!    if (r_true(i)) then
+!        do f = 1, numnp
+!           do i1 = 1, all_el
+!               if (f==rh_m%col(i1).and.i==rh_m%row(i1)) then
+!                    g_m%value(i1) = 0.
+!                    if (i==rh_m%col(i1).and. i==rh_m%row(i1)) then
+!                        g_m%value(i1) = 1.
+!                    endif
+!               endif 
+!            enddo
+!        enddo
+!    endif 
+!enddo 
+!/ old section
 
 call CPU_TIME(t_2)  
 
@@ -86,12 +102,6 @@ do i = 1, all_el
         A_m%col(non_zero)   = g_m%col(i)
     endif 
 enddo
-
-open (file ='cm.txt',unit=99)
-     do i=1,all_el
-                write (99,'(i15,i15,e20.9)' ) g_m%row(i),g_m%col(i) ,g_m%value(i)   
-     end do 
-close(99)
 
 call CPU_TIME(t_3) 
  
