@@ -10,7 +10,7 @@ integer :: lint
 
 integer :: m_1, n_1
 
-integer :: i, j, ii, l, n, m, nn
+integer :: i, j, l, n, m, nn !,ii
 
 integer, dimension (nel) :: gl_index
 

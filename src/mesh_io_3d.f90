@@ -1,5 +1,11 @@
 subroutine mesh_io_3d
 !--------------------------------------------------------------------!
+! APS 17/08/19: ADD. fhash module
+  use, intrinsic :: iso_fortran_env
+  use fhash_module__ints_double
+  use fhash_module__int_ints_ptr
+  use ints_module
+!/ fhash module
 use mdata
 use xdata
 use kcw
@@ -7,36 +13,37 @@ use kcw
 implicit none
 !--------------------------------------------------------------------!    
 character(len=15) :: dummy
-
 integer :: idummy
-
 integer :: i, sdim, j
-
 integer :: nmeltypes
-
 integer :: vtxnum, vtxel
-
 integer :: vtxparnum, vtxparel
-
 integer :: edgnum, edgel
-
 integer :: edgparnum, edgparel
-
 !integer :: fcnum, fcel
-
 integer :: fcparnum, fcparel
-
 integer, allocatable :: vtxelement(:,:), edgelement(:,:) !, fcelement(:,:)
-    
 integer, allocatable :: vtxpar(:,:) 
-
 integer, allocatable :: vtxentity(:), edgentity(:) !, fcentity(:) 
-
 real(8) :: sum_f, Q
 
-real, allocatable :: temp3(:), u(:)
+!APS 17/08/19: BUGFIX. temp3(:) was set to real and later it is assigned an integer value
+!real, allocatable :: temp3(:), u(:)
+real, allocatable :: u(:)
+integer, allocatable :: temp3(:)
+!/ BUGFIX
 
 real, allocatable :: edgpar(:,:), fcpar(:,:)
+
+! APS 17/08/19: ADD. fhash module
+  type(fhash_type__ints_double) :: h
+  type(ints_type) :: key
+  integer, parameter :: n_ints = 2
+  integer :: n_keys
+  !integer :: key_value
+  real*8 :: key_value
+  logical :: success
+!/ fhash module
 !--------------------------------------------------------------------!
 open(unit=12, file='Fem_3D.mphtxt')
 open(unit=13, file='com.txt')
@@ -211,11 +218,11 @@ enddo
 close(77)
 
 all_el = nel * nel * numel
- 
+
 allocate(g_m%row(all_el))
 allocate(g_m%col(all_el))
 allocate(g_m%value(all_el))
-   
+
 allocate(rh_m%row(all_el))
 allocate(rh_m%col(all_el))
 allocate(rh_m%value(all_el))
@@ -223,47 +230,85 @@ allocate(rh_m%value(all_el))
 allocate(c_m%row(all_el))
 allocate(c_m%col(all_el))
 allocate(c_m%value(all_el))
-    
+
 allocate(k_m%row(all_el))
 allocate(k_m%col(all_el))
 allocate(k_m%value(all_el))
-  
+
 allocate(w_m%row(all_el))
 allocate(w_m%col(all_el))
 allocate(w_m%value(all_el))
-   
+
 allocate(con_l2(all_el))
 
 g_m%value = 0.
-       
-count  = 1
-all_el = 0
 
+
+
+! APS 17/08/19: ADD. fhash module
+
+! new section
+all_el = 0
+allocate(key%ints(n_ints))
+n_keys = nel * numel
+call h%reserve(n_keys*n_ints)
+!call h%reserve(30000)
 do m1 = 1, numel
     do j1 = 1, nel
         do i1 = 1, nel
-
             all_el = all_el + 1
 
             g_m%row(all_el) = ix(j1,m1)
             g_m%col(all_el) = ix(i1,m1)
 
-            do k1 = 1, all_el-1
-                if ((g_m%row(k1)==g_m%row(all_el)).and.(g_m%col(k1)==g_m%col(all_el))) then
-               
-                    con_l2(all_el) = k1
-
-                    exit
-                elseif (k1==all_el-1) then 
-                    count = count + 1
-
-                    con_l2(all_el) = all_el
-                endif
-            enddo
-
+            key%ints(1) =  ix(j1,m1)
+            key%ints(2) =  ix(i1,m1)
+            call h%get(key, key_value, success)
+            if (success) then
+               con_l2(all_el) = nint(2*key_value)
+            else
+               call h%set(key, all_el*0.5_real64)
+               con_l2(all_el) = all_el
+               write(123,*)h%key_count()
+            endif
         end do
     end do
 end do
+call h%clear()
+!/ new section
+
+! old section
+!all_el = 0
+!count  = 1
+!do m1 = 1, numel
+!    do j1 = 1, nel
+!        do i1 = 1, nel
+!            all_el = all_el + 1
+!            g_m%row(all_el) = ix(j1,m1)
+!            g_m%col(all_el) = ix(i1,m1)
+!            do k1 = 1, all_el-1
+!                if ((g_m%row(k1)==g_m%row(all_el)).and.(g_m%col(k1)==g_m%col(all_el))) then
+!                    con_l2(all_el) = k1
+!                    exit
+!                elseif (k1==all_el-1) then 
+!                    count = count + 1
+!                    con_l2(all_el) = all_el
+!               endif
+!            enddo
+!        end do
+!    end do
+!end do
+!con_l2(1)=1
+!/ old section
+
+! APS 17/08/19: ADD. print com_12
+open(unit=444, file='com_12.txt')
+do i1 = 1, all_el
+     write(444,*) i1, g_m%row(i1), g_m%col(i1), con_l2(i1), con_l2(i1)/=i1
+enddo
+close(444)
+
+!/ print com_12
 
 c_m%row  = g_m%row
 k_m%row  = g_m%row
@@ -277,8 +322,6 @@ rh_m%col = g_m%col
 g_m%value = 0.
 k_m%value = 0.
 c_m%value = 0.
- 
-con_l2(1)=1
 
 allocate(rdiag1(numnp))
   
