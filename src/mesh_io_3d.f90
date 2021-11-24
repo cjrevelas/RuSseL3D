@@ -25,11 +25,11 @@ integer :: fcparnum, fcparel
 integer, allocatable :: vtxelement(:,:), edgelement(:,:) !, fcelement(:,:)
 integer, allocatable :: vtxpar(:,:) 
 integer, allocatable :: vtxentity(:), edgentity(:) !, fcentity(:) 
-real(8) :: sum_f, Q
+!real(8) :: Q , sum_f
 
 !APS 17/08/19: BUGFIX. temp3(:) was set to real and later it is assigned an integer value
 !real, allocatable :: temp3(:), u(:)
-real, allocatable :: u(:)
+!real, allocatable :: u(:)
 integer, allocatable :: temp3(:)
 !/ BUGFIX
 
@@ -40,13 +40,12 @@ real, allocatable :: edgpar(:,:), fcpar(:,:)
   type(ints_type) :: key
   integer, parameter :: n_ints = 2
   integer :: n_keys
-  !integer :: key_value
-  real*8 :: key_value
+  integer :: key_value
   logical :: success
 !/ fhash module
 !--------------------------------------------------------------------!
 open(unit=12, file='Fem_3D.mphtxt')
-open(unit=13, file='com.txt')
+open(unit=13, file='com.out.txt')
 
 do i = 1, 17
     read(12,'(A60)') dummy
@@ -71,7 +70,7 @@ enddo
   
 lx = xc(1,numnp)
  
-open(55, file = 'mesh.txt')
+open(55, file = 'mesh.out.txt')
 do i = 1, numnp
     write(55,'(F21.15,1X,F21.15,1X,F21.15)') (xc(j,i), j = 1, sdim) 
 enddo
@@ -211,7 +210,7 @@ if (nel>4) then
     enddo            
 endif
    
-open (unit=77, file='inter.txt')  
+open (unit=77, file='inter.out.txt')  
 do i = 1, dmel
     write(77,'(I9,10(2X,I9))') (ix(j,i), j = 1, dmnum) 
 enddo
@@ -252,7 +251,6 @@ all_el = 0
 allocate(key%ints(n_ints))
 n_keys = nel * numel
 call h%reserve(n_keys*n_ints)
-!call h%reserve(30000)
 do m1 = 1, numel
     do j1 = 1, nel
         do i1 = 1, nel
@@ -265,11 +263,10 @@ do m1 = 1, numel
             key%ints(2) =  ix(i1,m1)
             call h%get(key, key_value, success)
             if (success) then
-               con_l2(all_el) = nint(2*key_value)
+               con_l2(all_el) = key_value
             else
-               call h%set(key, all_el*0.5_real64)
+               call h%set(key, all_el)
                con_l2(all_el) = all_el
-               write(123,*)h%key_count()
             endif
         end do
     end do
@@ -302,11 +299,11 @@ call h%clear()
 !/ old section
 
 ! APS 17/08/19: ADD. print com_12
-open(unit=444, file='com_12.txt')
-do i1 = 1, all_el
-     write(444,*) i1, g_m%row(i1), g_m%col(i1), con_l2(i1), con_l2(i1)/=i1
-enddo
-close(444)
+!open(unit=444, file='com_12.out.txt')
+!do i1 = 1, all_el
+!     write(444,*) i1, g_m%row(i1), g_m%col(i1), con_l2(i1), con_l2(i1)/=i1
+!enddo
+!close(444)
 
 !/ print com_12
 
@@ -382,7 +379,7 @@ subroutine entity(el, endity)
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-integer :: num, el, equal, i
+integer :: el, equal, i!, num
 
 integer :: endity(el)
 

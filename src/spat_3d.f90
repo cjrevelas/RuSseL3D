@@ -9,15 +9,13 @@ integer :: lint
 
 integer :: i, j, ii, l, n
 
-real(8) :: ttim, Q
+real(8) :: Q
 
 real(8) :: ul(nel), xl(ndm,nel)
 
 real(8) :: shp(4,11), sv(5,11), xsj, u_spat(numnp)
 
 real(8) :: uqp, sumel, sum_out, volel, vol
-
-real(8) :: time
 !--------------------------------------------------------------------!    
 u_spat = 5.
 

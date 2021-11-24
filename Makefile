@@ -48,4 +48,8 @@ fhash_modules: fhash.f90 fhash_modules.f90
 clean:
 	$(RM) *.o *.mod *.x *.exe
 
+cleaner:
+	$(RM) *.o *.mod *.x *.exe *.out.txt
 
+test:
+	./TEST_INTEGRITY/test_integrity.sh

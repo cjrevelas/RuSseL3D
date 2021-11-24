@@ -14,7 +14,7 @@ real(8) :: surf_pot
 ior = 55
 iow = 10
    
-open(unit=54, file='times.txt')
+open(unit=54, file='times.out.txt')
 
 call CPU_TIME(start)  
 call mesh_io_3d
@@ -32,7 +32,7 @@ call scfinout
 !*******************************************************************!
 call simpsonkoef_s
 
-open(unit=211, file = 'Usolid_out.txt')
+open(unit=211, file = 'Usolid.out.txt')
 
 do k1 = 1, numnp
      distance   = xc(1,k1)
@@ -58,7 +58,7 @@ endif
 !                       LOOPS FOR SOLUTION                          !
 !*******************************************************************!
 write(6,*) 'Iteration,  Adh. tension (mN/m),  error(beta N w)'
-write(iow,'(A10,2X,A16,2X,A16,2X,A16)') 'kk', 'adh_ten_alt', 'error'
+write(iow,'(A10,2X,A16,2X,A16,2X,A16)') 'kk', 'adh_ten', 'error'
 
 kk=0
 error=200000.
@@ -67,42 +67,41 @@ do while ((kk.lt.iterations).and.(error.gt.max_error))
     kk=kk+1
 
     call CPU_TIME(t2)
-    call matrix_assemble   
+    call matrix_assemble
     call CPU_TIME(t3)
 
-    write(54, '("Time of matrix assembly = ",I6.3,"minutes",F6.3," seconds.")')  int(t3-t2)/60, mod((t3-t2),60.)
-  
+    write(54, '("Time of matrix_assemble  : ",I6.3," mins ",F6.3," secs.")') int(t3-t2)/60, mod((t3-t2),60.)
+
     call edwards_free_film_fem 
     call CPU_TIME(t4)
 
-    write(54, '("Time of Edwards solution = ",I6.3,"minutes",F6.3," seconds.")') int(t4-t3)/60, mod((t4-t3),60.)
-   
-    write(54, '(e16.9,2x,e16.9,2x,e16.9,2x,e16.9,2x,e16.9)') start, t1, t2, t3, t4
-   
+    write(54, '("Time of Edwards solution : ",I6.3,"minutes",F6.3," seconds.")') int(t4-t3)/60, mod((t4-t3),60.)
+    write(54, '(A13,e16.9,2x,e16.9,2x,e16.9,2x,e16.9,2x,e16.9)') "start, t1-4: ",start, t1, t2, t3, t4
+
     close(54)
-   
-    if (mod(kk,10000).eq.0) then  
-        open(unit=21, file = 'field_out.txt')
+
+    if (mod(kk,10000).eq.0) then
+        open(unit=21, file = 'field.out.txt')
         do k1 = 1, numnp
             write(21,'(E16.9,2X,E16.9)') xc(1,k1), wa(k1)
         enddo
         close(21)
     endif
-  
-    call part_fun_phi                  
+
+    call part_fun_phi
     !*******************************************************************!
     !                     PERIODIC EXPORT OF PROFILES                   !
     !*******************************************************************!
-    open (unit=120, file = 'reduced_density_profiles.txt')
+    open (unit=120, file = 'reduced_density_profiles.out.txt')
     !if (mod(kk,1000).eq.0.d0) then
         write(120,'(A16,2X,A16)') 'z','phi(z)'
         do k1 = 1, numnp
             write(120,'(E16.9,2X,E16.9,2X,E16.9,2X,E16.9)') xc(1,k1), xc(2,k1), xc(3,k1), phia_new(k1)
         enddo
     !endif
-    close(120) 
-  
-    call adhesion_tension_alternative
+    close(120)
+
+    call adhesion_tension
     !*******************************************************************!
     !                        CALCULATE NEW FIELD                        !
     !*******************************************************************!
@@ -120,7 +119,7 @@ do while ((kk.lt.iterations).and.(error.gt.max_error))
     !*******************************************************************!
     !                     APPLY ANDERSON MIXING RULE                    !
     !*******************************************************************!
-    do k1 = 1, numnp 
+    do k1 = 1, numnp
         wa(k1) = (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
     enddo
 
@@ -138,7 +137,7 @@ do while ((kk.lt.iterations).and.(error.gt.max_error))
 
 enddo!kk
 
-if (pr_on==1) then 
+if (pr_on==1) then
     call qprint
 endif
 

@@ -1,14 +1,15 @@
 function surf_pot(h12)
 !--------------------------------------------------------------------!     
 use xdata
+use constants
 !--------------------------------------------------------------------! 
 implicit none
 !--------------------------------------------------------------------! 
 integer :: simple
 
-real(8) :: surf_pot, U_solid
+real(8) :: surf_pot!, U_solid
 
-real(8) :: As, eps, sigma, coeff
+real(8) :: sigma!, coeff, As, eps, 
 
 real(8) :: h12, Urep, Uattr
 
@@ -20,7 +21,7 @@ real(8) :: number_density
 !--------------------------------------------------------------------!     
 simple=0
 
-open(unit=43, file = 'Hamaker_potential.txt')
+open(unit=43, file = 'Hamaker_potential.out.txt')
  
 hamaker_constant = sqrt(Aps*Asio2)
 
@@ -28,7 +29,7 @@ sigma = (sigma1 + sigma2)/2. * 1.e-10
 
 h_12 = h12/1.e+10
 
-number_density = rho_0*N_avog
+number_density = rho_0*avogadro_constant
 
 a1 = (3./4./pi/number_density)**(1./3.)
 
@@ -75,7 +76,7 @@ else
     endif  
 endif 
 
-surf_pot = surf_pot/(K_boltzmann*Temp)
+surf_pot = surf_pot/(boltz_const_Joule_K*Temp)
 write(43,'(E16.9,2X,E16.9)') h12, surf_pot
 
 surf_pot = surf_pot * dfloat (chainlen) 

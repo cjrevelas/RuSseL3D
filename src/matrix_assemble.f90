@@ -14,7 +14,7 @@ integer :: i, j, l, n, m, nn !,ii
 
 integer, dimension (nel) :: gl_index
 
-real(8) :: ul(ndm,nel,7), xl(ndm,nel)
+real(8) :: xl(ndm,nel)!, ul(ndm,nel,7)
 
 real(8) :: shp(4,11), sv(5,11), xsj
 !-----------------------------------------------------------------------------------------------------------!

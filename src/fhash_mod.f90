@@ -70,8 +70,8 @@ end module ints_module
 #define KEY_USE use ints_module
 #define KEY_TYPE type(ints_type)
 #define VALUE_USE use, intrinsic :: iso_fortran_env
-#define VALUE_TYPE real(real64)
-!#define VALUE_TYPE integer
+!#define VALUE_TYPE real(real64)
+#define VALUE_TYPE integer
 #define VALUE_TYPE_INIT 0.0
 #define SHORTNAME ints_double
 !#define SHORTNAME integer

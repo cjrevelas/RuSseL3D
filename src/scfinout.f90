@@ -1,13 +1,14 @@
 subroutine scfinout
 !--------------------------------------------------------------------------------!   
 use xdata
+use constants
 use mdata
 !--------------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------------!    
-open(unit=iow, file = 'scft_out.txt')   
-open(unit=ior, file = 'gaussdat.txt')
- 
+open(unit=iow, file = 'scft.out.txt')   
+open(unit=ior, file = 'gaussdat.in.txt')
+
 write(iow,'(''Polymer FEM Bulk v.1.2  27 Jun 19 '')')
 write(iow,'(''numnp='',I6,'' ns='',I6 )') numnp, ns
 write(iow,'(''Polumer Bulk with solid surfaces   ''/  &
@@ -107,7 +108,7 @@ write(iow,'(/A30,F16.4)' )' sphere_radius', sphere_radius
 read(ior,'(E16.9)') sigma1
 write(iow,'(/A30,F16.4,    '' Angstroms'')') adjustl('sigma polymer'), sigma1
  
-read(ior,'(E16.9)')sigma2
+read(ior,'(E16.9)') sigma2
 write(iow,'(/A30,F16.4,    '' Angstroms'')')adjustl('sigma solid'), sigma2
  
 read(ior,'(I10)',iostat=lshow) show       
@@ -142,7 +143,7 @@ write(6,*) 'rho_0 (mol/m^3)'
 write(6,*) rho_0
 write(iow,'(/A30,F16.4,'' mol/m3'')') 'Segment density in bulk', rho_0
 
-kapa = dfloat(chainlen)/(kappa_T * k_B * Temp * rho_0)
+kapa = dfloat(chainlen)/(kappa_T * boltz_const_Joule_molK * Temp * rho_0)
 write(6,*) 'kapa'
 write(6,*) kapa
 
