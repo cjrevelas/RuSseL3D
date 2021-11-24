@@ -3,18 +3,23 @@ subroutine edwards_free_film_fem
 use xdata
 use mdata 
 use kcw
+#ifdef USE_MPI
+use mpistuff
+#endif
 !----------------------------------------------------------------------------------------------------------!    
 implicit none
+#ifdef USE_MPI
+include 'mpif.h'
+#endif
 !----------------------------------------------------------------------------------------------------------!
-integer :: i, j, f, idummy, fc
-
+integer :: i, j, f, idummy!, fc
 double precision :: t_0, t_1, t_2, t_3, t_4
 
 logical :: r_true(numnp)
 !----------------------------------------------------------------------------------------------------------!    
 !times
-write(54, '(A4,A5,A5,A8,A8,A8,A8)') 'time', 'NZ', 'N', 'BC+G+R', 'NZcalc', 'MUMPS', 'cp_sol'
-write(54, '(A14,A4,A4,A4,A4,A4,A4,A4,A4)') '  ','min', 'sec', 'min', 'sec', 'min', 'sec', 'min', 'sec'
+write(54, '(A9,A9,A9,A18  ,A18  ,A18  ,A18  )')'time','NZ','N','BC+G+R',   'NZcalc',   'MUMPS',    'cp_sol'
+write(54, '(A9,A9,A9,A9,A9,A9,A9,A9,A9,A9,A9)')''    , '' , '','min','sec','min','sec','min','sec','min','sec'
 
 !************************INITIAL CONDITIONS*************************! 
 call CPU_TIME(t_0)
@@ -51,7 +56,6 @@ enddo
 do i1 = 1, all_el
   f = rh_m%col(i1)
   i = rh_m%row(i1)
-
   if (r_true(i)) then
      g_m%value(i1) = 0.
      if (i==f) then
@@ -78,8 +82,7 @@ enddo
 !enddo 
 !/ old section
 
-call CPU_TIME(t_2)  
-
+call CPU_TIME(t_2)
 !***********************DETERMINE NON-ZERO ENTRIES*******************!
 non_zero = 0
 do i = 1, all_el
@@ -87,6 +90,8 @@ do i = 1, all_el
         non_zero = non_zero + 1
     endif                
 enddo
+
+write(*,'(a14,I20)') "Unique NNZ:", non_zero
 
 allocate(A_m%value(non_zero))
 allocate(A_m%col(non_zero))
@@ -103,10 +108,16 @@ do i = 1, all_el
     endif 
 enddo
 
-call CPU_TIME(t_3) 
- 
+call CPU_TIME(t_3)
+
 !************************START TRANSIENT SOLUTION*********************! 
 do time_step = 2, ns+1
+
+#ifdef USE_MPI
+    ! Send a continue (.true.) signal to the slaves
+    call MPI_BCAST(.true., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+#endif
+
     write(6,*) 'time_step =', time_step      
     !*******************************************************************!
     !                   FINITE ELEMENT METHOD                           !
@@ -119,13 +130,13 @@ do time_step = 2, ns+1
 
         rdiag1(i) = rdiag1(i) + rh_m%value(i1)*qf(j,1)
     enddo
-   
+
     do i = 1, numnp
         if (r_true(i)) rdiag1(i) = 0.
     enddo
- 
+
     call mumps_sub(numnp)
- 
+
     do i1 = 1,numnp
          qf(i1,2) = rdiag1(i1)
     enddo
@@ -135,14 +146,24 @@ do time_step = 2, ns+1
         qf_final(i1,time_step) = qf(i1,2)
         qf(i1,1) = qf(i1,2)
     enddo
+
 enddo !time_step
-    
-call CPU_TIME(t_4)   
+
+#ifdef USE_MPI
+    ! Send a stop (.false.) signal to the slaves
+   call MPI_BCAST(.false., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+#endif
+
+call CPU_TIME(t_4)
 
 !*********************************************************************! 
-write(54, '(i4,i5,i5,i4,f4.1,i4,f4.1,i4,f4.1,i4,f4.1)') time_step, non_zero,numnp, int(t_1-t_0)/60, mod((t_1-t_0),60.),&
-              int(t_2-t_1)/60, mod((t_2-t_1),60.), int(t_3-t_2)/60, mod((t_3-t_2),60.), int(t_4-t_3)/60, mod((t_4-t_3),60.)
+write(54, '(i9,                 i9,              i9,                                 &
+    &       i9,                 f9.1,            i9,              f9.1,              &
+    &       i9,                 f9.1,            i9,              f9.1)')            &
+    &       time_step,          non_zero,        numnp,                              &
+    &       int(t_1-t_0)/60, mod((t_1-t_0),60.), int(t_2-t_1)/60, mod((t_2-t_1),60.),&
+    &       int(t_3-t_2)/60, mod((t_3-t_2),60.), int(t_4-t_3)/60, mod((t_4-t_3),60.)
 
-return 
+return
 !----------------------------------------------------------------------------------------------------------!	
 end subroutine edwards_free_film_fem

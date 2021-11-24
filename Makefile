@@ -1,12 +1,18 @@
 #######################################################################
-#                                                                     #          
 #                  Makefile of SCF-FEM code                           #
-#                                                                     #
 #######################################################################
-#                      MUMPS SECTION                                  #
-#######################################################################
-#Set the path of the MUMPS directory
-topdir = /home/cjrevelas/Documents/mumps_5.2.1
+
+MAKE_MPI_RUN=1
+MAKE_PRODUCTION_RUN=1
+
+# MPI/MUMPS SECTION
+ifeq ($(MAKE_MPI_RUN),1)
+CPPFLAGS = -DUSE_MPI -Wno-unused-dummy-argument
+topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR
+else
+CPPFLAGS = -Wno-unused-dummy-argument
+topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_SERIAL
+endif
 
 libdir = $(topdir)/lib
 .SECONDEXPANSION:
@@ -15,26 +21,29 @@ LIBMUMPS_COMMON = $(libdir)/libmumps_common$(PLAT)$(LIBEXT)
 
 LIBDMUMPS = $(libdir)/libdmumps$(PLAT)$(LIBEXT) $(LIBMUMPS_COMMON)
 
-PROD=-O3 -cpp -Wno-unused-dummy-argument
-DEBUG=-O0 -g -fcheck=all -Wall -cpp -Wno-unused-dummy-argument
+# Flags of production and debug runs
+PROD=-O3 -cpp $(CPPFLAGS)
+DEBUG=-O0 -g -fcheck=all -Wall -cpp $(CPPFLAGS)
 
+# Choose between PROD and DEBUG run
+ifeq ($(MAKE_PRODUCTION_RUN),1)
 FCFLAGS=$(PROD)
-#FCFLAGS=$(DEBUG)
+else
+FCFLAGS=$(DEBUG)
+endif
 
 LIBFS=#-lstdc++ #-lm
 
-MODULES =  mdata.o xdata.o kcw.o fhash_modules.o
+MODULES =  mdata_mod.o xdata_mod.o constants_mod.o kcw_mod.o fhash_mod.o mpistuff_mod.o
 OBJECTS =  matrix_assemble.o  part_fun_phi.o\
 	   scfinout.o  simpsonkoef.o spat_3d.o surf_pot.o tetshp.o qprint.o \
-           mesh_io_3d.o gauss_3d.o edwards_free_film_fem.o adh_ten_alt.o main.o mumps_sub.o
-
+           mesh_io_3d.o gauss_3d.o edwards_free_film_fem.o adh_ten.o main.o mumps_sub.o
 
 .f90.o:
 	$(FC) -c $(FCFLAGS) $(LIBFS)  $*.f90
 
-CMD=bench_3d.exe
+CMD=FEM_3d.exe
 $(CMD):$(LIBDMUMPS) $(MODULES) $(OBJECTS) 
-#main: $(LIBDMUMPS) $(MODULES) $(OBJECTS) $(MAIN_OBJECT)
 	   $(FL) -o $(CMD) $(OPTL) $(MODULES) $(OBJECTS)  $(LIBDMUMPS) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS)
 
 mumps_sub.o :

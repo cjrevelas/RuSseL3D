@@ -1,13 +1,56 @@
 program FEM_3D
-!------------------------------------------------------------------------------------------------------------------!     
+!-------------------------------------------------------------------!
 use xdata
 use mdata
 use kcw
-!------------------------------------------------------------------------------------------------------------------!  
+#ifdef USE_MPI
+use mpistuff
+#endif
+!-------------------------------------------------------------------!
 implicit none
-!------------------------------------------------------------------------------------------------------------------!
+#ifdef USE_MPI
+include 'mpif.h'
+#endif
+!-------------------------------------------------------------------!
 real(8) :: surf_pot
-!------------------------------------------------------------------------------------------------------------------!
+!-------------------------------------------------------------------!
+
+!*******************************************************************!
+!                           MPI SECTION                             !
+!*******************************************************************!
+#ifdef USE_MPI
+call mpi_init(ierr)
+call MPI_Comm_size ( MPI_COMM_WORLD, n_proc, ierr )
+call MPI_Comm_rank ( MPI_COMM_WORLD, my_id, ierr )
+
+if ( my_id == 0 ) then
+   root = .true.
+else
+   root = .false.
+endif
+
+if (root) then
+   write ( *, *)
+   write ( *, '(a,i4,a)' ) ' MPI run with ', n_proc, ' procs.'
+   write ( *, *)
+end if
+
+flag_continue = .true.
+!
+! the slaves will enter the mumps subroutine untill they recieve a stop
+! signal from master proc
+if (.not.root) then
+   do while (.true.)
+      call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+      if (flag_continue) then
+         call mumps_sub(0)
+      else
+         exit
+      endif
+   end do
+   goto 1000
+endif
+#endif
 !*******************************************************************!
 !                   GAUSSDAT PARAMETER VALUES                       !
 !*******************************************************************!
@@ -20,12 +63,14 @@ call CPU_TIME(start)
 call mesh_io_3d
 call CPU_TIME(t1)
 
-write(54, '("Time meshio = ",I6.3,"minutes",F6.3," seconds.")') int(t1-start)/60, mod((t1-start),60.)
-
-write(54,*) 'numnp', numnp, 'numel', numel
 write(6,*)  'numnp', numnp, 'numel', numel
- 
-call scfinout  
+
+write(54,*) 'numnp', numnp
+write(54,*) 'numel', numel
+write(54, '("Time of mesh_io_3d       : ",I6.3," mins ",F6.3," secs.")') &
+   &        int(t1-start)/60, mod((t1-start),60.)
+
+call scfinout
 !*******************************************************************!
 !                 INITIALIZE SIMPSON COEFFICIENTS                   !
 !                      FOR CONTOUR INTEGRATION                      !
@@ -151,6 +196,9 @@ write(iow,'(''-----------------------------------'')')
 write(iow,'(''Adhesion tension (mN/m) '',E16.9)') adh_ten_alt
 write(iow,'(''Partition function Q =  '',E16.9)') part_func
 write(iow,'(''            n/n_bulk =  '',E16.9)') nch_per_area * dfloat(chainlen) / (rho_0 * lx  * 1.d-10)
+
+#ifdef USE_MPI
+1000 CALL MPI_FINALIZE(ierr)
+#endif
 !------------------------------------------------------------------------------------------------------------------!
 end program FEM_3D
-      

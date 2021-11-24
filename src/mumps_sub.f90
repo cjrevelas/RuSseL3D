@@ -3,6 +3,7 @@ subroutine mumps_sub(numnp)
 !--------------------------------------------------------------------------!
 use kcw
 use xdata
+use mpistuff
 !--------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------!
@@ -11,23 +12,17 @@ include 'dmumps_struc.h'
 !--------------------------------------------------------------------------!
 type(DMUMPS_STRUC) :: mumps_par
 
-integer :: IERR, EX_INPUT
- 
 integer :: i, i8, i9, numnp
 
-!double precision :: u1(numnp)
-
-!real(8) :: rdiag(1:1000)
-!--------------------------------------------------------------------------!   
-call MPI_INIT(IERR)
+!--------------------------------------------------------------------------!
 
 !Define a communicator for the package
 mumps_par%COMM = MPI_COMM_WORLD
 
 !Initialize an instance of the package for LU-factorization
-mumps_par%JOB  = -1
-mumps_par%SYM  = 0  !general case: non-symmetric left-hand-side matrix
 mumps_par%PAR  = 1  !working host processor
+mumps_par%SYM  = 0  !general case: non-symmetric left-hand-side matrix
+mumps_par%JOB  = -1
 
 call DMUMPS(mumps_par)
 
@@ -38,9 +33,13 @@ if (mumps_par%INFOG(1).lt.0) then
     goto 500
 endif
 
-do i = 1, 4
-    mumps_par%ICNTL(i) = -1
-enddo
+mumps_par%ICNTL(1) = -1
+mumps_par%ICNTL(2) = -1
+mumps_par%ICNTL(3) = -1
+mumps_par%ICNTL(4) = -1
+!mumps_par%ICNTL(13) = 1
+!mumps_par%CNTL(1) = 0
+
 
 !Define problem on the host processor(id = 0)
 if (mumps_par%MYID.eq.0) then
@@ -120,8 +119,6 @@ if (mumps_par%INFOG(1).lt.0) then
     goto 500
 endif
 
-500 call MPI_FINALIZE(IERR)
- 
-return 
+500 return
 !--------------------------------------------------------------------------! 
 end subroutine mumps_sub
