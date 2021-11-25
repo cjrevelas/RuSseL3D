@@ -168,9 +168,16 @@ do while ((kk.lt.iterations).and.(error.gt.max_error))
         wa(k1) = (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
     enddo
 
+    !CJR: Added fraction for mixing
+    if (fraction > 1.d0 / (10.d0*kapa)) then
+        fraction = 1.d0 / (10.d0*kapa)
+    else
+        fraction = mix_coef * fraction
+    endif
+
     if (mod(kk,1).eq.0) then
-        write(6,*)  kk, adh_ten, error
-        write(iow,'(I10,2X,E16.9,2X,E16.9)') kk, adh_ten, error
+        write(6,*)  kk, adh_ten, error, fraction
+        write(iow,'(I10,2X,E16.9,2X,E16.9,2X,E16.9)') kk, adh_ten, error, fraction
     endif
 
     ! Print the field for restart
