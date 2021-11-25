@@ -53,11 +53,27 @@ do i = 1, 3
     read(12,'(A60)') dummy
 enddo
 
+box_lo = 0.d0
+box_hi = 0.d0
+box_len = 0.d0
+
 do i = 1, numnp
     read(12,*) (xc(j,i), j = 1, sdim)
+
+    do j = 1, sdim
+       box_hi(j) = max(xc(j,i), box_hi(j))
+       box_lo(j) = min(xc(j,i), box_lo(j))
+    enddo
 enddo
 
-lx = xc(1,numnp)
+do j = 1, sdim
+    box_len(j) = box_hi(j) - box_lo(j)
+    write(6,'(A15,I3,3F20.7)')"box Len lo / hi",j, box_len(j), box_lo(j), box_hi(j)
+enddo
+
+volume = box_len(1)*box_len(2)*box_len(3)
+write(6,*)"Volume = ", volume
+
 
 read (12,'(A60)') dummy
 
