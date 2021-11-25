@@ -2,7 +2,7 @@ subroutine spat_3d(u_spat, sum_out, Q)
 !--------------------------------------------------------------------!
 use xdata
 use mdata
-!--------------------------------------------------------------------!    
+!--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
 integer :: lint
@@ -19,7 +19,7 @@ real(8), dimension(5,11) :: sv
 real(8), dimension(numnp) :: u_spat
 
 real(8) :: uqp, sumel, sum_out, volel, vol
-!--------------------------------------------------------------------!    
+!--------------------------------------------------------------------!
 
 !Initialize accumulator for integral of the solution
 sum_out = 0.d00
@@ -32,17 +32,17 @@ do n = 1, numel
 
     do i = 1, nel
         !Find global index of node
-        ii = ix(i,n)       
+        ii = ix(i,n)
 
         do j = 1, ndm
             xl(j,i) = xc(j,ii)
-        enddo 
+        enddo
 
         !Copy value of solution at current node from global to local array
-         ul(i) = u_spat(ii) 
+         ul(i) = u_spat(ii)
     enddo
 
-    !Set up for gauss quadrature. 
+    !Set up for gauss quadrature.
     l=3
     call gauss_3d(l, lint, sv)
 
@@ -58,15 +58,15 @@ do n = 1, numel
         xsj = xsj*sv(5,l)
 
         uqp = 0.0d0
- 
+
         do j = 1, nel
              uqp = uqp + shp(4,j)*ul(j)
         enddo
-  
+
         sumel = sumel + uqp * xsj
 
         volel = volel + xsj
- 
+
     enddo
 
     sum_out = sum_out + sumel
@@ -82,6 +82,3 @@ write(iow,'('' SUM '',E16.9,'' volume '',E16.9,'' mean value  of solution '',E16
 return
 !--------------------------------------------------------------------!
 end subroutine spat_3d
-
-
-      

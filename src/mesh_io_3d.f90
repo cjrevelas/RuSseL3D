@@ -26,7 +26,7 @@ integer, allocatable, dimension(:,:) :: vtxelement, edgelement
 integer, allocatable, dimension(:,:) :: vtxpar 
 integer, allocatable, dimension(:) :: vtxentity, edgentity, temp3
 
-real, allocatable, dimension(:,:) :: edgpar, fcpar
+real(8), allocatable, dimension(:,:) :: edgpar, fcpar
 
 ! APS 17/08/19: ADD. fhash module
 type(fhash_type__ints_double) :: h
@@ -405,7 +405,7 @@ implicit none
 !--------------------------------------------------------------------!
 integer:: num, el, i, j
 
-real :: element(num,el)
+real(8) :: element(num,el)
 
 character(len=60) :: dum
 !--------------------------------------------------------------------!
