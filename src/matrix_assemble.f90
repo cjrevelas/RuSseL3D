@@ -82,9 +82,9 @@ enddo
 
 #ifdef DEBUG_OUTPUTS
 open(unit=400, file = 'matrix_assembly_kcw.out.txt')
-write(*,*)"k_m%value c_m%value w_m%value"
+write(400,'(3(A20))')"k_m%value","c_m%value","w_m%value"
 do i = 1, all_el
-    write(400,*)k_m%value(i), c_m%value(i), w_m%value(i)
+    write(400,'(3(E20.9))')k_m%value(i), c_m%value(i), w_m%value(i)
 enddo
 close(400)
 #endif

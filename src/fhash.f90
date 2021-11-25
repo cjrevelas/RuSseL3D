@@ -65,7 +65,7 @@
 #else
 #define VALUE_ASSIGNMENT =
 #endif
-  
+
 module FHASH_MODULE_NAME
 #undef FHASH_MODULE_NAME
 

@@ -28,5 +28,5 @@ type(mum_matrix) :: w_m
 type(mum_matrix) :: w_min
 type(mum_matrix) :: g_min
 type(mum_matrix) :: rh_min
-!--------------------------------------------------------------------!        
-end module kcw 
+!--------------------------------------------------------------------!
+end module kcw
