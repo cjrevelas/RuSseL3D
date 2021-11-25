@@ -22,8 +22,8 @@ enddo
 call spat_3d(dterm1, term1, Q)
 call spat_3d(dterm2, term2, Q)
 
-term1 = term1 * 1.0d-10
-term2 = term2 * 1.0d-10
+term1 = term1 * 1.0d-30
+term2 = term2 * 1.0d-30
 !APS BUGFIX: xc(1,numnp) seems suspecius! Check this!
 term3 = volume * 1.0d-30 * (1.d00 - part_func)      !red:   translational entropy of free chains
 
