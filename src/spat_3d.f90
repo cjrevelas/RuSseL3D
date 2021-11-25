@@ -75,12 +75,12 @@ enddo !n
 Q = sum_out/vol
 
 write(iow,'('' SUM '',E16.9,'' volume '',E16.9,'' mean value  of solution '',E16.9)') sum_out, vol, Q
-write(*,'('' SUM '',E16.9,'' volume '',E16.9,'' mean value  of solution '',E16.9)') sum_out, vol, Q
+!write(*,'('' SUM '',E16.9,'' volume '',E16.9,'' mean value  of solution '',E16.9)') sum_out, vol, Q
 
-if (dabs(vol - volume)/vol > tol) then
-    write(6,*)"Spat volume is different than mesh volume!"
-    write(6,*)vol, volume
-    write(6,*)"Stopping!"
+if (dabs(vol - volume) > 1e-6) then
+    write(iow,*)"Warning! Spat volume is different than mesh volume!"
+    write(iow,*)vol, volume
+!    STOP
 endif
 
 
