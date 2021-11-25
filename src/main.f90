@@ -24,15 +24,15 @@ call MPI_Comm_size ( MPI_COMM_WORLD, n_proc, ierr )
 call MPI_Comm_rank ( MPI_COMM_WORLD, my_id, ierr )
 
 if ( my_id == 0 ) then
-   root = .true.
+    root = .true.
 else
-   root = .false.
+    root = .false.
 endif
 
 if (root) then
-   write ( *, *)
-   write ( *, '(a,i4,a)' ) ' MPI run with ', n_proc, ' procs.'
-   write ( *, *)
+    write ( *, *)
+    write ( *, '(a,i4,a)' ) ' MPI run with ', n_proc, ' procs.'
+    write ( *, *)
 end if
 
 flag_continue = .true.
@@ -40,15 +40,15 @@ flag_continue = .true.
 ! the slaves will enter the mumps subroutine untill they recieve a stop
 ! signal from master proc
 if (.not.root) then
-   do while (.true.)
-      call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-      if (flag_continue) then
-         call mumps_sub(0)
-      else
-         exit
-      endif
-   end do
-   goto 1000
+    do while (.true.)
+        call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+        if (flag_continue) then
+            call mumps_sub(0)
+        else
+            exit
+        endif
+    end do
+    goto 1000
 endif
 #endif
 !*******************************************************************!
@@ -80,9 +80,9 @@ call simpsonkoef_s
 open(unit=211, file = 'Usolid.out.txt')
 
 do k1 = 1, numnp
-     distance   = xc(1,k1)
-     Ufield(k1) = surf_pot(distance)
-     write(211,('(E16.9,2X,E19.9)')) distance, Ufield(k1) 
+    distance   = xc(1,k1)
+    Ufield(k1) = surf_pot(distance)
+    write(211,('(E16.9,2X,E19.9)')) distance, Ufield(k1) 
 enddo
 !*******************************************************************!
 !                       INITIALIZE FIELDS                           !
@@ -92,12 +92,12 @@ do i1 = 1, numnp
 enddo
 
 if (show.eq.1) then
-   open(unit=21, file = 'field_in.txt')
-   do i1 = 1, numnp
+    open(unit=21, file = 'field_in.txt')
+    do i1 = 1, numnp
         read (21,'(18X,E16.9)') wa(i1)
         wa(i1)=wa(i1) !*real(chainlen)
-   enddo
-   close(21)
+    enddo
+    close(21)
 endif
 !*******************************************************************!
 !                       LOOPS FOR SOLUTION                          !
@@ -117,7 +117,7 @@ do while ((kk.lt.iterations).and.(error.gt.max_error))
 
     write(54, '("Time of matrix_assemble  : ",I6.3," mins ",F6.3," secs.")') int(t3-t2)/60, mod((t3-t2),60.)
 
-    call edwards_free_film_fem 
+    call edwards_free_film_fem
     call CPU_TIME(t4)
 
     write(54, '("Time of Edwards solution : ",I6.3,"minutes",F6.3," seconds.")') int(t4-t3)/60, mod((t4-t3),60.)

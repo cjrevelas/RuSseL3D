@@ -1,12 +1,12 @@
 subroutine edwards_free_film_fem
-!----------------------------------------------------------------------------------------------------------!   
+!----------------------------------------------------------------------------------------------------------!
 use xdata
 use mdata 
 use kcw
 #ifdef USE_MPI
 use mpistuff
 #endif
-!----------------------------------------------------------------------------------------------------------!    
+!----------------------------------------------------------------------------------------------------------!
 implicit none
 #ifdef USE_MPI
 include 'mpif.h'
@@ -16,22 +16,21 @@ integer :: i, j, f, idummy!, fc
 double precision :: t_0, t_1, t_2, t_3, t_4
 
 logical :: r_true(numnp)
-!----------------------------------------------------------------------------------------------------------!    
 !times
 write(54, '(A9,A9,A9,A18  ,A18  ,A18  ,A18  )')'time','NZ','N','BC+G+R',   'NZcalc',   'MUMPS',    'cp_sol'
 write(54, '(A9,A9,A9,A9,A9,A9,A9,A9,A9,A9,A9)')''    , '' , '','min','sec','min','sec','min','sec','min','sec'
 
-!************************INITIAL CONDITIONS*************************! 
+!************************INITIAL CONDITIONS*************************!
 call CPU_TIME(t_0)
 
 r_true = .false.
 
-!Initial value of propagator, q(x,0) = 1.0 for all x     
-!The initial values stored to qf_final for s=0         
+!Initial value of propagator, q(x,0) = 1.0 for all x
+!The initial values stored to qf_final for s=0
 
 do i1 = 1,numnp
-     qf(i1,1) = 1.d0
-     qf_final(i1,1) = 1.d0
+    qf(i1,1) = 1.d0
+    qf_final(i1,1) = 1.d0
 enddo
 
 g_m%value  = c_m%value + ds*(k_m%value + w_m%value)
@@ -46,22 +45,22 @@ do j = 1, fcel
         do i = 1, fcnum
             idummy= fcelement(i,j)
             r_true(idummy) = .True.
-        enddo 
-    endif 
+        enddo
+    endif
 enddo
 
 ! APS 16/08/19: OPTIMIZE
 
 ! new section
 do i1 = 1, all_el
-  f = rh_m%col(i1)
-  i = rh_m%row(i1)
-  if (r_true(i)) then
-     g_m%value(i1) = 0.
-     if (i==f) then
-        g_m%value(i1) = 1.
-     endif
-  endif
+    f = g_m%col(i1)
+    i = g_m%row(i1)
+    if (r_true(i)) then
+        g_m%value(i1) = 0.
+        if (i==f) then
+            g_m%value(i1) = 1.
+        endif
+    endif
 enddo
 !/ new section
 
@@ -75,37 +74,36 @@ enddo
 !                    if (i==rh_m%col(i1).and. i==rh_m%row(i1)) then
 !                        g_m%value(i1) = 1.
 !                    endif
-!               endif 
+!               endif
 !            enddo
 !        enddo
-!    endif 
-!enddo 
+!    endif
+!enddo
 !/ old section
 
 call CPU_TIME(t_2)
 !***********************DETERMINE NON-ZERO ENTRIES*******************!
-non_zero = 0
+NNZ = 0
 do i = 1, all_el
-    if (g_m%value(i)/=0.) then 
-        non_zero = non_zero + 1
-    endif                
+    !APS 16/08/19: I set abs(g_m%value(i))>1.e-8 instead of g_m%value(i)/=0.
+    if (abs(g_m%value(i))>1.e-8) then
+        NNZ = NNZ + 1
+    endif
 enddo
 
-write(*,'(a14,I20)') "Unique NNZ:", non_zero
+allocate(A_m%value(NNZ))
+allocate(A_m%col(NNZ))
+allocate(A_m%row(NNZ))
 
-allocate(A_m%value(non_zero))
-allocate(A_m%col(non_zero))
-allocate(A_m%row(non_zero))
-
-non_zero = 0
+NNZ = 0
 do i = 1, all_el
     if (abs(g_m%value(i))>1.e-8) then
-        non_zero = non_zero + 1
+        NNZ = NNZ + 1
 
-        A_m%value(non_zero) = g_m%value(i)
-        A_m%row(non_zero)   = g_m%row(i)
-        A_m%col(non_zero)   = g_m%col(i)
-    endif 
+        A_m%value(NNZ) = g_m%value(i)
+        A_m%row(NNZ)   = g_m%row(i)
+        A_m%col(NNZ)   = g_m%col(i)
+    endif
 enddo
 
 call CPU_TIME(t_3)
@@ -150,8 +148,8 @@ do time_step = 2, ns+1
 enddo !time_step
 
 #ifdef USE_MPI
-    ! Send a stop (.false.) signal to the slaves
-   call MPI_BCAST(.false., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+! Send a stop (.false.) signal to the slaves
+call MPI_BCAST(.false., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
 
 call CPU_TIME(t_4)
@@ -160,7 +158,7 @@ call CPU_TIME(t_4)
 write(54, '(i9,                 i9,              i9,                                 &
     &       i9,                 f9.1,            i9,              f9.1,              &
     &       i9,                 f9.1,            i9,              f9.1)')            &
-    &       time_step,          non_zero,        numnp,                              &
+    &       time_step,          NNZ,             numnp,                              &
     &       int(t_1-t_0)/60, mod((t_1-t_0),60.), int(t_2-t_1)/60, mod((t_2-t_1),60.),&
     &       int(t_3-t_2)/60, mod((t_3-t_2),60.), int(t_4-t_3)/60, mod((t_4-t_3),60.)
 

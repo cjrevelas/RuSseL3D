@@ -217,7 +217,6 @@ module FHASH_MODULE_NAME
       & 573292817, 1164186217, 2147483647/)
     do i = 1, size(sizes)
       if (sizes(i) >= n_buckets) then
-         write(*,*)"Reserved buckets: ",sizes(i)
         this%n_buckets = sizes(i)
         allocate(this%buckets(this%n_buckets))
         return
@@ -363,7 +362,6 @@ module FHASH_MODULE_NAME
         deallocate(this%buckets(i)%next)
       endif
     enddo
-    write(*,*)"CLEAR: ",size(this%buckets)
     deallocate(this%buckets)
     this%n_keys = 0
     this%n_buckets = 0

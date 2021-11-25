@@ -3,15 +3,19 @@
 #######################################################################
 
 MAKE_MPI_RUN=1
-MAKE_PRODUCTION_RUN=1
+MAKE_PRODUCTION_RUN=0
+
+BOTH_OPTIONS=
+PROD_OPTIONS=
+DEBUG_OPTIONS=-DDEBUG_OUTPUTS
 
 # MPI/MUMPS SECTION
-ifeq ($(MAKE_MPI_RUN),1)
-CPPFLAGS = -DUSE_MPI -Wno-unused-dummy-argument
-topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR
-else
+ifeq ($(MAKE_MPI_RUN),0)
 CPPFLAGS = -Wno-unused-dummy-argument
 topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_SERIAL
+else
+CPPFLAGS = -Wno-unused-dummy-argument -DUSE_MPI
+topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR
 endif
 
 libdir = $(topdir)/lib
@@ -22,14 +26,14 @@ LIBMUMPS_COMMON = $(libdir)/libmumps_common$(PLAT)$(LIBEXT)
 LIBDMUMPS = $(libdir)/libdmumps$(PLAT)$(LIBEXT) $(LIBMUMPS_COMMON)
 
 # Flags of production and debug runs
-PROD=-O3 -cpp $(CPPFLAGS)
-DEBUG=-O0 -g -fcheck=all -Wall -cpp $(CPPFLAGS)
+PROD=-O3 -cpp $(CPPFLAGS) $(PROD_OPTIONS) $(BOTH_OPTIONS)
+DEBUG=-O0 -g -fcheck=all -Wall -cpp $(CPPFLAGS) $(DEBUG_OPTIONS) $(BOTH_OPTIONS)
 
 # Choose between PROD and DEBUG run
-ifeq ($(MAKE_PRODUCTION_RUN),1)
-FCFLAGS=$(PROD)
-else
+ifeq ($(MAKE_PRODUCTION_RUN),0)
 FCFLAGS=$(DEBUG)
+else
+FCFLAGS=$(PROD)
 endif
 
 LIBFS=#-lstdc++ #-lm
@@ -42,7 +46,7 @@ OBJECTS =  matrix_assemble.o  part_fun_phi.o\
 .f90.o:
 	$(FC) -c $(FCFLAGS) $(LIBFS)  $*.f90
 
-CMD=FEM_3d.exe
+CMD=fem_3d.exe
 $(CMD):$(LIBDMUMPS) $(MODULES) $(OBJECTS) 
 	   $(FL) -o $(CMD) $(OPTL) $(MODULES) $(OBJECTS)  $(LIBDMUMPS) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS)
 
@@ -55,10 +59,10 @@ fhash_modules: fhash.f90 fhash_modules.f90
 .SUFFIXES: (.SUFFIXES) .F .f90 .h .p
 
 clean:
-	$(RM) *.o *.mod *.x *.exe
+	$(RM) *.o *.mod
 
 cleaner:
-	$(RM) *.o *.mod *.x *.exe *.out.txt
+	$(RM) *.o *.mod *.exe *.out.txt fort.*
 
 test:
 	./TEST_INTEGRITY/test_integrity.sh

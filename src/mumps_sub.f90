@@ -46,7 +46,7 @@ if (mumps_par%MYID.eq.0) then
     !read(5,*) mumps_par%N
     !read(5,*) mumps_par%NNZ
     mumps_par%N   = numnp
-    mumps_par%NNZ = non_zero
+    mumps_par%NNZ = NNZ
 
     allocate(mumps_par%IRN( mumps_par%NNZ))
     allocate(mumps_par%JCN(mumps_par%NNZ))
@@ -57,46 +57,28 @@ if (mumps_par%MYID.eq.0) then
     mumps_par%IRN = A_m%row
     mumps_par%JCN = A_m%col
     mumps_par%A   = A_m%value
-   
+
     do i = 1, mumps_par%N
         mumps_par%RHS(i) = rdiag1(i)
     enddo
 endif
-   
-!DEBUG       
-!if (time_step==2) then
-    !open(unit=55, file = 'mumpsinside.txt')
-
-    !do i8 = 1, mumps_par%NNZ
-       !write(55,*) mumps_par%IRN(i8), mumps_par%JCN(i8), mumps_par%A(i8)
-    !enddo
-
-    !do i8 = 1, mumps_par%N
-    !   write(55,*) mumps_par%RHS(i8)
-    !enddo 
-
-    !close(55)
-!endif 
-!DEBUG
 
 !Call package for matrix factorization and solution
 mumps_par%JOB = 6
 
 call DMUMPS(mumps_par)
- 
+
 if (mumps_par%INFOG(1).lt.0) then
     write(6,'(A,A,I6,A,I9)') " ERROR RETURN: ",                            &
                              "  mumps_par%INFOG(1)= ", mumps_par%INFOG(1), &
                              "  mumps_par%INFOG(2)= ", mumps_par%INFOG(2)
     goto 500
 endif
-   
+
 !Solution has been assembled on the host
 if (mumps_par%MYID.eq.0 ) then
-    !open(unit=53, file = 'u1.txt')
     do i = 1, mumps_par%N
         rdiag1(i) = mumps_par%RHS(i)
-        !write(53,*) i, u1(i)
     enddo
 endif
 
