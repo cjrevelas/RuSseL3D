@@ -2,7 +2,7 @@
 #                  Makefile of SCF-FEM code                           #
 #######################################################################
 
-MAKE_MPI_RUN=1
+MAKE_MPI_RUN=0
 MAKE_PRODUCTION_RUN=0
 
 BOTH_OPTIONS=
@@ -28,6 +28,7 @@ LIBDMUMPS = $(libdir)/libdmumps$(PLAT)$(LIBEXT) $(LIBMUMPS_COMMON)
 # Flags of production and debug runs
 PROD=-O3 -cpp $(CPPFLAGS) $(PROD_OPTIONS) $(BOTH_OPTIONS)
 DEBUG=-O0 -g -fcheck=all -Wall -cpp $(CPPFLAGS) $(DEBUG_OPTIONS) $(BOTH_OPTIONS)
+#Other debug flags: -Wextra
 
 # Choose between PROD and DEBUG run
 ifeq ($(MAKE_PRODUCTION_RUN),0)
@@ -62,7 +63,7 @@ clean:
 	$(RM) *.o *.mod
 
 cleaner:
-	$(RM) *.o *.mod *.exe *.out.txt fort.*
+	$(RM) *.o *.mod *.exe *.out.txt *.bin fort.* 
 
 test:
 	./TEST_INTEGRITY/test_integrity.sh
