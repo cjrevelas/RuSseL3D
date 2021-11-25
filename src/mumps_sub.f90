@@ -3,7 +3,9 @@ subroutine mumps_sub(numnp)
 !--------------------------------------------------------------------------!
 use kcw
 use xdata
+#ifdef USEMPI
 use mpistuff
+#endif
 !--------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------!
@@ -21,7 +23,20 @@ mumps_par%COMM = MPI_COMM_WORLD
 
 !Initialize an instance of the package for LU-factorization
 mumps_par%PAR  = 1  !working host processor
-mumps_par%SYM  = 0  !general case: non-symmetric left-hand-side matrix
+
+!Set the type of the matrix
+#if defined(MSYMGEN)
+mumps_par%SYM  = 2
+mumps_par%CNTL(1) = 0
+#endif
+#if defined(MSYMDEFPOS)
+mumps_par%SYM  = 1
+mumps_par%ICNTL(13) = 0
+#endif
+#if !defined(MSYMGEN) && !defined(MSYMDEFPOS)
+mumps_par%SYM  = 0
+#endif
+
 mumps_par%JOB  = -1
 
 call DMUMPS(mumps_par)
@@ -33,18 +48,19 @@ if (mumps_par%INFOG(1).lt.0) then
     goto 500
 endif
 
+#ifndef MUMPS_REPORT
 mumps_par%ICNTL(1) = -1
 mumps_par%ICNTL(2) = -1
 mumps_par%ICNTL(3) = -1
 mumps_par%ICNTL(4) = -1
-!mumps_par%ICNTL(13) = 1
-!mumps_par%CNTL(1) = 0
+#endif
 
+! Set mumps options here
+!mumps_par%ICNTL(28)=2 !Parallel Ordering tools
+!mumps_par%ICNTL(7)=4 !Choose ordering scheme
 
 !Define problem on the host processor(id = 0)
 if (mumps_par%MYID.eq.0) then
-    !read(5,*) mumps_par%N
-    !read(5,*) mumps_par%NNZ
     mumps_par%N   = numnp
     mumps_par%NNZ = NNZ
 
@@ -52,7 +68,6 @@ if (mumps_par%MYID.eq.0) then
     allocate(mumps_par%JCN(mumps_par%NNZ))
     allocate(mumps_par%A(mumps_par%NNZ))
     allocate(mumps_par%RHS(mumps_par%N))
-    !allocate(u1(mumps_par%N))
 
     mumps_par%IRN = A_m%row
     mumps_par%JCN = A_m%col

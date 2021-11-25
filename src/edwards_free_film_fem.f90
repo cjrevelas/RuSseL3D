@@ -16,6 +16,11 @@ include 'mpif.h'
 integer :: i, j, f, idummy, time_step
 
 logical, dimension(numnp) :: r_true
+logical, dimension(nel*numel) :: set_diag_to_one
+
+#ifdef PRINT_AFULL
+real(8), allocatable, dimension(:,:) :: A_full
+#endif
 
 !************************INITIAL CONDITIONS*************************!
 r_true = .false.
@@ -42,42 +47,30 @@ do j = 1, fcel
     endif
 enddo
 
-! APS 16/08/19: OPTIMIZE
+set_diag_to_one=.true.
 
-! new section
 do i1 = 1, all_el
     f = g_m%col(i1)
     i = g_m%row(i1)
+#if defined(MSYMDEFPOS) || defined(MSYMGEN)
+    if (i > f) then
+        g_m%value(i1) = 0.d0
+    endif
+    if (r_true(i).or.r_true(f)) then
+#else
     if (r_true(i)) then
-        g_m%value(i1) = 0.
-        if (i==f) then
-            g_m%value(i1) = 1.
+#endif
+        g_m%value(i1) = 0.d0
+        if (i==f.and.set_diag_to_one(i)) then
+            g_m%value(i1) = 1.d0
+            set_diag_to_one(i)=.false.
         endif
     endif
 enddo
-!/ new section
-
-! old section
-!do i = 1, numnp
-!    if (r_true(i)) then
-!        do f = 1, numnp
-!           do i1 = 1, all_el
-!               if (f==rh_m%col(i1).and.i==rh_m%row(i1)) then
-!                    g_m%value(i1) = 0.
-!                    if (i==rh_m%col(i1).and. i==rh_m%row(i1)) then
-!                        g_m%value(i1) = 1.
-!                    endif
-!               endif
-!            enddo
-!        enddo
-!    endif
-!enddo
-!/ old section
 
 !***********************DETERMINE NON-ZERO ENTRIES*******************!
 NNZ = 0
 do i = 1, all_el
-    !APS 16/08/19: I set abs(g_m%value(i))>1.e-8 instead of g_m%value(i)/=0.
     if (abs(g_m%value(i)) > tol) then
         NNZ = NNZ + 1
     endif
@@ -97,6 +90,24 @@ do i = 1, all_el
         A_m%col(NNZ)   = g_m%col(i)
     endif
 enddo
+
+#ifdef PRINT_AFULL
+allocate(A_full(numnp,numnp))
+A_full = 0.d0
+do i1 = 1, NNZ
+   f = A_m%col(i1)
+   i = A_m%row(i1)
+   A_full(i,f)=A_m%value(i1)
+enddo
+open(unit=255, file = 'A_full.out.txt')
+do i = 1, numnp
+   write(255,*)(A_full(i,f), f = 1, numnp)
+enddo
+close(255)
+deallocate(A_full)
+#endif
+
+
 !************************START TRANSIENT SOLUTION*********************! 
 do time_step = 2, ns+1
 
@@ -105,7 +116,7 @@ do time_step = 2, ns+1
     call MPI_BCAST(.true., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
 
-    write(6,*) 'time_step =', time_step      
+    write(6,*) '*time_step =', time_step      
     !*******************************************************************!
     !                   FINITE ELEMENT METHOD                           !
     !*******************************************************************!

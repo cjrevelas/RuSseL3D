@@ -5,18 +5,20 @@
 MAKE_MPI_RUN=0
 MAKE_PRODUCTION_RUN=0
 
-BOTH_OPTIONS=
 PROD_OPTIONS=
-DEBUG_OPTIONS=-DDEBUG_OUTPUTS
+DEBUG_OPTIONS= -DDEBUG_OUTPUTS #-DPRINT_AFULL
+BOTH_OPTIONS= #-DMUMPS_REPORT #-DMSYMDEFPOS #-DMSYMGEN
 
 # MPI/MUMPS SECTION
 ifeq ($(MAKE_MPI_RUN),0)
-CPPFLAGS = -Wno-unused-dummy-argument
+MPI_OPTIONS=
 topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_SERIAL
 else
-CPPFLAGS = -Wno-unused-dummy-argument -DUSE_MPI
+MPI_OPTIONS = -DUSE_MPI
 topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR
+#topdir = /home/asgouros/TrioStountzes/MUMPS/TEMP_25Aug2019_MUMPS_5.2.1_PAR
 endif
+
 
 libdir = $(topdir)/lib
 .SECONDEXPANSION:
@@ -26,15 +28,17 @@ LIBMUMPS_COMMON = $(libdir)/libmumps_common$(PLAT)$(LIBEXT)
 LIBDMUMPS = $(libdir)/libdmumps$(PLAT)$(LIBEXT) $(LIBMUMPS_COMMON)
 
 # Flags of production and debug runs
-PROD=-O3 -cpp $(CPPFLAGS) $(PROD_OPTIONS) $(BOTH_OPTIONS)
-DEBUG=-O0 -g -fcheck=all -Wall -cpp $(CPPFLAGS) $(DEBUG_OPTIONS) $(BOTH_OPTIONS)
-#Other debug flags: -Wextra
+FC_PROD=-O3
+FC_DEBUG=-O0 -g -fcheck=all -Wall
+#Other debug flags: -Wextra -Wno-unused-dummy-argument
 
 # Choose between PROD and DEBUG run
 ifeq ($(MAKE_PRODUCTION_RUN),0)
-FCFLAGS=$(DEBUG)
+CPPFLAGS=$(DEBUG_OPTIONS) $(BOTH_OPTIONS) $(MPI_OPTIONS)
+FCFLAGS=$(FC_DEBUG) -cpp $(CPPFLAGS)
 else
-FCFLAGS=$(PROD)
+CPPFLAGS=$(PROD_OPTIONS) $(BOTH_OPTIONS) $(MPI_OPTIONS)
+FCFLAGS=$(FC_PROD) -cpp $(CPPFLAGS)
 endif
 
 LIBFS=#-lstdc++ #-lm
@@ -48,11 +52,11 @@ OBJECTS =  matrix_assemble.o  part_fun_phi.o\
 	$(FC) -c $(FCFLAGS) $(LIBFS)  $*.f90
 
 CMD=fem_3d.exe
-$(CMD):$(LIBDMUMPS) $(MODULES) $(OBJECTS) 
+$(CMD):$(LIBDMUMPS) $(MODULES) $(OBJECTS)
 	   $(FL) -o $(CMD) $(OPTL) $(MODULES) $(OBJECTS)  $(LIBDMUMPS) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS)
 
 mumps_sub.o :
-	$(FC) $(OPTF) $(INCS) -I. -I$(topdir)/include -I$(topdir)/src -c $*.f90 $(OUTF)$*.o
+	$(FC) $(OPTF) $(INCS) -I. -I$(topdir)/include -I$(topdir)/src -cpp $(CPPFLAGS) -c $*.f90 $(OUTF)$*.o
 
 fhash_modules: fhash.f90 fhash_modules.f90
 	$(FC) $(FFLAGS) -c fhash_modules.f90

@@ -1,4 +1,4 @@
-program FEM_3D
+Program FEM_3D
 !-------------------------------------------------------------------!
 use xdata
 use mdata
@@ -57,10 +57,23 @@ endif
 ior = 55
 iow = 10
 
-! Read and initialize the mesh
+!TODO ADD THESE TO INITIAL LOG
+write(6,*)"Dirichel BCs have been applied in faces # and #"
+
+#if defined(MSYMGEN)
+write(6,*)"The matrices are treated as GENERAL SYMMETRIC"
+#endif
+#if defined(MSYMDEFPOS)
+write(6,*)"The matrices are treated as SYMMETRIC POSITIVE DEFINITE"
+#endif
+#if !defined(MSYMGEN) && !defined(MSYMDEFPOS)
+write(6,*)"The matrices are treated as UNSYMMETRIC"
+#endif
+
+write(6,*) "Initializing mesh.."
 call mesh_io_3d
 
-! Read the gaussdatparameter values
+write(6,*) "Reading gaussdat parameter values.."
 call scfinout
 
 ! Initialize the Simpson coefficients
@@ -122,9 +135,9 @@ do while ((kk.lt.iterations).and.(error.gt.max_error))
     if (mod(kk,1).eq.0) then
 !APS TEMP
         open (unit=120, file = 'rho_reduced.out.txt')
-        write(120,'(8(A17))') 'np','x','y','z','phi','wa_old','wa_new','wa_mix'
+        write(120,'(8(A13))') 'np','x','y','z','phi','wa_old','wa_new','wa_mix'
         do k1 = 1, numnp
-            write(120,'(I17,7(E17.9))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_new(k1), &
+            write(120,'(I13,7(E13.5))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_new(k1), &
    &                     wa(k1), wa_new(k1), (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
         enddo
 
@@ -187,5 +200,6 @@ end if
 
 1000 CALL MPI_FINALIZE(ierr)
 #endif
+write(*,*)"Done!"
 !------------------------------------------------------------------------------------------------------------------!
 end program FEM_3D
