@@ -28,6 +28,11 @@ integer, allocatable, dimension(:) :: vtxentity, edgentity, temp3
 
 real(8), allocatable, dimension(:,:) :: edgpar, fcpar
 
+! APS 28/08/19: ADD. profile section
+integer, allocatable, dimension(:) :: prof_1D_node
+real(8)                            :: prof_bin
+integer                            :: prof_dim, nbin, ibin
+
 ! APS 17/08/19: ADD. fhash module
 type(fhash_type__ints_double) :: h
 type(ints_type) :: key
@@ -265,32 +270,6 @@ do m1 = 1, numel
 end do
 call h%clear()
 
-!/ new section
-
-! old section
-!all_el = 0
-!count  = 1
-!do m1 = 1, numel
-!    do j1 = 1, nel
-!        do i1 = 1, nel
-!            all_el = all_el + 1
-!            g_m%row(all_el) = ix(j1,m1)
-!            g_m%col(all_el) = ix(i1,m1)
-!            do k1 = 1, all_el-1
-!                if ((g_m%row(k1)==g_m%row(all_el)).and.(g_m%col(k1)==g_m%col(all_el))) then
-!                    con_l2(all_el) = k1
-!                    exit
-!                elseif (k1==all_el-1) then 
-!                    count = count + 1
-!                    con_l2(all_el) = all_el
-!               endif
-!            enddo
-!        end do
-!    end do
-!end do
-!con_l2(1)=1
-!/ old section
-
 c_m%row  = g_m%row
 k_m%row  = g_m%row
 w_m%row  = g_m%row
@@ -324,6 +303,36 @@ close(77)
 open(77, file = 'mesh.out.txt')
 do i = 1, numnp
     write(77,'(F21.15,1X,F21.15,1X,F21.15)') (xc(j,i), j = 1, sdim) 
+enddo
+close(77)
+
+
+!APS profile section
+prof_dim = 3
+prof_bin = 0.5d0
+nbin = nint((box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin) + 1
+
+write(6,*)box_hi(prof_dim)
+write(6,*)box_lo(prof_dim)
+write(6,*)(box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin
+write(6,*)(box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin
+write(6,*)(box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin
+write(6,*)nint((box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin)
+
+allocate(prof_1D_node(nbin))
+
+write(6,*)"Profile options"
+write(6,*)prof_dim, prof_bin, nbin
+
+prof_1D_node=0
+do i = 1, numnp
+    ibin = nint((xc(prof_dim,i) - box_lo(prof_dim))/prof_bin) + 1
+    prof_1D_node(ibin) = prof_1D_node(ibin) + 1
+enddo
+
+open(77, file = 'prof_mp.out.txt')
+do i = 1, nbin
+    write(77,*)i, prof_1D_node(i)
 enddo
 close(77)
 #endif
