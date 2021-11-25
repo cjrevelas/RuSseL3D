@@ -78,7 +78,7 @@ endif
 surf_pot = surf_pot/(boltz_const_Joule_K*Temp)
 write(43,'(E16.9,2X,E16.9)') h12, surf_pot
 
-surf_pot = surf_pot * dfloat (chainlen) 
+surf_pot = surf_pot * chainlen
 
 if (surf_pot.gt.0.) then
     surf_pot = 0.d0

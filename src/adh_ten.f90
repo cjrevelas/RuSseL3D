@@ -27,13 +27,13 @@ term2 = term2 * 1.0d-10
 !APS BUGFIX: xc(1,numnp) seems suspecius! Check this!
 term3 = volume * 1.0d-30 * (1.d00 - part_func)      !red:   translational entropy of free chains
 
-term4 = -dble(chainlen) / rho_0 * log(qf_final(1,ns+1))    !green: translational entropy of grafted chains
+term4 = -chainlen / rho_0 * log(qf_final(1,ns+1))    !green: translational entropy of grafted chains
 
 ! x1.0D+03 ----> N/m --> mN/m
-part_sum1 = term1 * rho_0 * boltz_const_Joule_molK * Temp / dfloat(chainlen) * 1.0D+03
-part_sum2 = term2 * rho_0 * boltz_const_Joule_molK * Temp / dfloat(chainlen) * 1.0D+03
-part_sum3 = term3 * rho_0 * boltz_const_Joule_molK * Temp / dfloat(chainlen) * 1.0D+03
-part_sum4 = term4 * rho_0 * boltz_const_Joule_molK * Temp / dfloat(chainlen) * 1.0D+03
+part_sum1 = term1 * rho_0 * boltz_const_Joule_molK * Temp / chainlen * 1.0D+03
+part_sum2 = term2 * rho_0 * boltz_const_Joule_molK * Temp / chainlen * 1.0D+03
+part_sum3 = term3 * rho_0 * boltz_const_Joule_molK * Temp / chainlen * 1.0D+03
+part_sum4 = term4 * rho_0 * boltz_const_Joule_molK * Temp / chainlen * 1.0D+03
 
 sum_final   = part_sum1 + part_sum2 + part_sum3! + part_sum4
 adh_ten = - sum_final   ! adh_test = (Omega_bulk - Omega) / A

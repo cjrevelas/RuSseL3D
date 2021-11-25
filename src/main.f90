@@ -196,7 +196,7 @@ endif
 write(iow,'(''-----------------------------------'')')
 write(iow,'(''Adhesion tension (mN/m) '',E16.9)') adh_ten
 write(iow,'(''Partition function Q =  '',E16.9)') part_func
-write(iow,'(''            n/n_bulk =  '',E16.9)') nch_per_area * dfloat(chainlen) / (rho_0*volume*1.d-30)
+write(iow,'(''            n/n_bulk =  '',E16.9)') nch_per_area * chainlen / (rho_0*volume*1.d-30)
 
 #ifdef USE_MPI
 ! Root will send a stop signal to the slaves

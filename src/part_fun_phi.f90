@@ -33,9 +33,9 @@ enddo
 sum_f = 0.d0
 call spat_3d(phia_new, sum_f, Q)
 
-nch_per_area = sum_f*1.0d-30*rho_0/dfloat(chainlen)
+nch_per_area = sum_f*1.0d-30*rho_0/chainlen
 
-coef= part_func/nch_per_area/(dfloat(chainlen)/(rho_0*volume*1.d-30))
+coef= part_func/nch_per_area/(chainlen/(rho_0*volume*1.d-30))
 
 return
 !-------------------------------------------------------------------------------------------!

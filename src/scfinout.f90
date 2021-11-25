@@ -46,8 +46,8 @@ allocate(phia_new(numnp),phi(numnp))
 ds = 1.d0/dble(ns)
 
 !Read in chain length (in monomer units)
-read(ior,'(I10)') chainlen
-write(iow,'(/A30,I11)') 'Chain length ', chainlen
+read(ior,'(E16.9)') chainlen
+write(iow,'(/A30,E16.9)') 'Chain length ', chainlen
 
 !Read absolute temperature in K.
 read(ior,'(E16.9)') Temp
@@ -76,7 +76,7 @@ read(ior,'(E16.9)') CN
 write(iow,'(/A30,F16.4)') 'Chain characteristic ratio C_N ', CN
 
 !Calculate the radius of gyration
-Rgyr = 1.54d00 * dsqrt(CN * (dfloat(chainlen))/6.d00)
+Rgyr = 1.54d00 * dsqrt(CN * (chainlen)/6.d00)
 
 write(6,*) 'The gyration radius, in Angstroms, is:'
 write(6,*)  Rgyr
@@ -129,18 +129,75 @@ else
     endif
 endif
 
+!read mix coeff frac
+read(ior,'(E16.9)',iostat=lshow ) mix_coef_frac
+
+if (lshow<0)then
+    mix_coef_frac = 0
+    write(iow,'(/A30,E16.9)')adjustl('mix_coef_frac'), mix_coef_frac
+else
+    write(iow,'(/A30,E16.9)')adjustl('mix_coef_frac'), mix_coef_frac
+endif
+
+
+!read mix coeff kapa
+read(ior,'(E16.9)',iostat=lshow ) mix_coef_kapa
+
+if (lshow<0)then
+    mix_coef_frac = 1
+    write(iow,'(/A30,E16.9)')adjustl('mix_coef_kapa'), mix_coef_kapa
+else
+    write(iow,'(/A30,E16.9)')adjustl('mix_coef_kapa'), mix_coef_kapa
+endif
+
+write(*,*)"KAPAAA",mix_coef_kapa
+
+!read dirichlet faces
+read(ior,'(I10)',iostat=lshow ) n_dirichlet_faces
+
+if (lshow<0)then
+    n_dirichlet_faces = 0
+    write(iow,'(/A30,I10)')adjustl('number faces applying Dirichlet BC, q=0?'), n_dirichlet_faces
+else
+    write(iow,'(/A30,I10)')adjustl('number faces applying Dirichlet BC, q=0?'), n_dirichlet_faces
+    allocate(ids_dirichlet_faces(n_dirichlet_faces))
+endif
+
+if (n_dirichlet_faces>0) then
+    write(iow,'(/A30,I10)',advance='no')adjustl('ids..')
+    do i1 = 1, n_dirichlet_faces
+        read(ior,'(I3)',advance='no') id
+        write(iow,'(I3)',advance='no') id
+        ids_dirichlet_faces(i1) = id
+    enddo
+    read(ior,*)
+    write(iow,*)
+endif
+
+!choose convergence scheme
+read(ior,'(I10)',iostat=lshow ) scheme_type
+
+if (lshow<0)then
+    scheme_type = 0
+    write(iow,'(/A30,I10)')adjustl('scheme_type'), scheme_type
+else
+    write(iow,'(/A30,I10)')adjustl('scheme_type'), scheme_type
+endif
+
+!STOP
+
 !calculate segment density in the bulk rho_0 in mol_segments/m3
-rho_0 = dfloat(chainlen)*massden/(dfloat(chainlen)*mon_mass )*1.d06
+rho_0 = chainlen*massden/(chainlen*mon_mass )*1.d06
 
 write(6,*) 'rho_0 (mol/m^3)'
 write(6,*) rho_0
 write(iow,'(/A30,F16.4,'' mol/m3'')') 'Segment density in bulk', rho_0
 
-kapa = dfloat(chainlen)/(kappa_T * boltz_const_Joule_molK * Temp * rho_0)
+kapa = chainlen/(kappa_T * boltz_const_Joule_molK * Temp * rho_0)
 write(6,*) 'kapa'
 write(6,*) kapa
 
-write(iow,'(/A30,F16.4)') 'kapa = 1/[k_T k_B T rho_0]', kapa / dfloat(chainlen)
+write(iow,'(/A30,F16.4)') 'kapa = 1/[k_T k_B T rho_0]', kapa / chainlen
 
 close(ior)
 

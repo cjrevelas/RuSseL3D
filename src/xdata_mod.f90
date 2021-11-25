@@ -7,8 +7,8 @@ integer, parameter :: maxns = 4000
 real(8), parameter :: mix_coef = 8.0   !CJR
 
 !*********************************DISCRETIZATION********************************!
-integer :: ns, nx_1, np, chainlen
-real(8) :: ds
+integer :: ns, nx_1, np
+real(8) :: ds, chainlen
 
 !*******************************INDICES AND FLAGS*******************************!
 integer :: ior, iow, count
