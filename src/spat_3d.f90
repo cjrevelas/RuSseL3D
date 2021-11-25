@@ -20,7 +20,6 @@ real(8), dimension(numnp) :: u_spat
 
 real(8) :: uqp, sumel, sum_out, volel, vol
 !--------------------------------------------------------------------!    
-u_spat = 5.
 
 !Initialize accumulator for integral of the solution
 sum_out = 0.d00
