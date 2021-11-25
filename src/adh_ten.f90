@@ -24,8 +24,8 @@ call spat_3d(dterm2, term2, Q)
 
 term1 = term1 * 1.0d-10
 term2 = term2 * 1.0d-10
-!APS: xc(1,numnp) seems suspecius! Check this!
-term3 = xc(1,numnp) * 1.0d-10 * (1.d00 - part_func)      !red:   translational entropy of free chains
+!APS BUGFIX: xc(1,numnp) seems suspecius! Check this!
+term3 = volume * 1.0d-30 * (1.d00 - part_func)      !red:   translational entropy of free chains
 
 term4 = -dble(chainlen) / rho_0 * log(qf_final(1,ns+1))    !green: translational entropy of grafted chains
 
