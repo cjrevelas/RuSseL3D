@@ -276,89 +276,84 @@
           xs(j,i) = 0.0d0
           do k = 1,nnel
             xs(j,i) = xs(j,i) + xl(j,k)*shp(i,k)
-          end do ! k
-        end do ! i
-      end do ! j
+        enddo
+   enddo
+enddo
 
-!     Compute inverse of jacobian matrix
+!Compute inverse of jacobian matrix
+xsi(1,1) = xs(2,2)*xs(3,3) - xs(3,2)*xs(2,3)
+xsi(1,2) = xs(3,2)*xs(1,3) - xs(1,2)*xs(3,3)
+xsi(1,3) = xs(1,2)*xs(2,3) - xs(2,2)*xs(1,3)
 
-      xsi(1,1) = xs(2,2)*xs(3,3) - xs(3,2)*xs(2,3)
-      xsi(1,2) = xs(3,2)*xs(1,3) - xs(1,2)*xs(3,3)
-      xsi(1,3) = xs(1,2)*xs(2,3) - xs(2,2)*xs(1,3)
+xsi(2,1) = xs(2,3)*xs(3,1) - xs(3,3)*xs(2,1)
+xsi(2,2) = xs(3,3)*xs(1,1) - xs(1,3)*xs(3,1)
+xsi(2,3) = xs(1,3)*xs(2,1) - xs(2,3)*xs(1,1)
 
-      xsi(2,1) = xs(2,3)*xs(3,1) - xs(3,3)*xs(2,1)
-      xsi(2,2) = xs(3,3)*xs(1,1) - xs(1,3)*xs(3,1)
-      xsi(2,3) = xs(1,3)*xs(2,1) - xs(2,3)*xs(1,1)
+xsi(3,1) = xs(2,1)*xs(3,2) - xs(3,1)*xs(2,2)
+xsi(3,2) = xs(3,1)*xs(1,2) - xs(1,1)*xs(3,2)
+xsi(3,3) = xs(1,1)*xs(2,2) - xs(2,1)*xs(1,2)
 
-      xsi(3,1) = xs(2,1)*xs(3,2) - xs(3,1)*xs(2,2)
-      xsi(3,2) = xs(3,1)*xs(1,2) - xs(1,1)*xs(3,2)
-      xsi(3,3) = xs(1,1)*xs(2,2) - xs(2,1)*xs(1,2)
+do i = 1,3
+   do j = 1,3
+      a(i,j) = xs(i,1)*xsi(1,j)+xs(i,2)*xsi(2,j)+xs(i,3)*xsi(3,j)
+   enddo
+enddo
 
-      do i = 1,3
-        do j = 1,3
-          a(i,j) = xs(i,1)*xsi(1,j)+xs(i,2)*xsi(2,j)+xs(i,3)*xsi(3,j)
-        end do ! j
-      end do ! i
+!Compute jacobian determinant
+xsj = xs(1,1)*xsi(1,1) + xs(1,2)*xsi(2,1) + xs(1,3)*xsi(3,1)
 
-!     Compute jacobian determinant
+if (dabs(xsj)>tol) then
+    detr = 1.d0/xsj
+    !change by tolis
+    xsj  = xsj!*(1./6.)
+    !change by tolis
+else
+    !write(iow,*) ' TETSHP: Determinant =',xsj
+    detr = 1.d0
+endif
 
-      xsj = xs(1,1)*xsi(1,1) + xs(1,2)*xsi(2,1) + xs(1,3)*xsi(3,1)
+!Compute jacobian inverse
+do j = 1, 3
+   do i = 1, 3
+        xs(i,j) = xsi(i,j)*detr
+   enddo
+enddo
 
-      if(xsj.ne.0.0d0) then
-        detr = 1.d0/xsj
-        !change by tolis
-        xsj  = xsj!*(1./6.)
-        !change by tolis
-      else
-!        write(iow,*) ' TETSHP: Determinant =',xsj
-        detr = 1.d0
-      endif
+!Heirarchic interior node function for 4-node
+if (nel.eq.-4) then
+        
+    shp(1,5) = 256.d0*(xi(1) - xi(2))*xi(3)*xi(4)
+    shp(2,5) = 256.d0*(xi(1) - xi(3))*xi(2)*xi(4)
+    shp(3,5) = 256.d0*(xi(1) - xi(4))*xi(2)*xi(3)
+    shp(4,5) = 256.d0*xi(1)*xi(2)*xi(3)*xi(4)
+    
+    nnel = 5
 
-!     Compute jacobian inverse
+!Hierarchical bubble function for 10 and 14-node element
+elseif (nel.eq.-10 .or. nel.eq.-14) then
 
-      do j = 1,3
-        do i = 1,3
-          xs(i,j) = xsi(i,j)*detr
-        end do ! i
-      end do ! j
+    if (abs(nel).eq.10) then
+        nnel = 11
+    else
+        nnel = 15
+    endif
+        
+    shp(1,nnel) = 256.d0*(xi(1) - xi(2))*xi(3)*xi(4)
+    shp(2,nnel) = 256.d0*(xi(1) - xi(3))*xi(2)*xi(4)
+    shp(3,nnel) = 256.d0*(xi(1) - xi(4))*xi(2)*xi(3)
+    shp(4,nnel) = 256.d0*xi(1)*xi(2)*xi(3)*xi(4)
+endif
 
-!     Heirarchic interior node function for 4-node
-
-      if(nel .eq. -4) then
-        shp(1,5) = 256.d0*(xi(1) - xi(2))*xi(3)*xi(4)
-        shp(2,5) = 256.d0*(xi(1) - xi(3))*xi(2)*xi(4)
-        shp(3,5) = 256.d0*(xi(1) - xi(4))*xi(2)*xi(3)
-        shp(4,5) = 256.d0*xi(1)*xi(2)*xi(3)*xi(4)
-        nnel     = 5
-
-!     Hierarchical bubble function for 10 and 14-node element
-
-      elseif(nel.eq.-10 .or. nel.eq.-14) then
-
-        if(abs(nel).eq.10) then
-          nnel = 11
-        else
-          nnel = 15
-        endif
-        shp(1,nnel) = 256.d0*(xi(1) - xi(2))*xi(3)*xi(4)
-        shp(2,nnel) = 256.d0*(xi(1) - xi(3))*xi(2)*xi(4)
-        shp(3,nnel) = 256.d0*(xi(1) - xi(4))*xi(2)*xi(3)
-        shp(4,nnel) = 256.d0*xi(1)*xi(2)*xi(3)*xi(4)
-
-      endif
-
-!     Compute shape function derivatives
-
-      do k = 1,nnel
-        do i = 1,3
-          te(i) = shp(1,k)*xs(1,i) + shp(2,k)*xs(2,i) + shp(3,k)*xs(3,i)
-        end do ! i
-        do i = 1,3
-          shp(i,k) = te(i)
-        end do ! i
-      end do ! k
-
-!     Format
+!Compute shape function derivatives
+do k = 1, nnel
+   do i = 1, 3
+        te(i) = shp(1,k)*xs(1,i) + shp(2,k)*xs(2,i) + shp(3,k)*xs(3,i)
+   enddo
+       
+   do i = 1,3
+        shp(i,k) = te(i)
+   enddo
+enddo 
 
 2000  format(/' *ERROR* TETSHP not coded for nel =',i4)
 
