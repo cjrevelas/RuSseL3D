@@ -19,7 +19,6 @@ write(iow,'(''Polumer Bulk with solid surfaces   ''/  &
 !***********************************************************!
 !                      CHOOSE THE MODEL                     !
 !***********************************************************!
-slparams=0
 
 !Read seed for random number generator NOT USED
 read(ior,'(I9)') iseed
