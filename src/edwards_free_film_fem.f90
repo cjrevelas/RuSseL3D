@@ -1,7 +1,8 @@
 subroutine edwards_free_film_fem
 !----------------------------------------------------------------------------------------------------------!
 use xdata
-use mdata 
+use constants
+use mdata
 use kcw
 #ifdef USE_MPI
 use mpistuff
@@ -12,18 +13,11 @@ implicit none
 include 'mpif.h'
 #endif
 !----------------------------------------------------------------------------------------------------------!
-integer :: i, j, f, idummy!, fc
-
-real(8) :: t_0, t_1, t_2, t_3, t_4
+integer :: i, j, f, idummy, time_step
 
 logical, dimension(numnp) :: r_true
-!times
-write(54, '(A9,A9,A9,A18  ,A18  ,A18  ,A18  )')'time','NZ','N','BC+G+R',   'NZcalc',   'MUMPS',    'cp_sol'
-write(54, '(A9,A9,A9,A9,A9,A9,A9,A9,A9,A9,A9)')''    , '' , '','min','sec','min','sec','min','sec','min','sec'
 
 !************************INITIAL CONDITIONS*************************!
-call CPU_TIME(t_0)
-
 r_true = .false.
 
 !Initial value of propagator, q(x,0) = 1.0 for all x
@@ -37,8 +31,6 @@ enddo
 g_m%value  = c_m%value + ds*(k_m%value + w_m%value)
 
 rh_m%value = c_m%value
-
-call CPU_TIME(t_1)
 
 !************************BOUNDARY CONDITIONS************************!
 do j = 1, fcel
@@ -82,12 +74,11 @@ enddo
 !enddo
 !/ old section
 
-call CPU_TIME(t_2)
 !***********************DETERMINE NON-ZERO ENTRIES*******************!
 NNZ = 0
 do i = 1, all_el
     !APS 16/08/19: I set abs(g_m%value(i))>1.e-8 instead of g_m%value(i)/=0.
-    if (abs(g_m%value(i))>1.e-8) then
+    if (abs(g_m%value(i)) > tol) then
         NNZ = NNZ + 1
     endif
 enddo
@@ -98,7 +89,7 @@ allocate(A_m%row(NNZ))
 
 NNZ = 0
 do i = 1, all_el
-    if (abs(g_m%value(i))>1.e-8) then
+    if (abs(g_m%value(i)) > tol) then
         NNZ = NNZ + 1
 
         A_m%value(NNZ) = g_m%value(i)
@@ -106,9 +97,6 @@ do i = 1, all_el
         A_m%col(NNZ)   = g_m%col(i)
     endif
 enddo
-
-call CPU_TIME(t_3)
-
 !************************START TRANSIENT SOLUTION*********************! 
 do time_step = 2, ns+1
 
@@ -147,21 +135,6 @@ do time_step = 2, ns+1
     enddo
 
 enddo !time_step
-
-#ifdef USE_MPI
-! Send a stop (.false.) signal to the slaves
-call MPI_BCAST(.false., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-#endif
-
-call CPU_TIME(t_4)
-
-!*********************************************************************! 
-write(54, '(i9,                 i9,              i9,                                 &
-    &       i9,                 f9.1,            i9,              f9.1,              &
-    &       i9,                 f9.1,            i9,              f9.1)')            &
-    &       time_step,          NNZ,             numnp,                              &
-    &       int(t_1-t_0)/60, mod((t_1-t_0),60.), int(t_2-t_1)/60, mod((t_2-t_1),60.),&
-    &       int(t_3-t_2)/60, mod((t_3-t_2),60.), int(t_4-t_3)/60, mod((t_4-t_3),60.)
 
 return
 !----------------------------------------------------------------------------------------------------------!	

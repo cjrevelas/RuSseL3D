@@ -10,7 +10,7 @@ integer :: iseed, sl, slparams, ns_middle
 integer :: i1, j1, k1, k2, m1, m2, m3
 integer :: ii1, ii2, nonzero, irow, nx_1, np
 integer :: kk, iterations
-integer :: time_step, show, code_name, lshow, pr_on
+integer :: show, code_name, lshow, pr_on
 
 real(8) :: lx, dx, ds
 real(8) :: start, t1, t2, t3, t4, t5, t6
@@ -24,7 +24,7 @@ real(8) :: free_energy_old, free_energy_new
 real(8) :: coef, mix_coef
 real(8) :: mon_mass, massden, kapa, kappa_T, rho_0, Rgyr, Rg_2, CN
 real(8) :: Temp, Aps, Asio2, sigma1, sigma2, Vored, wwidth, distance
-real(8) :: part_func, adh_ten, adh_ten_alt, nch_per_area
+real(8) :: part_func, adh_ten, nch_per_area
 real(8) :: exact, max_error, error
 
 real(8), dimension(1:maxns) :: koeff
