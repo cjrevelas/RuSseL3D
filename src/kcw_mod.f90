@@ -8,16 +8,13 @@ integer :: min_el
 
 integer, allocatable, dimension(:) :: con_l2
 integer, allocatable, dimension(:,:) :: connectivity, con_l
-double precision, allocatable :: k(:,:), c(:,:), w(:,:)
-double precision, allocatable :: g(:,:), rdiag1(:), rh(:,:)
+
+real(8), allocatable, dimension(:) :: rdiag1
 
 type mum_matrix
     sequence
     double precision, dimension(:), pointer :: value
     integer, dimension(:), pointer :: row, col
-    !integer :: col
-    !integer :: row
-    !double precision :: m
 end type
 
 type(mum_matrix) :: g_m

@@ -13,9 +13,10 @@ include 'mpif.h'
 #endif
 !----------------------------------------------------------------------------------------------------------!
 integer :: i, j, f, idummy!, fc
-double precision :: t_0, t_1, t_2, t_3, t_4
 
-logical :: r_true(numnp)
+real(8) :: t_0, t_1, t_2, t_3, t_4
+
+logical, dimension(numnp) :: r_true
 !times
 write(54, '(A9,A9,A9,A18  ,A18  ,A18  ,A18  )')'time','NZ','N','BC+G+R',   'NZcalc',   'MUMPS',    'cp_sol'
 write(54, '(A9,A9,A9,A9,A9,A9,A9,A9,A9,A9,A9)')''    , '' , '','min','sec','min','sec','min','sec','min','sec'

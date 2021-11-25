@@ -12,6 +12,7 @@ use kcw
 implicit none
 !--------------------------------------------------------------------!    
 character(len=15) :: dummy
+
 integer :: idummy
 integer :: i, sdim, j
 integer :: nmeltypes
@@ -19,20 +20,13 @@ integer :: vtxnum, vtxel
 integer :: vtxparnum, vtxparel
 integer :: edgnum, edgel
 integer :: edgparnum, edgparel
-!integer :: fcnum, fcel
 integer :: fcparnum, fcparel
-integer, allocatable :: vtxelement(:,:), edgelement(:,:) !, fcelement(:,:)
-integer, allocatable :: vtxpar(:,:) 
-integer, allocatable :: vtxentity(:), edgentity(:) !, fcentity(:) 
-!real(8) :: Q , sum_f
 
-!APS 17/08/19: BUGFIX. temp3(:) was set to real and later it is assigned an integer value
-!real, allocatable :: temp3(:), u(:)
-!real, allocatable :: u(:)
-integer, allocatable :: temp3(:)
-!/ BUGFIX
+integer, allocatable, dimension(:,:) :: vtxelement, edgelement
+integer, allocatable, dimension(:,:) :: vtxpar 
+integer, allocatable, dimension(:) :: vtxentity, edgentity, temp3
 
-real, allocatable :: edgpar(:,:), fcpar(:,:)
+real, allocatable, dimension(:,:) :: edgpar, fcpar
 
 ! APS 17/08/19: ADD. fhash module
 type(fhash_type__ints_double) :: h

@@ -42,9 +42,13 @@
 !      include 'iofile.h'
 !      include 'pconstant.h'
 
-      integer  ndm, nel, nnel, i, j, k
-      real*8   xsj, detr, xi(4), xl(ndm,*), shp(4,*), xs(3,3),xsi(3,3)
-      real*8   a(3,3), te(3)
+      integer :: ndm, nel, nnel, i, j, k
+      real(8) ::  xsj, detr
+      real(8), dimension(4) :: xi
+      real(8), dimension(ndm,*) :: xl
+      real(8), dimension(4,*) :: shp
+      real(8), dimension(3,3) :: xs, xsi, a
+      real(8), dimension(3) :: te
 
       save
 
