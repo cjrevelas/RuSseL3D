@@ -4,16 +4,17 @@ implicit none
 !--------------------------------------------------------------------!  
 integer, parameter :: maxns = 4000
 
-integer :: ns, chainlen 
-integer :: ior, iow, count, count2, init 
-integer :: iseed, sl, slparams, ns_middle
+integer :: ns, chainlen
+integer :: ior, iow, count
+integer :: iseed
 integer :: i1, j1, k1, k2, m1, m2, m3
-integer :: ii1, ii2, nonzero, irow, nx_1, np
+integer :: ii1, ii2, irow, nx_1, np
 integer :: kk, iterations
 integer :: show, code_name, lshow, pr_on
 
-real(8) :: lx, dx, ds
-real(8) :: start, t1, t2, t3, t4, t5, t6
+real(8), dimension(3) :: box_lo, box_hi, box_len
+real(8) :: ds
+!real(8) :: start, t1, t2, t3, t4, t5, t6
 real(8) :: volume, D, fraction
 real(8) :: test1, test2, test3, test4, sphere_radius
 real(8) :: temp1, temp2, sum_final
