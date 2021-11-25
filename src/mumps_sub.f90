@@ -2,7 +2,6 @@ subroutine mumps_sub(numnp)
 !This file is part of MUMPS 5.2.1, released on Fri Jun 14 14:46:05 UTC2019
 !--------------------------------------------------------------------------!
 use kcw
-use xdata
 #ifdef USEMPI
 use mpistuff
 #endif
