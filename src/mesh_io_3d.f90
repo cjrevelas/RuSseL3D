@@ -74,7 +74,6 @@ enddo
 volume = box_len(1)*box_len(2)*box_len(3)
 write(6,*)"Volume = ", volume
 
-
 read (12,'(A60)') dummy
 
 !element types

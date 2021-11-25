@@ -7,9 +7,8 @@ implicit none
 !--------------------------------------------------------------------! 
 integer :: simple
 
-real(8) :: surf_pot!, U_solid
-
-real(8) :: sigma!, coeff, As, eps, 
+real(8) :: surf_pot
+real(8) :: sigma
 
 real(8) :: h12, Urep, Uattr
 

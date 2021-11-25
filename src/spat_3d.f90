@@ -7,19 +7,15 @@ use constants
 implicit none
 !--------------------------------------------------------------------!
 integer :: lint
-
 integer :: i, j, ii, l, n
 
 real(8) :: Q, xsj
-
-real(8), dimension(nel) :: ul
-real(8), dimension(ndm, nel) :: xl
-
-real(8), dimension(4,11) :: shp
-real(8), dimension(5,11) :: sv
-real(8), dimension(numnp) :: u_spat
-
 real(8) :: uqp, sumel, sum_out, volel, vol
+real(8), dimension(nel)      :: ul
+real(8), dimension(ndm, nel) :: xl
+real(8), dimension(4,11)     :: shp
+real(8), dimension(5,11)     :: sv
+real(8), dimension(numnp)    :: u_spat
 !--------------------------------------------------------------------!
 
 !Initialize accumulator for integral of the solution

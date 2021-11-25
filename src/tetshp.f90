@@ -1,19 +1,18 @@
 subroutine tetshp(xi, xl, ndm, nel, xsj, shp)
-
+!-----------------------------------------------------------------------------------!
 use constants
-
+!-----------------------------------------------------------------------------------!
 implicit none
-
+!-----------------------------------------------------------------------------------!
 integer :: ndm, nel, nnel, i, j, k
 
 real(8) ::  xsj, detr
-
 real(8), dimension(4)     :: xi
 real(8), dimension(ndm,*) :: xl
 real(8), dimension(4,*)   :: shp
 real(8), dimension(3,3)   :: xs, xsi, a
 real(8), dimension(3)     :: te
-
+!-----------------------------------------------------------------------------------!
 save
 
 !Linear shape functions and their derivatives
@@ -249,5 +248,5 @@ do k = 1, nnel
 enddo 
 
 2000  format(/' *ERROR* TETSHP not coded for nel =',i4)
-
+!-----------------------------------------------------------------------------------!
 end subroutine tetshp

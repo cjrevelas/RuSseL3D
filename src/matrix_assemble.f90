@@ -9,16 +9,13 @@ implicit none
 integer :: lint
 
 integer :: m_1, n_1
-
-integer :: i, j, l, n, m, nn !,ii
-
+integer :: i, j, l, n, m, nn
 integer, dimension (nel) :: gl_index
 
-real(8), dimension(ndm,nel) :: xl
-
-real(8), dimension(4,11) :: shp
-real(8), dimension(5,11) :: sv
 real(8) :: xsj
+real(8), dimension(ndm,nel) :: xl
+real(8), dimension(4,11)    :: shp
+real(8), dimension(5,11)    :: sv
 !-----------------------------------------------------------------------------------------------------------!
 i1=0
 

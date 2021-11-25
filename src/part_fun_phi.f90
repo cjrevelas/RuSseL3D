@@ -8,7 +8,6 @@ implicit none
 integer :: time_step
 
 real(8) :: sum_f, Q
-
 real(8), dimension(numnp) :: q_last
 !-------------------------------------------------------------------------------------------! 
 sum_f = 0.d0
