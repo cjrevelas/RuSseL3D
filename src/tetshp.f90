@@ -167,7 +167,10 @@ do i = 1,3
    do j = 1,3
         xs(j,i) = 0.0d0
         do k = 1,nnel
-            xs(j,i) = xs(j,i) + xl(j,k)*shp(i,k)
+            !TEMP OLD
+            !xs(j,i) = xs(j,i) + xl(j,k)*shp(i,k)
+            !TEMP NEW
+            xs(j,i) = xs(j,i) - xl(j,k)*shp(i,k)
         enddo
    enddo
 enddo
