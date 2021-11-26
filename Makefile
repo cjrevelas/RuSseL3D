@@ -2,8 +2,8 @@
 #                  Makefile of SCF-FEM code                           #
 #######################################################################
 
-MAKE_MPI_RUN=0
-MAKE_PRODUCTION_RUN=0
+MAKE_MPI_RUN=1
+MAKE_PRODUCTION_RUN=1
 
 PROD_OPTIONS=
 DEBUG_OPTIONS= -DDEBUG_OUTPUTS #-DPRINT_AFULL
@@ -43,10 +43,10 @@ endif
 
 LIBFS=#-lstdc++ #-lm
 
-MODULES =  mdata_mod.o xdata_mod.o constants_mod.o kcw_mod.o fhash_mod.o mpistuff_mod.o
-OBJECTS =  matrix_assemble.o  part_fun_phi.o\
-	   scfinout.o  simpsonkoef.o spat_3d.o surf_pot.o tetshp.o qprint.o \
-           mesh_io_3d.o gauss_3d.o edwards_free_film_fem.o adh_ten.o main.o mumps_sub.o
+MODULES = mdata_mod.o xdata_mod.o constants_mod.o kcw_mod.o fhash_mod.o mpistuff_mod.o
+OBJECTS = matrix_assemble.o part_fun_phi.o\
+	  scfinout.o simpsonkoef.o spat_3d.o surf_pot.o tetshp.o qprint.o \
+          mesh_io_3d.o gauss_3d.o edwards_free_film_fem.o adh_ten.o main.o mumps_sub.o
 
 .f90.o:
 	$(FC) -c $(FCFLAGS) $(LIBFS)  $*.f90

@@ -36,7 +36,7 @@ if (mod(ns,2).ne.0) then
     stop
 endif
 
-allocate(wa(numnp),wa_new(numnp),wa_in(numnp),Ufield(numnp))
+allocate(wa(numnp),wa_new(numnp),wa_mix(numnp),Ufield(numnp))
 
 allocate(qf(numnp,2),qf_final(numnp,ns+1))
 
@@ -91,6 +91,11 @@ write(iow,'(/A30,F16.4)')'Tolerance for convergence of field ', max_error
 read(ior,'(E16.9)') fraction
 write(iow,'(/a30,f16.4)'  ) 'Fraction of new field mixed in with old field in damped iterations ',fraction
 
+if (fraction > 1.d0) then
+    write(iow,'(/a30,f16.4)'  ) 'ERROR: fraction is larger than one!'
+    STOP
+endif
+
 !Read additional parameters
 read(ior,'(E16.9)') mon_mass
 write(iow,'(/A30,F16.4)')'Mass  of a monomer', mon_mass
@@ -104,6 +109,7 @@ write(iow,'(/A30,F16.4,    '' Angstroms'')') adjustl('sigma polymer'), sigma1
 read(ior,'(E16.9)') sigma2
 write(iow,'(/A30,F16.4,    '' Angstroms'')')adjustl('sigma solid'), sigma2
 
+!Read field
 read(ior,'(I10)',iostat=lshow) show
 if (lshow <0)then
     show=0
@@ -116,6 +122,7 @@ else
     endif
 endif
 
+!print q
 read(ior,'(I10)',iostat=lshow ) pr_on
 
 if (lshow<0)then
