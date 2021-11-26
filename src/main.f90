@@ -1,6 +1,7 @@
 Program FEM_3D
 !-------------------------------------------------------------------!
 use xdata
+use constants
 use mdata
 use kcw
 #ifdef USE_MPI
@@ -102,18 +103,24 @@ if (show.eq.1) then
     open(unit=21, file = 'field.in.bin', Form='unformatted')
     read(21) wa
     close(21)
+#ifdef REDUCE_W_CHLEN
+    do k1 = 1, numnp
+        wa(k1) = wa(k1) * chainlen
+    enddo
+#endif
+    zero_field = .false.
 endif
 !*******************************************************************!
 !                       LOOPS FOR SOLUTION                          !
 !*******************************************************************!
 write(6,*) 'Iteration,  Adh. tension (mN/m),  error(beta N w)'
-write(iow,'(A10,2X,A16,2X,A16)') 'kk', 'adh_ten', 'error'
+write(iow,'(A10,2X,A16,2X,A16)') 'iter', 'adh_ten', 'error'
 
-kk=0
+iter=0
 error=200000.
 
-do while ((kk.lt.iterations).and.(error.gt.max_error))
-    kk=kk+1
+do while ((iter.lt.iterations).and.(error.gt.max_error))
+    iter=iter+1
 
     call matrix_assemble
 
@@ -125,8 +132,6 @@ do while ((kk.lt.iterations).and.(error.gt.max_error))
 
     ! Calculate the new field
     do k1 = 1, numnp
-        !APS CHECK xc(1 or xc(3
-        !distance   = xc(1,k1)
         wa_new(k1) = kapa * (phia_new(k1)- 1.d0) + Ufield(k1)
     enddo
 
