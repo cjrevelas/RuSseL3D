@@ -13,6 +13,9 @@ include 'mpif.h'
 #endif
 !-------------------------------------------------------------------!
 real(8) :: surf_pot
+real(8) :: wa_max
+logical :: zero_field
+integer :: print_ev
 !-------------------------------------------------------------------!
 
 !*******************************************************************!
@@ -93,9 +96,10 @@ do k1 = 1, numnp
 enddo
 close(211)
 
+zero_field = .true.
 if (show.eq.1) then
     write(*,*)"Field will be read from a file!"
-    open(unit=21, file = 'field.inout.bin', Form='unformatted')
+    open(unit=21, file = 'field.in.bin', Form='unformatted')
     read(21) wa
     close(21)
 endif
