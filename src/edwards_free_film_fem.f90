@@ -39,12 +39,14 @@ rh_m%value = c_m%value
 
 !************************BOUNDARY CONDITIONS************************!
 do j = 1, fcel
-    if ((fcentity(j)==3).or.(fcentity(j)==4))then
-        do i = 1, fcnum
-            idummy= fcelement(i,j)
-            r_true(idummy) = .True.
-        enddo
-    endif
+    do i1 = 1, n_dirichlet_faces
+        if (fcentity(j)==ids_dirichlet_faces(i1))then
+            do i = 1, fcnum
+                idummy= fcelement(i,j)
+                r_true(idummy) = .True.
+            enddo
+        endif
+    enddo
 enddo
 
 set_diag_to_one=.true.
@@ -109,6 +111,7 @@ deallocate(A_full)
 
 
 !************************START TRANSIENT SOLUTION*********************! 
+write(6,'(A11)' ,advance='no') 'time_step = '
 do time_step = 2, ns+1
 
 #ifdef USE_MPI
@@ -116,7 +119,7 @@ do time_step = 2, ns+1
     call MPI_BCAST(.true., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
 
-    write(6,*) '*time_step =', time_step      
+    write(6,'(I3,A2)', advance='no') time_step, ", "
     !*******************************************************************!
     !                   FINITE ELEMENT METHOD                           !
     !*******************************************************************!
@@ -146,6 +149,7 @@ do time_step = 2, ns+1
     enddo
 
 enddo !time_step
+write(6,*)
 
 return
 !----------------------------------------------------------------------------------------------------------!	

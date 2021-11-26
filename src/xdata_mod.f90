@@ -24,6 +24,10 @@ integer, allocatable, dimension(:,:) :: ix   !CJR
 real(8), allocatable, dimension(:,:) :: xc   !CJR
 real(8), dimension(3) :: box_lo, box_hi, box_len
 
+!*******************************BOUNDARY CONDITIONS*****************************!
+integer :: n_dirichlet_faces
+integer, allocatable, dimension(:) :: ids_dirichlet_faces
+
 !*************************SCF MODEL AND POTENTIAL DATA**************************!
 real(8) :: mon_mass, massden, kapa, kappa_T, rho_0, Rgyr, Rg_2, CN, sphere_radius
 real(8) :: Temp, volume, Aps, Asio2, sigma1, sigma2, Vored, wwidth, distance
