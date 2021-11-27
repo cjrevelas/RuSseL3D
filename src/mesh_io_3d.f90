@@ -24,6 +24,9 @@ integer :: edgnum, edgel
 integer :: edgparnum, edgparel
 integer :: fcparnum, fcparel
 
+integer :: fcnum, fcel
+integer, allocatable, dimension(:,:) ::  fcelement
+integer, allocatable, dimension(:) :: fcentity
 integer, allocatable, dimension(:,:) :: vtxelement, edgelement
 integer, allocatable, dimension(:,:) :: vtxpar
 integer, allocatable, dimension(:) :: vtxentity, edgentity, temp3
@@ -33,7 +36,7 @@ real(8), allocatable, dimension(:,:) :: edgpar, fcpar
 ! APS 28/08/19: ADD. profile section
 integer, allocatable, dimension(:) :: prof_1D_node
 real(8)                            :: prof_bin
-integer                            :: prof_dim, nbin, ibin
+integer                            :: nbin, ibin
 
 ! APS 17/08/19: ADD. fhash module
 type(fhash_type__ints_double) :: h
@@ -257,6 +260,7 @@ F_m%col = 0
 
 allocate(con_l2(all_el))
 con_l2 = 0
+
 allocate(wa(numnp))
 allocate(wa_new(numnp))
 allocate(wa_mix(numnp))
@@ -340,15 +344,15 @@ do i1 = 1, all_el
 enddo
 close(77)
 
-open (unit=77, file='inter.out.txt')  
+open (unit=77, file='inter.out.txt')
 do i = 1, numel
-    write(77,'(I9,10(2X,I9))') (ix(j,i), j = 1, nel) 
+    write(77,'(I9,10(2X,I9))') (ix(j,i), j = 1, nel)
 enddo
 close(77)
 
 open(77, file = 'mesh.out.txt')
 do i = 1, numnp
-    write(77,'(F21.15,1X,F21.15,1X,F21.15)') (xc(j,i), j = 1, ndm) 
+    write(77,'(F21.15,1X,F21.15,1X,F21.15)') (xc(j,i), j = 1, ndm)
 enddo
 close(77)
 
@@ -356,7 +360,6 @@ close(77)
 ! APS profile section
 ! APS TEMP: this should be encapsulated into a subroutine
 ! APS: DO NOT PANIC
-prof_dim = 3
 prof_bin = 0.5d0
 nbin = nint((box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin) + 1
 
@@ -382,7 +385,7 @@ close(77)
 print_ev = 3
 open (unit=120, file = 'header.out.txt')
 do k1 = 1, numnp, print_ev
-    write(120,'(E13.5)',advance='no') xc(3,k1)
+    write(120,'(E13.5)',advance='no') xc(prof_dim,k1)
 enddo
 close(120)
 

@@ -16,13 +16,16 @@ integer :: iseed
 integer :: i1, j1, k1, k2, m1, m2, m3, id
 integer :: ii1, ii2, irow
 integer :: kk, iter, iterations
-integer :: readfield, code_name, lshow, pr_on
+integer :: readfield, init_iter, code_name, lshow, pr_on, output_every
+
+!************************************DOMAIN*************************************!
+real(8), dimension(3) :: box_lo, box_hi, box_len
+integer :: prof_dim
 
 !*************************************MESH**************************************!
 integer :: nel, ndm, numnp, numel
 integer, allocatable, dimension(:,:) :: ix
 real(8), allocatable, dimension(:,:) :: xc
-real(8), dimension(3) :: box_lo, box_hi, box_len
 
 !*******************************BOUNDARY CONDITIONS*****************************!
 integer :: n_dirichlet_faces

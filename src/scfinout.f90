@@ -32,6 +32,7 @@ logical :: log_read_field = .false.
 logical :: log_mix_coef_fraction = .false.
 logical :: log_mix_coef_kapa = .false.
 logical :: log_n_dirichlet_faces = .false.
+logical :: log_profile_dimension = .false.
 logical :: log_convergence_scheme = .false.
 logical :: log_mumps_matrix_type = .false.
 
@@ -131,6 +132,9 @@ do
                  ids_dirichlet_faces(i1) = id
             enddo
             log_n_dirichlet_faces = .true.
+        elseif (index(line,'# profile dimension') > 0) then
+            read(line,'(I6)') prof_dim
+            log_profile_dimension = .true.
         endif
    endif
 enddo
@@ -400,6 +404,22 @@ else
     ids_dirichlet_faces(1)=-1
     write(iow,'(3x,A40)')adjl('There are no Dirichlet (q=0) faces.',40)
     write(6  ,'(3x,A40)')adjl('There are no Dirichlet (q=0) faces.',40)
+endif
+
+if (log_profile_dimension) then
+    if ( (prof_dim.ge.1).and.(prof_dim.le.3) ) then
+        write(iow,'(3x,A40,I16)')adjl('profile dimension:',40),prof_dim
+        write(6  ,'(3x,A40,I16)')adjl('profile dimension:',40),prof_dim
+    else
+        write(ERROR_MESSAGE,'(''profile dimension is not between 1 and 3:'',I16)') prof_dim
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    prof_dim = 3
+    write(iow,'(3x,A40)')adjl('profile dimension not found..',40)
+    write(iow,'(3x,A40,I16)')adjl('---It was set to the default value:',40),prof_dim
+    write(6  ,'(3x,A40)')adjl('profile dimension not found..',40)
+    write(6  ,'(3x,A40,I16)')adjl('---It was set to the default value:',40),prof_dim
 endif
 
 if (log_convergence_scheme) then
