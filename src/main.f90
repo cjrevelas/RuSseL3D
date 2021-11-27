@@ -18,20 +18,7 @@ include 'mpif.h'
 real(8) :: surf_pot
 real(8) :: wa_max
 logical :: zero_field
-!-------------------------------------------------------------------!
-iow = 10
-open(unit=iow, file = 'scft.out.txt')
-write(iow,'(''Polymer FEM_3D 1 Sept 19 '')')
-write(iow,'(''Polumer Bulk with solid surfaces   ''/  &
-          & ''---------------------------------  ''/    &
-          & ''SCF theory, Gaussian string model  ''/    &
-          & ''Finite Element solution with       ''/    &
-          & ''successive substitutions           '')')
-
-! Initialize the error log
-ioe = 11
-open(unit=ioe, file = 'error.out.txt', status='replace')
-close(ioe)
+character(12) :: field_filename = 'field.in.bin'
 !*******************************************************************!
 !                           MPI SECTION                             !
 !*******************************************************************!
@@ -69,6 +56,22 @@ if (.not.root) then
     goto 1000
 endif
 #endif
+
+
+!-------------------------------------------------------------------!
+iow = 10
+open(unit=iow, file = 'scft.out.txt')
+write(iow,'(''Polymer FEM_3D 1 Sept 19 '')')
+write(iow,'(''Polumer Bulk with solid surfaces   ''/  &
+          & ''---------------------------------  ''/    &
+          & ''SCF theory, Gaussian string model  ''/    &
+          & ''Finite Element solution with       ''/    &
+          & ''successive substitutions           '')')
+
+! Initialize the error log
+ioe = 11
+open(unit=ioe, file = 'error.out.txt', status='replace')
+close(ioe)
 !*******************************************************************!
 !                       INITIALIZATION SECTION                      !
 !*******************************************************************!
@@ -77,8 +80,19 @@ call scfinout
 
 call mesh_io_3d
 
-! Initialize the Simpson coefficients
 call simpsonkoef_s
+
+write(iow,'(/''Mesh characteristics..'')')
+write(iow,'(''   Number of mesh points (numnp):         '',I16)')numnp
+write(iow,'(''   Number of elements (numel):            '',I16)')numel
+write(iow,'(''   Number of nodes per element (nel):     '',I16)')nel
+write(iow,'(''   Number of matrix indeces:              '',I16)')all_el
+
+write(6  ,'(/''Mesh characteristics..'')')
+write(6  ,'(''   Number of mesh points (numnp):         '',I16)')numnp
+write(6  ,'(''   Number of elements (numel):            '',I16)')numel
+write(6  ,'(''   Number of nodes per element (nel):     '',I16)')nel
+write(6  ,'(''   Number of matrix indeces:              '',I16)')all_el
 
 !*******************************************************************!
 !                       INITIALIZE FIELDS                           !
@@ -123,14 +137,20 @@ endif
 !*******************************************************************!
 !                       LOOPS FOR SOLUTION                          !
 !*******************************************************************!
-write(6,*) 'Iteration,  Adh. tension (mN/m),  error(beta N w)'
-write(iow,'(A10,2X,A16,2X,A16)') 'iter', 'adh_ten', 'error'
+write(iow,'(/''*Initiating the simulation with '',I10,'' iterations'',/)') iterations
+write(6  ,'(/''*Initiating the simulation with '',I10,'' iterations'',/)') iterations
+
+write(iow,'(A10,1x,5(A16,1X),A16)') 'iter', 'adh_ten', 'max_error', 'std_error', 'wa_max', 'fraction'
+write(6  ,'(A4, 1x,5(A11,1X),A12)') 'iter', 'adh_ten', 'max_error', 'std_error', 'wa_max', 'fraction', 'progress (%)'
 
 iter=0
-error=200000.
+max_error=200000.
 
-do while ((iter.lt.iterations).and.(error.gt.max_error))
+do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     iter=iter+1
+
+    write(iow,'(I10,1X,5(E16.9,1X))')              iter-1, adh_ten, max_error, std_error, wa_max, fraction
+    write(6  ,'(I4 ,1X,5(E11.4,1X))',advance='no') iter-1, adh_ten, max_error, std_error, wa_max, fraction
 
     call matrix_assemble
 
@@ -142,29 +162,34 @@ do while ((iter.lt.iterations).and.(error.gt.max_error))
 
     ! Calculate the new field
     do k1 = 1, numnp
-        wa_new(k1) = kapa * (phia_new(k1)- 1.d0)!+ Ufield(k1)
+        wa_new(k1) = kapa * (phia_new(k1) - 1.d0) + Ufield(k1)
     enddo
 
     ! Calculate adhesion tension
     call adhesion_tension
 
     !*******************************************************************!
-    !                     APPLY CONVERGENCE CRITERION                   !
+    !   COMPUTE DIFFERENCES BETWEEN OLD (wa) AND NEW (wa_new) fields    !
     !*******************************************************************!
-    error = 0.d00
+    max_error = 0.d00
     do k1 = 1, numnp
-        error = error + (dabs(wa_new(k1) - wa(k1)))
+        max_error = max(max_error, dabs(wa_new(k1) - wa(k1)))
     enddo
-    error = error / numnp
-    !*******************************************************************!
-    !                         APPLY MIXING RULE                         !
-    !*******************************************************************!
+
+    std_error = 0.d00
+    do k1 = 1, numnp
+        std_error = std_error + (wa_new(k1) - wa(k1))**2
+    enddo
+    std_error = SQRT(std_error / float((numnp - 1)))
 
     wa_max=0.d0
-    ! APS TEMP dabs(wa_new) might not work properly for wa_max < kapa!!!
     do k1 = 1, numnp
         wa_max = max(wa_max, dabs(wa_new(k1)))
     enddo
+
+    !*******************************************************************!
+    !                         APPLY MIXING RULE                         !
+    !*******************************************************************!
 
     !   original convergence scheme
     if (scheme_type.eq.1) then
@@ -193,9 +218,6 @@ do while ((iter.lt.iterations).and.(error.gt.max_error))
     do k1 = 1, numnp
         wa_mix(k1) = (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
     enddo
-
-    write(6  ,'(I10,2X,E16.9,2X,E16.9,2X,E16.9,2X,E16.9)') iter, adh_ten, error, wa_max, fraction
-    write(iow,'(I10,2X,E16.9,2X,E16.9,2X,E16.9,2X,E16.9)') iter, adh_ten, error, wa_max, fraction
 
     !*******************************************************************!
     !                        PERIODIC PROFILER                          !
@@ -248,20 +270,30 @@ do while ((iter.lt.iterations).and.(error.gt.max_error))
 
     wa = wa_mix
 
-    ! Print the field for restart
+    !*******************************************************************!
+    !               EXPORT FIELD TO BINARY FILE FOR RESTART             !
+    !*******************************************************************!
 #ifdef REDUCE_W_CHLEN
     do k1 = 1, numnp
         wa_mix(k1) = wa_mix(k1) / chainlen
     enddo
 #endif
-    open(unit=21, file = 'field.out.bin', Form='unformatted')
-    write(21) wa_mix
-    close(21)
+    open(unit=655, file = 'field.out.bin', Form='unformatted')
+    write(655) wa_mix
+    close(655)
+
+    ! Flush the output
+    close(iow)
+    open(unit=iow, file = 'scft.out.txt', position = 'append')
 
 enddo!iter
 
-if (error.lt.max_error) then
-    write(iow,'(/''Convergence of max error'',F16.9)') error
+
+write(iow,'(I10,1X,5(E16.9,1X))') iter, adh_ten, max_error, std_error, wa_max, fraction
+write(6  ,'(I4 ,1X,5(E11.4,1X))',advance='no') iter, adh_ten, max_error, std_error, wa_max, fraction
+
+if (max_error.lt.max_error_tol) then
+    write(iow,'(/''Convergence of max error'',F16.9)') max_error
 else
     write(iow,'(/''Convergence of '',I10, '' iterations'')') iterations
 endif
@@ -280,6 +312,6 @@ end if
 
 1000 call MPI_FINALIZE(ierr)
 #endif
-write(*,*)"Done!"
+write(*,'(/''Done!'')')
 !------------------------------------------------------------------------------------------------------------------!
 end program FEM_3D

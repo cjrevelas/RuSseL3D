@@ -34,7 +34,7 @@ real(8) :: part_func, adh_ten, nch_per_area, free_energy_old, free_energy_new
 real(8) :: exact
 
 !*************************SCF CONVERGENCE SCHEME********************************!
-real(8) :: max_error, error, fraction, mix_coef_frac, mix_coef_kapa
+real(8) :: max_error_tol, max_error, std_error, fraction, mix_coef_frac, mix_coef_kapa
 integer :: scheme_type
 
 !*********************************MUMPS OPTIONS*********************************!
