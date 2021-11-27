@@ -13,17 +13,15 @@ implicit none
 include 'mpif.h'
 #endif
 !----------------------------------------------------------------------------------------------------------!
-integer :: i, j, f, idummy, time_step
+integer :: i, j, f, time_step
 
-logical, dimension(numnp) :: r_true
 logical, dimension(nel*numel) :: set_diag_to_one
 
 #ifdef PRINT_AFULL
 real(8), allocatable, dimension(:,:) :: A_full
 #endif
-
+!----------------------------------------------------------------------------------------------------------!
 !************************INITIAL CONDITIONS*************************!
-r_true = .false.
 
 !Initial value of propagator, q(x,0) = 1.0 for all x
 !The initial values stored to qf_final for s=0
@@ -37,21 +35,9 @@ F_m%g  = F_m%c + ds*(F_m%k + F_m%w)
 
 F_m%rh = F_m%c
 
-!************************BOUNDARY CONDITIONS************************!
-do j = 1, fcel
-    do i1 = 1, n_dirichlet_faces
-        if (fcentity(j)==ids_dirichlet_faces(i1))then
-            do i = 1, fcnum
-                idummy= fcelement(i,j)
-                r_true(idummy) = .True.
-            enddo
-        endif
-    enddo
-enddo
-
 set_diag_to_one=.true.
 
-! In case the matrix is symmetric remove the zero the lines and rows
+! In case the matrix is symmetric remove the zero lines and rows
 ! diagonal componets with Dirichlet BC q=0.
 if (mumps_matrix_type.eq.1.or.mumps_matrix_type.eq.2) then
     do i1 = 1, all_el
@@ -60,7 +46,7 @@ if (mumps_matrix_type.eq.1.or.mumps_matrix_type.eq.2) then
         if (i > f) then
             F_m%g(i1) = 0.d0
         endif
-        if (r_true(i).or.r_true(f)) then
+        if (elem_in_q0_face(i).or.elem_in_q0_face(f)) then
             F_m%g(i1) = 0.d0
             if (i==f.and.set_diag_to_one(i)) then
                 F_m%g(i1) = 1.d0
@@ -74,7 +60,7 @@ if (mumps_matrix_type.eq.0) then
     do i1 = 1, all_el
         f = F_m%col(i1)
         i = F_m%row(i1)
-        if (r_true(i)) then
+        if (elem_in_q0_face(i)) then
             F_m%g(i1) = 0.d0
             if (i==f.and.set_diag_to_one(i)) then
                 F_m%g(i1) = 1.d0
@@ -151,7 +137,7 @@ do time_step = 2, ns+1
     enddo
 
     do i = 1, numnp
-        if (r_true(i)) rdiag1(i) = 0.
+        if (elem_in_q0_face(i)) rdiag1(i) = 0.
     enddo
 
     call mumps_sub(numnp, mumps_matrix_type)

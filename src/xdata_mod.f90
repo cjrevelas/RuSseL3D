@@ -57,5 +57,6 @@ real(8) :: part_sum1, part_sum2, part_sum3, part_sum4
 !*****************************SCF ALLOCATABLE ARRAYS****************************!
 real(8), allocatable, dimension(:)   :: wa, wa_new, wa_mix, Ufield, phia_new, phi
 real(8), allocatable, dimension(:,:) :: qf, qf_final
+logical, allocatable, dimension(:)   :: elem_in_q0_face
 !-------------------------------------------------------------------------------!
 end module xdata
