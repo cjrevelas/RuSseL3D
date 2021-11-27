@@ -3,7 +3,7 @@
 #######################################################################
 
 MAKE_MPI_RUN=1
-MAKE_PRODUCTION_RUN=1
+MAKE_PRODUCTION_RUN=0
 
 PROD_OPTIONS=
 DEBUG_OPTIONS= -DDEBUG_OUTPUTS #-DPRINT_AFULL
@@ -12,10 +12,10 @@ BOTH_OPTIONS= #-DVARIABLE_DS_SCHEME# -DMUMPS_REPORT
 # MPI/MUMPS SECTION
 ifeq ($(MAKE_MPI_RUN),0)
 MPI_OPTIONS=
-topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_SERIAL
+topdir = /home/cjrevelas/MUMPS/mumps_serial
 else
 MPI_OPTIONS = -DUSE_MPI
-topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR
+topdir = /home/cjrevelas/MUMPS/mumps_par
 #topdir = /home/asgouros/TrioStountzes/MUMPS/TEMP_25Aug2019_MUMPS_5.2.1_PAR
 endif
 
@@ -48,7 +48,7 @@ MODULES = xdata_mod.o constants_mod.o kcw_mod.o fhash_mod.o \
 OBJECTS = matrix_assemble.o part_fun_phi.o \
 	  scfinout.o simpsonkoef.o quadinterp_koef.o spat_3d.o \
           surf_pot.o tetshp.o qprint.o mesh_io_3d.o gauss_3d.o \
-          edwards_free_film_fem.o adh_ten.o main.o mumps_sub.o
+          edwards_film_fem.o adh_ten.o main.o mumps_sub.o convolution.o    #CJR
 
 .f90.o:
 	$(FC) -c $(FCFLAGS) $(LIBFS)  $*.f90
