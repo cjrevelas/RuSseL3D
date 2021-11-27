@@ -13,9 +13,10 @@ use kcw
 implicit none
 !--------------------------------------------------------------------!    
 character(len=15) :: dummy
+character(len=13) :: filename
 
 integer :: idummy
-integer :: i, sdim, j
+integer :: i, j
 integer :: nmeltypes
 integer :: vtxnum, vtxel
 integer :: vtxparnum, vtxparel
@@ -24,7 +25,7 @@ integer :: edgparnum, edgparel
 integer :: fcparnum, fcparel
 
 integer, allocatable, dimension(:,:) :: vtxelement, edgelement
-integer, allocatable, dimension(:,:) :: vtxpar 
+integer, allocatable, dimension(:,:) :: vtxpar
 integer, allocatable, dimension(:) :: vtxentity, edgentity, temp3
 
 real(8), allocatable, dimension(:,:) :: edgpar, fcpar
@@ -43,65 +44,76 @@ logical :: success
 
 !/ fhash module
 !--------------------------------------------------------------------!
-open(unit=12, file='Fem_3D.mphtxt')
+filename = 'Fem_3D.mphtxt'
+
+write(iow,'(/''Reading mesh from file:    '',A13)') filename
+
+open(unit=12, file=filename)
 
 do i = 1, 17
     read(12,'(A60)') dummy
 enddo
 
-read(12,*) sdim
+read(12,*) ndm
 read(12,*) numnp
 
 
-allocate(xc(sdim,numnp))
+allocate(xc(ndm,numnp))
 
 do i = 1, 3
     read(12,'(A60)') dummy
 enddo
 
+!*******************************************************************!
+!                Reading Mesh points and box dimensions             !
+!*******************************************************************!
 box_lo = 0.d0
 box_hi = 0.d0
 box_len = 0.d0
 
 do i = 1, numnp
-    read(12,*) (xc(j,i), j = 1, sdim)
+    read(12,*) (xc(j,i), j = 1, ndm)
 
-    do j = 1, sdim
+    do j = 1, ndm
        box_hi(j) = max(xc(j,i), box_hi(j))
        box_lo(j) = min(xc(j,i), box_lo(j))
     enddo
 enddo
 
-do j = 1, sdim
+write(iow,'(/''Box dimensions..'')')
+write(iow,'(A4,3(A17))') 'dim','length','min','max'
+do j = 1, ndm
     box_len(j) = box_hi(j) - box_lo(j)
-    write(6,'(A15,I3,3F20.7)')"box Len lo / hi",j, box_len(j), box_lo(j), box_hi(j)
+    write(iow,'(I4,3E17.9)')j, box_len(j), box_lo(j), box_hi(j)
 enddo
 
 volume = box_len(1)*box_len(2)*box_len(3)
-write(6,*)"Volume = ", volume
+write(iow,'(/''System volume:                         '',E16.9,'' Angstrom^3'')') volume
+
+!*******************************************************************!
+!                       Deal with the elements                      !
+!*******************************************************************!
 
 read (12,'(A60)') dummy
 
 !element types
 read (12,*) nmeltypes
 
-
 #ifdef DEBUG_OUTPUTS
 open(unit=13, file='com.out.txt')
-write(13,'(I9)') sdim
+write(13,'(I9)') ndm
 write(13,'(I9)') numnp
 do i = 1, numnp
-    write(13,'(F19.15,1X,F19.15,1X,F19.15)') (xc(j,i), j = 1, sdim)
+    write(13,'(F19.15,1X,F19.15,1X,F19.15)') (xc(j,i), j = 1, ndm)
 enddo
 write(13,*) nmeltypes
 #endif
-
 
 do i = 1, 6
     read (12,'(A60)') dummy
 enddo
 
-call allocate_matrix(vtxnum, vtxel)
+call read_matrix_bounds(vtxnum, vtxel)
 
 allocate(vtxelement(vtxnum,vtxel))
 
@@ -109,7 +121,7 @@ call read_integer(vtxnum, vtxel, vtxelement)
 
 read (12,'(A60)') dummy
 
-call allocate_matrix(vtxparnum, vtxparel)
+call read_matrix_bounds(vtxparnum, vtxparel)
 
 allocate(vtxpar(vtxparnum,vtxparel))
 
@@ -126,7 +138,7 @@ do i = 1, 8
 enddo
 
 !EDGE ELEMENTS
-call allocate_matrix(edgnum, edgel)
+call read_matrix_bounds(edgnum, edgel)
 
 allocate(edgelement(edgnum,edgel))
 
@@ -134,7 +146,7 @@ call read_integer(edgnum, edgel, edgelement)
 
 read(12,'(A60)') dummy
 
-call allocate_matrix(edgparnum, edgparel)
+call read_matrix_bounds(edgparnum, edgparel)
 
 allocate(edgpar(edgparnum,edgparel))
 
@@ -151,7 +163,7 @@ do i = 1, 9
 enddo
 
 !FACE ELEMENTS
-call allocate_matrix(fcnum, fcel)
+call read_matrix_bounds(fcnum, fcel)
 
 allocate(fcelement(fcnum,fcel))
 
@@ -159,10 +171,10 @@ call read_integer(fcnum, fcel, fcelement)
 
 read (12,'(A60)') dummy
 
-!changes the values of face element so as to start from 1 instead from 0
+!change the values of face element so as to start from 1 instead from 0
 fcelement = fcelement + 1
 
-call allocate_matrix(fcparnum, fcparel)
+call read_matrix_bounds(fcparnum, fcparel)
 
 allocate(fcpar(fcparnum,fcparel))
 
@@ -189,21 +201,17 @@ do i = 1, 6
 enddo
 
 !DOMAIN ELEMENTS
-call allocate_matrix(dmnum, dmel)
+call read_matrix_bounds(nel, numel)
 
-allocate(ix(dmnum,dmel))
+allocate(ix(nel,numel))
 
-call read_integer(dmnum, dmel, ix)
+call read_integer(nel, numel, ix)
 
-do i = 1, dmel
-    do j = 1, dmnum
+do i = 1, numel
+    do j = 1, nel
         ix(j,i) = ix(j,i) + 1
     enddo
 enddo
-
-ndm   = sdim
-nel   = dmnum
-numel = dmel
 
 if (nel>4) then
     allocate(temp3(numel))
@@ -216,31 +224,17 @@ endif
 
 all_el = nel * nel * numel
 
-allocate(g_m%row(all_el))
-allocate(g_m%col(all_el))
-allocate(g_m%value(all_el))
-
-allocate(rh_m%row(all_el))
-allocate(rh_m%col(all_el))
-allocate(rh_m%value(all_el))
-
-allocate(c_m%row(all_el))
-allocate(c_m%col(all_el))
-allocate(c_m%value(all_el))
-
-allocate(k_m%row(all_el))
-allocate(k_m%col(all_el))
-allocate(k_m%value(all_el))
-
-allocate(w_m%row(all_el))
-allocate(w_m%col(all_el))
-allocate(w_m%value(all_el))
+allocate(F_m%row(all_el))
+allocate(F_m%col(all_el))
+allocate(F_m%g(all_el))
+allocate(F_m%rh(all_el))
+allocate(F_m%c(all_el))
+allocate(F_m%k(all_el))
+allocate(F_m%w(all_el))
 
 allocate(con_l2(all_el))
 
-g_m%value = 0.
-
-
+F_m%g = 0.d0
 
 ! APS 17/08/19: ADD. fhash module
 
@@ -254,8 +248,8 @@ do m1 = 1, numel
         do i1 = 1, nel
             all_el = all_el + 1
 
-            g_m%row(all_el) = ix(j1,m1)
-            g_m%col(all_el) = ix(i1,m1)
+            F_m%row(all_el) = ix(j1,m1)
+            F_m%col(all_el) = ix(i1,m1)
 
             key%ints(1) =  ix(j1,m1)
             key%ints(2) =  ix(i1,m1)
@@ -271,59 +265,62 @@ do m1 = 1, numel
 end do
 call h%clear()
 
-c_m%row  = g_m%row
-k_m%row  = g_m%row
-w_m%row  = g_m%row
-rh_m%row = g_m%row
-c_m%col  = g_m%col
-k_m%col  = g_m%col
-w_m%col  = g_m%col
-rh_m%col = g_m%col
+F_m%g = 0.
+F_m%k = 0.
+F_m%c = 0.
 
-g_m%value = 0.
-k_m%value = 0.
-c_m%value = 0.
+allocate(wa(numnp),wa_new(numnp),wa_mix(numnp),Ufield(numnp),rdiag1(numnp))
+allocate(qf(numnp,2),qf_final(numnp,ns+1))
+allocate(phia_new(numnp),phi(numnp))
+wa = 0.d0
+wa_new = 0.d0
+wa_mix = 0.d0
+Ufield = 0.d0
+qf = 0.d0
+qf_final = 0.d0
+phia_new = 0.d0
+phi = 0.d0
 
-allocate(rdiag1(numnp))
+
+write(iow,'(/''Mesh characteristics..'')')
+write(iow,'(''Number of mesh points (numnp):         '',I16)')numnp
+write(iow,'(''Number of elements (numel):            '',I16)')numel
+write(iow,'(''Number of nodes per element (nel):     '',I16)')nel
+write(iow,'(''Number of matrix indeces:              '',I16)')all_el
+
 
 #ifdef DEBUG_OUTPUTS
 close(13)
 
 open(unit=77, file='com_12.out.txt')
 do i1 = 1, all_el
-     write(77,*) i1, g_m%row(i1), g_m%col(i1), con_l2(i1), con_l2(i1)/=i1
+     write(77,*) i1, F_m%row(i1), F_m%col(i1), con_l2(i1), con_l2(i1)/=i1
 enddo
 close(77)
 
 open (unit=77, file='inter.out.txt')  
-do i = 1, dmel
-    write(77,'(I9,10(2X,I9))') (ix(j,i), j = 1, dmnum) 
+do i = 1, numel
+    write(77,'(I9,10(2X,I9))') (ix(j,i), j = 1, nel) 
 enddo
 close(77)
 
 open(77, file = 'mesh.out.txt')
 do i = 1, numnp
-    write(77,'(F21.15,1X,F21.15,1X,F21.15)') (xc(j,i), j = 1, sdim) 
+    write(77,'(F21.15,1X,F21.15,1X,F21.15)') (xc(j,i), j = 1, ndm) 
 enddo
 close(77)
 
 
-!APS profile section
+! APS profile section
+! APS TEMP: this should be encapsulated into a subroutine
 prof_dim = 3
 prof_bin = 0.5d0
 nbin = nint((box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin) + 1
 
-write(6,*)box_hi(prof_dim)
-write(6,*)box_lo(prof_dim)
-write(6,*)(box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin
-write(6,*)(box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin
-write(6,*)(box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin
-write(6,*)nint((box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin)
-
 allocate(prof_1D_node(nbin))
 
-write(6,*)"Profile options"
-write(6,*)prof_dim, prof_bin, nbin
+!write(6,*)"Profile options"
+!write(6,*)prof_dim, prof_bin, nbin
 
 prof_1D_node=0
 do i = 1, numnp
@@ -338,13 +335,21 @@ enddo
 close(77)
 #endif
 
+!APS TODO: move this to a better place!!!
+print_ev = 3
+open (unit=120, file = 'header.out.txt')
+do k1 = 1, numnp, print_ev
+    write(120,'(E13.5)',advance='no') xc(3,k1)
+enddo
+close(120)
+
 return
 !--------------------------------------------------------------------!
 end subroutine  mesh_io_3d
 
 
 
-subroutine allocate_matrix(num, el)
+subroutine read_matrix_bounds(num, el)
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
@@ -355,7 +360,7 @@ read(12,*) el
 
 return
 !--------------------------------------------------------------------!
-end subroutine allocate_matrix
+end subroutine read_matrix_bounds
 
 
 

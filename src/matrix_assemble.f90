@@ -20,10 +20,10 @@ real(8), dimension(5,11)    :: sv
 i1=0
 
 !APS 230819. BUGFIX
-c_m%value=0.d0
-k_m%value=0.d0
-g_m%value=0.d0
-w_m%value=0.d0
+F_m%c=0.d0
+F_m%k=0.d0
+F_m%g=0.d0
+F_m%w=0.d0
 
 do nn = 1, numel
     !1. Loop over all nodes of current element
@@ -54,12 +54,12 @@ do nn = 1, numel
 
                 i1 = i1 + 1
 
-                c_m%value(i1) = c_m%value(i1) + shp(4,n)*shp(4,m)*xsj*sv(5,l)
+                F_m%c(i1) = F_m%c(i1) + shp(4,n)*shp(4,m)*xsj*sv(5,l)
 
-                k_m%value(i1) = k_m%value(i1) + &
+                F_m%k(i1) = F_m%k(i1) + &
                                (Rgyr**2.)*(shp(1,n)*shp(1,m)+shp(2,n)*shp(2,m)+shp(3,n)*shp(3,m))*xsj*sv(5,l)
 
-                w_m%value(i1) = w_m%value(i1) + &
+                F_m%w(i1) = F_m%w(i1) + &
                                 wa(n_1)*shp(4,n)*shp(4,m)*xsj*sv(5,l)
             enddo !n
         enddo !m
@@ -68,20 +68,20 @@ enddo !nn
 
 do i = 1, all_el
      if (con_l2(i)/=i) then
-         k_m%value(con_l2(i)) = k_m%value(con_l2(i)) + k_m%value(i)
-         k_m%value(i)=0.
-         c_m%value(con_l2(i)) = c_m%value(con_l2(i)) + c_m%value(i)
-         c_m%value(i)=0.
-         w_m%value(con_l2(i)) = w_m%value(con_l2(i)) + w_m%value(i)
-         w_m%value(i)=0.
+         F_m%k(con_l2(i)) = F_m%k(con_l2(i)) + F_m%k(i)
+         F_m%k(i)=0.
+         F_m%c(con_l2(i)) = F_m%c(con_l2(i)) + F_m%c(i)
+         F_m%c(i)=0.
+         F_m%w(con_l2(i)) = F_m%w(con_l2(i)) + F_m%w(i)
+         F_m%w(i)=0.
      endif
 enddo
 
 #ifdef DEBUG_OUTPUTS
 open(unit=400, file = 'matrix_assembly_kcw.out.txt')
-write(400,'(3(A20))')"k_m%value","c_m%value","w_m%value"
+write(400,'(3(A20))')"F_m%k","F_m%c","F_m%w"
 do i = 1, all_el
-    write(400,'(3(E20.9))')k_m%value(i), c_m%value(i), w_m%value(i)
+    write(400,'(3(E20.9))')F_m%k(i), F_m%c(i), F_m%w(i)
 enddo
 close(400)
 #endif

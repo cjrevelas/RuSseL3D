@@ -33,9 +33,9 @@ do i1 = 1,numnp
     qf_final(i1,1) = 1.d0
 enddo
 
-g_m%value  = c_m%value + ds*(k_m%value + w_m%value)
+F_m%g  = F_m%c + ds*(F_m%k + F_m%w)
 
-rh_m%value = c_m%value
+F_m%rh = F_m%c
 
 !************************BOUNDARY CONDITIONS************************!
 do j = 1, fcel
@@ -51,29 +51,43 @@ enddo
 
 set_diag_to_one=.true.
 
-do i1 = 1, all_el
-    f = g_m%col(i1)
-    i = g_m%row(i1)
-#if defined(MSYMDEFPOS) || defined(MSYMGEN)
-    if (i > f) then
-        g_m%value(i1) = 0.d0
-    endif
-    if (r_true(i).or.r_true(f)) then
-#else
-    if (r_true(i)) then
-#endif
-        g_m%value(i1) = 0.d0
-        if (i==f.and.set_diag_to_one(i)) then
-            g_m%value(i1) = 1.d0
-            set_diag_to_one(i)=.false.
+! In case the matrix is symmetric remove the zero the lines and rows
+! diagonal componets with Dirichlet BC q=0.
+if (mumps_matrix_type.eq.1.or.mumps_matrix_type.eq.2) then
+    do i1 = 1, all_el
+        f = F_m%col(i1)
+        i = F_m%row(i1)
+        if (i > f) then
+            F_m%g(i1) = 0.d0
         endif
-    endif
-enddo
+        if (r_true(i).or.r_true(f)) then
+            F_m%g(i1) = 0.d0
+            if (i==f.and.set_diag_to_one(i)) then
+                F_m%g(i1) = 1.d0
+                set_diag_to_one(i)=.false.
+            endif
+        endif
+    enddo
+endif
+
+if (mumps_matrix_type.eq.0) then
+    do i1 = 1, all_el
+        f = F_m%col(i1)
+        i = F_m%row(i1)
+        if (r_true(i)) then
+            F_m%g(i1) = 0.d0
+            if (i==f.and.set_diag_to_one(i)) then
+                F_m%g(i1) = 1.d0
+                set_diag_to_one(i)=.false.
+            endif
+        endif
+    enddo
+endif
 
 !***********************DETERMINE NON-ZERO ENTRIES*******************!
 NNZ = 0
 do i = 1, all_el
-    if (abs(g_m%value(i)) > tol) then
+    if (abs(F_m%g(i)) > tol) then
         NNZ = NNZ + 1
     endif
 enddo
@@ -84,12 +98,12 @@ allocate(A_m%row(NNZ))
 
 NNZ = 0
 do i = 1, all_el
-    if (abs(g_m%value(i)) > tol) then
+    if (abs(F_m%g(i)) > tol) then
         NNZ = NNZ + 1
 
-        A_m%value(NNZ) = g_m%value(i)
-        A_m%row(NNZ)   = g_m%row(i)
-        A_m%col(NNZ)   = g_m%col(i)
+        A_m%value(NNZ) = F_m%g(i)
+        A_m%row(NNZ)   = F_m%row(i)
+        A_m%col(NNZ)   = F_m%col(i)
     endif
 enddo
 
@@ -126,17 +140,17 @@ do time_step = 2, ns+1
     rdiag1 = 0.
 
     do i1 = 1, all_el
-        i = rh_m%row(i1)
-        j = rh_m%col(i1)
+        i = F_m%row(i1)
+        j = F_m%col(i1)
 
-        rdiag1(i) = rdiag1(i) + rh_m%value(i1)*qf(j,1)
+        rdiag1(i) = rdiag1(i) + F_m%rh(i1)*qf(j,1)
     enddo
 
     do i = 1, numnp
         if (r_true(i)) rdiag1(i) = 0.
     enddo
 
-    call mumps_sub(numnp)
+    call mumps_sub(numnp, mumps_matrix_type)
 
     do i1 = 1,numnp
          qf(i1,2) = rdiag1(i1)
