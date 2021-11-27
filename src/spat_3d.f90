@@ -1,7 +1,6 @@
 subroutine spat_3d(u_spat, sum_out, Q)
 !--------------------------------------------------------------------!
 use xdata
-use mdata
 use constants
 use error_handing
 !--------------------------------------------------------------------!
@@ -24,7 +23,6 @@ sum_out = 0.d00
 
 !Initialize accumulator for total domain volume
 vol = 0.d00
-
 
 do n = 1, numel
 
@@ -50,7 +48,6 @@ do n = 1, numel
     !Loop over all quadrature points in element
     do l = 1, lint
 
-        !call tetshp10(sv(1,l), xl, ndm, xsj, shp)
         call tetshp(sv(1,l), xl, ndm, nel, xsj, shp)
 
         xsj = xsj*sv(5,l)

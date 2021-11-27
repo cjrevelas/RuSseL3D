@@ -4,7 +4,6 @@ use xdata
 use constants
 use error_handing
 use write_helper
-use mdata
 use kcw
 #ifdef USE_MPI
 use mpistuff

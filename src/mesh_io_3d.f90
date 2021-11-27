@@ -7,7 +7,6 @@ use ints_module
 use error_handing
 use write_helper
 !/ fhash module
-use mdata
 use xdata
 use kcw
 !--------------------------------------------------------------------!
