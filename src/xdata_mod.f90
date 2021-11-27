@@ -10,12 +10,12 @@ integer :: ns, nx_1, np
 real(8) :: ds, chainlen
 
 !*******************************INDICES AND FLAGS*******************************!
-integer :: ior, iow, count
+integer :: iow, ioe, count
 integer :: iseed
 integer :: i1, j1, k1, k2, m1, m2, m3, id
 integer :: ii1, ii2, irow
 integer :: kk, iter, iterations
-integer :: show, code_name, lshow, pr_on
+integer :: readfield, code_name, lshow, pr_on
 
 !*************************************MESH**************************************!
 integer :: nel, ndm, numnp, numel
@@ -37,9 +37,14 @@ real(8) :: exact
 real(8) :: max_error, error, fraction, mix_coef_frac, mix_coef_kapa
 integer :: scheme_type
 
+!*********************************MUMPS OPTIONS*********************************!
+integer :: mumps_matrix_type
 
 !*****************************SIMPSON COEFFICIENTS******************************!
 real(8), dimension(1:maxns) :: koeff
+
+!*****************************PERIODIC PROFILES*********************************!
+integer :: print_ev
 
 !*****************************AUXILIARY VARIABLES*******************************!
 real(8) :: start, D, t1, t2, t3, t4, t5, t6

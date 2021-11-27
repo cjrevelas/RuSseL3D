@@ -4,6 +4,7 @@ subroutine mesh_io_3d
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
+use error_handing
 !/ fhash module
 use mdata
 use xdata
@@ -394,6 +395,7 @@ end subroutine read_integer
 
 subroutine entity(el, endity)
 !--------------------------------------------------------------------!
+use error_handing
 implicit none
 !--------------------------------------------------------------------!
 integer :: el, equal, i!, num
@@ -414,7 +416,8 @@ if (equal.eq.el) then
 #endif
     enddo
 else
-    write(6,*) "Error in entity"
+    ERROR_MESSAGE='Error in entity..'
+    call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
 return

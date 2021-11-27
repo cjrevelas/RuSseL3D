@@ -3,6 +3,7 @@ subroutine spat_3d(u_spat, sum_out, Q)
 use xdata
 use mdata
 use constants
+use error_handing
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
@@ -74,13 +75,12 @@ enddo !n
 
 Q = sum_out/vol
 
-write(iow,'('' SUM '',E16.9,'' volume '',E16.9,'' mean value  of solution '',E16.9)') sum_out, vol, Q
+!write(iow,'('' SUM '',E16.9,'' volume '',E16.9,'' mean value  of solution '',E16.9)') sum_out, vol, Q
 !write(*,'('' SUM '',E16.9,'' volume '',E16.9,'' mean value  of solution '',E16.9)') sum_out, vol, Q
 
 if (dabs(vol - volume) > 1e-6) then
-    write(iow,*)"Warning! Spat volume is different than mesh volume!"
-    write(iow,*)vol, volume
-!    STOP
+    write(ERROR_MESSAGE,'(''Warning! Spat volume ('',E16.9,'') is different than mesh volume ('',E16.9,'')'')')vol, volume
+    call exit_with_error(0,2,0,ERROR_MESSAGE)
 endif
 
 

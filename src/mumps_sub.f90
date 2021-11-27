@@ -1,7 +1,8 @@
-subroutine mumps_sub(numnp)
+subroutine mumps_sub(numnp, mumps_matrix_type)
 !This file is part of MUMPS 5.2.1, released on Fri Jun 14 14:46:05 UTC2019
 !--------------------------------------------------------------------------!
 use kcw
+use error_handing
 #ifdef USEMPI
 use mpistuff
 #endif
@@ -13,8 +14,7 @@ include 'dmumps_struc.h'
 !--------------------------------------------------------------------------!
 type(DMUMPS_STRUC) :: mumps_par
 
-integer :: i, i8, i9, numnp
-
+integer :: i, i8, i9, numnp, mumps_matrix_type
 !--------------------------------------------------------------------------!
 
 !Define a communicator for the package
@@ -22,19 +22,19 @@ mumps_par%COMM = MPI_COMM_WORLD
 
 !Initialize an instance of the package for LU-factorization
 mumps_par%PAR  = 1  !working host processor
-
 !Set the type of the matrix
-#if defined(MSYMGEN)
-mumps_par%SYM  = 2
-mumps_par%CNTL(1) = 0
-#endif
-#if defined(MSYMDEFPOS)
-mumps_par%SYM  = 1
-mumps_par%ICNTL(13) = 0
-#endif
-#if !defined(MSYMGEN) && !defined(MSYMDEFPOS)
-mumps_par%SYM  = 0
-#endif
+if (mumps_matrix_type.eq.0) then
+    mumps_par%SYM  = 0
+elseif (mumps_matrix_type.eq.1) then
+    mumps_par%SYM  = 1
+    mumps_par%ICNTL(13) = 0
+elseif (mumps_matrix_type.eq.2) then
+    mumps_par%SYM  = 2
+    mumps_par%CNTL(1) = 0
+else
+    ERROR_MESSAGE="MUMPS SUBROUTINE: mumps_matrix_type not between 0-2."
+    call exit_with_error(1,2,1,ERROR_MESSAGE)
+endif
 
 mumps_par%JOB  = -1
 
