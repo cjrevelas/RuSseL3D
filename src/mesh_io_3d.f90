@@ -5,6 +5,7 @@ use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use error_handing
+use write_helper
 !/ fhash module
 use mdata
 use xdata
@@ -13,7 +14,7 @@ use kcw
 implicit none
 !--------------------------------------------------------------------!    
 character(len=15) :: dummy
-character(len=13) :: filename
+character(len=13) :: mesh_filename
 
 integer :: idummy
 integer :: i, j
@@ -44,11 +45,19 @@ logical :: success
 
 !/ fhash module
 !--------------------------------------------------------------------!
-filename = 'Fem_3D.mphtxt'
+mesh_filename = 'Fem_3D.mphtxt'
 
-write(iow,'(/''Reading mesh from file:    '',A13)') filename
+write(iow,'(/A42,A15)')adjl('*Reading mesh from file:',42),mesh_filename
+write(6  ,'(/A42,A15)')adjl('*Reading mesh from file:',42),mesh_filename
 
-open(unit=12, file=filename)
+INQUIRE(FILE=mesh_filename, EXIST=FILE_EXISTS)
+
+if (FILE_EXISTS) then
+    open(unit=12, file=mesh_filename)
+else
+    write(ERROR_MESSAGE,'(''File '',A15,'' does not exist!'')')mesh_filename
+    call exit_with_error(1,1,1,ERROR_MESSAGE)
+endif
 
 do i = 1, 17
     read(12,'(A60)') dummy
@@ -81,14 +90,18 @@ do i = 1, numnp
 enddo
 
 write(iow,'(/''Box dimensions..'')')
-write(iow,'(A4,3(A17))') 'dim','length','min','max'
+write(iow,'(A5,2x,3(A16,2x))') 'dim','length','min','max'
+write(6  ,'(/''Box dimensions..'')')
+write(6  ,'(A5,2x,3(A16,2x))') 'dim','length','min','max'
 do j = 1, ndm
     box_len(j) = box_hi(j) - box_lo(j)
-    write(iow,'(I4,3E17.9)')j, box_len(j), box_lo(j), box_hi(j)
+    write(iow,'(I5,2x,3(E16.9,2x))')j, box_len(j), box_lo(j), box_hi(j)
+    write(6  ,'(I5,2x,3(E16.9,2x))')j, box_len(j), box_lo(j), box_hi(j)
 enddo
 
 volume = box_len(1)*box_len(2)*box_len(3)
-write(iow,'(/''System volume:                         '',E16.9,'' Angstrom^3'')') volume
+write(iow,'(/A43,E16.9,A11)')adjl('System volume:',43),volume,' Angstrom^3'
+write(6  ,'(/A43,E16.9,A11)')adjl('System volume:',43),volume,' Angstrom^3'
 
 !*******************************************************************!
 !                       Deal with the elements                      !
@@ -224,6 +237,10 @@ endif
 
 all_el = nel * nel * numel
 
+!*******************************************************************!
+!                  Allocate and initialize the arrays               !
+!*******************************************************************!
+
 allocate(F_m%row(all_el))
 allocate(F_m%col(all_el))
 allocate(F_m%g(all_el))
@@ -232,11 +249,38 @@ allocate(F_m%c(all_el))
 allocate(F_m%k(all_el))
 allocate(F_m%w(all_el))
 
-allocate(con_l2(all_el))
-
 F_m%g = 0.d0
+F_m%k = 0.d0
+F_m%c = 0.d0
+F_m%rh = 0.d0
+F_m%row = 0
+F_m%col = 0
 
-! APS 17/08/19: ADD. fhash module
+allocate(con_l2(all_el))
+con_l2 = 0
+allocate(wa(numnp))
+allocate(wa_new(numnp))
+allocate(wa_mix(numnp))
+allocate(Ufield(numnp))
+allocate(rdiag1(numnp))
+allocate(qf(numnp,2))
+allocate(qf_final(numnp,ns+1))
+allocate(phia_new(numnp))
+allocate(phi(numnp))
+
+wa = 0.d0
+wa_new = 0.d0
+wa_mix = 0.d0
+Ufield = 0.d0
+rdiag1 = 0.d0
+qf = 0.d0
+qf_final = 0.d0
+phia_new = 0.d0
+phi = 0.d0
+
+!*******************************************************************!
+!                   construct the con_12 matrix                     !
+!*******************************************************************!
 
 allocate(key%ints(2))
 n_keys = nel * numel
@@ -265,30 +309,29 @@ do m1 = 1, numel
 end do
 call h%clear()
 
-F_m%g = 0.
-F_m%k = 0.
-F_m%c = 0.
+!*******************************************************************!
+!          Find all elements belonging to dirichlet q=0 faces       !
+!*******************************************************************!
+allocate(elem_in_q0_face(numnp))
+elem_in_q0_face = .false.
 
-allocate(wa(numnp),wa_new(numnp),wa_mix(numnp),Ufield(numnp),rdiag1(numnp))
-allocate(qf(numnp,2),qf_final(numnp,ns+1))
-allocate(phia_new(numnp),phi(numnp))
-wa = 0.d0
-wa_new = 0.d0
-wa_mix = 0.d0
-Ufield = 0.d0
-qf = 0.d0
-qf_final = 0.d0
-phia_new = 0.d0
-phi = 0.d0
+write(iow,'(/A54)')'* Find all elements belonging to dirichlet q=0 faces..'
+write(6  ,'(/A54)')'* Find all elements belonging to dirichlet q=0 faces..'
 
+do j = 1, fcel
+    do i1 = 1, n_dirichlet_faces
+        if (fcentity(j)==ids_dirichlet_faces(i1))then
+            do i = 1, fcnum
+                idummy= fcelement(i,j)
+                elem_in_q0_face(idummy) = .True.
+            enddo
+        endif
+    enddo
+enddo
 
-write(iow,'(/''Mesh characteristics..'')')
-write(iow,'(''Number of mesh points (numnp):         '',I16)')numnp
-write(iow,'(''Number of elements (numel):            '',I16)')numel
-write(iow,'(''Number of nodes per element (nel):     '',I16)')nel
-write(iow,'(''Number of matrix indeces:              '',I16)')all_el
-
-
+!*******************************************************************!
+!                          DEBUG SECTION                            !
+!*******************************************************************!
 #ifdef DEBUG_OUTPUTS
 close(13)
 
@@ -313,6 +356,7 @@ close(77)
 
 ! APS profile section
 ! APS TEMP: this should be encapsulated into a subroutine
+! APS: DO NOT PANIC
 prof_dim = 3
 prof_bin = 0.5d0
 nbin = nint((box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin) + 1

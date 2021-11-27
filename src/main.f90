@@ -2,6 +2,8 @@ Program FEM_3D
 !-------------------------------------------------------------------!
 use xdata
 use constants
+use error_handing
+use write_helper
 use mdata
 use kcw
 #ifdef USE_MPI
@@ -87,15 +89,30 @@ do k1 = 1, numnp
     distance   = xc(1,k1)
     Ufield(k1) = surf_pot(distance)
     write(211,('(E16.9,2X,E19.9)')) distance, Ufield(k1)
+    if (Ufield(k1).ne.Ufield(k1)) then
+        Ufield(k1) = 0.d0
+        write(ERROR_MESSAGE,'(''Hamaker assumed a NaN value for x = '',E16.9,''. NaN was changed to '',E16.9)') distance, Ufield(k1)
+        call exit_with_error(0,2,0,ERROR_MESSAGE)
+    endif
 enddo
 close(211)
 
 zero_field = .true.
 if (readfield.eq.1) then
-    write(*,*)"Field will be read from a file!"
-    open(unit=21, file = 'field.in.bin', Form='unformatted')
-    read(21) wa
-    close(21)
+    write(iow,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_filename
+    write(6  ,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_filename
+
+    INQUIRE(FILE=field_filename, EXIST=FILE_EXISTS)
+
+    if (FILE_EXISTS) then
+        open(unit=655, file = field_filename, Form='unformatted')
+    else
+        write(ERROR_MESSAGE,'(''File '',A15,'' does not exist!'')')field_filename
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+
+    read(655) wa
+    close(655)
 #ifdef REDUCE_W_CHLEN
     do k1 = 1, numnp
         wa(k1) = wa(k1) * chainlen

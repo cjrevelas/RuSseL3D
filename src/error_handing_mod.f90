@@ -2,11 +2,11 @@ module error_handing
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-
-CHARACTER(100) :: ERROR_MESSAGE
+character(100) :: ERROR_MESSAGE
 integer :: ERROR_TYPE
-
-Contains
+logical :: FILE_EXISTS
+!--------------------------------------------------------------------!
+contains
 
 subroutine exit_with_error(STOP_SIGNAL, ERROR_TYPE, SCREEN, ERROR_MESSAGE)
     character(100) :: ERROR_MESSAGE
@@ -33,12 +33,12 @@ subroutine exit_with_error(STOP_SIGNAL, ERROR_TYPE, SCREEN, ERROR_MESSAGE)
             write(*,'(A12)',advance='no')'RUN ERROR:'
         endif
         write(*,*)ERROR_MESSAGE
-        write(*,*)' Exiting..'
     endif
 
     close(ioe)
 
     if (STOP_SIGNAL.eq.1) then
+        write(*,*)' Exiting..'
         STOP
     endif
 end subroutine
