@@ -125,7 +125,7 @@ deallocate(A_full)
 
 
 !************************START TRANSIENT SOLUTION*********************! 
-write(6,'(A11)' ,advance='no') 'time_step = '
+
 do time_step = 2, ns+1
 
 #ifdef USE_MPI
@@ -133,7 +133,11 @@ do time_step = 2, ns+1
     call MPI_BCAST(.true., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
 
-    write(6,'(I3,A2)', advance='no') time_step, ", "
+    if (ns.ge.10.and.mod(time_step+1,ns/10).eq.0) then
+        write(6,'(I3,1x)',advance='no') nint((time_step-2.d0)/ns*100.d0)
+    elseif (ns.lt.10.and.mod(time_step+1,1).eq.0) then
+        write(6,'(I3,1x)',advance='no') nint((time_step-2.d0)/ns*100.d0)
+    endif
     !*******************************************************************!
     !                   FINITE ELEMENT METHOD                           !
     !*******************************************************************!
@@ -163,7 +167,8 @@ do time_step = 2, ns+1
     enddo
 
 enddo !time_step
-write(6,*)
+
+write(6,'(1x,I3)') 100
 
 return
 !----------------------------------------------------------------------------------------------------------!	
