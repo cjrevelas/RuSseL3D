@@ -29,13 +29,15 @@ logical :: log_sphere_radius = .false.
 logical :: log_sigma_polymer = .false.
 logical :: log_sigma_solid = .false.
 logical :: log_read_field = .false.
+logical :: log_set_initial_iteration = .true.
 logical :: log_mix_coef_fraction = .false.
 logical :: log_mix_coef_kapa = .false.
 logical :: log_n_dirichlet_faces = .false.
 logical :: log_profile_dimension = .false.
 logical :: log_convergence_scheme = .false.
 logical :: log_mumps_matrix_type = .false.
-
+logical :: log_time_integration_scheme = .false.
+logical :: log_output_every = .false.
 !*******************************************************************!
 !                    Read the input parameter file                  !
 !*******************************************************************!
@@ -67,6 +69,9 @@ do
         elseif (index(line,'# timestep') > 0) then
             read(line,'(I6)') ns
             log_timestep = .true.
+        elseif (index(line,'# output every') > 0) then
+            read(line,'(I6)') output_every
+            log_output_every = .true.
         elseif (index(line,'# chain length') > 0) then
             read(line,'(E16.9)') chainlen
             log_chain_length = .true.
@@ -112,6 +117,9 @@ do
         elseif (index(line,'# read field') > 0) then
             read(line,'(I10)') readfield
             log_read_field= .true.
+        elseif (index(line,'# set initial iteration') > 0) then
+            read(line,'(I10)') init_iter
+            log_set_initial_iteration= .true.
         elseif (index(line,'# mix coef fraction') > 0) then
             read(line,'(F16.9)') mix_coef_frac
             log_mix_coef_fraction = .true.
@@ -124,6 +132,9 @@ do
         elseif (index(line,'# mumps matrix type') > 0) then
             read(line,'(I10)') mumps_matrix_type
             log_mumps_matrix_type = .true.
+        elseif (index(line,'# time integration scheme') > 0) then
+            read(line,'(I10)') time_integration_scheme
+            log_time_integration_scheme = .true.
         elseif (index(line,'# n dirichlet faces') > 0) then
             read(line,'(I10)') n_dirichlet_faces
             allocate(ids_dirichlet_faces(n_dirichlet_faces))
@@ -144,6 +155,20 @@ close(256)
 !*******************************************************************!
 !              Check the inputs of the  parameter file              !
 !*******************************************************************!
+
+if (log_output_every) then
+    if (output_every.ge.1) then
+        write(iow,'(3x,A40,1x,I16)')adjl('Data is dumped every (steps):',40),output_every
+        write(6  ,'(3x,A40,1x,I16)')adjl('Data is dumped every (steps):',40),output_every
+    else
+        output_every = 1
+        write(iow,'(3x,A40,1x,I16)')adjl('Data is dumped every (steps):',40),output_every
+        write(6  ,'(3x,A40,1x,I16)')adjl('Data is dumped every (steps):',40),output_every
+    endif
+else
+    output_every = 1
+endif
+
 
 if (log_domain_geometry) then
     if (iseed.eq.0) then
@@ -423,11 +448,11 @@ else
 endif
 
 if (log_convergence_scheme) then
-    if (scheme_type.eq.1 .or. scheme_type.eq.2) then
+    if (scheme_type.eq.1 .or. scheme_type.eq.2 .or. scheme_type.eq.3 .or. scheme_type.eq.4) then
         write(iow,'(3x,A40,I16)')adjl('Convergence scheme chosen:',40), scheme_type
         write(6  ,'(3x,A40,I16)')adjl('Convergence scheme chosen:',40), scheme_type
     else
-        write(ERROR_MESSAGE,'(''Convergence scheme does not exist! Please choose a value between 1 and 2'',I10)') scheme_type
+        write(ERROR_MESSAGE,'(''Convergence scheme does not exist! Please choose a value between 1, 2, 3 and 4'',I10)') scheme_type
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
@@ -461,6 +486,41 @@ else
     write(6  ,'(3x,A40,I10)')adjl('---It was set to the nonsymmetric:',40),mumps_matrix_type
 endif
 
+if (log_time_integration_scheme) then
+    if ( time_integration_scheme.eq.1) then
+        write(iow,'(3x,A40,I16)')adjl('Time integration with Simpson Rule:',40),time_integration_scheme
+        write(6  ,'(3x,A40,I16)')adjl('Time integration with Simpson Rule:',40),time_integration_scheme
+    elseif ( time_integration_scheme.eq.2) then
+        write(iow,'(3x,A40,I16)')adjl('Time integration with quad var step:',40),time_integration_scheme
+        write(6  ,'(3x,A40,I16)')adjl('Time integration with quad var step:',40),time_integration_scheme
+    else
+        write(ERROR_MESSAGE,'(''Time integration scheme does not exist:'',I16)') time_integration_scheme
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    time_integration_scheme = 1
+    write(iow,'(3x,A40)')adjl('Time integration scheme not found..',40)
+    write(iow,'(3x,A40,I16)')adjl('---Integration with Simpson Rule:',40),time_integration_scheme
+    write(6  ,'(3x,A40)')adjl('Time integration scheme not found..',40)
+    write(6  ,'(3x,A40,I16)')adjl('---Integration with Simpson Rule:',40),time_integration_scheme
+endif
+
+if (log_set_initial_iteration) then
+    if (init_iter.lt.0) then
+        write(ERROR_MESSAGE,'(''Wrong value of initial iteration..'',I16)') init_iter
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    init_iter = 0
+endif
+if (init_iter.eq.0) then
+    write(iow,'(3x,A40,I16)')adjl('*Fresh simulation starting from iter:',40), init_iter
+    write(6  ,'(3x,A40,I16)')adjl('*Fresh simulation starting from iter:',40), init_iter
+elseif (init_iter.gt.0) then
+    write(iow,'(3x,A40,I16)')adjl('*Simulation restarting from iter:',40), init_iter
+    write(6  ,'(3x,A40,I16)')adjl('*Simulation restarting from iter:',40), init_iter
+endif
+
 if (log_read_field.and.readfield==1) then
     write(iow,'(A43,A15)')adjl('*Field will be read from file:',40),field_filename
     write(6  ,'(A43,A15)')adjl('*Field will be read from file:',40),field_filename
@@ -469,6 +529,7 @@ if (.not.log_read_field.or.readfield.ne.1) then
     write(iow,'(/A40)')adjl('*Field will be initialized to zero..',40)
     write(6  ,'(/A40)')adjl('*Field will be initialized to zero..',40)
 endif
+
 !*******************************************************************!
 !                Initialize some useful quantinties                 !
 !*******************************************************************!
@@ -479,9 +540,11 @@ Asio2 = Asio2*1.e-20
 
 write(iow,'(/''*Initialization of usefull quantities..'')')
 write(6  ,'(/''*Initialization of usefull quantities..'')')
-ds = 1.d0/dble(ns)
-write(iow,'(3x,A40,E16.9)')adjl('ds:',40),ds
-write(6  ,'(3x,A40,E16.9)')adjl('ds:',40),ds
+
+!ds_ave = 1.d0/dble(ns)
+ds_ave = 1.d0/dble(ns)
+write(iow,'(3x,A40,E16.9)')adjl('ds_ave = 1 / ns:',40),ds_ave
+write(6  ,'(3x,A40,E16.9)')adjl('ds_ave = 1 / ns:',40),ds_ave
 
 ! Calculate the radius of gyration
 Rgyr = 1.54d00 * dsqrt(CN * (chainlen)/6.d00)

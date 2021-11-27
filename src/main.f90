@@ -15,9 +15,11 @@ include 'mpif.h'
 #endif
 !-------------------------------------------------------------------!
 real(8) :: surf_pot
-real(8) :: wa_max
-logical :: zero_field
-character(12) :: field_filename = 'field.in.bin'
+real(8) :: wa_max, wa_max_abs
+character(12) :: field_in_filename = 'field_in.bin'
+character(40) :: field_filename_aux = ''
+integer :: n_outside
+real(8) :: mix_tol, wa_step, wa_ave
 !*******************************************************************!
 !                           MPI SECTION                             !
 !*******************************************************************!
@@ -158,46 +160,81 @@ do k1 = 1, numnp
 enddo
 close(211)
 
-zero_field = .true.
+!*******************************************************************!
+!                             READ FIELD                            !
+!*******************************************************************!
 if (readfield.eq.1) then
-    write(iow,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_filename
-    write(6  ,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_filename
+    write(iow,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_in_filename
+    write(6  ,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_in_filename
 
-    INQUIRE(FILE=field_filename, EXIST=FILE_EXISTS)
+    INQUIRE(FILE=field_in_filename, EXIST=FILE_EXISTS)
 
     if (FILE_EXISTS) then
-        open(unit=655, file = field_filename, Form='unformatted')
+        open(unit=655, file = field_in_filename, Form='unformatted')
     else
-        write(ERROR_MESSAGE,'(''File '',A15,'' does not exist!'')')field_filename
+        write(ERROR_MESSAGE,'(''File '',A15,'' does not exist!'')')field_in_filename
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
     read(655) wa
     close(655)
-#ifdef REDUCE_W_CHLEN
+
+    ! multiply field with chain length since it is divided with chain length right
+    ! before it is printed
     do k1 = 1, numnp
         wa(k1) = wa(k1) * chainlen
     enddo
-#endif
-    zero_field = .false.
+else
+    if (scheme_type.eq.2) then
+        do k1 = 1, numnp
+            if (elem_in_q0_face(k1)) then
+                wa(k1) = -kapa
+            else
+                wa(k1) = 0.d0
+            endif
+        enddo
+    else
+        wa = 0.d0
+    endif
 endif
+
+! Initialize the files in case this is not a restart
+if (init_iter.eq.0) then
+    open(unit=121, file = 'wa.out.txt', status='replace')
+    close(121)
+    open(unit=121, file = 'wa_new.out.txt', status='replace')
+    close(121)
+    open(unit=121, file = 'wa_mix.out.txt', status='replace')
+    close(121)
+    open(unit=121, file = 'rho.out.txt', status='replace')
+    close(121)
+endif
+
 !*******************************************************************!
 !                       LOOPS FOR SOLUTION                          !
 !*******************************************************************!
 write(iow,'(/''*Initiating the simulation with '',I10,'' iterations'',/)') iterations
 write(6  ,'(/''*Initiating the simulation with '',I10,'' iterations'',/)') iterations
 
-write(iow,'(A10,1x,5(A16,1X),A16)') 'iter', 'adh_ten', 'max_error', 'std_error', 'wa_max', 'fraction'
-write(6  ,'(A4, 1x,5(A11,1X),A12)') 'iter', 'adh_ten', 'max_error', 'std_error', 'wa_max', 'fraction', 'progress (%)'
+write(iow,'(A10,1x,8(A19,1X),A16)') 'iter', 'adh_ten', 'max_error', 'std_error', 'wa_max', 'wa_max_abs', 'wa_ave', 'wa_step', &
+    &                               'fraction'
+write(6  ,'(A4, 1x,8(A14,1X),A12)') 'iter', 'adh_ten', 'max_error', 'std_error', 'wa_max', 'wa_max_abs', 'wa_ave', 'wa_step', &
+    &                               'fraction', 'progress (%)'
 
-iter=0
+iter=init_iter
 max_error=200000.
 
 do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     iter=iter+1
 
-    write(iow,'(I10,1X,5(E16.9,1X))')              iter-1, adh_ten, max_error, std_error, wa_max, fraction
-    write(6  ,'(I4 ,1X,5(E11.4,1X))',advance='no') iter-1, adh_ten, max_error, std_error, wa_max, fraction
+    write(iow,'(I10,1X,8(E19.9e3,1X))')              iter-1, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
+   &                                                 wa_step, fraction
+    write(6  ,'(I4 ,1X,8(E14.4e3,1X))',advance='no') iter-1, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
+   &                                                 wa_step, fraction
+
+    ! Flush the output
+    close(iow)
+    open(unit=iow, file = 'scft.out.txt', position = 'append')
 
     call matrix_assemble
 
@@ -218,81 +255,95 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !*******************************************************************!
     !   COMPUTE DIFFERENCES BETWEEN OLD (wa) AND NEW (wa_new) fields    !
     !*******************************************************************!
-    max_error = 0.d00
-    do k1 = 1, numnp
-        max_error = max(max_error, dabs(wa_new(k1) - wa(k1)))
-    enddo
 
+    !APS TEMP set field min equal to -kapa
+    wa_ave = 0.d0
+    max_error = 0.d00
     std_error = 0.d00
+    wa_max=0.d0
+    wa_max_abs=0.d0
     do k1 = 1, numnp
+        wa_ave = wa_ave + wa_new(k1)
+        max_error = max(max_error, dabs(wa_new(k1) - wa(k1)))
         std_error = std_error + (wa_new(k1) - wa(k1))**2
+        wa_max = max(wa_max, wa_new(k1))
+        wa_max_abs = max(wa_max_abs, dabs(wa_new(k1)))
     enddo
     std_error = SQRT(std_error / float((numnp - 1)))
-
-    wa_max=0.d0
-    do k1 = 1, numnp
-        wa_max = max(wa_max, dabs(wa_new(k1)))
-    enddo
-
+    wa_ave = wa_ave / numnp
     !*******************************************************************!
     !                         APPLY MIXING RULE                         !
     !*******************************************************************!
 
-    !   original convergence scheme
+    !   original convergence scheme 1: tolis
     if (scheme_type.eq.1) then
-        if (.not.zero_field) then
-            fraction = min(fraction * mix_coef_frac, 1.d0 / kapa / mix_coef_kapa)
-        endif
-        if (zero_field.and.iter.eq.1) then
+        if (iter.eq.1) then
             fraction = 1.d0
+        else if (iter.eq.2) then
+            fraction = 1.d0 / (wa_max_abs * 10.d0)
+        else
+            fraction = min(fraction * mix_coef_frac, mix_coef_kapa)
         endif
-        if (zero_field.and.iter.eq.2) then
-            fraction = 1.d0 / (wa_max * 100.d0)
-            zero_field = .false.
-        endif
+
+        ! Mixing the fields..
+        do k1 = 1, numnp
+            wa_mix(k1) = (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
+        enddo
     endif
 
-    ! experimental scheme
+    ! experimental convergence scheme 2: 1/wa_max
     if (scheme_type.eq.2) then
-        fraction = min(1.d0 / wa_max / mix_coef_frac, 1.d0 / kapa / mix_coef_kapa)
+        mix_tol = 0.1d0  * kapa
+        fraction = 0.005d0
+        wa_step = 4.d0 *exp(-dble(iter)/10.d0)
 
-        if (zero_field) then
-            fraction = 1.d0
-            zero_field = .false.
-        endif
+        n_outside = 0
+        do k1 = 1, numnp
+            if (dabs(wa_new(k1)-wa(k1)) > mix_tol.and.iter.le.60) then
+                n_outside = n_outside + 1
+
+                if (wa_new(k1).gt.wa(k1)) then
+                    wa_mix(k1) = wa(k1) + wa_step*rand()
+                else if (wa_new(k1).lt.wa(k1)) then
+                    wa_mix(k1) = wa(k1) - wa_step*rand()
+                endif
+            else
+                wa_mix(k1) = (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
+            endif
+        enddo
+
+!        do k1 = 1, numnp
+!            if (elem_in_q0_face(k1)) then
+!                wa(k1) = -kapa
+!            endif
+!        enddo
     endif
 
-    do k1 = 1, numnp
-        wa_mix(k1) = (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
-    enddo
+    ! experimental convergence scheme 3: 1/wa_max_abs
+    if (scheme_type.eq.3) then
+        ! Fraction remains constant throughout the simulation
+        fraction = fraction
+        ! Mixing the fields..
+        do k1 = 1, numnp
+            wa_mix(k1) = (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
+        enddo
+    endif
 
     !*******************************************************************!
     !                        PERIODIC PROFILER                          !
     !*******************************************************************!
 
-    ! Initialize the files in case this is not a restart
-    if (zero_field) then
-        open(unit=121, file = 'wa.out.txt', status='replace')
-        close(121)
-        open(unit=121, file = 'wa_new.out.txt', status='replace')
-        close(121)
-        open(unit=121, file = 'wa_mix.out.txt', status='replace')
-        close(121)
-        open(unit=121, file = 'rho.out.txt', status='replace')
-        close(121)
-    endif
-
     ! Output the data every so many steps
-    if (mod(iter,1).eq.0) then
+    if (mod(iter,output_every).eq.0) then
         open (unit=121, file = 'wa.out.txt', status='unknown', position='append')
         open (unit=122, file = 'wa_new.out.txt', status='unknown', position='append')
         open (unit=123, file = 'wa_mix.out.txt', status='unknown', position='append')
         open (unit=124, file = 'rho.out.txt', status='unknown', position='append')
         do k1 = 1, numnp, print_ev
-            write(121,'(E13.5)',advance='no') wa(k1)
-            write(122,'(E13.5)',advance='no') wa_new(k1)
-            write(123,'(E13.5)',advance='no') wa_mix(k1)
-            write(124,'(E13.5)',advance='no') phia_new(k1)
+            write(121,'(E19.9e3)',advance='no') wa(k1)
+            write(122,'(E19.9e3)',advance='no') wa_new(k1)
+            write(123,'(E19.9e3)',advance='no') wa_mix(k1)
+            write(124,'(E19.9e3)',advance='no') phia_new(k1)
         enddo
         write(121,*)
         write(122,*)
@@ -306,7 +357,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         open (unit=120, file = 'rho_reduced.out.txt')
         write(120,'(8(A13))') 'np','x','y','z','phi','wa','wa_new','wa_mix'
         do k1 = 1, numnp
-            write(120,'(I13,7(E13.5))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_new(k1), &
+            write(120,'(I13,7(E19.9e3))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_new(k1), &
    &                                    wa(k1), wa_new(k1), wa_mix(k1)
         enddo
         close(120)
@@ -320,24 +371,39 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !*******************************************************************!
     !               EXPORT FIELD TO BINARY FILE FOR RESTART             !
     !*******************************************************************!
-#ifdef REDUCE_W_CHLEN
-    do k1 = 1, numnp
-        wa_mix(k1) = wa_mix(k1) / chainlen
-    enddo
-#endif
-    open(unit=655, file = 'field.out.bin', Form='unformatted')
-    write(655) wa_mix
-    close(655)
 
-    ! Flush the output
-    close(iow)
-    open(unit=iow, file = 'scft.out.txt', position = 'append')
+    if (mod(iter,output_every).eq.0) then
+        ! Normalize the field by dividing it with chain length
+        do k1 = 1, numnp
+            wa_mix(k1) = wa_mix(k1) / chainlen
+        enddo
 
+        field_filename_aux = ""
+        write(field_filename_aux,'(''field_'',I3.3,''.out.bin'')')iter
+        open(unit=655, file = field_filename_aux, Form='unformatted')
+        write(655) wa_mix
+        close(655)
+
+        field_filename_aux = ""
+        write(field_filename_aux,'(''field_comsol_'',I3.3,''.out.txt'')')iter
+        open(unit=123, file = field_filename_aux)
+
+        do k1 = 1, numnp
+            write(123,'(E16.9,2(2X,E16.9),(2X,E19.9e3))') xc(1,k1), xc(2,k1), xc(3,k1), -wa_mix(k1)
+        enddo
+
+        close(123)
+    endif
 enddo!iter
 
 
-write(iow,'(I10,1X,5(E16.9,1X))') iter, adh_ten, max_error, std_error, wa_max, fraction
-write(6  ,'(I4 ,1X,5(E11.4,1X))',advance='no') iter, adh_ten, max_error, std_error, wa_max, fraction
+write(iow,'(I10,1X,8(E19.9e3,1X))')              iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
+   &                                                 wa_step, fraction
+write(6  ,'(I4 ,1X,8(E14.4e3,1X))',advance='no') iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
+   &                                                 wa_step, fraction
+
+!write(iow,'(I10,1X,6(E19.9e3,1X))')              iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, fraction
+!write(6  ,'(I4 ,1X,6(E14.4e3,1X))',advance='no') iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, fraction
 
 if (max_error.lt.max_error_tol) then
     write(iow,'(/''Convergence of max error'',F16.9)') max_error
