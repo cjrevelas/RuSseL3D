@@ -1,13 +1,15 @@
-subroutine qprint
+subroutine qprint(q_final)
 !--------------------------------------------------------------------!
 use xdata
 use constants
-!--------------------------------------------------------------------!   
+!--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-integer :: time_step
-real(8) :: iqf_final
-!--------------------------------------------------------------------!	
+integer :: time_step, i1, ii2
+
+real(8), intent(in), dimension(numnp,ns+1) :: q_final
+real(8)                                    :: iq_final
+!--------------------------------------------------------------------!
 
 open(unit=363, file = 'qfree.out.txt')
 do i1 = 1, numnp
@@ -15,11 +17,11 @@ do i1 = 1, numnp
         write(363,'(E20.9)',advance='no') xc(ii2,i1)
     enddo
     do time_step = 1, ns+1
-        iqf_final = qf_final(i1,time_step)
-        if (dabs(iqf_final)<tol) then
-            iqf_final = 0.d0
+        iq_final = q_final(i1,time_step)
+        if (dabs(iq_final)<tol) then
+            iq_final = 0.d0
         endif
-        write(363,'(E20.9)',advance='no') iqf_final
+        write(363,'(E20.9)',advance='no') iq_final
     enddo
     write(363,*)
 enddo

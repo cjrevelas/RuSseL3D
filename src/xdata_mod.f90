@@ -2,43 +2,39 @@ module xdata
 !-------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------!
-!*********************************DISCRETIZATION********************************!
-integer :: ns, nx_1, np
-integer :: time_integration_scheme
-real(8) :: chainlen
-! APS TEMP
-real(8) :: ds_ave
+!****************************TIME DISCRETIZATION********************************!
+integer :: ns, time_integration_scheme
+real(8)                            :: chainlen
+real(8)                            :: ds_ave
 real(8), allocatable, dimension(:) :: ds, xs, koeff
 
 !*******************************INDICES AND FLAGS*******************************!
-integer :: iow, ioe, count
-integer :: iseed
-integer :: i1, j1, m1, m2, m3, id                    !CJR: removed variables k1, k2
-integer :: ii1, ii2, irow
-integer :: kk, iter, iterations
-integer :: readfield, init_iter, code_name, lshow, pr_on, output_every
+integer :: iow, ioe, iseed, iterations, readfield, init_iter, output_every
 
 !************************************DOMAIN*************************************!
+integer :: use_grafted
+
+!************************************DOMAIN*************************************!
+integer               :: prof_dim
+real(8)               :: volume
 real(8), dimension(3) :: box_lo, box_hi, box_len
-integer :: prof_dim
 
 !*************************************MESH**************************************!
-integer :: nel, ndm, numnp, numel
+integer                              :: nel, ndm, numnp, numel
 integer, allocatable, dimension(:,:) :: ix
 real(8), allocatable, dimension(:,:) :: xc
 
 !*******************************BOUNDARY CONDITIONS*****************************!
 integer :: n_dirichlet_faces
 integer, allocatable, dimension(:) :: ids_dirichlet_faces
+logical, allocatable, dimension(:) :: elem_in_q0_face
 
 !*************************SCF MODEL AND POTENTIAL DATA**************************!
-real(8) :: mon_mass, massden, kapa, kappa_T, rho_0, Rgyr, Rg_2, CN, sphere_radius
-real(8) :: Temp, volume, Aps, Asio2, sigma1, sigma2, Vored, wwidth, distance
-real(8) :: adh_ten, free_energy_old, free_energy_new   !CJR: removed variables part_func and nch_per_area
-real(8) :: exact
+real(8) :: Temp, mon_mass, massden, kapa, kappa_T, rho_0, Rgyr, Rg_2, CN, sphere_radius
+real(8) :: Aps, Asio2, sigma1, sigma2, Vored, wwidth, distance
 
 !*************************SCF CONVERGENCE SCHEME********************************!
-real(8) :: max_error_tol, max_error, std_error, fraction, mix_coef_frac, mix_coef_kapa
+real(8) :: max_error_tol, max_error, std_error, frac, mix_coef_frac, mix_coef_kapa
 integer :: scheme_type
 
 !*********************************MUMPS OPTIONS*********************************!
@@ -47,19 +43,5 @@ integer :: mumps_matrix_type
 !*****************************PERIODIC PROFILES*********************************!
 integer :: print_ev
 
-!*****************************AUXILIARY VARIABLES*******************************!
-real(8) :: start, D, t1, t2, t3, t4, t5, t6
-real(8) :: test1, test2, test3, test4
-real(8) :: temp1, temp2, sum_final
-real(8) :: alpha, beta                                         !CJR: removed variable coef
-real(8) :: sum, term1, term2, term3, term4, term5
-real(8) :: part_sum1, part_sum2, part_sum3, part_sum4
-
-!*****************************SCF ALLOCATABLE ARRAYS****************************!
-real(8), allocatable, dimension(:)   :: wa, wa_new, wa_mix, Ufield           !CJR
-real(8), allocatable, dimension(:)   :: phia_fr, phia_gr                !CJR
-real(8), allocatable, dimension(:,:) :: qf, qf_final
-real(8), allocatable, dimension(:,:) :: qgr, qgr_final                       !CJR
-logical, allocatable, dimension(:)   :: elem_in_q0_face
 !-------------------------------------------------------------------------------!
 end module xdata

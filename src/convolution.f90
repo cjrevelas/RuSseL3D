@@ -1,23 +1,24 @@
-subroutine convolution(q_final, phia)
+subroutine convolution(q1, q2, phia)
 !-------------------------------------------------------------------------------------------! 
 use xdata
 !-------------------------------------------------------------------------------------------! 
 implicit none
 !-------------------------------------------------------------------------------------------! 
-integer :: k1, time_step                               !CJR
+integer :: k1, time_step
 
-real(8), intent(in), dimension(numnp,ns+1) :: q_final  !CJR
-real(8), intent(out), dimension(numnp)     :: phia     !CJR
+real(8), intent(in), dimension(numnp,ns+1) :: q1, q2
+real(8), intent(out), dimension(numnp)     :: phia
+real(8)                                    :: summer
 !-------------------------------------------------------------------------------------------! 
 do k1 = 1, numnp
-    sum = 0.d0
+    summer = 0.d0
 
     do time_step = 1, ns+1
-        sum = sum + koeff(time_step)              *q_final(k1,time_step)*q_final(k1,ns+2-time_step)   !CJR
-       !sum = sum + koeff(time_step)*ds(time_step)*q_final(k1,time_step)*q_final(k1,ns+2-time_step)   !CJR
+        summer = summer + koeff(time_step)              *q1(k1,time_step)*q2(k1,ns+2-time_step)
+       !summer = summer + koeff(time_step)*ds(time_step)*q1(k1,time_step)*q2(k1,ns+2-time_step)
     enddo
 
-    phia(k1) = sum   !CJR
+    phia(k1) = summer
 enddo
 
 

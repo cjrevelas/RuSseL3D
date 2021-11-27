@@ -1,4 +1,4 @@
-subroutine edwards_film_fem(q, q_final)     !CJR
+subroutine edwards_film_fem(q, q_final)
 !----------------------------------------------------------------------------------------------------------!
 use xdata
 use constants
@@ -12,12 +12,12 @@ implicit none
 include 'mpif.h'
 #endif
 !----------------------------------------------------------------------------------------------------------!
-integer :: i, j, f, time_step
+integer :: i, j, f, i1, time_step
 
 logical, dimension(nel*numel) :: set_diag_to_one
 
-real(8), intent(inout), dimension(numnp,2)    :: q         !CJR
-real(8), intent(inout), dimension(numnp,ns+1) :: q_final   !CJR
+real(8), intent(inout), dimension(numnp,2)    :: q
+real(8), intent(inout), dimension(numnp,ns+1) :: q_final
 
 #ifdef PRINT_AFULL
 real(8), allocatable, dimension(:,:) :: A_full
@@ -30,10 +30,6 @@ do time_step = 2, ns+1
 #else
     F_m%g  = F_m%c + ds(1)*(F_m%k + F_m%w)
 #endif
-
-
-    !APS TEMP
-    !F_m%g  = F_m%c + ds*(F_m%k + F_m%w)
 
     F_m%rh = F_m%c
 
@@ -48,8 +44,8 @@ do time_step = 2, ns+1
 
     set_diag_to_one=.true.
 
-    ! In case the matrix is symmetric remove the zero lines and rows
-    ! diagonal componets with Dirichlet BC q=0.
+    !In case the matrix is symmetric remove the zero lines and rows
+    !diagonal componets with Dirichlet BC q=0.
     if (mumps_matrix_type.eq.1.or.mumps_matrix_type.eq.2) then
         do i1 = 1, all_el
             f = F_m%col(i1)
@@ -132,7 +128,7 @@ do time_step = 2, ns+1
 #endif
 
 #ifdef USE_MPI
-        ! Send a continue (.true.) signal to the slaves
+        !Send a continue (.true.) signal to the slaves
         call MPI_BCAST(.true., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
 
@@ -150,7 +146,7 @@ do time_step = 2, ns+1
             i = F_m%row(i1)
             j = F_m%col(i1)
 
-            rdiag1(i) = rdiag1(i) + F_m%rh(i1)*q(j,1)   !CJR
+            rdiag1(i) = rdiag1(i) + F_m%rh(i1)*q(j,1)
         enddo
 
         do i = 1, numnp
@@ -160,18 +156,18 @@ do time_step = 2, ns+1
         call mumps_sub(numnp, mumps_matrix_type)
 
         do i1 = 1,numnp
-             q(i1,2) = rdiag1(i1)                       !CJR
+             q(i1,2) = rdiag1(i1)
         enddo
 
         !save propagators for convolution
         do i1 = 1,numnp
-            q_final(i1,time_step) = q(i1,2)             !CJR
-            q(i1,1) = q(i1,2)                           !CJR
+            q_final(i1,time_step) = q(i1,2)
+            q(i1,1) = q(i1,2)
         enddo
 
 
 
-    ! APS TEMP - The A_m matrices must be deallocated to prevent memory leak
+    !APS TEMP - The A_m matrices must be deallocated to prevent memory leak
 
 #ifdef VARIABLE_DS_SCHEME
     deallocate(A_m%value)
@@ -185,4 +181,4 @@ write(6,'(1x,I3)') 100
 
 return
 !----------------------------------------------------------------------------------------------------------!	
-end subroutine edwards_film_fem     !CJR
+end subroutine edwards_film_fem
