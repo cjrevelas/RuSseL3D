@@ -245,10 +245,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !Initial value of propagator, qf(numnp,0) = 1.0 for all numnp                     !CJR
     !The initial values stored to qf_final for s=0                                    !CJR  
 
-    do i1 = 1, numnp                                                                  !CJR
-       qf(i1,1) = 1.d0                                                                !CJR
-       qf_final(i1,1) = 1.d0                                                          !CJR
-    enddo                                                                             !CJR
+    if (use_grafted.eq.1) then
 
     ! Solve the diffusion equation for free chains                                    !CJR
     call edwards_film_fem(qf, qf_final)                                               !CJR

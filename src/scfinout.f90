@@ -6,11 +6,13 @@ use write_helper
 use error_handing
 !--------------------------------------------------------------------------------!
 implicit none
-
-CHARACTER(100) :: line
-CHARACTER(15) :: input_filename = 'gaussdat.in.txt'
+!--------------------------------------------------------------------------------!
+character(100) :: line
+character(15) :: input_filename = 'gaussdat.in.txt'
 character(12) :: field_filename = 'field.in.bin'
+
 integer :: Reason
+integer :: i1, id       
 
 logical :: log_domain_geometry = .false.
 logical :: log_timestep = .false.
@@ -38,6 +40,8 @@ logical :: log_convergence_scheme = .false.
 logical :: log_mumps_matrix_type = .false.
 logical :: log_time_integration_scheme = .false.
 logical :: log_output_every = .false.
+logical :: log_use_grafted = .false.
+!--------------------------------------------------------------------------------!
 !*******************************************************************!
 !                    Read the input parameter file                  !
 !*******************************************************************!
@@ -90,6 +94,9 @@ do
         elseif (index(line,'# isothermal compressibility') > 0) then
             read(line,'(E16.9)') kappa_T
             log_isothermal_compressibility = .true.
+        elseif (index(line,'# use grafted') > 0) then
+            read(line,'(I6)') use_grafted
+            log_use_grafted = .true.
         elseif (index(line,'# characteristic ratio') > 0) then
             read(line,'(E16.9)') CN
             log_characteristic_ratio = .true.
@@ -100,7 +107,7 @@ do
             read(line,'(F16.4)') max_error_tol
             log_maximum_error = .true.
         elseif (index(line,'# fraction of new field') > 0) then
-            read(line,'(F16.9)') fraction
+            read(line,'(F16.9)') frac
             log_fraction_of_new_field = .true.
         elseif (index(line,'# monomer mass') > 0) then
             read(line,'(F16.9)') mon_mass
@@ -155,6 +162,16 @@ close(256)
 !*******************************************************************!
 !              Check the inputs of the  parameter file              !
 !*******************************************************************!
+
+if (log_use_grafted.and.use_grafted.ge.1) then
+    use_grafted = 1
+    write(iow,'(3x,A40,1x,I16)')adjl('The system includes grafted chains:',40),use_grafted
+    write(6  ,'(3x,A40,1x,I16)')adjl('The system includes grafted chains:',40),use_grafted
+else
+    use_grafted = 0
+    write(iow,'(3x,A40,1x,I16)')adjl('System does not include grafted chains:',40),use_grafted
+    write(6  ,'(3x,A40,1x,I16)')adjl('System does not include grafted chains:',40),use_grafted
+endif
 
 if (log_output_every) then
     if (output_every.ge.1) then
@@ -323,19 +340,19 @@ else
 endif
 
 if (log_fraction_of_new_field) then
-    if ( fraction.ge.0 .and. fraction.le.1) then
-        write(iow,'(3x,A40,E16.9)')adjl('Initial fraction of new field:',40),fraction
-        write(6  ,'(3x,A40,E16.9)')adjl('Initial fraction of new field:',40),fraction
+    if ( frac.ge.0 .and. frac.le.1) then
+        write(iow,'(3x,A40,E16.9)')adjl('Initial fraction of new field:',40),frac
+        write(6  ,'(3x,A40,E16.9)')adjl('Initial fraction of new field:',40),frac
     else
-        write(ERROR_MESSAGE,'(''Initial fraction of new field is negative or larger than unity:'',E16.9)') fraction
+        write(ERROR_MESSAGE,'(''Initial fraction of new field is negative or larger than unity:'',E16.9)') frac
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    fraction = 1.d0
+    frac = 1.d0
     write(iow,'(3x,A40)')adjl('No initial fraction of new field..',40)
-    write(iow,'(3x,A40,E16.9)')adjl('---It was set to the default value:',40),fraction
+    write(iow,'(3x,A40,E16.9)')adjl('---It was set to the default value:',40),frac
     write(6  ,'(3x,A40)')adjl('No initial fraction of new field..',40)
-    write(6  ,'(3x,A40,E16.9)')adjl('---It was set to the default value:',40),fraction
+    write(6  ,'(3x,A40,E16.9)')adjl('---It was set to the default value:',40),frac
 endif
 
 if (log_monomer_mass) then
@@ -566,6 +583,5 @@ write(6  ,'(3x,A40,E16.9)')adjl('kapa = 1/[k_T k_B T rho_0]:',40),kapa
 write(6  ,'(3x,A40,E16.9)')adjl('kapa / chainlen:',40),kapa / chainlen
 
 return
-
 !--------------------------------------------------------------------------------!
 end subroutine scfinout
