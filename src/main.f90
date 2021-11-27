@@ -16,12 +16,24 @@ include 'mpif.h'
 real(8) :: surf_pot
 real(8) :: wa_max
 logical :: zero_field
-integer :: print_ev
 !-------------------------------------------------------------------!
+iow = 10
+open(unit=iow, file = 'scft.out.txt')
+write(iow,'(''Polymer FEM_3D 1 Sept 19 '')')
+write(iow,'(''Polumer Bulk with solid surfaces   ''/  &
+          & ''---------------------------------  ''/    &
+          & ''SCF theory, Gaussian string model  ''/    &
+          & ''Finite Element solution with       ''/    &
+          & ''successive substitutions           '')')
 
+! Initialize the error log
+ioe = 11
+open(unit=ioe, file = 'error.out.txt', status='replace')
+close(ioe)
 !*******************************************************************!
 !                           MPI SECTION                             !
 !*******************************************************************!
+
 #ifdef USE_MPI
 call mpi_init(ierr)
 call MPI_Comm_size ( MPI_COMM_WORLD, n_proc, ierr )
@@ -79,7 +91,7 @@ enddo
 close(211)
 
 zero_field = .true.
-if (show.eq.1) then
+if (readfield.eq.1) then
     write(*,*)"Field will be read from a file!"
     open(unit=21, file = 'field.in.bin', Form='unformatted')
     read(21) wa
@@ -113,45 +125,11 @@ do while ((iter.lt.iterations).and.(error.gt.max_error))
 
     ! Calculate the new field
     do k1 = 1, numnp
-        wa_new(k1) = kapa * (phia_new(k1)- 1.d0) + Ufield(k1)
+        wa_new(k1) = kapa * (phia_new(k1)- 1.d0)!+ Ufield(k1)
     enddo
 
     ! Calculate adhesion tension
     call adhesion_tension
-
-    !*******************************************************************!
-    !                     PERIODIC EXPORT OF PROFILES                   !
-    !*******************************************************************!
-
-!APS TEMP Generate the headers of files
-    print_ev = 3
-    if (zero_field.and.iter.eq.1) then
-        open (unit=120, file = 'rho.out.txt')
-        do k1 = 1, numnp, print_ev
-            write(120,'(E13.5)',advance='no') xc(3,k1)
-        enddo
-        close(120)
-        open (unit=120, file = 'wa.out.txt')
-        do k1 = 1, numnp, print_ev
-            write(120,'(E13.5)',advance='no') xc(3,k1)
-        enddo
-        close(120)
-        open (unit=120, file = 'wa_new.out.txt')
-        do k1 = 1, numnp, print_ev
-            write(120,'(E13.5)',advance='no') xc(3,k1)
-        enddo
-        close(120)
-        open (unit=120, file = 'wa_mix.out.txt')
-        do k1 = 1, numnp, print_ev
-            write(120,'(E13.5)',advance='no') xc(3,k1)
-        enddo
-        close(120)
-    endif
-!/APS TEMP SECTION
-
-    if (pr_on==1) then
-        call qprint
-    endif
 
     !*******************************************************************!
     !                     APPLY CONVERGENCE CRITERION                   !
@@ -202,7 +180,23 @@ do while ((iter.lt.iterations).and.(error.gt.max_error))
     write(6  ,'(I10,2X,E16.9,2X,E16.9,2X,E16.9,2X,E16.9)') iter, adh_ten, error, wa_max, fraction
     write(iow,'(I10,2X,E16.9,2X,E16.9,2X,E16.9,2X,E16.9)') iter, adh_ten, error, wa_max, fraction
 
+    !*******************************************************************!
+    !                        PERIODIC PROFILER                          !
+    !*******************************************************************!
 
+    ! Initialize the files in case this is not a restart
+    if (zero_field) then
+        open(unit=121, file = 'wa.out.txt', status='replace')
+        close(121)
+        open(unit=121, file = 'wa_new.out.txt', status='replace')
+        close(121)
+        open(unit=121, file = 'wa_mix.out.txt', status='replace')
+        close(121)
+        open(unit=121, file = 'rho.out.txt', status='replace')
+        close(121)
+    endif
+
+    ! Output the data every so many steps
     if (mod(iter,1).eq.0) then
         open (unit=121, file = 'wa.out.txt', status='unknown', position='append')
         open (unit=122, file = 'wa_new.out.txt', status='unknown', position='append')
@@ -230,6 +224,9 @@ do while ((iter.lt.iterations).and.(error.gt.max_error))
    &                                    wa(k1), wa_new(k1), wa_mix(k1)
         enddo
         close(120)
+
+        call qprint
+
     endif
 
     wa = wa_mix
