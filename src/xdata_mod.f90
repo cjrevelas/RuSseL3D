@@ -2,12 +2,13 @@ module xdata
 !-------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------!
-!***********************************PARAMETERS**********************************!
-integer, parameter :: maxns = 4000
-
 !*********************************DISCRETIZATION********************************!
 integer :: ns, nx_1, np
-real(8) :: ds, chainlen
+integer :: time_integration_scheme
+real(8) :: chainlen
+! APS TEMP
+real(8) :: ds_ave
+real(8), allocatable, dimension(:) :: ds, xs, koeff
 
 !*******************************INDICES AND FLAGS*******************************!
 integer :: iow, ioe, count
@@ -39,9 +40,6 @@ integer :: scheme_type
 
 !*********************************MUMPS OPTIONS*********************************!
 integer :: mumps_matrix_type
-
-!*****************************SIMPSON COEFFICIENTS******************************!
-real(8), dimension(1:maxns) :: koeff
 
 !*****************************PERIODIC PROFILES*********************************!
 integer :: print_ev

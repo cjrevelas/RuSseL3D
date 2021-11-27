@@ -78,15 +78,57 @@ close(ioe)
 !                       INITIALIZATION SECTION                      !
 !*******************************************************************!
 
+! parse the inputs from the datafile
 call scfinout
+
+! read the input from the mesh file and generate it
+call mesh_io_3d
 
 #ifdef USE_MPI
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 #endif
 
-call mesh_io_3d
+!*******************************************************************!
+!               INITIALIZE THE TIME INTEGRATION SCHEME              !
+!*******************************************************************!
 
-call simpsonkoef_s
+! discretize the time domain and compute the simpson coeffs
+allocate(ds(ns+1))
+allocate(koeff(ns+1))
+allocate(xs(ns+1))
+ds = 0.d0
+koeff = 0.d0
+xs = 0.d0
+
+! Constant step size
+if (time_integration_scheme.eq.1) then
+    ds = ds_ave
+    call simpsonkoef_s(koeff, ds_ave, ns)
+endif
+
+! Non constant step size with quadradic interpolation
+if (time_integration_scheme.eq.2) then
+
+! APS TODO: move these inside a routine
+! A)
+!    ds = ds_ave
+!    do k1 = 2, ns+1
+!        xs(k1) = xs(k1-1) + ds_ave
+!        ds(k1) = xs(k1) - xs(k1-1)
+!    enddo
+!
+! B)
+
+    ds(1)=0.d0
+    do k1 = 2, ns+1
+        xs(k1) = 0.5d0 * (1.d0 - DCOS(pi * (dble(k1)-1.d0) / dble(ns)))
+        ds(k1) = xs(k1) - xs(k1-1)
+    enddo
+
+    call quadinterp_koef(koeff, xs, ds, ns)
+endif
+
+! output the mesh characteristics
 
 write(iow,'(/''Mesh characteristics..'')')
 write(iow,'(''   Number of mesh points (numnp):         '',I16)')numnp

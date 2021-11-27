@@ -1,12 +1,14 @@
-subroutine simpsonkoef_S
-!--------------------------------------------------------------------!
-use xdata
+subroutine simpsonkoef_S(koeff, ds_ave, ns)
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-integer :: time_step
-!--------------------------------------------------------------------!
+integer :: n, ns
+real(8) :: ds_ave
+real(8), intent(out), dimension(ns+1) :: koeff
+
 !*************************************************************!
+! For constant step size the algorithm reduces to Simpson 1/3 !
+! rule deticted in the code snipet below:                     !
 !                                                             !
 ! s values:      0                                        1   !
 !                                                             !
@@ -19,10 +21,23 @@ koeff(1)    = 1.d00/3.d00
 koeff(ns+1) = 1.d00/3.d00
 koeff(ns)   = 4.d00/3.d00
 
-do time_step = 1, ns/2
-     koeff(2*time_step)   = 4.d00/3.d00
-     koeff(2*time_step+1) = 2.d00/3.d00
+do n = 1, ns/2
+     koeff(2*n)   = 4.d00/3.d00
+     koeff(2*n+1) = 2.d00/3.d00
 enddo
+
+koeff(ns+1) = 1.d00/3.d00
+
+do n = 1, ns+1
+    koeff(n) = koeff(n) * ds_ave
+enddo
+
+open(unit=400, file = 'simpson_coeffs.out.txt')
+write(400,'(5(A17))')          "n","s",     "ds",   "coeff",  "coeff_reduced"
+do n = 1, ns+1
+    write(400,'(I17, 4(E17.9))')n, (n-1)*ds_ave, ds_ave, koeff(n), koeff(n)/ds_ave
+enddo
+close(400)
 
 return
 !--------------------------------------------------------------------!

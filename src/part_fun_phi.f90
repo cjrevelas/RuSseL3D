@@ -1,7 +1,6 @@
 subroutine part_fun_phi
 !-------------------------------------------------------------------------------------------! 
 use xdata
-use mdata
 !-------------------------------------------------------------------------------------------!     
 implicit none
 !-------------------------------------------------------------------------------------------!    
@@ -24,7 +23,8 @@ do k1 = 1, numnp
     sum = 0.d0
 
     do time_step = 1, ns+1
-       sum = sum + koeff(time_step)*qf_final(k1,time_step)*qf_final(k1,ns+2-time_step)*ds
+        sum = sum + koeff(time_step)              *qf_final(k1,time_step)*qf_final(k1,ns+2-time_step)
+       !sum = sum + koeff(time_step)*ds(time_step)*qf_final(k1,time_step)*qf_final(k1,ns+2-time_step)
     enddo
 
     phia_new(k1) = sum
