@@ -19,7 +19,7 @@ subroutine exit_with_error(STOP_SIGNAL, ERROR_TYPE, SCREEN, ERROR_MESSAGE)
     open(unit=ioe, file = 'error.out.txt', position = 'append')
 
     if (ERROR_TYPE.eq.1) then
-        write(ioe,'(A12)',advance='no')'INPUT ERROR:'
+        write(ioe,'(A12)',advance='no')'PROBLEM BETWEEN COMPUTER AND SCREEN:'
     elseif (ERROR_TYPE.eq.2) then
         write(ioe,'(A12)',advance='no')'RUN ERROR:'
     endif
@@ -28,7 +28,7 @@ subroutine exit_with_error(STOP_SIGNAL, ERROR_TYPE, SCREEN, ERROR_MESSAGE)
 
     if (SCREEN.eq.1) then
         if (ERROR_TYPE.eq.1) then
-            write(*,'(A12)',advance='no')'INPUT ERROR:'
+            write(*,'(A33)',advance='no')'PROBLEM BETWEEN SCREEN AND CHAIR:'
         elseif (ERROR_TYPE.eq.2) then
             write(*,'(A12)',advance='no')'RUN ERROR:'
         endif
