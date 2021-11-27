@@ -45,10 +45,12 @@ flag_continue = .true.
 ! the slaves will enter the mumps subroutine until they receive a stop
 ! signal from master proc
 if (.not.root) then
+    ! receive the matrix type from root
+    call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
     do while (.true.)
         call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         if (flag_continue) then
-            call mumps_sub(0)
+            call mumps_sub(0,mumps_matrix_type)
         else
             exit
         endif
@@ -77,6 +79,10 @@ close(ioe)
 !*******************************************************************!
 
 call scfinout
+
+#ifdef USE_MPI
+call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
+#endif
 
 call mesh_io_3d
 

@@ -9,6 +9,5 @@ integer(kind=4) :: world_group_id
 
 logical :: root
 logical :: flag_continue
-
 !--------------------------------------------------------------------!	 
 end module mpistuff
