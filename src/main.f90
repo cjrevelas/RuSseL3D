@@ -14,15 +14,20 @@ implicit none
 include 'mpif.h'
 #endif
 !-------------------------------------------------------------------!
-integer :: k1, n_outside                    !CJR
+integer :: i1, k1, iter, n_outside
 
 character(12) :: field_in_filename = 'field_in.bin'
 character(40) :: field_filename_aux = ''
 
-real(8) :: surf_pot
-real(8) :: wa_max, wa_max_abs
-real(8) :: mix_tol, wa_step, wa_ave
-real(8) :: part_func, nch_per_area, coef    !CJR
+real(8)                              :: surf_pot
+real(8)                              :: wa_max, wa_max_abs
+real(8)                              :: mix_tol, wa_step, wa_ave
+real(8)                              :: part_func, nch_per_area, coef
+real(8)                              :: adh_ten
+real(8), allocatable, dimension(:)   :: wa, wa_new, wa_mix, Ufield
+real(8), allocatable, dimension(:)   :: phia_fr, phia_gr
+real(8), allocatable, dimension(:,:) :: qf, qgr
+real(8), allocatable, dimension(:,:) :: qf_final, qgr_final
 !*******************************************************************!
 !                           MPI SECTION                             !
 !*******************************************************************!
@@ -45,11 +50,11 @@ if (root) then
 end if
 
 flag_continue = .true.
-!
-! the slaves will enter the mumps subroutine until they receive a stop
-! signal from master proc
+
+!the slaves will enter the mumps subroutine until they receive a stop
+!signal from master proc
 if (.not.root) then
-    ! receive the matrix type from root
+    !receive the matrix type from root
     call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
     do while (.true.)
         call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
@@ -74,7 +79,7 @@ write(iow,'(''Polumer Bulk with solid surfaces   ''/  &
           & ''Finite Element solution with       ''/    &
           & ''successive substitutions           '')')
 
-! Initialize the error log
+!Initialize the error log
 ioe = 11
 open(unit=ioe, file = 'error.out.txt', status='replace')
 close(ioe)
@@ -82,11 +87,35 @@ close(ioe)
 !                       INITIALIZATION SECTION                      !
 !*******************************************************************!
 
-! parse the inputs from the datafile
+!parse the inputs from the datafile
 call scfinout
 
-! read the input from the mesh file and generate it
+!read the input from the mesh file and generate it
 call mesh_io_3d
+
+!allocate and initialize essential scf arrays
+allocate(wa(numnp),wa_mix(numnp),wa_new(numnp),Ufield(numnp))
+allocate(phia_fr(numnp),phia_gr(numnp))
+allocate(rdiag1(numnp))
+allocate(qf(numnp,2),qgr(numnp,2))
+allocate(qf_final(numnp,ns+1),qgr_final(numnp,ns+1))     !this needs to be generalized: ns_fr vs ns_gr        
+
+wa        = 0.d0
+wa_mix    = 0.d0
+wa_new    = 0.d0
+Ufield    = 0.d0
+phia_fr   = 0.d0
+phia_gr   = 0.d0
+qf        = 0.d0
+qgr       = 0.d0
+qf_final  = 0.d0
+qgr_final = 0.d0
+rdiag1    = 0.d0
+
+!
+wa_max = 0.d0
+wa_ave = 0.d0
+wa_step = 0.d0
 
 #ifdef USE_MPI
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
@@ -96,7 +125,7 @@ call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 !               INITIALIZE THE TIME INTEGRATION SCHEME              !
 !*******************************************************************!
 
-! discretize the time domain and compute the simpson coeffs
+!discretize the time domain and compute the simpson coeffs
 allocate(ds(ns+1))
 allocate(koeff(ns+1))
 allocate(xs(ns+1))
@@ -104,13 +133,13 @@ ds = 0.d0
 koeff = 0.d0
 xs = 0.d0
 
-! Constant step size
+!Constant step size
 if (time_integration_scheme.eq.1) then
     ds = ds_ave
     call simpsonkoef_s(koeff, ds_ave, ns)
 endif
 
-! Non constant step size with quadradic interpolation
+!Non constant step size with quadradic interpolation
 if (time_integration_scheme.eq.2) then
 
 ! APS TODO: move these inside a routine
@@ -132,7 +161,7 @@ if (time_integration_scheme.eq.2) then
     call quadinterp_koef(koeff, xs, ds, ns)
 endif
 
-! output the mesh characteristics
+!output the mesh characteristics
 
 write(iow,'(/''Mesh characteristics..'')')
 write(iow,'(''   Number of mesh points (numnp):         '',I16)')numnp
@@ -182,8 +211,8 @@ if (readfield.eq.1) then
     read(655) wa
     close(655)
 
-    ! multiply field with chain length since it is divided with chain length right
-    ! before it is printed
+    !multiply field with chain length since it is divided with chain length right
+    !before it is printed
     do k1 = 1, numnp
         wa(k1) = wa(k1) * chainlen
     enddo
@@ -201,7 +230,7 @@ else
     endif
 endif
 
-! Initialize the files in case this is not a restart
+!Initialize the files in case this is not a restart
 if (init_iter.eq.0) then
     open(unit=121, file = 'wa.out.txt', status='replace')
     close(121)
@@ -231,54 +260,65 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     iter=iter+1
 
     write(iow,'(I10,1X,8(E19.9e3,1X))')              iter-1, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
-   &                                                 wa_step, fraction
+   &                                                 wa_step, frac
     write(6  ,'(I4 ,1X,8(E14.4e3,1X))',advance='no') iter-1, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
-   &                                                 wa_step, fraction
+   &                                                 wa_step, frac
 
     !Flush the output
     close(iow)
     open(unit=iow, file = 'scft.out.txt', position = 'append')
 
-    call matrix_assemble
+    call matrix_assemble(wa)
 
-    !**********************SOLVE EDWARDS FOR FREE CHAINS*************************!    !CJR
-    !Initial value of propagator, qf(numnp,0) = 1.0 for all numnp                     !CJR
-    !The initial values stored to qf_final for s=0                                    !CJR  
+    !**********************SOLVE EDWARDS FOR FREE CHAINS*************************!
+    !Initial value of propagator, qf(numnp,0) = 1.0 for all numnp
+    !The initial values stored to qf_final for s=0
+
+    do i1 = 1, numnp
+       qf(i1,1)       = 1.d0
+       qf_final(i1,1) = 1.d0
+    enddo
+
+    !Solve the diffusion equation for free chains
+    call edwards_film_fem(qf, qf_final)
+
+    !*******************SOLVE EDWARDS FOR GRAFTED CHAINS*************************!
+    !Initial value of propagator, qgr(numnp,0) = 0.0 for all numnp except for gp
+    !The initial values are stored to qgr_final for s=0
 
     if (use_grafted.eq.1) then
 
-    ! Solve the diffusion equation for free chains                                    !CJR
-    call edwards_film_fem(qf, qf_final)                                               !CJR
+        do i1 = 1, numnp
+           qgr(i1,1)       = 0.d0
+           qgr_final(i1,1) = 0.d0
+        enddo
 
-    !*******************SOLVE EDWARDS FOR GRAFTED CHAINS*************************!    !CJR
-    !Initial value of propagator, qgr(numnp,0) = 0.0 for all numnp except for gp      !CJR
-    !The initial values are stored to qgr_final for s=0                               !CJR
+        !Specify grafting points
+        qgr(5540,1)       = 3.6d02
+        qgr_final(5540,1) = 3.6d02
 
-    !do i1 = 1, numnp                                                                 !CJR
-    !   qgr(i1,1) = 0.d0                                                              !CJR  
-    !   qgr_final(i1,1) = 0.d0                                                        !CJR
-    !enddo                                                                            !CJR 
+        !Solve the diffusion equation for grafted chains
+        call edwards_film_fem(qgr, qgr_final)
+    endif
 
-    !Specify grafting points                                                          !CJR
-    !qgr(1,1) = 3.6d02    !change first array index to a suitable node                !CJR
-    !
-    !Solve the diffusion equation for grafted chains                                  !CJR
-    !call edwards_film_fem(qgr, qgr_final)                                            !CJR
+    !*********************CONVOLUTION AND ENERGY***********************************!  
+    !Calculate reduced segment density profiles of free and grafted chains
+    call convolution(qf_final, qf_final, phia_fr)
 
-    !*********************CONVOLUTION AND ENERGY***********************************!  !CJR
-    !Calculate reduced segment density of free chains                                 !CJR
-    call convolution(qf_final, phia_fr)                                               !CJR
+    if (use_grafted.eq.1) then
+        call convolution(qgr_final, qf_final, phia_gr)
+    endif
 
-    !Calculate partition function of free chains                                      !CJR
-    call part_fun_phi(qf_final, phia_fr, part_func, nch_per_area, coef)               !CJR
+    !Calculate partition function of free chains
+    call part_fun_phi(qf_final, phia_fr, part_func, nch_per_area, coef)
 
-    ! Calculate the new field
+    !Calculate the new field
     do k1 = 1, numnp
-        wa_new(k1) = kapa * (phia_fr(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)           !CJR
+        wa_new(k1) = kapa * (phia_fr(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)
     enddo
 
-    ! Calculate adhesion tension
-    call adhesion_tension(part_func)                                                  !CJR
+    !Calculate adhesion tension
+    call adhesion_tension(qf_final, wa, Ufield, phia_fr, phia_gr, part_func, adh_ten)
 
     !*******************************************************************!
     !   COMPUTE DIFFERENCES BETWEEN OLD (wa) AND NEW (wa_new) fields    !
@@ -306,23 +346,23 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !   original convergence scheme 1: tolis
     if (scheme_type.eq.1) then
         if (iter.eq.1) then
-            fraction = 1.d0
+            frac = 1.d0
         else if (iter.eq.2) then
-            fraction = 1.d0 / (wa_max_abs * 10.d0)
+            frac = 1.d0 / (wa_max_abs * 10.d0)
         else
-            fraction = min(fraction * mix_coef_frac, mix_coef_kapa)
+            frac = min(frac * mix_coef_frac, mix_coef_kapa)
         endif
 
-        ! Mixing the fields..
+        !Mixing the fields..
         do k1 = 1, numnp
-            wa_mix(k1) = (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
+            wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
         enddo
     endif
 
-    ! experimental convergence scheme 2: 1/wa_max
+    !experimental convergence scheme 2: 1/wa_max
     if (scheme_type.eq.2) then
         mix_tol = 0.1d0  * kapa
-        fraction = 0.005d0
+        frac    = 0.005d0
         wa_step = 4.d0 *exp(-dble(iter)/10.d0)
 
         n_outside = 0
@@ -336,7 +376,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
                     wa_mix(k1) = wa(k1) - wa_step*rand()
                 endif
             else
-                wa_mix(k1) = (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
+                wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
             endif
         enddo
 
@@ -347,13 +387,13 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 !        enddo
     endif
 
-    ! experimental convergence scheme 3: 1/wa_max_abs
+    !experimental convergence scheme 3: 1/wa_max_abs
     if (scheme_type.eq.3) then
-        ! Fraction remains constant throughout the simulation
-        fraction = fraction
-        ! Mixing the fields..
+        !Fraction remains constant throughout the simulation
+        frac = frac
+        !Mixing the fields..
         do k1 = 1, numnp
-            wa_mix(k1) = (1.d0-fraction) * wa(k1) + fraction * wa_new(k1)
+            wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
         enddo
     endif
 
@@ -361,7 +401,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !                        PERIODIC PROFILER                          !
     !*******************************************************************!
 
-    ! Output the data every so many steps
+    !Output the data every so many steps
     if (mod(iter,output_every).eq.0) then
         open (unit=121, file = 'wa.out.txt', status='unknown', position='append')
         open (unit=122, file = 'wa_new.out.txt', status='unknown', position='append')
@@ -371,7 +411,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
             write(121,'(E19.9e3)',advance='no') wa(k1)
             write(122,'(E19.9e3)',advance='no') wa_new(k1)
             write(123,'(E19.9e3)',advance='no') wa_mix(k1)
-            write(124,'(E19.9e3)',advance='no') phia_fr(k1)                                    !CJR
+            write(124,'(E19.9e3)',advance='no') phia_fr(k1)                                    
         enddo
         write(121,*)
         write(122,*)
@@ -385,12 +425,12 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         open (unit=120, file = 'rho_reduced.out.txt')
         write(120,'(8(A13))') 'np','x','y','z','phi','wa','wa_new','wa_mix'
         do k1 = 1, numnp
-            write(120,'(I13,7(E19.9e3))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_fr(k1), &      !CJR
+            write(120,'(I13,7(E19.9e3))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_fr(k1), &
    &                                    wa(k1), wa_new(k1), wa_mix(k1)
         enddo
         close(120)
 
-        call qprint
+        call qprint(qf_final)
 
     endif
 
@@ -401,7 +441,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !*******************************************************************!
 
     if (mod(iter,output_every).eq.0) then
-        ! Normalize the field by dividing it with chain length
+        !Normalize the field by dividing it with chain length
         do k1 = 1, numnp
             wa_mix(k1) = wa_mix(k1) / chainlen
         enddo
@@ -426,12 +466,12 @@ enddo!iter
 
 
 write(iow,'(I10,1X,8(E19.9e3,1X))')              iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
-   &                                                 wa_step, fraction
+   &                                                 wa_step, frac
 write(6  ,'(I4 ,1X,8(E14.4e3,1X))',advance='no') iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
-   &                                                 wa_step, fraction
+   &                                                 wa_step, frac
 
-!write(iow,'(I10,1X,6(E19.9e3,1X))')              iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, fraction
-!write(6  ,'(I4 ,1X,6(E14.4e3,1X))',advance='no') iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, fraction
+!write(iow,'(I10,1X,6(E19.9e3,1X))')              iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, frac
+!write(6  ,'(I4 ,1X,6(E14.4e3,1X))',advance='no') iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, frac
 
 if (max_error.lt.max_error_tol) then
     write(iow,'(/''Convergence of max error'',F16.9)') max_error
@@ -445,7 +485,7 @@ write(iow,'(''Partition function Q =  '',E16.9)') part_func
 write(iow,'(''            n/n_bulk =  '',E16.9)') nch_per_area * chainlen / (rho_0*volume*1.d-30)
 
 #ifdef USE_MPI
-! Root will send a stop signal to the slaves
+!Root will send a stop signal to the slaves
 if (root) then
     flag_continue = .false.
     call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)

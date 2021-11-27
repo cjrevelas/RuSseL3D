@@ -15,21 +15,20 @@ implicit none
 character(len=15) :: dummy
 character(len=13) :: mesh_filename
 
-integer :: idummy
-integer :: i, j, k1         !CJR
-integer :: nmeltypes
-integer :: vtxnum, vtxel
-integer :: vtxparnum, vtxparel
-integer :: edgnum, edgel
-integer :: edgparnum, edgparel
-integer :: fcparnum, fcparel
-
-integer :: fcnum, fcel
+integer                              :: idummy
+integer                              :: i, j, i1, j1, k1, m1
+integer                              :: nmeltypes
+integer                              :: vtxnum, vtxel
+integer                              :: vtxparnum, vtxparel
+integer                              :: edgnum, edgel
+integer                              :: edgparnum, edgparel
+integer                              :: fcparnum, fcparel
+integer                              :: fcnum, fcel
 integer, allocatable, dimension(:,:) ::  fcelement
-integer, allocatable, dimension(:) :: fcentity
+integer, allocatable, dimension(:)   :: fcentity
 integer, allocatable, dimension(:,:) :: vtxelement, edgelement
 integer, allocatable, dimension(:,:) :: vtxpar
-integer, allocatable, dimension(:) :: vtxentity, edgentity, temp3
+integer, allocatable, dimension(:)   :: vtxentity, edgentity, temp3
 
 real(8), allocatable, dimension(:,:) :: edgpar, fcpar
 
@@ -261,28 +260,6 @@ F_m%col = 0
 allocate(con_l2(all_el))
 con_l2 = 0
 
-allocate(wa(numnp))
-allocate(wa_new(numnp))
-allocate(wa_mix(numnp))
-allocate(Ufield(numnp))
-allocate(rdiag1(numnp))
-allocate(qf(numnp,2))
-allocate(qf_final(numnp,ns+1))
-allocate(phia_fr(numnp))                  !CJR
-allocate(phia_gr(numnp))                  !CJR
-!allocate(phi(numnp))
-
-!Maybe these arrays could be initialized somewhere else... !CJR
-wa = 0.d0
-wa_new = 0.d0
-wa_mix = 0.d0
-Ufield = 0.d0
-rdiag1 = 0.d0
-qf = 0.d0
-qf_final = 0.d0
-phia_fr  = 0.d0                           !CJR
-phia_gr  = 0.d0                           !CJR
-!phi = 0.d0  !Do we need this array?       !CJR
 
 !*******************************************************************!
 !                   construct the con_12 matrix                     !
