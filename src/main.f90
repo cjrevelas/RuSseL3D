@@ -14,12 +14,15 @@ implicit none
 include 'mpif.h'
 #endif
 !-------------------------------------------------------------------!
-real(8) :: surf_pot
-real(8) :: wa_max, wa_max_abs
+integer :: k1, n_outside                    !CJR
+
 character(12) :: field_in_filename = 'field_in.bin'
 character(40) :: field_filename_aux = ''
-integer :: n_outside
+
+real(8) :: surf_pot
+real(8) :: wa_max, wa_max_abs
 real(8) :: mix_tol, wa_step, wa_ave
+real(8) :: part_func, nch_per_area, coef    !CJR
 !*******************************************************************!
 !                           MPI SECTION                             !
 !*******************************************************************!
@@ -232,25 +235,53 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     write(6  ,'(I4 ,1X,8(E14.4e3,1X))',advance='no') iter-1, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
    &                                                 wa_step, fraction
 
-    ! Flush the output
+    !Flush the output
     close(iow)
     open(unit=iow, file = 'scft.out.txt', position = 'append')
 
     call matrix_assemble
 
-    ! Solve the diffusion equation
-    call edwards_free_film_fem
+    !**********************SOLVE EDWARDS FOR FREE CHAINS*************************!    !CJR
+    !Initial value of propagator, qf(numnp,0) = 1.0 for all numnp                     !CJR
+    !The initial values stored to qf_final for s=0                                    !CJR  
 
-    ! Calculate the partition function and reduced density
-    call part_fun_phi
+    do i1 = 1, numnp                                                                  !CJR
+       qf(i1,1) = 1.d0                                                                !CJR
+       qf_final(i1,1) = 1.d0                                                          !CJR
+    enddo                                                                             !CJR
+
+    ! Solve the diffusion equation for free chains                                    !CJR
+    call edwards_film_fem(qf, qf_final)                                               !CJR
+
+    !*******************SOLVE EDWARDS FOR GRAFTED CHAINS*************************!    !CJR
+    !Initial value of propagator, qgr(numnp,0) = 0.0 for all numnp except for gp      !CJR
+    !The initial values are stored to qgr_final for s=0                               !CJR
+
+    !do i1 = 1, numnp                                                                 !CJR
+    !   qgr(i1,1) = 0.d0                                                              !CJR  
+    !   qgr_final(i1,1) = 0.d0                                                        !CJR
+    !enddo                                                                            !CJR 
+
+    !Specify grafting points                                                          !CJR
+    !qgr(1,1) = 3.6d02    !change first array index to a suitable node                !CJR
+    !
+    !Solve the diffusion equation for grafted chains                                  !CJR
+    !call edwards_film_fem(qgr, qgr_final)                                            !CJR
+
+    !*********************CONVOLUTION AND ENERGY***********************************!  !CJR
+    !Calculate reduced segment density of free chains                                 !CJR
+    call convolution(qf_final, phia_fr)                                               !CJR
+
+    !Calculate partition function of free chains                                      !CJR
+    call part_fun_phi(qf_final, phia_fr, part_func, nch_per_area, coef)               !CJR
 
     ! Calculate the new field
     do k1 = 1, numnp
-        wa_new(k1) = kapa * (phia_new(k1) - 1.d0) + Ufield(k1)
+        wa_new(k1) = kapa * (phia_fr(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)           !CJR
     enddo
 
     ! Calculate adhesion tension
-    call adhesion_tension
+    call adhesion_tension(part_func)                                                  !CJR
 
     !*******************************************************************!
     !   COMPUTE DIFFERENCES BETWEEN OLD (wa) AND NEW (wa_new) fields    !
@@ -343,7 +374,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
             write(121,'(E19.9e3)',advance='no') wa(k1)
             write(122,'(E19.9e3)',advance='no') wa_new(k1)
             write(123,'(E19.9e3)',advance='no') wa_mix(k1)
-            write(124,'(E19.9e3)',advance='no') phia_new(k1)
+            write(124,'(E19.9e3)',advance='no') phia_fr(k1)                                    !CJR
         enddo
         write(121,*)
         write(122,*)
@@ -357,7 +388,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         open (unit=120, file = 'rho_reduced.out.txt')
         write(120,'(8(A13))') 'np','x','y','z','phi','wa','wa_new','wa_mix'
         do k1 = 1, numnp
-            write(120,'(I13,7(E19.9e3))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_new(k1), &
+            write(120,'(I13,7(E19.9e3))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_fr(k1), &      !CJR
    &                                    wa(k1), wa_new(k1), wa_mix(k1)
         enddo
         close(120)
