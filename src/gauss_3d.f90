@@ -2,9 +2,11 @@ subroutine gauss_3d(ll, lint, s)
 !--------------------------------------------------------------------!
 implicit  none
 !--------------------------------------------------------------------!
-integer :: i, j, ll, lint
+integer, intent(in)  :: ll
+integer, intent(out) :: lint
+integer :: i, j
 
-real(8), dimension(5,*) :: s
+real(8), intent(out), dimension(5,*) :: s
 !--------------------------------------------------------------------!
 ! 1 pt. quadrature O(h^2)
 if (ll.eq.1) then

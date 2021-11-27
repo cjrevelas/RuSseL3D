@@ -4,7 +4,6 @@ implicit none
 !--------------------------------------------------------------------!
 integer :: NNZ
 integer :: all_el
-integer :: min_el
 
 integer, allocatable, dimension(:) :: con_l2
 integer, allocatable, dimension(:,:) :: connectivity, con_l

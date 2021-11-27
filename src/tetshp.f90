@@ -4,12 +4,14 @@ use constants
 !-----------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------!
-integer :: ndm, nel, nnel, i, j, k
+integer, intent(in) :: ndm, nel
+integer :: nnel, i, j, k
 
-real(8) ::  xsj, detr
-real(8), dimension(4)     :: xi
-real(8), dimension(ndm,*) :: xl
-real(8), dimension(4,*)   :: shp
+real(8), intent(in), dimension(4)     :: xi
+real(8), intent(in), dimension(ndm,*) :: xl
+real(8), intent(out), dimension(4,*)  :: shp 
+real(8), intent(out) :: xsj
+real(8) :: detr
 real(8), dimension(3,3)   :: xs, xsi, a
 real(8), dimension(3)     :: te
 !-----------------------------------------------------------------------------------!

@@ -45,7 +45,7 @@ do nn = 1, numel
 
         i1 = nel*nel*(nn-1)
 
-        call tetshp( sv(1,l), xl, ndm, nel, xsj, shp )
+        call tetshp(sv(1,l), xl, ndm, nel, xsj, shp)
 
         do m = 1,nel
             m_1 = gl_index(m)
