@@ -58,27 +58,10 @@ endif
 !*******************************************************************!
 !                       INITIALIZATION SECTION                      !
 !*******************************************************************!
-ior = 55
-iow = 10
 
-!TODO ADD THESE TO INITIAL LOG
-write(6,*)"Dirichel BCs have been applied in faces # and #"
-
-#if defined(MSYMGEN)
-write(6,*)"The matrices are treated as GENERAL SYMMETRIC"
-#endif
-#if defined(MSYMDEFPOS)
-write(6,*)"The matrices are treated as SYMMETRIC POSITIVE DEFINITE"
-#endif
-#if !defined(MSYMGEN) && !defined(MSYMDEFPOS)
-write(6,*)"The matrices are treated as UNSYMMETRIC"
-#endif
-
-write(6,*) "Initializing mesh.."
-call mesh_io_3d
-
-write(6,*) "Reading gaussdat parameter values.."
 call scfinout
+
+call mesh_io_3d
 
 ! Initialize the Simpson coefficients
 call simpsonkoef_s
@@ -86,8 +69,6 @@ call simpsonkoef_s
 !*******************************************************************!
 !                       INITIALIZE FIELDS                           !
 !*******************************************************************!
-wa = 0.d0
-
 open(unit=211, file = 'Usolid.out.txt')
 do k1 = 1, numnp
     !TODO: fix distance for 3D
