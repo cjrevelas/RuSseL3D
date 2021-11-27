@@ -15,8 +15,8 @@ MPI_OPTIONS=
 topdir = /home/cjrevelas/MUMPS/mumps_serial
 else
 MPI_OPTIONS = -DUSE_MPI
-topdir = /home/cjrevelas/MUMPS/mumps_par
-#topdir = /home/asgouros/TrioStountzes/MUMPS/TEMP_25Aug2019_MUMPS_5.2.1_PAR
+#topdir = /home/cjrevelas/MUMPS/mumps_par
+topdir = /home/asgouros/TrioStountzes/MUMPS/TEMP_25Aug2019_MUMPS_5.2.1_PAR
 endif
 
 
@@ -48,7 +48,7 @@ MODULES = xdata_mod.o constants_mod.o kcw_mod.o fhash_mod.o \
 OBJECTS = matrix_assemble.o part_fun_phi.o \
 	  scfinout.o simpsonkoef.o quadinterp_koef.o spat_3d.o \
           surf_pot.o tetshp.o qprint.o mesh_io_3d.o gauss_3d.o \
-          edwards_film_fem.o adh_ten.o main.o mumps_sub.o convolution.o    #CJR
+          edwards_film_fem.o adh_ten.o main.o mumps_sub.o convolution.o  
 
 .f90.o:
 	$(FC) -c $(FCFLAGS) $(LIBFS)  $*.f90

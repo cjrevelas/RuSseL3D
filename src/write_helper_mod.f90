@@ -2,10 +2,9 @@ module write_helper
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-
-integer,parameter :: PLOG = 0
-integer,parameter :: PSCREEN = 1
-integer,parameter :: PBOTH = 2
+integer, parameter :: PLOG    = 0
+integer, parameter :: PSCREEN = 1
+integer, parameter :: PBOTH   = 2
 
 CHARACTER(len=100) :: MESSAGE
 

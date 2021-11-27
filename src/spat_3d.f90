@@ -11,11 +11,11 @@ integer :: i, j, ii, l, n
 
 real(8), intent(in), dimension(numnp) :: u_spat
 real(8), intent(out)                  :: sum_out, Q
-real(8) :: xsj, uqp, sumel, volel, vol
-real(8), dimension(nel)      :: ul
-real(8), dimension(ndm, nel) :: xl
-real(8), dimension(4,11)     :: shp
-real(8), dimension(5,11)     :: sv
+real(8)                               :: xsj, uqp, sumel, volel, vol
+real(8), dimension(nel)               :: ul
+real(8), dimension(ndm, nel)          :: xl
+real(8), dimension(4,11)              :: shp
+real(8), dimension(5,11)              :: sv
 !--------------------------------------------------------------------!
 
 !Initialize accumulator for integral of the solution

@@ -8,12 +8,12 @@ implicit none
 integer :: simple
 
 real(8), intent(in) :: h12
-real(8) :: surf_pot
-real(8) :: sigma
-real(8) :: Urep, Uattr
-real(8) :: a1, a2, r12, h_12
-real(8) :: hamaker_constant
-real(8) :: number_density
+real(8)             :: surf_pot
+real(8)             :: sigma
+real(8)             :: Urep, Uattr
+real(8)             :: a1, a2, r12, h_12
+real(8)             :: hamaker_constant
+real(8)             :: number_density
 !--------------------------------------------------------------------!     
 simple=0
 

@@ -4,7 +4,7 @@ implicit  none
 !--------------------------------------------------------------------!
 integer, intent(in)  :: ll
 integer, intent(out) :: lint
-integer :: i, j
+integer              :: i, j
 
 real(8), intent(out), dimension(5,*) :: s
 !--------------------------------------------------------------------!

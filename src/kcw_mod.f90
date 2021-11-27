@@ -2,10 +2,9 @@ module kcw
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-integer :: NNZ
-integer :: all_el
-
-integer, allocatable, dimension(:) :: con_l2
+integer                              :: NNZ
+integer                              :: all_el
+integer, allocatable, dimension(:)   :: con_l2
 integer, allocatable, dimension(:,:) :: connectivity, con_l
 
 real(8), allocatable, dimension(:) :: rdiag1
