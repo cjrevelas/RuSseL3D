@@ -144,10 +144,12 @@ do
             log_time_integration_scheme = .true.
         elseif (index(line,'# n dirichlet faces') > 0) then
             read(line,'(I10)') n_dirichlet_faces
-            allocate(ids_dirichlet_faces(n_dirichlet_faces))
+            if (n_dirichlet_faces > 0) then
+                allocate(ids_dirichlet_faces(n_dirichlet_faces))
+            endif
             do i1 = 1, n_dirichlet_faces
-                 read(256,'(I10)')id
-                 ids_dirichlet_faces(i1) = id
+                read(256,'(I10)')id
+                ids_dirichlet_faces(i1) = id
             enddo
             log_n_dirichlet_faces = .true.
         elseif (index(line,'# profile dimension') > 0) then
