@@ -1,8 +1,7 @@
 #######################################################################
 #                  Makefile of SCF-FEM code                           #
 #######################################################################
-
-MAKE_MPI_RUN=1
+MAKE_MPI_RUN=0
 MAKE_PRODUCTION_RUN=0
 
 PROD_OPTIONS=
@@ -12,17 +11,15 @@ BOTH_OPTIONS= #-DVARIABLE_DS_SCHEME# -DMUMPS_REPORT
 # MPI/MUMPS SECTION
 ifeq ($(MAKE_MPI_RUN),0)
 MPI_OPTIONS=
-topdir = /home/cjrevelas/MUMPS/mumps_serial
+topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_SERIAL
 else
 MPI_OPTIONS = -DUSE_MPI
-#topdir = /home/cjrevelas/MUMPS/mumps_par
-topdir = /home/asgouros/TrioStountzes/MUMPS/TEMP_25Aug2019_MUMPS_5.2.1_PAR
+topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR
 endif
-
 
 libdir = $(topdir)/lib
 .SECONDEXPANSION:
-include $(topdir)/Makefile.inc
+include $(topdir)/Makefile.inc                                #defines PLAT, LIBEXT, LIBMUMPS_COMMON, FC   
 LIBMUMPS_COMMON = $(libdir)/libmumps_common$(PLAT)$(LIBEXT)
 
 LIBDMUMPS = $(libdir)/libdmumps$(PLAT)$(LIBEXT) $(LIBMUMPS_COMMON)
@@ -43,33 +40,60 @@ endif
 
 LIBFS=#-lstdc++ #-lm
 
-MODULES = xdata_mod.o constants_mod.o kcw_mod.o fhash_mod.o \
-          mpistuff_mod.o error_handing_mod.o write_helper_mod.o
-OBJECTS = matrix_assemble.o part_fun_phi.o \
-	  scfinout.o simpsonkoef.o quadinterp_koef.o spat_3d.o \
-          surf_pot.o tetshp.o qprint.o mesh_io_3d.o gauss_3d.o \
-          edwards_film_fem.o adh_ten.o main.o mumps_sub.o convolution.o  
+OBJDIR=obj
+SRCDIR=src
+RUNDIR=run
 
-.f90.o:
-	$(FC) -c $(FCFLAGS) $(LIBFS)  $*.f90
+MODULES = $(join $(OBJDIR),/xdata_mod.o)\
+	  $(join $(OBJDIR),/constants_mod.o)\
+	  $(join $(OBJDIR),/kcw_mod.o)\
+	  $(join $(OBJDIR),/fhash_mod.o)\
+          $(join $(OBJDIR),/mpistuff_mod.o)\
+	  $(join $(OBJDIR),/error_handing_mod.o)\
+  	  $(join $(OBJDIR),/write_helper_mod.o)\
 
-CMD=fem_3d.exe
+OBJECTS = $(join $(OBJDIR),/matrix_assemble.o)\
+          $(join $(OBJDIR),/part_fun_phi.o)\
+	  $(join $(OBJDIR),/scfinout.o)\
+          $(join $(OBJDIR),/simpsonkoef.o)\
+          $(join $(OBJDIR),/quadinterp_koef.o)\
+          $(join $(OBJDIR),/spat_3d.o)\
+          $(join $(OBJDIR),/surf_pot.o)\
+	  $(join $(OBJDIR),/tetshp.o)\
+	  $(join $(OBJDIR),/qprint.o)\
+	  $(join $(OBJDIR),/mesh_io_3d.o)\
+	  $(join $(OBJDIR),/gauss_3d.o)\
+          $(join $(OBJDIR),/edwards_film_fem.o)\
+	  $(join $(OBJDIR),/adh_ten.o)\
+	  $(join $(OBJDIR),/main.o)\
+	  $(join $(OBJDIR),/mumps_sub.o)\
+	  $(join $(OBJDIR),/convolution.o)
+
+#First rule has been changed from implicit to explicit
+OBJTEMP=$(join $(OBJDIR),/%.o)
+SRCTEMP=$(join $(SRCDIR),/%.f90)
+$(OBJTEMP): $(SRCTEMP)
+	$(FC) $(FCFLAGS) $(LIBFS) -Jobj/ -c -o $@ $?
+
+CMD=$(join $(RUNDIR),/fem_3d.exe)
 $(CMD):$(LIBDMUMPS) $(MODULES) $(OBJECTS)
 	   $(FL) -o $(CMD) $(OPTL) $(MODULES) $(OBJECTS)  $(LIBDMUMPS) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS)
 
-mumps_sub.o :
-	$(FC) $(OPTF) $(INCS) -I. -I$(topdir)/include -I$(topdir)/src -cpp $(CPPFLAGS) -c $*.f90 $(OUTF)$*.o
+MUMPSTEMP=$(join $(OBJDIR),/mumps_sub.o)
+$(MUMPSTEMP):
+	$(FC) $(OPTF) $(INCS) -I. -I$(topdir)/include -I$(topdir)/src -Iobj/ -cpp $(CPPFLAGS) -c $(join $(SRCDIR),/mumps_sub.f90) $(OUTF)$*.o
 
-fhash_modules: fhash.f90 fhash_modules.f90
-	$(FC) $(FFLAGS) -c fhash_modules.f90
+FHASHTEMP=$(join $(OBJDIR),/fhash_modules)
+$(FHASHTEMP): $(join $(SRCDIR),/fhash.f90) $(join $(SRCDIR),/fhash_modules.f90)
+	$(FC) $(FFLAGS) -c $(join $(SRCDIR),/fhash_modules.f90)
 
 .SUFFIXES: (.SUFFIXES) .F .f90 .h .p
 
 clean:
-	$(RM) *.o *.mod
+	$(RM) $(join $(OBJDIR),/*.o) $(join $(OBJDIR),/*.mod)
 
 cleaner:
-	$(RM) *.o *.mod *.exe *.out.txt *.bin fort.* 
+	$(RM) $(join $(OBJDIR),/*.o) $(join $(OBJDIR),/*.mod) $(join $(RUNDIR),/*.exe) $(join $(RUNDIR),/*.out.txt) $(join $(RUNDIR),/*.bin) $(join $(RUNDIR),/fort.*)
 
 test:
 	./TEST_INTEGRITY/test_integrity.sh
