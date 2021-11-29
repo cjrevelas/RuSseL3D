@@ -5,7 +5,7 @@ use constants
 !---------------------------------------------------------------------------------------!
 implicit none
 !---------------------------------------------------------------------------------------!
-integer :: k1                              
+integer :: k1
 
 real(8), intent(in), dimension(numnp)      :: wa, Ufield, phia_fr, phia_gr
 real(8), intent(in), dimension(numnp,ns+1) :: q_final
@@ -22,8 +22,8 @@ term3 = 0.d00
 term4 = 0.d00
 
 do k1 = 1, numnp
-   dterm1(k1) = 0.5d0 * kapa * ((1.d0 - phia_fr(k1) - phia_gr(k1))**2.d0) !blue: particle-particle interaction 
-   dterm2(k1) = -(wa(k1) - Ufield(k1)) * (phia_fr(k1) + phia_gr(k1))      !pink: rho-w interaction               
+   dterm1(k1) = 0.5d0 * kapa * ((1.d0 - phia_fr(k1) - phia_gr(k1))**2.d0) !blue: particle-particle interaction
+   dterm2(k1) = -(wa(k1) - Ufield(k1)) * (phia_fr(k1) + phia_gr(k1))      !pink: rho-w interaction
 enddo
 
 call spat_3d(dterm1, term1, Q)
@@ -46,7 +46,7 @@ sum_final   = part_sum1 + part_sum2 + part_sum3! + part_sum4
 
 L1 = box_len(mod(prof_dim+0,3)+1)
 L2 = box_len(mod(prof_dim+1,3)+1) 
-adh_ten = - sum_final/(2*L1*L2*1.D-20)   ! adh_test = (Omega_bulk - Omega) / A
+adh_ten = - sum_final/(2*L1*L2*1.D-20)   ! adh_ten = (Omega_bulk - Omega) / A
 
 return
 !---------------------------------------------------------------------------------------!

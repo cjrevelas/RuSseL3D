@@ -7,7 +7,6 @@ integer :: n, ns
 real(8), intent(in), dimension(ns+1)  :: x, ds
 real(8), intent(out), dimension(ns+1) :: koeff
 !------------------------------------------------------------------------------!
-
 koeff = 0.d0
 
 do n = 2, ns, 2

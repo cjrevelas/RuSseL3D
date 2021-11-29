@@ -12,7 +12,7 @@ character(15) :: input_filename = 'gaussdat.in.txt'
 character(12) :: field_filename = 'field.in.bin'
 
 integer :: Reason
-integer :: i1, id       
+integer :: i1, id
 
 logical :: log_domain_geometry = .false.
 logical :: log_timestep = .false.
@@ -68,7 +68,7 @@ do
         exit
     else
         if (index(line,'# domain geometry') > 0) then
-            read(line,'(I9)') iseed
+            read(line,'(I9)') geom_type
             log_domain_geometry = .true.
         elseif (index(line,'# timestep') > 0) then
             read(line,'(I6)') ns
@@ -190,10 +190,10 @@ endif
 
 
 if (log_domain_geometry) then
-    if (iseed.eq.0) then
+    if (geom_type.eq.0) then
         write(iow,'(3x,A40,1x,A4)')adjl('Domain geometry:',40),'FILM'
         write(6  ,'(3x,A40,1x,A4)')adjl('Domain geometry:',40),'FILM'
-    elseif (iseed.eq.1) then
+    elseif (geom_type.eq.1) then
         write(iow,'(3x,A40,1x,A6)')adjl('Domain geometry:',40),'SPHERE'
         write(6  ,'(3x,A40,1x,A6)')adjl('Domain geometry:',40),'SPHERE'
     else

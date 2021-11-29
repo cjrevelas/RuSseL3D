@@ -9,10 +9,8 @@ real(8)                            :: ds_ave
 real(8), allocatable, dimension(:) :: ds, xs, koeff
 
 !*******************************INDICES AND FLAGS*******************************!
-integer :: iow, ioe, iseed, iterations, readfield, init_iter, output_every
-
-!************************************DOMAIN*************************************!
-integer :: use_grafted
+integer :: iow, ioe, iog, iterations, readfield, init_iter, output_every
+integer :: geom_type, use_grafted
 
 !************************************DOMAIN*************************************!
 integer               :: prof_dim

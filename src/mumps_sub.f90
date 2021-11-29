@@ -22,6 +22,7 @@ mumps_par%COMM = MPI_COMM_WORLD
 
 !Initialize an instance of the package for LU-factorization
 mumps_par%PAR  = 1  !working host processor
+
 !Set the type of the matrix
 if (mumps_matrix_type.eq.0) then
     mumps_par%SYM  = 0

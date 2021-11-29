@@ -14,44 +14,41 @@ implicit none
 include 'mpif.h'
 #endif
 !-------------------------------------------------------------------!
-integer :: i1, k1, iter, n_outside
+integer :: i1, k1, iter, n_outside, num_gpoints, gnode_id
 
-character(12) :: field_in_filename = 'field_in.bin'
+character(20) :: gp_filename = "gnodes.lammpstrj"
+character(20) :: field_in_filename = 'field_in.bin'
 character(40) :: field_filename_aux = ''
 
 real(8)                              :: surf_pot
-real(8)                              :: wa_max, wa_max_abs
-real(8)                              :: mix_tol, wa_step, wa_ave
-real(8)                              :: part_func, nch_per_area, coef
-real(8)                              :: adh_ten
+real(8)                              :: initValue = 0.d0
+real(8)                              :: wa_max = 0.d0, wa_max_abs = 0.d0
+real(8)                              :: mix_tol = 0.d0, wa_step = 0.d0, wa_ave = 0.d0
+real(8)                              :: part_func = 0.d0, nch_per_area = 0.d0
+real(8)                              :: adh_ten = 0.d0
 real(8), allocatable, dimension(:)   :: wa, wa_new, wa_mix, Ufield
 real(8), allocatable, dimension(:)   :: phia_fr, phia_gr
 real(8), allocatable, dimension(:,:) :: qf, qgr
 real(8), allocatable, dimension(:,:) :: qf_final, qgr_final
-
-
-! APS TEMP
-integer :: gnode_id = 20039
-
+!-------------------------------------------------------------------!
 !*******************************************************************!
 !                           MPI SECTION                             !
 !*******************************************************************!
-
 #ifdef USE_MPI
 call mpi_init(ierr)
-call MPI_Comm_size ( MPI_COMM_WORLD, n_proc, ierr )
-call MPI_Comm_rank ( MPI_COMM_WORLD, my_id, ierr )
+call MPI_Comm_size(MPI_COMM_WORLD, n_proc, ierr)
+call MPI_Comm_rank(MPI_COMM_WORLD, my_id, ierr)
 
-if ( my_id == 0 ) then
+if (my_id==0) then
     root = .true.
 else
     root = .false.
 endif
 
 if (root) then
-    write ( *, *)
-    write ( *, '(a,i4,a)' ) ' MPI run with ', n_proc, ' procs.'
-    write ( *, *)
+    write (*,*)
+    write (*,'(a,i4,a)') ' MPI run with ', n_proc, ' procs.'
+    write (*,*)
 end if
 
 flag_continue = .true.
@@ -103,7 +100,7 @@ allocate(wa(numnp),wa_mix(numnp),wa_new(numnp),Ufield(numnp))
 allocate(phia_fr(numnp),phia_gr(numnp))
 allocate(rdiag1(numnp))
 allocate(qf(numnp,2),qgr(numnp,2))
-allocate(qf_final(numnp,ns+1),qgr_final(numnp,ns+1))     !this needs to be generalized: ns_fr vs ns_gr        
+allocate(qf_final(numnp,ns+1),qgr_final(numnp,ns+1))     !this needs to be generalized e.g. ns_fr vs ns_gr
 
 wa        = 0.d0
 wa_mix    = 0.d0
@@ -116,11 +113,6 @@ qgr       = 0.d0
 qf_final  = 0.d0
 qgr_final = 0.d0
 rdiag1    = 0.d0
-
-!
-wa_max = 0.d0
-wa_ave = 0.d0
-wa_step = 0.d0
 
 #ifdef USE_MPI
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
@@ -167,7 +159,6 @@ if (time_integration_scheme.eq.2) then
 endif
 
 !output the mesh characteristics
-
 write(iow,'(/''Mesh characteristics..'')')
 write(iow,'(''   Number of mesh points (numnp):         '',I16)')numnp
 write(iow,'(''   Number of elements (numel):            '',I16)')numel
@@ -179,6 +170,7 @@ write(6  ,'(''   Number of mesh points (numnp):         '',I16)')numnp
 write(6  ,'(''   Number of elements (numel):            '',I16)')numel
 write(6  ,'(''   Number of nodes per element (nel):     '',I16)')nel
 write(6  ,'(''   Number of matrix indeces:              '',I16)')all_el
+
 
 !*******************************************************************!
 !                       INITIALIZE FIELDS                           !
@@ -196,7 +188,6 @@ do k1 = 1, numnp
     endif
 enddo
 close(211)
-
 !*******************************************************************!
 !                             READ FIELD                            !
 !*******************************************************************!
@@ -253,21 +244,22 @@ endif
 write(iow,'(/''*Initiating the simulation with '',I10,'' iterations'',/)') iterations
 write(6  ,'(/''*Initiating the simulation with '',I10,'' iterations'',/)') iterations
 
-write(iow,'(A10,1x,8(A19,1X),A16)') 'iter', 'adh_ten', 'max_error', 'std_error', 'wa_max', 'wa_max_abs', 'wa_ave', 'wa_step', &
-    &                               'fraction'
-write(6  ,'(A4, 1x,8(A14,1X),A12)') 'iter', 'adh_ten', 'max_error', 'std_error', 'wa_max', 'wa_max_abs', 'wa_ave', 'wa_step', &
-    &                               'fraction', 'progress (%)'
+write(iow,'(A10,1x,9(A19,1X),A16)') 'iter', 'fraction', 'adh_ten', 'n_gr_chains', 'max_error', 'std_error', &
+    &                               'wa_max', 'wa_max_abs', 'wa_ave', 'wa_step'
+write(6  ,'(A4, 1x,9(A14,1X),A12)') 'iter', 'fraction', 'adh_ten', 'n_gr_chains', 'max_error', 'std_error', &
+    &                               'wa_max', 'wa_max_abs', 'wa_ave', 'wa_step', 'progress (%)'
 
 iter=init_iter
 max_error=200000.
 
 do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
+
     iter=iter+1
 
-    write(iow,'(I10,1X,8(E19.9e3,1X))')              iter-1, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
-   &                                                 wa_step, frac
-    write(6  ,'(I4 ,1X,8(E14.4e3,1X))',advance='no') iter-1, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
-   &                                                 wa_step, frac
+    write(iow,'(I10,1X,9(E19.9e3,1X))')              iter-1, adh_ten, frac, nch_per_area, max_error, std_error, &
+   &                                                 wa_max, wa_max_abs, wa_ave, wa_step
+    write(6  ,'(I4 ,1X,9(E14.4e3,1X))',advance='no') iter-1, adh_ten, frac, nch_per_area, max_error, std_error, &
+   &                                                 wa_max, wa_max_abs, wa_ave, wa_step
 
     !Flush the output
     close(iow)
@@ -285,7 +277,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     enddo
 
     !Solve the diffusion equation for free chains
-    call edwards_film_fem(qf, qf_final)
+    call edwards(qf, qf_final)
 
     !*******************SOLVE EDWARDS FOR GRAFTED CHAINS*************************!
     !Initial value of propagator, qgr(numnp,0) = 0.0 for all numnp except for gp
@@ -293,25 +285,51 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     if (use_grafted.eq.1) then
 
-        do i1 = 1, numnp
-           qgr(i1,1)       = 0.d0
-           qgr_final(i1,1) = 0.d0
-        enddo
+        qgr = 0.d0
+        qgr_final = 0.d0
+
+        iog = 19
+        INQUIRE(FILE=gp_filename, EXIST=FILE_EXISTS)
+
+        if (FILE_EXISTS) then
+            open(unit=iog, file = gp_filename)
+        else
+            write(ERROR_MESSAGE,'(''File '',A15,'' does not exist!'')')gp_filename
+            call exit_with_error(1,1,1,ERROR_MESSAGE)
+        endif
+
+        read(iog,*)
+        read(iog,*)
+        read(iog,*)
+        read(iog,'(I10)')num_gpoints
+        read(iog,*)
+        read(iog,*)
+        read(iog,*)
+        read(iog,*)
+        read(iog,*)
 
         !Specify grafting points
-        if (gnode_id > numnp) then
-            write(ERROR_MESSAGE,'(''ID of grafted chain ('',I10,'') is larger from numnp ('',I10,'')'')') gnode_id, numnp
-            call exit_with_error(1,1,1,ERROR_MESSAGE)
-        end if
+        do i1 = 1, num_gpoints
 
-        qgr(gnode_id,1)       = 350.0d00
-        qgr_final(gnode_id,1) = 350.0d00
+            read(iog,*) gnode_id, initValue !,x_graft, y_graft, z_graft
+
+            qgr(gnode_id,1)       = initValue
+            qgr_final(gnode_id,1) = initValue
+
+            if (gnode_id > numnp) then
+                write(ERROR_MESSAGE,'(''ID of grafted chain ('',I10,'') is larger from numnp ('',I10,'')'')') gnode_id, numnp
+                call exit_with_error(1,1,1,ERROR_MESSAGE)
+            endif
+        enddo
+
+        close(iog)
 
         !Solve the diffusion equation for grafted chains
-        call edwards_film_fem(qgr, qgr_final)
+        call edwards(qgr, qgr_final)
+
     endif
 
-    !*********************CONVOLUTION AND ENERGY***********************************!  
+    !*********************CONVOLUTION AND ENERGY***********************************!
     !Calculate reduced segment density profiles of free and grafted chains
     call convolution(qf_final, qf_final, phia_fr)
 
@@ -320,7 +338,10 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     endif
 
     !Calculate partition function of free chains
-    call part_fun_phi(qf_final, phia_fr, part_func, nch_per_area, coef)
+    call part_fun(qf_final, part_func)
+
+    !Calculated number of grafted chains
+    call grafted_chains(phia_gr, nch_per_area)
 
     !Calculate the new field
     do k1 = 1, numnp
@@ -333,8 +354,6 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !*******************************************************************!
     !   COMPUTE DIFFERENCES BETWEEN OLD (wa) AND NEW (wa_new) fields    !
     !*******************************************************************!
-
-    !APS TEMP set field min equal to -kapa
     wa_ave = 0.d0
     max_error = 0.d00
     std_error = 0.d00
@@ -352,8 +371,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !*******************************************************************!
     !                         APPLY MIXING RULE                         !
     !*******************************************************************!
-
-    !   original convergence scheme 1: tolis
+    !original convergence scheme 1: tolis
     if (scheme_type.eq.1) then
         if (iter.eq.1) then
             frac = 1.d0
@@ -372,7 +390,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !experimental convergence scheme 2: 1/wa_max
     if (scheme_type.eq.2) then
         mix_tol = 0.1d0  * kapa
-        frac    = 0.005d0
+        frac    = frac
         wa_step = 4.d0 *exp(-dble(iter)/10.d0)
 
         n_outside = 0
@@ -415,7 +433,6 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !*******************************************************************!
     !                        PERIODIC PROFILER                          !
     !*******************************************************************!
-
     !Output the data every so many steps
     if (mod(iter,output_every).eq.0) then
         open (unit=121, file = 'wa.out.txt', status='unknown', position='append')
@@ -449,7 +466,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         enddo
         close(120)
 
-        ! Print the restricted partition functions
+        !Print the restricted partition functions
         call qprint(qf_final,"free")
 
         if (use_grafted.eq.1) then
@@ -489,13 +506,10 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 enddo!iter
 
 
-write(iow,'(I10,1X,8(E19.9e3,1X))')              iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
-   &                                                 wa_step, frac
-write(6  ,'(I4 ,1X,8(E14.4e3,1X))',advance='no') iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, wa_ave, &
-   &                                                 wa_step, frac
-
-!write(iow,'(I10,1X,6(E19.9e3,1X))')              iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, frac
-!write(6  ,'(I4 ,1X,6(E14.4e3,1X))',advance='no') iter, adh_ten, max_error, std_error, wa_max, wa_max_abs, frac
+write(iow,'(I10,1X,9(E19.9e3,1X))')              iter, frac, adh_ten, nch_per_area, max_error, std_error, &
+   &                                             wa_max, wa_max_abs, wa_ave, wa_step
+write(6  ,'(I4 ,1X,9(E14.4e3,1X))',advance='no') iter, frac, adh_ten, nch_per_area, max_error, std_error, &
+   &                                             wa_max, wa_max_abs, wa_ave, wa_step
 
 if (max_error.lt.max_error_tol) then
     write(iow,'(/''Convergence of max error'',F16.9)') max_error

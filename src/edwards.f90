@@ -1,4 +1,4 @@
-subroutine edwards_film_fem(q, q_final)
+subroutine edwards(q, q_final)
 !----------------------------------------------------------------------------------------------------------!
 use xdata
 use constants
@@ -121,7 +121,7 @@ do time_step = 2, ns+1
 #endif
 
 
-    !************************START TRANSIENT SOLUTION*********************! 
+    !************************START TRANSIENT SOLUTION*********************!
     !APS TEMP
 #ifndef VARIABLE_DS_SCHEME
     do time_step = 2, ns+1
@@ -180,5 +180,5 @@ enddo !time_step
 write(6,'(1x,I3)') 100
 
 return
-!----------------------------------------------------------------------------------------------------------!	
-end subroutine edwards_film_fem
+!----------------------------------------------------------------------------------------------------------!
+end subroutine edwards

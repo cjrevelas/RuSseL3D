@@ -1,17 +1,17 @@
 subroutine mesh_io_3d
 !--------------------------------------------------------------------!
-! APS 17/08/19: ADD. fhash module
+!fhash module
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
+!/fhash module
 use error_handing
 use write_helper
-!/ fhash module
 use xdata
 use kcw
 !--------------------------------------------------------------------!
 implicit none
-!--------------------------------------------------------------------!    
+!--------------------------------------------------------------------!
 character(len=15) :: dummy
 character(len=13) :: mesh_filename
 
@@ -32,18 +32,17 @@ integer, allocatable, dimension(:)   :: vtxentity, edgentity, temp3
 
 real(8), allocatable, dimension(:,:) :: edgpar, fcpar
 
-! APS 28/08/19: ADD. profile section
+!profile section
 integer, allocatable, dimension(:) :: prof_1D_node
 real(8)                            :: prof_bin
 integer                            :: nbin, ibin
 
-! APS 17/08/19: ADD. fhash module
+!fhash module
 type(fhash_type__ints_double) :: h
 type(ints_type) :: key
 integer :: n_keys
 integer :: key_value
 logical :: success
-
 !/ fhash module
 !--------------------------------------------------------------------!
 mesh_filename = 'Fem_3D.mphtxt'
@@ -107,26 +106,16 @@ write(6  ,'(/A43,E16.9,A11)')adjl('System volume:',43),volume,' Angstrom^3'
 !*******************************************************************!
 !                       Deal with the elements                      !
 !*******************************************************************!
-
 read (12,'(A60)') dummy
 
 !element types
 read (12,*) nmeltypes
 
-#ifdef DEBUG_OUTPUTS
-open(unit=13, file='com.out.txt')
-write(13,'(I9)') ndm
-write(13,'(I9)') numnp
-do i = 1, numnp
-    write(13,'(F19.15,1X,F19.15,1X,F19.15)') (xc(j,i), j = 1, ndm)
-enddo
-write(13,*) nmeltypes
-#endif
-
 do i = 1, 6
     read (12,'(A60)') dummy
 enddo
 
+!VERTEX ELEMENTS
 call read_matrix_bounds(vtxnum, vtxel)
 
 allocate(vtxelement(vtxnum,vtxel))
@@ -181,7 +170,7 @@ call read_matrix_bounds(fcnum, fcel)
 
 allocate(fcelement(fcnum,fcel))
 
-call read_integer(fcnum, fcel, fcelement) 
+call read_integer(fcnum, fcel, fcelement)
 
 read (12,'(A60)') dummy
 
@@ -199,10 +188,10 @@ read (12,'(A60)') dummy
 allocate(fcentity(fcel))
 
 call entity(fcel, fcentity)
-! changes the values of  element entinty so as to start from 1 instead from 0
+!changes the values of element entinty so as to start from 1 instead from 0
 fcentity = fcentity + 1
 
-!UP/DOWN PAIRS
+!up/down pairs
 read(12,'(A60)') dummy
 read(12,*) idummy
 
@@ -241,7 +230,6 @@ all_el = nel * nel * numel
 !*******************************************************************!
 !                  Allocate and initialize the arrays               !
 !*******************************************************************!
-
 allocate(F_m%row(all_el))
 allocate(F_m%col(all_el))
 allocate(F_m%g(all_el))
@@ -406,16 +394,10 @@ if (el.ne.0) then
     if (num.eq.1) then
         do i = 1, el
             read(12,*)  element(1,i)
-#ifdef DEBUG_OUTPUTS
-            write(13,*) element(1,i)
-#endif
         enddo
     else
         do i = 1, el
             read(12,*)  (element(j,i), j = 1, num)
-#ifdef DEBUG_OUTPUTS
-            write(13,*) (element(j,i), j = 1, num)
-#endif
         enddo
     endif
 endif
@@ -442,9 +424,6 @@ read (12,'(A60)') dum
 if (equal.eq.el) then
     do i = 1, el
         read(12,*)  endity(i)
-#ifdef DEBUG_OUTPUTS
-        write(13,*) endity(i)
-#endif
     enddo
 else
     ERROR_MESSAGE='Error in entity..'
@@ -473,16 +452,10 @@ if (el.ne.0) then
     if (num.eq.1) then
         do i = 1, el
             read(12,*)  element(1,i)
-#ifdef DEBUG_OUTPUTS
-            write(13,*) element(1,i)
-#endif
         enddo
     else
         do i = 1, el
             read(12,*)  (element(j,i), j = 1, num)
-#ifdef DEBUG_OUTPUTS
-            write(13,*) (element(j,i), j = 1, num)
-#endif
         enddo
     endif
 endif

@@ -9,7 +9,7 @@ integer             :: nnel, i, j, k
 
 real(8), intent(in), dimension(4)     :: xi
 real(8), intent(in), dimension(ndm,*) :: xl
-real(8), intent(out), dimension(4,*)  :: shp 
+real(8), intent(out), dimension(4,*)  :: shp
 real(8), intent(out)                  :: xsj
 real(8)                               :: detr
 real(8), dimension(3,3)               :: xs, xsi, a
@@ -19,20 +19,20 @@ save
 
 !Linear shape functions and their derivatives
 if(abs(nel).eq.4) then
-     shp(1,1) =  1.d00
-     shp(1,2) =  0.d00
-     shp(1,3) =  0.d00
-     shp(1,4) = -1.d00
+     shp(1,1) =  1.d00 !shp(1,1) = -1.d0
+     shp(1,2) =  0.d00 !shp(1,2) =  0.d0
+     shp(1,3) =  0.d00 !shp(1,3) =  0.d0
+     shp(1,4) = -1.d00 !shp(1,4) =  1.d0
 
-     shp(2,1) =  0.d00
-     shp(2,2) =  1.d00
-     shp(2,3) =  0.d00
-     shp(2,4) = -1.d00
+     shp(2,1) =  0.d00 !shp(2,1) = -1.d0
+     shp(2,2) =  1.d00 !shp(2,2) =  1.d0
+     shp(2,3) =  0.d00 !shp(2,3) =  0.d0
+     shp(2,4) = -1.d00 !shp(2,4) =  0.d0
 
-     shp(3,1) =  0.d00
-     shp(3,2) =  0.d00
-     shp(3,3) =  1.d00
-     shp(3,4) = -1.d00
+     shp(3,1) =  0.d00 !shp(3,1) = -1.d0
+     shp(3,2) =  0.d00 !shp(3,2) =  0.d0
+     shp(3,3) =  1.d00 !shp(3,3) =  1.d0
+     shp(3,4) = -1.d00 !shp(3,4) =  0.d0
 
      shp(4, 1) = xi(1)
      shp(4, 2) = xi(2)
@@ -89,8 +89,8 @@ elseif(abs(nel).eq.10 .or. abs(nel).eq.11  .or.&
      shp(4, 8) = 4.d0 * xi(4) * xi(1)
      shp(4, 9) = 4.d0 * xi(4) * xi(2)
      shp(4,10) = 4.d0 * xi(4) * xi(3)
-          
-          
+
+
      if(nel.eq.14 .or. nel.eq.15) then
 
         !Mid-face shape functions
@@ -145,7 +145,7 @@ elseif(abs(nel).eq.10 .or. abs(nel).eq.11  .or.&
          do j = 1, 4
             do i = 1, 4
                  shp(i,j) = shp(i,j) + 0.125d0*shp(i,nel)
-            enddo 
+            enddo
          enddo
 
          !Correct mid-edge shape functions for interior values
@@ -158,10 +158,9 @@ elseif(abs(nel).eq.10 .or. abs(nel).eq.11  .or.&
 
      nnel = nel
 
-else          
-!Error - Higher than quadratic not coded
-write(*,2000) nel
-
+else
+    !Error - Higher than quadratic not coded
+    write(*,2000) nel
 endif
 
 !Compute jacobian matrix
@@ -198,9 +197,7 @@ xsj = xs(1,1)*xsi(1,1) + xs(1,2)*xsi(2,1) + xs(1,3)*xsi(3,1)
 
 if (dabs(xsj)>tol) then
     detr = 1.d0/xsj
-    !change by tolis
     xsj  = xsj!*(1./6.)
-    !change by tolis
 else
     !write(iow,*) ' TETSHP: Determinant =',xsj
     detr = 1.d0
@@ -215,12 +212,12 @@ enddo
 
 !Heirarchic interior node function for 4-node
 if (nel.eq.-4) then
-        
+
     shp(1,5) = 256.d0*(xi(1) - xi(2))*xi(3)*xi(4)
     shp(2,5) = 256.d0*(xi(1) - xi(3))*xi(2)*xi(4)
     shp(3,5) = 256.d0*(xi(1) - xi(4))*xi(2)*xi(3)
     shp(4,5) = 256.d0*xi(1)*xi(2)*xi(3)*xi(4)
-    
+
     nnel = 5
 
 !Hierarchical bubble function for 10 and 14-node element
@@ -231,7 +228,7 @@ elseif (nel.eq.-10 .or. nel.eq.-14) then
     else
         nnel = 15
     endif
-        
+
     shp(1,nnel) = 256.d0*(xi(1) - xi(2))*xi(3)*xi(4)
     shp(2,nnel) = 256.d0*(xi(1) - xi(3))*xi(2)*xi(4)
     shp(3,nnel) = 256.d0*(xi(1) - xi(4))*xi(2)*xi(3)
@@ -243,11 +240,11 @@ do k = 1, nnel
    do i = 1, 3
         te(i) = shp(1,k)*xs(1,i) + shp(2,k)*xs(2,i) + shp(3,k)*xs(3,i)
    enddo
-       
+
    do i = 1,3
         shp(i,k) = te(i)
    enddo
-enddo 
+enddo
 
 2000  format(/' *ERROR* TETSHP not coded for nel =',i4)
 !-----------------------------------------------------------------------------------!

@@ -6,9 +6,9 @@ integer, parameter :: PLOG    = 0
 integer, parameter :: PSCREEN = 1
 integer, parameter :: PBOTH   = 2
 
-CHARACTER(len=100) :: MESSAGE
-
-Contains
+character(len=100) :: MESSAGE
+!--------------------------------------------------------------------!
+contains
 
 subroutine output(TARGET, iow, MESSAGE)
    character(len=100) MESSAGE
@@ -26,8 +26,6 @@ subroutine output(TARGET, iow, MESSAGE)
       write(6,*)"WRITE_HELPER: WRONG TARGET TO output FUNCTION"
       write(6,*)"    CHOOSE BETWEEN 0, 1 and 2"
    endif
-
-
 end subroutine output
 
 function adjl(string,length) result(r)
@@ -36,6 +34,5 @@ function adjl(string,length) result(r)
    character(len=length) :: r
    r = adjustl(string)
 end function adjl
-
 !--------------------------------------------------------------------!
 end module write_helper
