@@ -28,6 +28,11 @@ real(8), allocatable, dimension(:)   :: wa, wa_new, wa_mix, Ufield
 real(8), allocatable, dimension(:)   :: phia_fr, phia_gr
 real(8), allocatable, dimension(:,:) :: qf, qgr
 real(8), allocatable, dimension(:,:) :: qf_final, qgr_final
+
+
+! APS TEMP
+integer :: gnode_id = 20039
+
 !*******************************************************************!
 !                           MPI SECTION                             !
 !*******************************************************************!
@@ -294,8 +299,13 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         enddo
 
         !Specify grafting points
-        qgr(5540,1)       = 3.6d02
-        qgr_final(5540,1) = 3.6d02
+        if (gnode_id > numnp) then
+            write(ERROR_MESSAGE,'(''ID of grafted chain ('',I10,'') is larger from numnp ('',I10,'')'')') gnode_id, numnp
+            call exit_with_error(1,1,1,ERROR_MESSAGE)
+        end if
+
+        qgr(gnode_id,1)       = 350.0d00
+        qgr_final(gnode_id,1) = 350.0d00
 
         !Solve the diffusion equation for grafted chains
         call edwards_film_fem(qgr, qgr_final)
@@ -376,7 +386,12 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
                     wa_mix(k1) = wa(k1) - wa_step*rand()
                 endif
             else
-                wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
+! APS TEMP
+!                if (k1.eq.gnode_id) then
+!                    wa_mix(k1) = (1.d0 - 0.1d0) * wa(k1) + 0.1d0 * wa_new(k1)
+!                else
+                    wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
+!                endif
             endif
         enddo
 
@@ -406,31 +421,40 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         open (unit=121, file = 'wa.out.txt', status='unknown', position='append')
         open (unit=122, file = 'wa_new.out.txt', status='unknown', position='append')
         open (unit=123, file = 'wa_mix.out.txt', status='unknown', position='append')
-        open (unit=124, file = 'rho.out.txt', status='unknown', position='append')
+        open (unit=124, file = 'rho_free.out.txt', status='unknown', position='append')
+        open (unit=125, file = 'rho_grafted.out.txt', status='unknown', position='append')
         do k1 = 1, numnp, print_ev
             write(121,'(E19.9e3)',advance='no') wa(k1)
             write(122,'(E19.9e3)',advance='no') wa_new(k1)
             write(123,'(E19.9e3)',advance='no') wa_mix(k1)
-            write(124,'(E19.9e3)',advance='no') phia_fr(k1)                                    
+            write(124,'(E19.9e3)',advance='no') phia_fr(k1)
+            write(125,'(E19.9e3)',advance='no') phia_gr(k1)
         enddo
         write(121,*)
         write(122,*)
         write(123,*)
         write(124,*)
+        write(125,*)
         close(121)
         close(122)
         close(123)
         close(124)
+        close(125)
 
         open (unit=120, file = 'rho_reduced.out.txt')
-        write(120,'(8(A13))') 'np','x','y','z','phi','wa','wa_new','wa_mix'
+        write(120,'(A13,8(A19))') 'np','x','y','z','phi_f','phi_g','wa','wa_new','wa_mix'
         do k1 = 1, numnp
-            write(120,'(I13,7(E19.9e3))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_fr(k1), &
-   &                                    wa(k1), wa_new(k1), wa_mix(k1)
+            write(120,'(I13,8(E19.9e3))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_fr(k1), &
+   &                                      phia_gr(k1), wa(k1), wa_new(k1), wa_mix(k1)
         enddo
         close(120)
 
-        call qprint(qf_final)
+        ! Print the restricted partition functions
+        call qprint(qf_final,"free")
+
+        if (use_grafted.eq.1) then
+            call qprint(qgr_final,"graf")
+        endif
 
     endif
 
@@ -447,13 +471,13 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         enddo
 
         field_filename_aux = ""
-        write(field_filename_aux,'(''field_'',I3.3,''.out.bin'')')iter
+        write(field_filename_aux,'(''field_'',I4.4,''.out.bin'')')iter
         open(unit=655, file = field_filename_aux, Form='unformatted')
         write(655) wa_mix
         close(655)
 
         field_filename_aux = ""
-        write(field_filename_aux,'(''field_comsol_'',I3.3,''.out.txt'')')iter
+        write(field_filename_aux,'(''field_comsol_'',I4.4,''.out.txt'')')iter
         open(unit=123, file = field_filename_aux)
 
         do k1 = 1, numnp
