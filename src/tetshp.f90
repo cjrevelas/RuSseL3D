@@ -19,20 +19,20 @@ save
 
 !Linear shape functions and their derivatives
 if(abs(nel).eq.4) then
-     shp(1, 1) = -1.d0
-     shp(1, 2) =  0.d0
-     shp(1, 3) =  0.d0
-     shp(1, 4) =  1.d0
+     shp(1,1) =  1.d00
+     shp(1,2) =  0.d00
+     shp(1,3) =  0.d00
+     shp(1,4) = -1.d00
 
-     shp(2, 1) = -1.d0
-     shp(2, 2) =  1.d0
-     shp(2, 3) =  0.d0
-     shp(2, 4) =  0.d0
+     shp(2,1) =  0.d00
+     shp(2,2) =  1.d00
+     shp(2,3) =  0.d00
+     shp(2,4) = -1.d00
 
-     shp(3, 1) = -1.d0
-     shp(3, 2) =  0.d0
-     shp(3, 3) =  1.d0
-     shp(3, 4) =  0.d0
+     shp(3,1) =  0.d00
+     shp(3,2) =  0.d00
+     shp(3,3) =  1.d00
+     shp(3,4) = -1.d00
 
      shp(4, 1) = xi(1)
      shp(4, 2) = xi(2)
@@ -169,9 +169,6 @@ do i = 1,3
    do j = 1,3
         xs(j,i) = 0.0d0
         do k = 1,nnel
-            !TEMP OLD
-            !xs(j,i) = xs(j,i) + xl(j,k)*shp(i,k)
-            !TEMP NEW
             xs(j,i) = xs(j,i) - xl(j,k)*shp(i,k)
         enddo
    enddo
