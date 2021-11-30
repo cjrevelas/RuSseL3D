@@ -3,13 +3,13 @@ module xdata
 implicit none
 !-------------------------------------------------------------------------------!
 !****************************TIME DISCRETIZATION********************************!
-integer :: ns, time_integration_scheme
+integer                            :: ns, time_integration_scheme
 real(8)                            :: chainlen
 real(8)                            :: ds_ave
 real(8), allocatable, dimension(:) :: ds, xs, koeff
 
 !*******************************INDICES AND FLAGS*******************************!
-integer :: iow, ioe, iog, iterations, readfield, init_iter, output_every
+integer :: iow, ioe, iog, iterations, readfield, init_iter, output_every, print_ev
 integer :: geom_type, use_grafted
 
 !************************************DOMAIN*************************************!
@@ -23,7 +23,7 @@ integer, allocatable, dimension(:,:) :: ix
 real(8), allocatable, dimension(:,:) :: xc
 
 !*******************************BOUNDARY CONDITIONS*****************************!
-integer :: n_dirichlet_faces
+integer                            :: n_dirichlet_faces
 integer, allocatable, dimension(:) :: ids_dirichlet_faces
 logical, allocatable, dimension(:) :: elem_in_q0_face
 
@@ -37,9 +37,5 @@ integer :: scheme_type
 
 !*********************************MUMPS OPTIONS*********************************!
 integer :: mumps_matrix_type
-
-!*****************************PERIODIC PROFILES*********************************!
-integer :: print_ev
-
 !-------------------------------------------------------------------------------!
 end module xdata

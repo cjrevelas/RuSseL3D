@@ -1,8 +1,9 @@
-subroutine quadinterp_koef(koeff, x, ds, ns)
+subroutine quadinterp_koef(ds, ns, x, koeff)
 !------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------!
-integer :: n, ns
+integer, intent(in) :: ns
+integer             :: n
 
 real(8), intent(in), dimension(ns+1)  :: x, ds
 real(8), intent(out), dimension(ns+1) :: koeff

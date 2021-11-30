@@ -1,15 +1,16 @@
-subroutine simpsonkoef_S(koeff, ds_ave, ns)
+subroutine simpsonkoef_S(ds_ave, ns, koeff)
 !------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------!
-integer :: n, ns
+integer, intent(in) :: ns
+integer             :: n
 
-real(8)                               :: ds_ave
+real(8), intent(in)                   :: ds_ave
 real(8), intent(out), dimension(ns+1) :: koeff
 !------------------------------------------------------------------------------------!
 !*************************************************************!
 ! For constant step size the algorithm reduces to Simpson 1/3 !
-! rule deticted in the code snipet below:                     !
+! rule depicted in the code snipet below:                     !
 !                                                             !
 ! s values:      0                                        1   !
 !                                                             !

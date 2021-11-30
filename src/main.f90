@@ -100,7 +100,7 @@ allocate(wa(numnp),wa_mix(numnp),wa_new(numnp),Ufield(numnp))
 allocate(phia_fr(numnp),phia_gr(numnp))
 allocate(rdiag1(numnp))
 allocate(qf(numnp,2),qgr(numnp,2))
-allocate(qf_final(numnp,ns+1),qgr_final(numnp,ns+1))     !this needs to be generalized e.g. ns_fr vs ns_gr
+allocate(qf_final(numnp,ns+1),qgr_final(numnp,ns+1))
 
 wa        = 0.d0
 wa_mix    = 0.d0
@@ -118,52 +118,12 @@ rdiag1    = 0.d0
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 #endif
 
-!*******************************************************************!
-!               INITIALIZE THE TIME INTEGRATION SCHEME              !
-!*******************************************************************!
-
-!discretize the time domain and compute the simpson coeffs
-allocate(ds(ns+1))
-allocate(koeff(ns+1))
-allocate(xs(ns+1))
-ds = 0.d0
-koeff = 0.d0
-xs = 0.d0
-
-!Constant step size
-if (time_integration_scheme.eq.1) then
-    ds = ds_ave
-    call simpsonkoef_s(koeff, ds_ave, ns)
-endif
-
-!Non constant step size with quadradic interpolation
-if (time_integration_scheme.eq.2) then
-
-! APS TODO: move these inside a routine
-! A)
-!    ds = ds_ave
-!    do k1 = 2, ns+1
-!        xs(k1) = xs(k1-1) + ds_ave
-!        ds(k1) = xs(k1) - xs(k1-1)
-!    enddo
-!
-! B)
-
-    ds(1)=0.d0
-    do k1 = 2, ns+1
-        xs(k1) = 0.5d0 * (1.d0 - DCOS(pi * (dble(k1)-1.d0) / dble(ns)))
-        ds(k1) = xs(k1) - xs(k1-1)
-    enddo
-
-    call quadinterp_koef(koeff, xs, ds, ns)
-endif
-
-!output the mesh characteristics
+!output mesh characteristics
 write(iow,'(/''Mesh characteristics..'')')
-write(iow,'(''   Number of mesh points (numnp):         '',I16)')numnp
-write(iow,'(''   Number of elements (numel):            '',I16)')numel
-write(iow,'(''   Number of nodes per element (nel):     '',I16)')nel
-write(iow,'(''   Number of matrix indeces:              '',I16)')all_el
+write(iow,'(''   Number of mesh points (numnp):         '',I16)') numnp
+write(iow,'(''   Number of elements (numel):            '',I16)') numel
+write(iow,'(''   Number of nodes per element (nel):     '',I16)') nel
+write(iow,'(''   Number of matrix indeces:              '',I16)') all_el
 
 write(6  ,'(/''Mesh characteristics..'')')
 write(6  ,'(''   Number of mesh points (numnp):         '',I16)')numnp
@@ -204,8 +164,8 @@ if (readfield.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
-    read(655) wa
-    close(655)
+!initialize time integration scheme
+call init_time
 
     !multiply field with chain length since it is divided with chain length right
     !before it is printed
