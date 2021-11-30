@@ -16,14 +16,13 @@ type(DMUMPS_STRUC) :: mumps_par
 
 integer :: i, i8, i9, numnp, mumps_matrix_type
 !--------------------------------------------------------------------------!
-
-!Define a communicator for the package
+!define a communicator for the package
 mumps_par%COMM = MPI_COMM_WORLD
 
-!Initialize an instance of the package for LU-factorization
+!initialize an instance of the package for LU-factorization
 mumps_par%PAR  = 1  !working host processor
 
-!Set the type of the matrix
+!set the type of the matrix
 if (mumps_matrix_type.eq.0) then
     mumps_par%SYM  = 0
 elseif (mumps_matrix_type.eq.1) then
@@ -55,11 +54,11 @@ mumps_par%ICNTL(3) = -1
 mumps_par%ICNTL(4) = -1
 #endif
 
-! Set mumps options here
+!set mumps options here
 !mumps_par%ICNTL(28)=2 !Parallel Ordering tools
 !mumps_par%ICNTL(7)=4 !Choose ordering scheme
 
-!Define problem on the host processor(id = 0)
+!define problem on the host processor(id = 0)
 if (mumps_par%MYID.eq.0) then
     mumps_par%N   = numnp
     mumps_par%NNZ = NNZ
@@ -78,7 +77,7 @@ if (mumps_par%MYID.eq.0) then
     enddo
 endif
 
-!Call package for matrix factorization and solution
+!call package for matrix factorization and solution
 mumps_par%JOB = 6
 
 call DMUMPS(mumps_par)
@@ -90,14 +89,14 @@ if (mumps_par%INFOG(1).lt.0) then
     goto 500
 endif
 
-!Solution has been assembled on the host
+!solution has been assembled on the host
 if (mumps_par%MYID.eq.0 ) then
     do i = 1, mumps_par%N
         rdiag1(i) = mumps_par%RHS(i)
     enddo
 endif
 
-!Deallocate user data
+!deallocate user data
  if (mumps_par%MYID.eq.0 ) then
     deallocate(mumps_par%IRN)
     deallocate(mumps_par%JCN)
@@ -105,7 +104,7 @@ endif
     deallocate(mumps_par%RHS)
 endif
 
-!Destruct the instance (deallocate internal data structures)
+!destruct the instance (deallocate internal data structures)
 mumps_par%JOB = -2
 call DMUMPS(mumps_par)
 

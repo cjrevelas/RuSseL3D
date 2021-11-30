@@ -24,9 +24,9 @@ F_m%g=0.d0
 F_m%w=0.d0
 
 do nn = 1, numel
-    !1. Loop over all nodes of current element
-    !2. Find global index of node
-    !3. Copy coordinates from global array to local array concerning current element
+    !1. loop over all nodes of current element
+    !2. find global index of node
+    !3. copy coordinates from global array to local array concerning current element
 
     do i = 1, nel
         gl_index(i) = ix(i,nn)
@@ -35,7 +35,7 @@ do nn = 1, numel
         enddo
     enddo
 
-    !Set up for gauss quadrature
+    !set up for gauss quadrature
     l=3
     call gauss_3d(l, lint, sv)
 

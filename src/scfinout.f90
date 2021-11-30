@@ -553,19 +553,18 @@ endif
 !                Initialize some useful quantinties                 !
 !*******************************************************************!
 
-! Hamaker constants
+!Hamaker constants
 Aps   = Aps*1.e-20
 Asio2 = Asio2*1.e-20
 
 write(iow,'(/''*Initialization of usefull quantities..'')')
 write(6  ,'(/''*Initialization of usefull quantities..'')')
 
-!ds_ave = 1.d0/dble(ns)
 ds_ave = 1.d0/dble(ns)
 write(iow,'(3x,A40,E16.9)')adjl('ds_ave = 1 / ns:',40),ds_ave
 write(6  ,'(3x,A40,E16.9)')adjl('ds_ave = 1 / ns:',40),ds_ave
 
-! Calculate the radius of gyration
+!calculate the radius of gyration
 Rgyr = 1.54d00 * dsqrt(CN * (chainlen)/6.d00)
 write(iow,'(3x,A40,E16.9,A10)')adjl('Radius of Gyration:',40),Rgyr,' Angstroms'
 write(6  ,'(3x,A40,E16.9,A10)')adjl('Radius of Gyration:',40),Rgyr,' Angstroms'

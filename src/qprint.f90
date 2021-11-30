@@ -13,12 +13,11 @@ character(20)                              :: file_name
 real(8), intent(in), dimension(numnp,ns+1) :: q_final
 real(8)                                    :: iq_final
 
-! Profile Section
+!profile section
 real(8), parameter                         :: rtol = 2.d0
 integer, parameter                         :: max_time_step = 40
 real(8), dimension(3)                      :: r_center
 integer                                    :: d2, d3
-
 !--------------------------------------------------------------------!
 write(file_name,'(''q'',A4,''.out.txt'')') q_type
 
@@ -37,10 +36,9 @@ do i1 = 1, numnp
     write(363,*)
 enddo
 close(363)
-
 !--------------------------------------------------------------------!
-! The current section prints q's across the three perpendicular lines
-! crossing the point r_center
+!the current section prints q's across the three perpendicular lines
+!crossing the point r_center
 r_center(1) = 0.d0
 r_center(2) = 0.d0
 r_center(3) = 0.d0

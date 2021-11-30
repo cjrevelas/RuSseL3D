@@ -3,7 +3,9 @@ module error_handing
 implicit none
 !--------------------------------------------------------------------!
 character(100) :: ERROR_MESSAGE
+
 integer        :: ERROR_TYPE
+
 logical        :: FILE_EXISTS
 !--------------------------------------------------------------------!
 contains

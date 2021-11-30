@@ -24,6 +24,5 @@ type full_matrix
 end type
 
 type(full_matrix) :: F_m
-
 !--------------------------------------------------------------------!
 end module kcw

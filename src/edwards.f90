@@ -44,7 +44,7 @@ do time_step = 2, ns+1
 
     set_diag_to_one=.true.
 
-    !In case the matrix is symmetric remove the zero lines and rows
+    !in case the matrix is symmetric remove the zero lines and rows
     !diagonal componets with Dirichlet BC q=0.
     if (mumps_matrix_type.eq.1.or.mumps_matrix_type.eq.2) then
         do i1 = 1, all_el
@@ -128,7 +128,7 @@ do time_step = 2, ns+1
 #endif
 
 #ifdef USE_MPI
-        !Send a continue (.true.) signal to the slaves
+        !send a continue (.true.) signal to the slaves
         call MPI_BCAST(.true., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
 
