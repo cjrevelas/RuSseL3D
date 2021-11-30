@@ -55,6 +55,7 @@ MODULES=$(OBJDIR)/xdata_mod.o\
 OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/part_fun.o\
 	$(OBJDIR)/grafted_chains.o\
+	$(OBJDIR)/profile_dumper.o\
 	$(OBJDIR)/scfinout.o\
 	$(OBJDIR)/grafted_init_cond.o\
 	$(OBJDIR)/init_field.o\
