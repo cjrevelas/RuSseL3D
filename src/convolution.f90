@@ -1,11 +1,11 @@
-subroutine convolution(q1, q2, phia)
-!-------------------------------------------------------------------------------------------!
-use xdata
+subroutine convolution(numnp, ns, koeff, q1, q2, phia)
 !-------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------!
-integer :: k1, time_step
+integer, intent(in) :: numnp, ns
+integer             :: k1, time_step
 
+real(8), intent(in), dimension(ns+1)       :: koeff
 real(8), intent(in), dimension(numnp,ns+1) :: q1, q2
 real(8), intent(out), dimension(numnp)     :: phia
 real(8)                                    :: summer

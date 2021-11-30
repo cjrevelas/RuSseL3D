@@ -1,4 +1,4 @@
-subroutine edwards(q, q_final)
+subroutine edwards(ds, q, q_final)
 !----------------------------------------------------------------------------------------------------------!
 use xdata
 use constants
@@ -8,6 +8,7 @@ use mpistuff
 #endif
 !----------------------------------------------------------------------------------------------------------!
 implicit none
+!----------------------------------------------------------------------------------------------------------!
 #ifdef USE_MPI
 include 'mpif.h'
 #endif
@@ -16,6 +17,7 @@ integer :: i, j, f, i1, time_step
 
 logical, dimension(nel*numel) :: set_diag_to_one
 
+real(8), intent(in), dimension(ns+1)          :: ds
 real(8), intent(inout), dimension(numnp,2)    :: q
 real(8), intent(inout), dimension(numnp,ns+1) :: q_final
 

@@ -1,4 +1,4 @@
-subroutine init_time
+subroutine init_time(ds, koeff)
 !------------------------------------------------------------------------------------------------------!
 use xdata
 use constants
@@ -6,14 +6,13 @@ use constants
 implicit none
 !------------------------------------------------------------------------------------------------------!
 integer :: k1
+
+real(8), intent(out), dimension(ns+1) :: ds, koeff
+real(8), allocatable, dimension(:)    :: xs
 !------------------------------------------------------------------------------------------------------!
-!discretize time domain
-allocate(ds(ns+1))
-allocate(koeff(ns+1))
 allocate(xs(ns+1))
-ds    = 0.d0
-koeff = 0.d0
-xs    = 0.d0
+
+xs = 0.d0
 
 !constant step size scheme
 if (time_integration_scheme.eq.1) then

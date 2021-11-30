@@ -10,6 +10,7 @@ use mpistuff
 #endif
 !-------------------------------------------------------------------!
 implicit none
+!-------------------------------------------------------------------!
 #ifdef USE_MPI
 include 'mpif.h'
 #endif
@@ -24,6 +25,7 @@ real(8)                              :: wa_max = 0.d0, wa_max_abs = 0.d0
 real(8)                              :: mix_tol = 0.d0, wa_step = 0.d0, wa_ave = 0.d0
 real(8)                              :: part_func = 0.d0, nch_per_area = 0.d0
 real(8)                              :: adh_ten = 0.d0
+real(8), allocatable, dimension(:)   :: ds, koeff
 real(8), allocatable, dimension(:)   :: wa, wa_new, wa_mix, Ufield
 real(8), allocatable, dimension(:)   :: phia_fr, phia_gr
 real(8), allocatable, dimension(:,:) :: qf, qgr
@@ -91,12 +93,15 @@ call scfinout
 call mesh_io_3d
 
 !allocate and initialize essential scf arrays
+allocate(ds(ns+1),koeff(ns+1))
 allocate(wa(numnp),wa_mix(numnp),wa_new(numnp),Ufield(numnp))
 allocate(phia_fr(numnp),phia_gr(numnp))
 allocate(rdiag1(numnp))
 allocate(qf(numnp,2),qgr(numnp,2))
 allocate(qf_final(numnp,ns+1),qgr_final(numnp,ns+1))
 
+ds        = 0.d0
+koeff     = 0.d0
 wa        = 0.d0
 wa_mix    = 0.d0
 wa_new    = 0.d0
@@ -127,7 +132,7 @@ write(6  ,'(''   Number of nodes per element (nel):     '',I16)') nel
 write(6  ,'(''   Number of matrix indeces:              '',I16)') all_el
 
 !initialize time integration scheme
-call init_time
+call init_time(ds, koeff)
 
 !initialize field
 call init_field(field_in_filename, Ufield, wa)
@@ -183,7 +188,8 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
        qf_final(i1,1) = 1.d0
     enddo
 
-    call edwards(qf, qf_final)
+    !solve
+    call edwards(ds, qf, qf_final)
 
     !*******************SOLVE EDWARDS PDE FOR GRAFTED CHAINS*************************!
     !initial value of propagator, qgr(numnp,0) = 0.0 for all numnp except for gp
@@ -197,15 +203,16 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         !assign initial conditions at the grafting points
         call grafted_init_cond(gp_filename, qgr, qgr_final)
 
-        call edwards(qgr, qgr_final)
+        !solve
+        call edwards(ds, qgr, qgr_final)
     endif
 
     !*********************CONVOLUTION AND ENERGY***********************************!
     !calculate reduced segment density profiles of free and grafted chains
-    call convolution(qf_final, qf_final, phia_fr)
+    call convolution(numnp, ns, koeff, qf_final, qf_final, phia_fr)
 
     if (use_grafted.eq.1) then
-        call convolution(qgr_final, qf_final, phia_gr)
+        call convolution(numnp, ns, koeff, qgr_final, qf_final, phia_gr)
     endif
 
     !calculate partition function of free chains
