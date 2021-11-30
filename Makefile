@@ -56,6 +56,7 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/part_fun.o\
 	$(OBJDIR)/grafted_chains.o\
 	$(OBJDIR)/scfinout.o\
+	$(OBJDIR)/grafted_init_cond.o\
 	$(OBJDIR)/init_field.o\
 	$(OBJDIR)/init_time.o\
 	$(OBJDIR)/simpsonkoef.o\

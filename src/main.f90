@@ -194,39 +194,8 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         qgr = 0.d0
         qgr_final = 0.d0
 
-        iog = 19
-        INQUIRE(FILE=gp_filename, EXIST=FILE_EXISTS)
-
-        if (FILE_EXISTS) then
-            open(unit=iog, file = gp_filename)
-        else
-            write(ERROR_MESSAGE,'(''File '',A15,'' does not exist!'')')gp_filename
-            call exit_with_error(1,1,1,ERROR_MESSAGE)
-        endif
-
-        read(iog,*)
-        read(iog,*)
-        read(iog,*)
-        read(iog,'(I10)')num_gpoints
-        read(iog,*)
-        read(iog,*)
-        read(iog,*)
-        read(iog,*)
-        read(iog,*)
-
-        !Specify grafting points
-        do i1 = 1, num_gpoints
-
-            read(iog,*) gnode_id, initValue !,x_graft, y_graft, z_graft
-
-            qgr(gnode_id,1)       = initValue
-            qgr_final(gnode_id,1) = initValue
-
-            if (gnode_id > numnp) then
-                write(ERROR_MESSAGE,'(''ID of grafted chain ('',I10,'') is larger from numnp ('',I10,'')'')') gnode_id, numnp
-                call exit_with_error(1,1,1,ERROR_MESSAGE)
-            endif
-        enddo
+        !assign initial conditions at the grafting points
+        call grafted_init_cond(gp_filename, qgr, qgr_final)
 
         call edwards(qgr, qgr_final)
     endif
