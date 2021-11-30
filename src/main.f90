@@ -1,4 +1,4 @@
-Program FEM_3D
+program FEM_3D
 !-------------------------------------------------------------------!
 use xdata
 use constants
@@ -14,14 +14,12 @@ implicit none
 include 'mpif.h'
 #endif
 !-------------------------------------------------------------------!
-integer :: i1, k1, iter, n_outside, num_gpoints, gnode_id
+integer :: i1, k1, iter, n_outside
 
 character(20) :: gp_filename = "gnodes.lammpstrj"
 character(20) :: field_in_filename = 'field_in.bin'
 character(40) :: field_filename_aux = ''
 
-real(8)                              :: surf_pot
-real(8)                              :: initValue = 0.d0
 real(8)                              :: wa_max = 0.d0, wa_max_abs = 0.d0
 real(8)                              :: mix_tol = 0.d0, wa_step = 0.d0, wa_ave = 0.d0
 real(8)                              :: part_func = 0.d0, nch_per_area = 0.d0
@@ -69,26 +67,23 @@ if (.not.root) then
     goto 1000
 endif
 #endif
-
-
 !-------------------------------------------------------------------!
 iow = 10
 open(unit=iow, file = 'scft.out.txt')
 write(iow,'(''Polymer FEM_3D 1 Sept 19 '')')
-write(iow,'(''Polumer Bulk with solid surfaces   ''/  &
+write(iow,'(''Polumer Bulk with solid surfaces   ''/    &
           & ''---------------------------------  ''/    &
           & ''SCF theory, Gaussian string model  ''/    &
           & ''Finite Element solution with       ''/    &
           & ''successive substitutions           '')')
 
-!Initialize the error log
+!initialize the error log
 ioe = 11
 open(unit=ioe, file = 'error.out.txt', status='replace')
 close(ioe)
 !*******************************************************************!
 !                       INITIALIZATION SECTION                      !
 !*******************************************************************!
-
 !parse the inputs from the datafile
 call scfinout
 
@@ -126,67 +121,18 @@ write(iow,'(''   Number of nodes per element (nel):     '',I16)') nel
 write(iow,'(''   Number of matrix indeces:              '',I16)') all_el
 
 write(6  ,'(/''Mesh characteristics..'')')
-write(6  ,'(''   Number of mesh points (numnp):         '',I16)')numnp
-write(6  ,'(''   Number of elements (numel):            '',I16)')numel
-write(6  ,'(''   Number of nodes per element (nel):     '',I16)')nel
-write(6  ,'(''   Number of matrix indeces:              '',I16)')all_el
-
-
-!*******************************************************************!
-!                       INITIALIZE FIELDS                           !
-!*******************************************************************!
-open(unit=211, file = 'Usolid.out.txt')
-do k1 = 1, numnp
-    !TODO: fix distance for 3D
-    distance   = xc(1,k1)
-    Ufield(k1) = surf_pot(distance)
-    write(211,('(E16.9,2X,E19.9)')) distance, Ufield(k1)
-    if (Ufield(k1).ne.Ufield(k1)) then
-        Ufield(k1) = 0.d0
-        write(ERROR_MESSAGE,'(''Hamaker assumed a NaN value for x = '',E16.9,''. NaN was changed to '',E16.9)') distance, Ufield(k1)
-        call exit_with_error(0,2,0,ERROR_MESSAGE)
-    endif
-enddo
-close(211)
-!*******************************************************************!
-!                             READ FIELD                            !
-!*******************************************************************!
-if (readfield.eq.1) then
-    write(iow,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_in_filename
-    write(6  ,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_in_filename
-
-    INQUIRE(FILE=field_in_filename, EXIST=FILE_EXISTS)
-
-    if (FILE_EXISTS) then
-        open(unit=655, file = field_in_filename, Form='unformatted')
-    else
-        write(ERROR_MESSAGE,'(''File '',A15,'' does not exist!'')')field_in_filename
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
+write(6  ,'(''   Number of mesh points (numnp):         '',I16)') numnp
+write(6  ,'(''   Number of elements (numel):            '',I16)') numel
+write(6  ,'(''   Number of nodes per element (nel):     '',I16)') nel
+write(6  ,'(''   Number of matrix indeces:              '',I16)') all_el
 
 !initialize time integration scheme
 call init_time
 
-    !multiply field with chain length since it is divided with chain length right
-    !before it is printed
-    do k1 = 1, numnp
-        wa(k1) = wa(k1) * chainlen
-    enddo
-else
-    if (scheme_type.eq.2) then
-        do k1 = 1, numnp
-            if (elem_in_q0_face(k1)) then
-                wa(k1) = -kapa
-            else
-                wa(k1) = 0.d0
-            endif
-        enddo
-    else
-        wa = 0.d0
-    endif
-endif
+!initialize field
+call init_field(field_in_filename, Ufield, wa)
 
-!Initialize the files in case this is not a restart
+!initialize files in case this is not a restart
 if (init_iter.eq.0) then
     open(unit=121, file = 'wa.out.txt', status='replace')
     close(121)
@@ -198,9 +144,9 @@ if (init_iter.eq.0) then
     close(121)
 endif
 
-!*******************************************************************!
-!                       LOOPS FOR SOLUTION                          !
-!*******************************************************************!
+!**************************************************************************************************************!
+!                                        LOOPS FOR FIELD CONVERGENCE                                           !
+!**************************************************************************************************************!
 write(iow,'(/''*Initiating the simulation with '',I10,'' iterations'',/)') iterations
 write(6  ,'(/''*Initiating the simulation with '',I10,'' iterations'',/)') iterations
 
@@ -221,30 +167,30 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     write(6  ,'(I4 ,1X,9(E14.4e3,1X))',advance='no') iter-1, adh_ten, frac, nch_per_area, max_error, std_error, &
    &                                                 wa_max, wa_max_abs, wa_ave, wa_step
 
-    !Flush the output
+    !flush output
     close(iow)
     open(unit=iow, file = 'scft.out.txt', position = 'append')
 
+    !perform matrix assembly
     call matrix_assemble(wa)
 
-    !**********************SOLVE EDWARDS FOR FREE CHAINS*************************!
-    !Initial value of propagator, qf(numnp,0) = 1.0 for all numnp
-    !The initial values stored to qf_final for s=0
+    !**********************SOLVE EDWARDS PDE FOR FREE CHAINS*************************!
+    !initial value of propagator, qf(numnp,0) = 1.0 for all numnp
+    !the initial values stored to qf_final for s=0
 
     do i1 = 1, numnp
        qf(i1,1)       = 1.d0
        qf_final(i1,1) = 1.d0
     enddo
 
-    !Solve the diffusion equation for free chains
     call edwards(qf, qf_final)
 
-    !*******************SOLVE EDWARDS FOR GRAFTED CHAINS*************************!
-    !Initial value of propagator, qgr(numnp,0) = 0.0 for all numnp except for gp
-    !The initial values are stored to qgr_final for s=0
+    !*******************SOLVE EDWARDS PDE FOR GRAFTED CHAINS*************************!
+    !initial value of propagator, qgr(numnp,0) = 0.0 for all numnp except for gp
+    !the initial values are stored to qgr_final for s=0
 
     if (use_grafted.eq.1) then
-
+        !re-initialize grafted propagators
         qgr = 0.d0
         qgr_final = 0.d0
 
@@ -282,33 +228,29 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
             endif
         enddo
 
-        close(iog)
-
-        !Solve the diffusion equation for grafted chains
         call edwards(qgr, qgr_final)
-
     endif
 
     !*********************CONVOLUTION AND ENERGY***********************************!
-    !Calculate reduced segment density profiles of free and grafted chains
+    !calculate reduced segment density profiles of free and grafted chains
     call convolution(qf_final, qf_final, phia_fr)
 
     if (use_grafted.eq.1) then
         call convolution(qgr_final, qf_final, phia_gr)
     endif
 
-    !Calculate partition function of free chains
+    !calculate partition function of free chains
     call part_fun(qf_final, part_func)
 
-    !Calculated number of grafted chains
+    !calculated number of grafted chains
     call grafted_chains(phia_gr, nch_per_area)
 
-    !Calculate the new field
+    !calculate the new field
     do k1 = 1, numnp
         wa_new(k1) = kapa * (phia_fr(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)
     enddo
 
-    !Calculate adhesion tension
+    !calculate adhesion tension
     call adhesion_tension(qf_final, wa, Ufield, phia_fr, phia_gr, part_func, adh_ten)
 
     !*******************************************************************!
@@ -341,7 +283,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
             frac = min(frac * mix_coef_frac, mix_coef_kapa)
         endif
 
-        !Mixing the fields..
+        !mixing the fields..
         do k1 = 1, numnp
             wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
         enddo
@@ -442,7 +384,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !*******************************************************************!
 
     if (mod(iter,output_every).eq.0) then
-        !Normalize the field by dividing it with chain length
+        !normalize the field by dividing it with chain length
         do k1 = 1, numnp
             wa_mix(k1) = wa_mix(k1) / chainlen
         enddo
@@ -483,7 +425,7 @@ write(iow,'(''Partition function Q =  '',E16.9)') part_func
 write(iow,'(''            n/n_bulk =  '',E16.9)') nch_per_area * chainlen / (rho_0*volume*1.d-30)
 
 #ifdef USE_MPI
-!Root will send a stop signal to the slaves
+!root will send a stop signal to the slaves
 if (root) then
     flag_continue = .false.
     call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
