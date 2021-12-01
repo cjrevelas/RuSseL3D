@@ -75,6 +75,7 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/adh_ten.o\
 	$(OBJDIR)/main.o\
 	$(OBJDIR)/mumps_sub.o\
+	$(OBJDIR)/get_sys_time.o\
 	$(OBJDIR)/dirichlet.o\
 	$(OBJDIR)/convolution.o
 
