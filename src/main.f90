@@ -85,8 +85,11 @@ close(ioe)
 !*******************************************************************!
 !                       INITIALIZATION SECTION                      !
 !*******************************************************************!
-!parse the inputs from the datafile
-call scfinout
+!parse the input data from the datafile
+call parser
+
+!calculate essential scf parameters
+call calc_scf_params
 
 !read the input from the mesh file and generate it
 call mesh_io_3d
