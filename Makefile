@@ -3,7 +3,7 @@
 ###################################################################################################################################################
 #--------------------------------------------------SET COMPILER FLAGS AND LIBRARIES TO BE LINKED--------------------------------------------------#
 MAKE_MPI_RUN=1
-MAKE_PRODUCTION_RUN=0
+MAKE_PRODUCTION_RUN=1
 
 PROD_OPTIONS=
 DEBUG_OPTIONS= -DDEBUG_OUTPUTS #-DPRINT_AFULL
@@ -12,12 +12,11 @@ BOTH_OPTIONS= #-DVARIABLE_DS_SCHEME# -DMUMPS_REPORT
 #MPI/MUMPS SECTION
 ifeq ($(MAKE_MPI_RUN),0)
 MPI_OPTIONS=
-topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_SERIAL
+topdir = #/usr/share/mumps-5.2.1_serial
 else
 MPI_OPTIONS = -DUSE_MPI
-#topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR
-topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR_3
-#topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR_EXPERIMENTAL
+#topdir = /usr/share/mumps-5.2.1_par
+topdir = /usr/share/mumps-5.2.1_par_opt
 endif
 
 libdir = $(topdir)/lib
