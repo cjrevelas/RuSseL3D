@@ -1,6 +1,6 @@
 program FEM_3D
 !-------------------------------------------------------------------!
-use xdata
+use parser_vars
 use constants
 use error_handing
 use write_helper
@@ -141,16 +141,7 @@ call init_field(field_in_filename, Ufield, wa)
 wa_mix = wa
 
 !initialize files in case this is not a restart
-if (init_iter.eq.0) then
-    open(unit=121, file = 'wa.out.txt', status='replace')
-    close(121)
-    open(unit=121, file = 'wa_new.out.txt', status='replace')
-    close(121)
-    open(unit=121, file = 'wa_mix.out.txt', status='replace')
-    close(121)
-    open(unit=121, file = 'rho.out.txt', status='replace')
-    close(121)
-endif
+call init_files
 
 !**************************************************************************************************************!
 !                                        LOOPS FOR FIELD CONVERGENCE                                           !
