@@ -21,14 +21,14 @@ endif
 
 libdir = $(topdir)/lib
 .SECONDEXPANSION:
-include $(topdir)/Makefile.inc                                #defines PLAT, LIBEXT, LIBMUMPS_COMMON, FC   
+include $(topdir)/Makefile.inc                                #defines PLAT, LIBEXT, LIBMUMPS_COMMON, FC
 LIBMUMPS_COMMON = $(libdir)/libmumps_common$(PLAT)$(LIBEXT)
 
 LIBDMUMPS = $(libdir)/libdmumps$(PLAT)$(LIBEXT) $(LIBMUMPS_COMMON)
 
 # Flags of production and debug runs
 FC_PROD=-O3
-FC_DEBUG=-O0 -g -fcheck=all -Wall 
+FC_DEBUG=-O0 -g -fcheck=all -Wall
 #FC_DEBUG=-O0 -g -fcheck=all -Wall -Wextra -Wno-unused-dummy-argument
 
 # Choose between PROD and DEBUG run
@@ -44,9 +44,10 @@ LIBFS=#-lstdc++ #-lm
 
 OBJDIR=obj
 SRCDIR=src
+MODDIR=$(SRCDIR)/mod
 RUNDIR=run
 
-MODULES=$(OBJDIR)/xdata_mod.o\
+MODULES=$(OBJDIR)/parser_vars_mod.o\
 	$(OBJDIR)/constants_mod.o\
 	$(OBJDIR)/kcw_mod.o\
 	$(OBJDIR)/fhash_mod.o\
@@ -59,7 +60,7 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/grafted_chains.o\
 	$(OBJDIR)/periodic_dumper.o\
 	$(OBJDIR)/export_field.o\
-	$(OBJDIR)/scfinout.o\
+	$(OBJDIR)/parser.o\
 	$(OBJDIR)/grafted_init_cond.o\
 	$(OBJDIR)/init_field.o\
 	$(OBJDIR)/init_time.o\
@@ -79,7 +80,9 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/dirichlet.o\
 	$(OBJDIR)/convolution.o
 
-#First rule has been changed from implicit to explicit
+$(OBJDIR)/%.o : $(MODDIR)/%.f90 #$(SRCDIR)/%.f90
+	$(FC) $(FCFLAGS) $(LIBFS) -J$(OBJDIR) -c -o $@ $?
+
 $(OBJDIR)/%.o : $(SRCDIR)/%.f90
 	$(FC) $(FCFLAGS) $(LIBFS) -J$(OBJDIR) -c -o $@ $?
 
