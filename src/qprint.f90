@@ -15,7 +15,6 @@ real(8)                                    :: iq_final
 
 !profile section
 real(8), parameter                         :: rtol = 2.d0
-integer, parameter                         :: max_time_step = 40
 real(8), dimension(3)                      :: r_center
 integer                                    :: d2, d3
 !--------------------------------------------------------------------!
