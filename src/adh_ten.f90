@@ -12,7 +12,7 @@ real(8), intent(in), dimension(numnp)               :: wa, Ufield, phia_fr, phia
 real(8), intent(in), dimension(numnp,ns_free_max+1) :: qf_final
 real(8), intent(in)                                 :: part_func
 real(8), intent(out)                                :: adh_ten
-real(8)                                             :: Q, L1, L2, sum_final
+real(8)                                             :: Q, sum_final
 real(8)                                             :: term1, term2, term3, term4
 real(8)                                             :: part_sum1, part_sum2, part_sum3, part_sum4
 real(8), dimension(numnp)                           :: dterm1, dterm2
@@ -48,7 +48,7 @@ part_sum4 = term4 * rho_0 * boltz_const_Joule_molK * Temp / chainlen_gr   * 1.0D
 
 sum_final = part_sum1 + part_sum2 + part_sum3! + part_sum4
 
-adh_ten = - sum_final/(2*interf_area*1.D-20)   ! adh_ten = (Omega_bulk - Omega) / A                          !CJR
+adh_ten = - sum_final/(2*interf_area*1.D-20)   ! adh_ten = (Omega_bulk - Omega) / A
 
 return
 !---------------------------------------------------------------------------------------!

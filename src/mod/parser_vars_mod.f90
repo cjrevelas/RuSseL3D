@@ -13,7 +13,7 @@ integer :: geom_type, use_grafted
 
 !************************************DOMAIN*************************************!
 integer               :: prof_dim
-real(8)               :: volume, interf_area                                                         !CJR
+real(8)               :: volume, interf_area
 real(8), dimension(3) :: box_lo, box_hi, box_len
 
 !*******************************BOUNDARY CONDITIONS*****************************!

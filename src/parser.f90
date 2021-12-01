@@ -43,7 +43,7 @@ logical :: log_Rg2_per_mon_free            = .false.
 logical :: log_len_free_seg                = .false.
 logical :: log_len_gr_seg                  = .false.
 logical :: log_Rg2_per_mon_gr              = .false.
-logical :: log_interf_area                 = .false.                                                     !CJR
+logical :: log_interf_area                 = .false.
 !--------------------------------------------------------------------------------!
 !*******************************************************************!
 !                    Read the input parameter file                  !
@@ -93,9 +93,9 @@ do
         elseif (index(line,'# output every') > 0) then
             read(line,'(I6)') output_every
             log_output_every = .true.
-        elseif (index(line,'# polymer-solid or polymer-gas interfacial area (Angrstom^2)') > 0) then     !CJR
-            read(line,'(E16.9)') interf_area                                                             !CJR
-            log_interf_area = .true.                                                                     !CJR
+        elseif (index(line,'# interfacial area') > 0) then
+            read(line,'(E16.9)') interf_area
+            log_interf_area = .true.
         elseif (index(line,'# temperature') > 0) then
             read(line,'(E16.9)') temp
             log_temperature = .true.
@@ -263,18 +263,18 @@ else
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
-if (log_interf_area) then                                                                                !CJR
-    if ( interf_area > 0) then                                                                           !CJR
-        write(iow,'(3x,A40,E16.9,A11)')adjl('interface area:',40),interf_area,' Angstrom^2'              !CJR
-        write(6  ,'(3x,A40,E16.9,A11)')adjl('interface area:',40),interf_area,' Angstrom^2'              !CJR
-    else                                                                                                 !CJR
-        write(ERROR_MESSAGE,'(''interface area is negative: '',E16.9,'' Angstrom^2'')') interf_area      !CJR
-        call exit_with_error(1,1,1,ERROR_MESSAGE)                                                        !CJR
-    endif                                                                                                !CJR
-else                                                                                                     !CJR
-    ERROR_MESSAGE='interface area was not detected..'                                                    !CJR
-    call exit_with_error(1,1,1,ERROR_MESSAGE)                                                            !CJR
-endif                                                                                                    !CJR
+if (log_interf_area) then
+    if ( interf_area > 0) then
+        write(iow,'(3x,A40,E16.9,A11)')adjl('interface area:',40),interf_area,' Angstrom^2'
+        write(6  ,'(3x,A40,E16.9,A11)')adjl('interface area:',40),interf_area,' Angstrom^2'
+    else
+        write(ERROR_MESSAGE,'(''interface area is negative: '',E16.9,'' Angstrom^2'')') interf_area
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    ERROR_MESSAGE='interface area was not detected..'
+    call exit_with_error(1,1,1,ERROR_MESSAGE)
+endif
 
 if (log_Hamaker_constant_of_polymer) then
     write(iow,'(3x,A40,E16.9,A13)')adjl('Hamaker constant of polymer:',40),Aps,' 10-20 joules'
