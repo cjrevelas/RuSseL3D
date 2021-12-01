@@ -24,7 +24,7 @@ character(20) :: field_in_filename = 'field_in.bin'
 real(8)                              :: wa_max = 0.d0, wa_max_abs = 0.d0
 real(8)                              :: wa_std_error = 0.d0, max_error = 200000.d0
 real(8)                              :: mix_tol = 0.d0, wa_step = 0.d0, wa_ave = 0.d0
-real(8)                              :: part_func = 0.d0, nch_per_area = 0.d0
+real(8)                              :: part_func = 0.d0, nch_gr = 0.d0
 real(8)                              :: adh_ten = 0.d0
 real(8), allocatable, dimension(:)   :: ds_free, ds_gr
 real(8), allocatable, dimension(:)   :: koeff_free, koeff_gr
@@ -183,9 +183,9 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     iter=iter+1
 
-    write(iow,'(I10,1X,9(E19.9e3,1X))')              iter-1, frac, adh_ten, nch_per_area, max_error, wa_std_error, &
+    write(iow,'(I10,1X,9(E19.9e3,1X))')              iter-1, frac, adh_ten, nch_gr, max_error, wa_std_error, &
    &                                                 wa_max, wa_max_abs, wa_ave, wa_step
-    write(6  ,'(I4 ,1X,9(E14.4e3,1X))',advance='no') iter-1, frac, adh_ten, nch_per_area, max_error, wa_std_error, &
+    write(6  ,'(I4 ,1X,9(E14.4e3,1X))',advance='no') iter-1, frac, adh_ten, nch_gr, max_error, wa_std_error, &
    &                                                 wa_max, wa_max_abs, wa_ave, wa_step
 
     !flush output
@@ -243,7 +243,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     !calculated number of grafted chains
     if (use_grafted.eq.1) then
-        call grafted_chains(numnp, chainlen_gr, rho_0, phia_gr, nch_per_area)
+        call grafted_chains(numnp, chainlen_gr, rho_0, phia_gr, nch_gr)
     endif
 
     !calculate the new field
@@ -252,7 +252,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     enddo
 
     !calculate adhesion tension
-    call adhesion_tension(qf_final, wa, Ufield, phia_fr, phia_gr, part_func, adh_ten)
+    call adhesion_tension(qf_final, qgr_final, wa, Ufield, phia_fr, phia_gr, part_func, adh_ten)
 
     !*******************************************************************!
     !   COMPUTE DIFFERENCES BETWEEN OLD (wa) AND NEW (wa_new) fields    !
@@ -358,10 +358,10 @@ enddo!iter
 call periodic_dumper(qf_final, qgr_final, phia_fr, phia_gr, wa, wa_new, wa_mix)
 call export_field(wa_mix, numnp, iter)
 
-write(iow,'(I10,1X,9(E19.9e3,1X))')              iter, frac, adh_ten, nch_per_area, max_error, wa_std_error, &
-   &                                             wa_max, wa_max_abs, wa_ave, wa_step
-write(6  ,'(I4 ,1X,9(E14.4e3,1X))') iter, frac, adh_ten, nch_per_area, max_error, wa_std_error, &
-   &                                             wa_max, wa_max_abs, wa_ave, wa_step
+write(iow,'(I10,1X,9(E19.9e3,1X))')  iter, frac, adh_ten, nch_gr, max_error, wa_std_error, &
+   &                                 wa_max, wa_max_abs, wa_ave, wa_step
+write(6  ,'(I4 ,1X,9(E14.4e3,1X))')  iter, frac, adh_ten, nch_gr, max_error, wa_std_error, &
+   &                                 wa_max, wa_max_abs, wa_ave, wa_step
 
 if (max_error.lt.max_error_tol) then
     write(iow,'(/''Convergence of max error'',F16.9)') max_error
@@ -379,11 +379,11 @@ write(iow,'(3x,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
 write(6  ,'(3x,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
 write(iow,'(3x,A40,E16.9)')adjl('Partition function Q:'   ,40),part_func
 write(6  ,'(3x,A40,E16.9)')adjl('Partition function Q:'   ,40),part_func
-write(iow,'(3x,A40,E16.9)')adjl('n/n_bulk:',40)               ,nch_per_area * chainlen_gr / (rho_0*volume*1.d-30)
-write(6  ,'(3x,A40,E16.9)')adjl('n/n_bulk:',40)               ,nch_per_area * chainlen_gr / (rho_0*volume*1.d-30)
+write(iow,'(3x,A40,E16.9)')adjl('n/n_bulk:',40)               ,nch_gr * chainlen_gr / (rho_0*volume*1.d-30)
+write(6  ,'(3x,A40,E16.9)')adjl('n/n_bulk:',40)               ,nch_gr * chainlen_gr / (rho_0*volume*1.d-30)
 
 ! Please do not alter the output of the following line!
-write(iow,'(3x,A40,E16.9)')adjl('number of grafted chains:',40)          ,nch_per_area
+write(iow,'(3x,A40,E16.9)')adjl('grafting density (A^-2):',40),nch_gr/interf_area
 
 t_final = get_sys_time()
 write(6  ,'(3x,A40,I16)')adjl('Run duration:',40), t_final - t_init
