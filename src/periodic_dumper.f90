@@ -1,4 +1,4 @@
-subroutine profile_dumper(qf_final, qgr_final, phia_fr, phia_gr, wa, wa_new, wa_mix)
+subroutine periodic_dumper(qf_final, qgr_final, phia_fr, phia_gr, wa, wa_new, wa_mix)
 !-----------------------------------------------------------------------------------------------------------!
 use xdata
 !-----------------------------------------------------------------------------------------------------------!
@@ -50,4 +50,4 @@ if (use_grafted.eq.1) then
    call qprint(qgr_final,"graf")
 endif
 !-----------------------------------------------------------------------------------------------------------!
-end subroutine profile_dumper
+end subroutine periodic_dumper

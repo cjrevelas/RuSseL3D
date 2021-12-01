@@ -14,7 +14,9 @@ MPI_OPTIONS=
 topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_SERIAL
 else
 MPI_OPTIONS = -DUSE_MPI
-topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR
+#topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR
+topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR_3
+#topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_PAR_EXPERIMENTAL
 endif
 
 libdir = $(topdir)/lib
@@ -55,7 +57,8 @@ MODULES=$(OBJDIR)/xdata_mod.o\
 OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/part_fun.o\
 	$(OBJDIR)/grafted_chains.o\
-	$(OBJDIR)/profile_dumper.o\
+	$(OBJDIR)/periodic_dumper.o\
+	$(OBJDIR)/export_field.o\
 	$(OBJDIR)/scfinout.o\
 	$(OBJDIR)/grafted_init_cond.o\
 	$(OBJDIR)/init_field.o\

@@ -321,59 +321,43 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     endif
 
     !*******************************************************************!
-    !                     PERIODIC PROFILE DUMPER                       !
+    !                           PERIODIC DUMPER                         !
     !*******************************************************************!
     !output the data every so many steps
     if (mod(iter,output_every).eq.0) then
-        call profile_dumper(qf_final, qgr_final, phia_fr, phia_gr, wa, wa_new, wa_mix)
+        call periodic_dumper(qf_final, qgr_final, phia_fr, phia_gr, wa, wa_new, wa_mix)
+        call export_field(wa_mix, numnp, iter)
     endif
 
-    wa = wa_mix
-
-    !*******************************************************************!
-    !               EXPORT FIELD TO BINARY FILE FOR RESTART             !
-    !*******************************************************************!
-
-    if (mod(iter,output_every).eq.0) then
-        !normalize the field by dividing it with chain length
-        do k1 = 1, numnp
-            wa_mix(k1) = wa_mix(k1) / chainlen
-        enddo
-
-        field_filename_aux = ""
-        write(field_filename_aux,'(''field_'',I4.4,''.out.bin'')')iter
-        open(unit=655, file = field_filename_aux, Form='unformatted')
-        write(655) wa_mix
-        close(655)
-
-        field_filename_aux = ""
-        write(field_filename_aux,'(''field_comsol_'',I4.4,''.out.txt'')')iter
-        open(unit=123, file = field_filename_aux)
-
-        do k1 = 1, numnp
-            write(123,'(E16.9,2(2X,E16.9),(2X,E19.9e3))') xc(1,k1), xc(2,k1), xc(3,k1), -wa_mix(k1)
-        enddo
-
-        close(123)
-    endif
 enddo!iter
 
+!output the data at the end of the simulation
+call periodic_dumper(qf_final, qgr_final, phia_fr, phia_gr, wa, wa_new, wa_mix)
+call export_field(wa_mix, numnp, iter)
 
 write(iow,'(I10,1X,9(E19.9e3,1X))')              iter, frac, adh_ten, nch_per_area, max_error, std_error, &
    &                                             wa_max, wa_max_abs, wa_ave, wa_step
-write(6  ,'(I4 ,1X,9(E14.4e3,1X))',advance='no') iter, frac, adh_ten, nch_per_area, max_error, std_error, &
+write(6  ,'(I4 ,1X,9(E14.4e3,1X))') iter, frac, adh_ten, nch_per_area, max_error, std_error, &
    &                                             wa_max, wa_max_abs, wa_ave, wa_step
 
 if (max_error.lt.max_error_tol) then
     write(iow,'(/''Convergence of max error'',F16.9)') max_error
+    write(6  ,'(/''Convergence of max error'',F16.9)') max_error
 else
-    write(iow,'(/''Convergence of '',I10, '' iterations'')') iterations
+    write(6  ,'(/''Convergence of '',I10, '' iterations'')') iterations
 endif
 
 write(iow,'(''-----------------------------------'')')
-write(iow,'(''Adhesion tension (mN/m) '',E16.9)') adh_ten
-write(iow,'(''Partition function Q =  '',E16.9)') part_func
-write(iow,'(''            n/n_bulk =  '',E16.9)') nch_per_area * chainlen / (rho_0*volume*1.d-30)
+write(6  ,'(''-----------------------------------'')')
+write(iow,'(3x,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
+write(6  ,'(3x,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
+write(iow,'(3x,A40,E16.9)')adjl('Partition function Q:'   ,40),part_func
+write(6  ,'(3x,A40,E16.9)')adjl('Partition function Q:'   ,40),part_func
+write(iow,'(3x,A40,E16.9)')adjl('n/n_bulk:',40)               ,nch_per_area * chainlen / (rho_0*volume*1.d-30)
+write(6  ,'(3x,A40,E16.9)')adjl('n/n_bulk:',40)               ,nch_per_area * chainlen / (rho_0*volume*1.d-30)
+
+! Please do not alter the output of the following line!
+write(iow,'(3x,A40,E16.9)')adjl('number of grafted chains:',40)          ,nch_per_area
 
 #ifdef USE_MPI
 !root will send a stop signal to the slaves
