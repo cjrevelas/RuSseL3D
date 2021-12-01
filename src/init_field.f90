@@ -16,9 +16,15 @@ real(8)                                :: surf_pot, distance
 !------------------------------------------------------------------------------------------------------!
 open(unit=211, file = 'Usolid.out.txt')
 do k1 = 1, numnp
-    distance   = xc(1,k1)
+    if (geom_type.eq.1) then
+        distance = dsqrt(xc(1,k1)**2 + xc(2,k1)**2 + xc(3,k1)**2)
+    elseif(geom_type.eq.0) then
+        distance = xc(1,k1)
+    endif
+
     Ufield(k1) = surf_pot(distance)
     write(211,('(E16.9,2X,E19.9)')) distance, Ufield(k1)
+
     if (Ufield(k1).ne.Ufield(k1)) then
         Ufield(k1) = 0.d0
         write(ERROR_MESSAGE,'(''Hamaker assumed a NaN value for x = '',E16.9,''. NaN was changed to '',E16.9)') distance, Ufield(k1)
