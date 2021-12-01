@@ -1,6 +1,7 @@
-#######################################################################
-#                  Makefile of SCF-FEM code                           #
-#######################################################################
+###################################################################################################################################################
+#                                                            MAKEFILE OF SCF-FEM CODE                                                             #
+###################################################################################################################################################
+#--------------------------------------------------SET COMPILER FLAGS AND LIBRARIES TO BE LINKED--------------------------------------------------#
 MAKE_MPI_RUN=1
 MAKE_PRODUCTION_RUN=0
 
@@ -8,7 +9,7 @@ PROD_OPTIONS=
 DEBUG_OPTIONS= -DDEBUG_OUTPUTS #-DPRINT_AFULL
 BOTH_OPTIONS= #-DVARIABLE_DS_SCHEME# -DMUMPS_REPORT
 
-# MPI/MUMPS SECTION
+#MPI/MUMPS SECTION
 ifeq ($(MAKE_MPI_RUN),0)
 MPI_OPTIONS=
 topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_SERIAL
@@ -21,17 +22,17 @@ endif
 
 libdir = $(topdir)/lib
 .SECONDEXPANSION:
-include $(topdir)/Makefile.inc                                #defines PLAT, LIBEXT, LIBMUMPS_COMMON, FC
+include $(topdir)/Makefile.inc
 LIBMUMPS_COMMON = $(libdir)/libmumps_common$(PLAT)$(LIBEXT)
 
 LIBDMUMPS = $(libdir)/libdmumps$(PLAT)$(LIBEXT) $(LIBMUMPS_COMMON)
 
-# Flags of production and debug runs
+#flags of production and debug runs
 FC_PROD=-O3
 FC_DEBUG=-O0 -g -fcheck=all -Wall
 #FC_DEBUG=-O0 -g -fcheck=all -Wall -Wextra -Wno-unused-dummy-argument
 
-# Choose between PROD and DEBUG run
+#choose between PROD and DEBUG run
 ifeq ($(MAKE_PRODUCTION_RUN),0)
 CPPFLAGS=$(DEBUG_OPTIONS) $(BOTH_OPTIONS) $(MPI_OPTIONS)
 FCFLAGS=$(FC_DEBUG) -cpp $(CPPFLAGS)
@@ -41,7 +42,7 @@ FCFLAGS=$(FC_PROD) -cpp $(CPPFLAGS)
 endif
 
 LIBFS=#-lstdc++ #-lm
-
+#--------------------------------------------------------SET FILE PATHS AND EXECUTABLE NAME-------------------------------------------------------#
 OBJDIR=obj
 SRCDIR=src
 MODDIR=$(SRCDIR)/mod
@@ -82,30 +83,31 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/dirichlet.o\
 	$(OBJDIR)/convolution.o
 
-$(OBJDIR)/%.o : $(MODDIR)/%.f90 #$(SRCDIR)/%.f90
+EXEC=$(RUNDIR)/fem_3d.exe
+#-----------------------------------------------------------------COMPILE AND LINK----------------------------------------------------------------#
+#modules compilation
+$(OBJDIR)/%.o : $(MODDIR)/%.f90
 	$(FC) $(FCFLAGS) $(LIBFS) -J$(OBJDIR) -c -o $@ $?
 
+#routines compilation
 $(OBJDIR)/%.o : $(SRCDIR)/%.f90
 	$(FC) $(FCFLAGS) $(LIBFS) -J$(OBJDIR) -c -o $@ $?
 
-EXEC=$(RUNDIR)/fem_3d.exe
-
+#link object files to create the executable code
 $(EXEC):$(LIBDMUMPS) $(MODULES) $(OBJECTS)
 	$(FL) -o $(EXEC) $(OPTL) $(MODULES) $(OBJECTS)  $(LIBDMUMPS) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS)
 
 $(OBJDIR)/mumps_sub.o:
 	$(FC) $(OPTF) $(INCS) -I. -I$(topdir)/include -I$(topdir)/$(SCRDIR) -I$(OBJDIR) -cpp $(CPPFLAGS) -c $(SRCDIR)/mumps_sub.f90 $(OUTF)$*.o
 
-$(OBJDIR)/fhash_modules : $(SRCDIR)/fhash.f90 $(SRCDIR)/fhash_modules.f90
-	$(FC) $(FFLAGS) -c $(SRCDIR)/fhash_modules.f90
-
 .SUFFIXES: (.SUFFIXES) .F .f90 .h .p
-
+#-------------------------------------------------------------CLEAN WORKING DIRECTORY-------------------------------------------------------------#
 clean:
 	$(RM) $(OBJDIR)/*.o $(OBJDIR)/*.mod
 
 cleaner:
 	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/*.exe $(RUNDIR)/*.out.txt $(RUNDIR)/*.bin $(RUNDIR)/fort.*
-
+#-----------------------------------------------------------RUN TESTS TO VERIFY CHANGES-----------------------------------------------------------#
 test:
 	./test_integrity/test_integrity.sh
+###################################################################################################################################################
