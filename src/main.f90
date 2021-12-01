@@ -19,7 +19,6 @@ integer :: i1, k1, iter, n_outside
 
 character(20) :: gp_filename = "gnodes.lammpstrj"
 character(20) :: field_in_filename = 'field_in.bin'
-character(40) :: field_filename_aux = ''
 
 real(8)                              :: wa_max = 0.d0, wa_max_abs = 0.d0
 real(8)                              :: mix_tol = 0.d0, wa_step = 0.d0, wa_ave = 0.d0
@@ -54,7 +53,7 @@ end if
 flag_continue = .true.
 
 !the slaves will enter the mumps subroutine until they receive a stop
-!signal from master proc
+!signal from the master process
 if (.not.root) then
     !receive the matrix type from root
     call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
@@ -136,6 +135,7 @@ call init_time(ds, koeff)
 
 !initialize field
 call init_field(field_in_filename, Ufield, wa)
+wa_mix = wa
 
 !initialize files in case this is not a restart
 if (init_iter.eq.0) then
@@ -167,14 +167,17 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     iter=iter+1
 
-    write(iow,'(I10,1X,9(E19.9e3,1X))')              iter-1, adh_ten, frac, nch_per_area, max_error, std_error, &
+    write(iow,'(I10,1X,9(E19.9e3,1X))')              iter-1, frac, adh_ten, nch_per_area, max_error, std_error, &
    &                                                 wa_max, wa_max_abs, wa_ave, wa_step
-    write(6  ,'(I4 ,1X,9(E14.4e3,1X))',advance='no') iter-1, adh_ten, frac, nch_per_area, max_error, std_error, &
+    write(6  ,'(I4 ,1X,9(E14.4e3,1X))',advance='no') iter-1, frac, adh_ten, nch_per_area, max_error, std_error, &
    &                                                 wa_max, wa_max_abs, wa_ave, wa_step
 
     !flush output
     close(iow)
     open(unit=iow, file = 'scft.out.txt', position = 'append')
+
+    !update field
+    wa = wa_mix
 
     !perform matrix assembly
     call matrix_assemble(wa)
@@ -209,10 +212,10 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     !*********************CONVOLUTION AND ENERGY***********************************!
     !calculate reduced segment density profiles of free and grafted chains
-    call convolution(numnp, ns, koeff, qf_final, qf_final, phia_fr)
+    call convolution(numnp, chainlen, ns, koeff, qf_final, qf_final, phia_fr)
 
     if (use_grafted.eq.1) then
-        call convolution(numnp, ns, koeff, qgr_final, qf_final, phia_gr)
+        call convolution(numnp, chainlen, ns, koeff, qgr_final, qf_final, phia_gr)
     endif
 
     !calculate partition function of free chains
@@ -232,20 +235,29 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !*******************************************************************!
     !   COMPUTE DIFFERENCES BETWEEN OLD (wa) AND NEW (wa_new) fields    !
     !*******************************************************************!
-    wa_ave = 0.d0
-    max_error = 0.d00
-    std_error = 0.d00
-    wa_max=0.d0
-    wa_max_abs=0.d0
+    wa_ave     = 0.d0
+    max_error  = 0.d00
+    std_error  = 0.d00
+    wa_max     = 0.d0
+    wa_max_abs = 0.d0
+
     do k1 = 1, numnp
-        wa_ave = wa_ave + wa_new(k1)
-        max_error = max(max_error, dabs(wa_new(k1) - wa(k1)))
-        std_error = std_error + (wa_new(k1) - wa(k1))**2
-        wa_max = max(wa_max, wa_new(k1))
+        wa_ave     = wa_ave + wa_new(k1)
+        max_error  = max(max_error, dabs(wa_new(k1) - wa(k1)))
+        std_error  = std_error + (wa_new(k1) - wa(k1))**2
+        wa_max     = max(wa_max, wa_new(k1))
         wa_max_abs = max(wa_max_abs, dabs(wa_new(k1)))
     enddo
+
     std_error = SQRT(std_error / float((numnp - 1)))
-    wa_ave = wa_ave / numnp
+    wa_ave    = wa_ave / numnp
+
+    wa_ave     = wa_ave * chainlen
+    wa_max     = wa_max * chainlen
+    wa_max_abs = wa_max_abs * chainlen
+    max_error  = max_error * chainlen
+    std_error  = std_error * chainlen
+
     !*******************************************************************!
     !                         APPLY MIXING RULE                         !
     !*******************************************************************!
@@ -273,7 +285,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
         n_outside = 0
         do k1 = 1, numnp
-            if (dabs(wa_new(k1)-wa(k1)) > mix_tol.and.iter.le.60) then
+            if (dabs(wa_new(k1)-wa(k1)) / chainlen > mix_tol.and.iter.le.60) then
                 n_outside = n_outside + 1
 
                 if (wa_new(k1).gt.wa(k1)) then
@@ -372,6 +384,6 @@ end if
 
 1000 call MPI_FINALIZE(ierr)
 #endif
-write(*,'(/''Done!'')')
+write(iow,'(/''Done!'')')
 !------------------------------------------------------------------------------------------------------------------!
 end program FEM_3D

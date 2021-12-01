@@ -8,8 +8,8 @@ use error_handing
 implicit none
 !--------------------------------------------------------------------------------!
 character(100) :: line
-character(15) :: input_filename = 'gaussdat.in.txt'
-character(12) :: field_filename = 'field.in.bin'
+character(15)  :: input_filename = 'gaussdat.in.txt'
+character(12)  :: field_filename = 'field.in.bin'
 
 integer :: Reason
 integer :: i1, id
@@ -560,7 +560,7 @@ Asio2 = Asio2*1.e-20
 write(iow,'(/''*Initialization of usefull quantities..'')')
 write(6  ,'(/''*Initialization of usefull quantities..'')')
 
-ds_ave = 1.d0/dble(ns)
+ds_ave = chainlen/dble(ns)
 write(iow,'(3x,A40,E16.9)')adjl('ds_ave = 1 / ns:',40),ds_ave
 write(6  ,'(3x,A40,E16.9)')adjl('ds_ave = 1 / ns:',40),ds_ave
 
@@ -576,12 +576,10 @@ rho_0 = chainlen*massden/(chainlen*mon_mass )*1.d06
 write(iow,'(3x,A40,E16.9,A8)')adjl('Segment density in bulk (rho):',40),rho_0,' mol/m^3'
 write(6  ,'(3x,A40,E16.9,A8)')adjl('Segment density in bulk (rho):',40),rho_0,' mol/m^3'
 
-kapa = chainlen/(kappa_T * boltz_const_Joule_molK * Temp * rho_0)
+kapa = 1.d0/(kappa_T * boltz_const_Joule_molK * Temp * rho_0)
 
 write(iow,'(3x,A40,E16.9)')adjl('kapa = 1/[k_T k_B T rho_0]:',40),kapa
-write(iow,'(3x,A40,E16.9)')adjl('kapa / chainlen:',40),kapa / chainlen
 write(6  ,'(3x,A40,E16.9)')adjl('kapa = 1/[k_T k_B T rho_0]:',40),kapa
-write(6  ,'(3x,A40,E16.9)')adjl('kapa / chainlen:',40),kapa / chainlen
 
 return
 !--------------------------------------------------------------------------------!

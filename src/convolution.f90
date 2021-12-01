@@ -1,10 +1,11 @@
-subroutine convolution(numnp, ns, koeff, q1, q2, phia)
+subroutine convolution(numnp, chainlen, ns, koeff, q1, q2, phia)
 !-------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------!
 integer, intent(in) :: numnp, ns
 integer             :: k1, time_step
 
+real(8), intent(in)                        :: chainlen
 real(8), intent(in), dimension(ns+1)       :: koeff
 real(8), intent(in), dimension(numnp,ns+1) :: q1, q2
 real(8), intent(out), dimension(numnp)     :: phia
@@ -18,7 +19,7 @@ do k1 = 1, numnp
        !summer = summer + koeff(time_step)*ds(time_step)*q1(k1,time_step)*q2(k1,ns+2-time_step)
     enddo
 
-    phia(k1) = summer
+    phia(k1) = summer/chainlen
 enddo
 !-------------------------------------------------------------------------------------------!
 end subroutine convolution

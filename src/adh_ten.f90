@@ -22,8 +22,8 @@ term3 = 0.d00
 term4 = 0.d00
 
 do k1 = 1, numnp
-   dterm1(k1) = 0.5d0 * kapa * ((1.d0 - phia_fr(k1) - phia_gr(k1))**2.d0) !blue: particle-particle interaction
-   dterm2(k1) = -(wa(k1) - Ufield(k1)) * (phia_fr(k1) + phia_gr(k1))      !pink: rho-w interaction
+   dterm1(k1) = 0.5d0 * kapa * ((1.d0 - phia_fr(k1) - phia_gr(k1))**2.d0) * chainlen !blue: particle-particle interaction ! TEMP NEW
+   dterm2(k1) = -(wa(k1) - Ufield(k1)) * (phia_fr(k1) + phia_gr(k1)) * chainlen      !pink: rho-w interaction
 enddo
 
 call spat_3d(dterm1, term1, Q)
@@ -45,7 +45,7 @@ part_sum4 = term4 * rho_0 * boltz_const_Joule_molK * Temp / chainlen * 1.0D+03
 sum_final   = part_sum1 + part_sum2 + part_sum3! + part_sum4
 
 L1 = box_len(mod(prof_dim+0,3)+1)
-L2 = box_len(mod(prof_dim+1,3)+1) 
+L2 = box_len(mod(prof_dim+1,3)+1)
 adh_ten = - sum_final/(2*L1*L2*1.D-20)   ! adh_ten = (Omega_bulk - Omega) / A
 
 return

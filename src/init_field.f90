@@ -15,7 +15,6 @@ real(8)                                :: surf_pot
 !------------------------------------------------------------------------------------------------------!
 open(unit=211, file = 'Usolid.out.txt')
 do k1 = 1, numnp
-    !TODO: fix distance for 3D
     distance   = xc(1,k1)
     Ufield(k1) = surf_pot(distance)
     write(211,('(E16.9,2X,E19.9)')) distance, Ufield(k1)
@@ -44,12 +43,6 @@ if (readfield.eq.1) then
 
     read(655) wa
     close(655)
-
-    !multiply field with chain length since it is divided with chain length right
-    !before it is printed
-    do k1 = 1, numnp
-        wa(k1) = wa(k1) * chainlen
-    enddo
 else
     if (scheme_type.eq.2) then
         do k1 = 1, numnp
