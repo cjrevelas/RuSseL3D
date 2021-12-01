@@ -15,7 +15,7 @@ real(8)             :: a1, a2, r12, h_12
 real(8)             :: hamaker_constant
 real(8)             :: number_density
 !--------------------------------------------------------------------!
-simple=0
+simple = 0
 
 open(unit=43, file = 'Hamaker_potential.out.txt')
 
@@ -28,7 +28,6 @@ h_12 = h12/1.e+10
 number_density = rho_0*avogadro_constant
 
 a1 = (3./4./pi/number_density)**(1./3.)
-
 a2 = sphere_radius/1.e+10
 
 r12 = a1 + a2 + h_12
@@ -65,11 +64,14 @@ else
     endif
 endif
 
+Uattr    = Uattr/(boltz_const_Joule_K*Temp)
+Urep     = Urep/(boltz_const_Joule_K*Temp)
 surf_pot = surf_pot/(boltz_const_Joule_K*Temp)
-write(43,'(E16.9,2X,E16.9)') h12, surf_pot
 
-!surf_pot = surf_pot * chainlen_free ! TEMP OLD
-surf_pot = surf_pot ! TEMP NEW
+write(43,'(E17.9E3,2X,E17.9E3,2X,E17.9E3,2X,E17.9E3,2X,E17.9E3)') h12, r12, Uattr, Urep, surf_pot
+surf_pot = surf_pot
+
+
 
 if (surf_pot.gt.0.) then
     surf_pot = 0.d0
