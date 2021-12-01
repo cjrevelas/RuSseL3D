@@ -1,15 +1,15 @@
-subroutine matrix_assemble(wa)
+subroutine matrix_assemble(Rg2_per_mon, wa)
 !-----------------------------------------------------------------------------------------------------------!
-use xdata
 use kcw
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
-!-----------------------------------------------------------------------------------------------------------!
+!-----------------------------------------------------------------------------------------------------------!   
 integer                  :: lint
 integer                  :: m_1, n_1
 integer                  :: i, j, l, n, m, nn, i1
 integer, dimension (nel) :: gl_index
 
+real(8), intent(in)                   :: Rg2_per_mon
 real(8), intent(in), dimension(numnp) :: wa
 real(8)                               :: xsj
 real(8), dimension(ndm,nel)           :: xl
@@ -54,8 +54,8 @@ do nn = 1, numel
 
                 F_m%c(i1) = F_m%c(i1) + shp(4,n)*shp(4,m)*xsj*sv(5,l)
 
-                F_m%k(i1) = F_m%k(i1) + &
-                               (Rgyr**2./chainlen)*(shp(1,n)*shp(1,m)+shp(2,n)*shp(2,m)+shp(3,n)*shp(3,m))*xsj*sv(5,l)
+                F_m%k(i1) = F_m%k(i1) + Rg2_per_mon &
+                                      * (shp(1,n)*shp(1,m)+shp(2,n)*shp(2,m)+shp(3,n)*shp(3,m))*xsj*sv(5,l)
 
                 F_m%w(i1) = F_m%w(i1) + &
                                 wa(n_1)*shp(4,n)*shp(4,m)*xsj*sv(5,l)
