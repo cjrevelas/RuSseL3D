@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.2.0](https://github.com/mokkapps/changelog-generator-demo/compare/v2.1.0...v2.2.0) (2021-12-01)
+
+
+### Features
+
+* add a subroutine to measure system time ([4fbbd65](https://github.com/mokkapps/changelog-generator-demo/commits/4fbbd6546a4b6d12ba64647842a0c2f331cf6781))
+* Edwards is solved with Rg2_per_mon ([4415645](https://github.com/mokkapps/changelog-generator-demo/commits/4415645c58cd13b2930b6d7b9aeec07a858c7473))
+* Makefile organizes code in src, obj and run dirs ([c83b753](https://github.com/mokkapps/changelog-generator-demo/commits/c83b753bf822700bd02590e458f09db3a3339d86))
+* matrix and grafted chains can have different chain length ([85daf01](https://github.com/mokkapps/changelog-generator-demo/commits/85daf0104ad61506f04032255e73f17779f104b1))
+* module files are contained in mod directory ([f5500af](https://github.com/mokkapps/changelog-generator-demo/commits/f5500afff5c40188a0ce62d486e23b76f45758ca))
+* option to solve for grafted is read from input ([e546a64](https://github.com/mokkapps/changelog-generator-demo/commits/e546a640f3a412c22811db4d36f26883f9bd848c))
+* **qprint:** exports propagators of mx and gr chains ([c3c37e1](https://github.com/mokkapps/changelog-generator-demo/commits/c3c37e14b85d231a2277177d61912891c4f2e63c))
+* solve Edwards for grafted chains ([0fe8041](https://github.com/mokkapps/changelog-generator-demo/commits/0fe8041440aea61bb8615760836c181b5d6e8951))
+* solve Edwards in presence of multiple grafting points ([00a23d2](https://github.com/mokkapps/changelog-generator-demo/commits/00a23d28a40d8559f7097e62a6486607b96f858f))
+
+
+### Bug Fixes
+
+* **scfinout:** does not crash when dir faces do not exist ([b6d564a](https://github.com/mokkapps/changelog-generator-demo/commits/b6d564a7d02c522e27bededb755476d386a358c0))
+* **tetsh:** correct linear shape functions ([b4ad0ed](https://github.com/mokkapps/changelog-generator-demo/commits/b4ad0ed2d9077362636e7c46edbd71f05423571b))
+
 ## [2.1.0](https://github.com/mokkapps/changelog-generator-demo/compare/v2.0.0...v2.1.0) (2021-11-27)
 
 
