@@ -28,8 +28,8 @@ LIBDMUMPS = $(libdir)/libdmumps$(PLAT)$(LIBEXT) $(LIBMUMPS_COMMON)
 
 # Flags of production and debug runs
 FC_PROD=-O3
-FC_DEBUG=-O0 -g -fcheck=all -Wall
-#Other debug flags: -Wextra -Wno-unused-dummy-argument
+FC_DEBUG=-O0 -g -fcheck=all -Wall 
+#FC_DEBUG=-O0 -g -fcheck=all -Wall -Wextra -Wno-unused-dummy-argument
 
 # Choose between PROD and DEBUG run
 ifeq ($(MAKE_PRODUCTION_RUN),0)
@@ -75,6 +75,7 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/adh_ten.o\
 	$(OBJDIR)/main.o\
 	$(OBJDIR)/mumps_sub.o\
+	$(OBJDIR)/dirichlet.o\
 	$(OBJDIR)/convolution.o
 
 #First rule has been changed from implicit to explicit
