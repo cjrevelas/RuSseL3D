@@ -1,6 +1,7 @@
 subroutine periodic_dumper(qf_final, qgr_final, phia_fr, phia_gr, wa, wa_new, wa_mix)
 !-----------------------------------------------------------------------------------------------------------!
 use xdata
+use kcw
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
@@ -44,10 +45,10 @@ enddo
 close(120)
 
 !print the restricted partition functions
-call qprint(qf_final,"free")
+call qprint(ns, qf_final,"free")
 
 if (use_grafted.eq.1) then
-   call qprint(qgr_final,"graf")
+   call qprint(ns, qgr_final,"graf")
 endif
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine periodic_dumper

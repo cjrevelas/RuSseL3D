@@ -1,6 +1,5 @@
-subroutine edwards(ds, q, q_final)
+subroutine edwards(ds, ns, mumps_matrix_type, q, q_final)
 !----------------------------------------------------------------------------------------------------------!
-use xdata
 use constants
 use kcw
 #ifdef USE_MPI
@@ -13,14 +12,15 @@ implicit none
 include 'mpif.h'
 #endif
 !----------------------------------------------------------------------------------------------------------!
-integer :: i, j, i1, time_step
-integer :: get_sys_time, t_init, t_final
+integer, intent(in) :: ns, mumps_matrix_type
+integer             :: i, j, i1, time_step
+integer             :: get_sys_time, t_init, t_final
 
 real(8), intent(in), dimension(ns+1)          :: ds
 real(8), intent(inout), dimension(numnp,2)    :: q
 real(8), intent(inout), dimension(numnp,ns+1) :: q_final
 !----------------------------------------------------------------------------------------------------------!
-call dirichlet(ds)
+call dirichlet(ds, ns, mumps_matrix_type)
 
 t_init = get_sys_time()
 
@@ -53,7 +53,7 @@ do time_step = 2, ns+1
         if (elem_in_q0_face(i)) rdiag1(i) = 0.
     enddo
 
-    call mumps_sub(numnp, mumps_matrix_type)
+    call mumps_sub(mumps_matrix_type)
 
     do i1 = 1,numnp
          q(i1,2) = rdiag1(i1)

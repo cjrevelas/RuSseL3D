@@ -1,10 +1,12 @@
-subroutine grafted_chains(phia, nch_per_area)
+subroutine grafted_chains(numnp, chainlen, rho_0, phia, nch_per_area)
 !-------------------------------------------------------------------------------------------!
-use xdata
 use constants
 !-------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------!
+integer, intent(in)                        :: numnp
+
+real(8), intent(in)                        :: chainlen, rho_0
 real(8), intent(in), dimension(numnp)      :: phia
 real(8), intent(out)                       :: nch_per_area
 real(8)                                    :: sum_f, Q

@@ -1,16 +1,17 @@
-subroutine dirichlet(ds)
+subroutine dirichlet(ds, ns, mumps_matrix_type)
 !------------------------------------------------------------------------------------------------------!
-use xdata
+!use xdata
 use kcw
 use constants
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-integer :: i, f, i1
+integer, intent(in) :: ns, mumps_matrix_type
+integer             :: i, f, i1
 
 logical, dimension(nel*numel) :: set_diag_to_one
 
-real(8), intent(in), dimension(ns+1) :: ds
+real(8), intent(in), dimension(ns+1)          :: ds
 
 #ifdef PRINT_AFULL
 real(8), allocatable, dimension(:,:) :: A_full

@@ -53,14 +53,14 @@ end if
 flag_continue = .true.
 
 !the slaves will enter the mumps subroutine until they receive a stop
-!signal from the master process
+!signal from master proc
 if (.not.root) then
     !receive the matrix type from root
     call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
     do while (.true.)
         call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         if (flag_continue) then
-            call mumps_sub(0,mumps_matrix_type)
+            call mumps_sub(mumps_matrix_type)
         else
             exit
         endif
@@ -192,7 +192,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     enddo
 
     !solve
-    call edwards(ds, qf, qf_final)
+    call edwards(ds, ns, mumps_matrix_type, qf, qf_final)
 
     !*******************SOLVE EDWARDS PDE FOR GRAFTED CHAINS*************************!
     !initial value of propagator, qgr(numnp,0) = 0.0 for all numnp except for gp
@@ -204,25 +204,25 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         qgr_final = 0.d0
 
         !assign initial conditions at the grafting points
-        call grafted_init_cond(gp_filename, qgr, qgr_final)
+        call grafted_init_cond(ns, gp_filename, qgr, qgr_final)
 
         !solve
-        call edwards(ds, qgr, qgr_final)
+        call edwards(ds, ns, mumps_matrix_type, qgr, qgr_final)
     endif
 
     !*********************CONVOLUTION AND ENERGY***********************************!
     !calculate reduced segment density profiles of free and grafted chains
-    call convolution(numnp, chainlen, ns, koeff, qf_final, qf_final, phia_fr)
+    call convolution(numnp, ns, koeff, qf_final, qf_final, phia_fr)
 
     if (use_grafted.eq.1) then
-        call convolution(numnp, chainlen, ns, koeff, qgr_final, qf_final, phia_gr)
+        call convolution(numnp, ns, koeff, qgr_final, qf_final, phia_gr)
     endif
 
     !calculate partition function of free chains
-    call part_fun(qf_final, part_func)
+    call part_fun(numnp, ns, qf_final, part_func)
 
     !calculated number of grafted chains
-    call grafted_chains(phia_gr, nch_per_area)
+    call grafted_chains(numnp, chainlen, rho_0, phia_gr, nch_per_area)
 
     !calculate the new field
     do k1 = 1, numnp

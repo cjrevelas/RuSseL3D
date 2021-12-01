@@ -1,11 +1,13 @@
-subroutine qprint(q_final, q_type)
+subroutine qprint(ns, q_final, q_type)
 !--------------------------------------------------------------------!
-use xdata
+!use xdata
+use kcw
 use constants
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-integer :: time_step, i1, ii2
+integer, intent(in) :: ns
+integer             :: time_step, i1, ii2
 
 character(4)                               :: q_type
 character(20)                              :: file_name

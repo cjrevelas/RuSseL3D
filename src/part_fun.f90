@@ -1,10 +1,10 @@
-subroutine part_fun(q_final, part_func)
-!-------------------------------------------------------------------------------------------!
-use xdata
+subroutine part_fun(numnp, ns, q_final, part_func)
 !-------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------!
-integer :: k1
+
+integer, intent(in)                        :: numnp, ns
+integer                                    :: k1
 
 real(8), intent(in), dimension(numnp,ns+1) :: q_final
 real(8), intent(out)                       :: part_func
