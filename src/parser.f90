@@ -26,7 +26,7 @@ logical :: log_monomer_mass                = .false.
 logical :: log_sphere_radius               = .false.
 logical :: log_sigma_polymer               = .false.
 logical :: log_sigma_solid                 = .false.
-logical :: log_read_field                  = .false.
+logical :: log_field_init_scheme           = .false.
 logical :: log_set_initial_iteration       = .true.
 logical :: log_mix_coef_fraction           = .false.
 logical :: log_mix_coef_kapa               = .false.
@@ -135,9 +135,9 @@ do
         elseif (index(line,'sigma solid') > 0) then
             read(line,'(F16.4)') sigma2
             log_sigma_solid = .true.
-        elseif (index(line,'# read field') > 0) then
-            read(line,'(I10)') readfield
-            log_read_field= .true.
+        elseif (index(line,'# initialize field') > 0) then
+            read(line,'(I10)') field_init_scheme
+            log_field_init_scheme= .true.
         elseif (index(line,'# set initial iteration') > 0) then
             read(line,'(I10)') init_iter
             log_set_initial_iteration= .true.
@@ -554,11 +554,22 @@ elseif (init_iter.gt.0) then
     write(6  ,'(3x,A40,I16)')adjl('*Simulation restarting from iter:',40), init_iter
 endif
 
-if (log_read_field.and.readfield==1) then
-    write(iow,'(A43,A15)')adjl('*Field will be read from file:',40),field_filename
-    write(6  ,'(A43,A15)')adjl('*Field will be read from file:',40),field_filename
+if (log_field_init_scheme) then
+    if (field_init_scheme==0) then
+        write(iow,'(3x,A40)')adjl('*Field will be initialized to zero:',40)
+        write(6  ,'(3x,A40)')adjl('*Field will be initialized to zero:',40)
+    elseif (field_init_scheme==1) then
+        write(iow,'(A43,A15)')adjl('*Field will be read from file:',40),field_filename
+        write(6  ,'(A43,A15)')adjl('*Field will be read from file:',40),field_filename
+    elseif (field_init_scheme==2) then
+        write(iow,'(A43)')adjl('*Field: -kapa at Dir. BCs and 0 elsewhere:',43)
+        write(6  ,'(A43)')adjl('*Field: -kapa at Dir. BCs and 0 elsewhere:',43)
+    else
+        write(ERROR_MESSAGE,'(''Incorrect field initialization value. Choose between 1-3..'',I16)') init_iter
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
 endif
-if (.not.log_read_field.or.readfield.ne.1) then
+if (.not.log_field_init_scheme) then
     write(iow,'(/A40)')adjl('*Field will be initialized to zero..',40)
     write(6  ,'(/A40)')adjl('*Field will be initialized to zero..',40)
 endif

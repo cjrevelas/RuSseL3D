@@ -8,7 +8,7 @@ real(8) :: chainlen_free, chainlen_gr
 real(8) :: ds_ave_free, ds_ave_gr
 
 !*******************************INDICES AND FLAGS*******************************!
-integer :: iow, ioe, iterations, readfield, init_iter, output_every, print_ev
+integer :: iow, ioe, iterations, field_init_scheme, init_iter, output_every, print_ev
 integer :: geom_type, use_grafted
 
 !************************************DOMAIN*************************************!

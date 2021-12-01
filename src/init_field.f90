@@ -29,7 +29,9 @@ close(211)
 !*******************************************************************!
 !                             READ FIELD                            !
 !*******************************************************************!
-if (readfield.eq.1) then
+if (field_init_scheme.eq.0) then
+    wa = 0.d0
+elseif (field_init_scheme.eq.1) then
     write(iow,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_in_filename
     write(6  ,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_in_filename
 
@@ -44,18 +46,14 @@ if (readfield.eq.1) then
 
     read(655) wa
     close(655)
-else
-    if (scheme_type.eq.2) then
-        do k1 = 1, numnp
-            if (elem_in_q0_face(k1)) then
-                wa(k1) = -kapa
-            else
-                wa(k1) = 0.d0
-            endif
-        enddo
-    else
-        wa = 0.d0
-    endif
+elseif (field_init_scheme.eq.1) then
+    do k1 = 1, numnp
+        if (elem_in_q0_face(k1)) then
+            wa(k1) = -kapa
+        else
+            wa(k1) = 0.d0
+        endif
+    enddo
 endif
 !------------------------------------------------------------------------------------------------------!
 end subroutine init_field
