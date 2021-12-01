@@ -1,12 +1,10 @@
-subroutine grafted_init_cond(ns, gp_filename, qgr, qgr_final)
+subroutine grafted_init_cond(ns, numnp, gp_filename, qgr, qgr_final)
 !------------------------------------------------------------------------------------------------------!
-!use xdata
-use kcw
 use error_handing
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-integer, intent(in) :: ns
+integer, intent(in) :: ns, numnp
 integer             :: i1, num_gpoints, gnode_id, iog
 
 character(20), intent(in) :: gp_filename

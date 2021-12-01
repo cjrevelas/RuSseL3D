@@ -1,4 +1,4 @@
-subroutine mumps_sub(numnp, mumps_matrix_type)
+subroutine mumps_sub(mumps_matrix_type)
 !This file is part of MUMPS 5.2.1, released on Fri Jun 14 14:46:05 UTC2019
 !--------------------------------------------------------------------------!
 use kcw
@@ -14,7 +14,8 @@ include 'dmumps_struc.h'
 !--------------------------------------------------------------------------!
 type(DMUMPS_STRUC) :: mumps_par
 
-integer :: i, i8, i9, numnp, mumps_matrix_type
+integer, intent(in) :: mumps_matrix_type
+integer             :: i, i8, i9
 !--------------------------------------------------------------------------!
 !define a communicator for the package
 mumps_par%COMM = MPI_COMM_WORLD

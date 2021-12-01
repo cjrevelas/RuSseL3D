@@ -1,6 +1,5 @@
 subroutine edwards(ds, ns, mumps_matrix_type, q, q_final)
 !----------------------------------------------------------------------------------------------------------!
-use constants
 use kcw
 #ifdef USE_MPI
 use mpistuff
@@ -23,7 +22,6 @@ real(8), intent(inout), dimension(numnp,ns+1) :: q_final
 call dirichlet(ds, ns, mumps_matrix_type)
 
 t_init = get_sys_time()
-
 !************************START TRANSIENT SOLUTION*********************!
 do time_step = 2, ns+1
 
@@ -65,7 +63,6 @@ do time_step = 2, ns+1
         q(i1,1) = q(i1,2)
     enddo
 enddo !time_step
-
 
 deallocate(A_m%value)
 deallocate(A_m%col)

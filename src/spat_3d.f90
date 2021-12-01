@@ -1,6 +1,6 @@
 subroutine spat_3d(u_spat, sum_out, Q)
 !--------------------------------------------------------------------!
-use xdata
+use parser_vars
 use kcw
 use constants
 use error_handing

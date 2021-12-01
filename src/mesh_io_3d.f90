@@ -7,7 +7,7 @@ use ints_module
 !/fhash module
 use error_handing
 use write_helper
-use xdata
+use parser_vars
 use kcw
 !--------------------------------------------------------------------!
 implicit none

@@ -1,14 +1,15 @@
 subroutine periodic_dumper(qf_final, qgr_final, phia_fr, phia_gr, wa, wa_new, wa_mix)
 !-----------------------------------------------------------------------------------------------------------!
-use xdata
+use parser_vars
 use kcw
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
 integer :: k1
 
-real(8), intent(in), dimension(numnp)      :: phia_fr, phia_gr, wa, wa_new, wa_mix
-real(8), intent(in), dimension(numnp,ns+1) :: qf_final, qgr_final
+real(8), intent(in), dimension(numnp)           :: phia_fr, phia_gr, wa, wa_new, wa_mix
+real(8), intent(in), dimension(numnp,ns_free+1) :: qf_final
+real(8), intent(in), dimension(numnp,ns_gr+1)   :: qgr_final
 !-----------------------------------------------------------------------------------------------------------!
 open (unit=121, file = 'wa.out.txt', status='unknown', position='append')
 open (unit=122, file = 'wa_new.out.txt', status='unknown', position='append')
@@ -45,10 +46,10 @@ enddo
 close(120)
 
 !print the restricted partition functions
-call qprint(ns, qf_final,"free")
+call qprint(ns_free, qf_final,"free")
 
 if (use_grafted.eq.1) then
-   call qprint(ns, qgr_final,"graf")
+   call qprint(ns_gr, qgr_final,"graf")
 endif
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine periodic_dumper

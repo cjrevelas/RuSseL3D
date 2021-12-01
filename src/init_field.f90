@@ -1,6 +1,6 @@
 subroutine init_field(field_in_filename, Ufield, wa)
 !------------------------------------------------------------------------------------------------------!
-use xdata
+use parser_vars
 use kcw
 use error_handing
 use write_helper
@@ -12,7 +12,7 @@ integer :: k1
 character(20), intent(in) :: field_in_filename
 
 real(8), intent(out), dimension(numnp) :: Ufield, wa
-real(8)                                :: surf_pot
+real(8)                                :: surf_pot, distance
 !------------------------------------------------------------------------------------------------------!
 open(unit=211, file = 'Usolid.out.txt')
 do k1 = 1, numnp

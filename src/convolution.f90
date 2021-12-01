@@ -19,7 +19,7 @@ do k1 = 1, numnp
        !summer = summer + koeff(time_step)*ds(time_step)*q1(k1,time_step)*q2(k1,ns+2-time_step)
     enddo
 
-    phia(k1) = summer/chainlen
+    phia(k1) = summer / chainlen
 enddo
 !-------------------------------------------------------------------------------------------!
 end subroutine convolution
