@@ -47,9 +47,9 @@ term4 = -chainlen_free / rho_0 * term4 !green: translational entropy of grafted 
 part_sum1 = term1 * rho_0 * boltz_const_Joule_molK * Temp / chainlen_free * 1.0D+03
 part_sum2 = term2 * rho_0 * boltz_const_Joule_molK * Temp / chainlen_free * 1.0D+03
 part_sum3 = term3 * rho_0 * boltz_const_Joule_molK * Temp / chainlen_free * 1.0D+03
-part_sum4 = term4 * rho_0 * boltz_const_Joule_molK * Temp / chainlen_free * 1.0D+03
+part_sum4 = term4 * rho_0 * boltz_const_Joule_K * Temp / chainlen_free * 1.0D+03
 
-sum_final = part_sum1 + part_sum2 + part_sum3! + part_sum4
+sum_final = part_sum1 + part_sum2 + part_sum3 + part_sum4
 
 adh_ten = - sum_final/(interf_area*1.D-20) ! adh_ten = (Omega_bulk - Omega) / A
 
