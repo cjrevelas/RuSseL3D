@@ -55,6 +55,10 @@ MODULES=$(OBJDIR)/parser_vars.o\
 	$(OBJDIR)/mpistuff.o\
 	$(OBJDIR)/error_handing.o\
 	$(OBJDIR)/write_helper.o\
+	$(OBJDIR)/force_fields.o\
+
+
+
 
 OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/part_fun.o\
@@ -70,7 +74,6 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/simpsonkoef.o\
 	$(OBJDIR)/quadinterp_koef.o\
 	$(OBJDIR)/spat_3d.o\
-	$(OBJDIR)/surf_pot.o\
 	$(OBJDIR)/tetshp.o\
 	$(OBJDIR)/qprint.o\
 	$(OBJDIR)/mesh.o\

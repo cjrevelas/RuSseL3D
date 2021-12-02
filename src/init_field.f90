@@ -4,6 +4,7 @@ use parser_vars
 use geometry
 use error_handing
 use write_helper
+use force_fields
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
@@ -13,14 +14,19 @@ character(20), intent(in) :: field_in_filename
 
 real(8), intent(out), dimension(numnp) :: Ufield, wa
 real(8)                                :: distance, r12, Urep, Uatt, Utot
+real(8)                                :: sigma_plate_temp, A_plate_temp
 !------------------------------------------------------------------------------------------------------!
 open(unit=211, file = 'Usolid.out.txt')
 Ufield = 0.d0
+
 do k1 = 1, numnp
-    ! loop over all dirichlet faces
+    !loop over all dirichlet faces
     do m1 = 1, 3
         do n1 = 1, 2
             if (is_dir_face(m1,n1)) then
+
+                sigma_plate_temp = sigma_plate(1)
+                A_plate_temp     = A_plate(1)
 
                 if (n1.eq.1) then
                     distance = xc(m1,k1) - box_lo(m1)
@@ -28,7 +34,9 @@ do k1 = 1, numnp
                     distance = box_hi(m1) - xc(m1,k1)
                 endif
 
-                call surf_pot(Temp, distance, sphere_radius, rho_0, sigma1, sigma2, Aps, Asio2, r12, Urep, Uatt, Utot)
+                call hamaker_sphere_plate(Temp, distance, rho_0, sigma_pol, sigma_plate_temp, A_pol, &
+    &                                     A_plate_temp, r12, Urep, Uatt, Utot)
+
                 Ufield(k1) = Ufield(k1) + Utot
 
                 if (Ufield(k1).ne.Ufield(k1)) then
@@ -71,7 +79,7 @@ elseif (field_init_scheme.eq.1) then
 
     read(655) wa
     close(655)
-elseif (field_init_scheme.eq.1) then
+elseif (field_init_scheme.eq.2) then
     do k1 = 1, numnp
         if (elem_in_q0_face(k1)) then
             wa(k1) = -kapa
