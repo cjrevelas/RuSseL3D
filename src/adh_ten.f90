@@ -53,6 +53,12 @@ sum_final = part_sum1 + part_sum2 + part_sum3 + part_sum4
 
 adh_ten = - sum_final/(interf_area*1.D-20) ! adh_ten = (Omega_bulk - Omega) / A
 
+!flush output
+open(unit=837, file = 'energy_terms.out.txt', position = 'append')
+write(837,'(6(E19.9e2,1X))')  part_sum1, part_sum2, part_sum3, part_sum4, &
+   &                          sum_final, adh_ten
+close(837)
+
 return
 !-------------------------------------------------------------------------------------------------!
 end subroutine adhesion_tension
