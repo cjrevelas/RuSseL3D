@@ -95,7 +95,7 @@ call parser
 call calc_scf_params
 
 !read the input from the mesh file and generate it
-call mesh_io_3d
+call mesh
 
 !allocate and initialize essential scf arrays
 allocate(rdiag1(numnp))

@@ -40,7 +40,7 @@ do n = 1, numel
 
     !set up for gauss quadrature
     l=3
-    call gauss_3d(l, lint, sv)
+    call gausspoints(l, lint, sv)
 
     sumel = 0.d00
     volel = 0.d00

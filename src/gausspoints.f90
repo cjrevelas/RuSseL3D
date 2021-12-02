@@ -1,4 +1,4 @@
-subroutine gauss_3d(ll, lint, s)
+subroutine gausspoints(ll, lint, s)
 !--------------------------------------------------------------------!
 implicit  none
 !--------------------------------------------------------------------!
@@ -14,7 +14,7 @@ if (ll.eq.1) then
 
     do i = 1, 4
         s(i,1) = 0.25d0
-    enddo  
+    enddo
 
     s(5,1) = 1.0d0/6.d0
 
@@ -53,7 +53,7 @@ elseif (ll.eq.3) then
 
     do j = 1, 4
         s(5,j) = 1.d0/360.d0
-    enddo 
+    enddo
 
     do j = 5, 10
         s(5,j) = 1.d0/90.d0
@@ -72,10 +72,10 @@ else
     do i = 1, 3
         do j = 1, 4
             s(i,j) = 0.7611903264425430d-01
-        enddo 
+        enddo
         s(i,i) = 0.7716429020672371d+00
         s(5,i) = s(5,4)
-    enddo 
+    enddo
 
     do i = 5, 16
         s(5,i) = 0.1109034477221540d-01
@@ -128,4 +128,4 @@ enddo
 
 return
 !--------------------------------------------------------------------!
-end subroutine gauss_3d
+end subroutine gausspoints

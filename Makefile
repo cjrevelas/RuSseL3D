@@ -3,7 +3,7 @@
 ###################################################################################################################################################
 #--------------------------------------------------SET COMPILER FLAGS AND LIBRARIES TO BE LINKED--------------------------------------------------#
 MAKE_MPI_RUN=1
-MAKE_PRODUCTION_RUN=1
+MAKE_PRODUCTION_RUN=0
 
 PROD_OPTIONS=
 DEBUG_OPTIONS= -DDEBUG_OUTPUTS #-DPRINT_AFULL
@@ -12,7 +12,7 @@ BOTH_OPTIONS= #-DVARIABLE_DS_SCHEME# -DMUMPS_REPORT
 #MPI/MUMPS SECTION
 ifeq ($(MAKE_MPI_RUN),0)
 MPI_OPTIONS=
-topdir = #/usr/share/mumps-5.2.1_serial
+topdir = /home/asgouros/TrioStountzes/MUMPS/MUMPS_5.2.1_SERIAL
 else
 MPI_OPTIONS = -DUSE_MPI
 #topdir = /usr/share/mumps-5.2.1_par
@@ -47,13 +47,13 @@ SRCDIR=src
 MODDIR=$(SRCDIR)/mod
 RUNDIR=run
 
-MODULES=$(OBJDIR)/parser_vars_mod.o\
-	$(OBJDIR)/constants_mod.o\
-	$(OBJDIR)/kcw_mod.o\
+MODULES=$(OBJDIR)/parser_vars.o\
+	$(OBJDIR)/constants.o\
+	$(OBJDIR)/kcw.o\
 	$(OBJDIR)/fhash_mod.o\
-	$(OBJDIR)/mpistuff_mod.o\
-	$(OBJDIR)/error_handing_mod.o\
-	$(OBJDIR)/write_helper_mod.o\
+	$(OBJDIR)/mpistuff.o\
+	$(OBJDIR)/error_handing.o\
+	$(OBJDIR)/write_helper.o\
 
 OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/part_fun.o\
@@ -72,8 +72,8 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/surf_pot.o\
 	$(OBJDIR)/tetshp.o\
 	$(OBJDIR)/qprint.o\
-	$(OBJDIR)/mesh_io_3d.o\
-	$(OBJDIR)/gauss_3d.o\
+	$(OBJDIR)/mesh.o\
+	$(OBJDIR)/gausspoints.o\
 	$(OBJDIR)/edwards.o\
 	$(OBJDIR)/adh_ten.o\
 	$(OBJDIR)/main.o\
