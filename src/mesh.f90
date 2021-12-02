@@ -1,4 +1,4 @@
-subroutine mesh_io_3d
+subroutine mesh
 !--------------------------------------------------------------------!
 !fhash module
 use, intrinsic :: iso_fortran_env
@@ -9,43 +9,42 @@ use error_handing
 use write_helper
 use parser_vars
 use kcw
+use geometry
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
 character(len=15) :: dummy
 character(len=13) :: mesh_filename
 
-integer                              :: idummy
-integer                              :: i, j, i1, j1, k1, m1
-integer                              :: nmeltypes
-integer                              :: vtxnum, vtxel
-integer                              :: vtxparnum, vtxparel
-integer                              :: edgnum, edgel
-integer                              :: edgparnum, edgparel
-integer                              :: fcparnum, fcparel
-integer                              :: fcnum, fcel
-integer, allocatable, dimension(:,:) ::  fcelement
-integer, allocatable, dimension(:)   :: fcentity
-integer, allocatable, dimension(:,:) :: vtxelement, edgelement
-integer, allocatable, dimension(:,:) :: vtxpar
-integer, allocatable, dimension(:)   :: vtxentity, edgentity, temp3
+integer :: idummy, i, j, i1, j1, k1, m1
+integer :: num_elem_types
 
-real(8), allocatable, dimension(:,:) :: edgpar, fcpar
+integer :: num_nodes_per_vertex_elem, num_vertex_elem
+integer :: num_params_per_vertex_elem, num_vertex_params
+integer :: num_nodes_per_edge_elem, num_edge_elem
+integer :: num_params_per_edge_elem, num_edge_params
+integer :: num_nodes_per_face_elem, num_face_elem
+integer :: num_params_per_face_elem, num_face_params
 
-!profile section
+integer, allocatable, dimension(:)   :: vertex_entity_id, edge_entity_id, face_entity_id, temp3
+integer, allocatable, dimension(:,:) :: vertex_node_id, edge_node_id, face_node_id
+real(8), allocatable, dimension(:,:) :: vertex_param, edge_param, face_param
+
+real(8) :: tol=1.e-8
+
+!profile section variables
 integer, allocatable, dimension(:) :: prof_1D_node
 real(8)                            :: prof_bin
 integer                            :: nbin, ibin
 
-!fhash module
+!fhash module variables
 type(fhash_type__ints_double) :: h
 type(ints_type) :: key
 integer :: n_keys
 integer :: key_value
 logical :: success
-!/ fhash module
 !--------------------------------------------------------------------!
-mesh_filename = 'Fem_3D.mphtxt'
+mesh_filename = 'mesh.mphtxt'
 
 write(iow,'(/A42,A15)')adjl('*Reading mesh from file:',42),mesh_filename
 write(6  ,'(/A42,A15)')adjl('*Reading mesh from file:',42),mesh_filename
@@ -66,18 +65,15 @@ enddo
 read(12,*) ndm
 read(12,*) numnp
 
-
 allocate(xc(ndm,numnp))
 
 do i = 1, 3
     read(12,'(A60)') dummy
 enddo
 
-!*******************************************************************!
-!                Reading Mesh points and box dimensions             !
-!*******************************************************************!
-box_lo = 0.d0
-box_hi = 0.d0
+!reading meshpoint coordinates and calculating box dimensions
+box_lo  = 0.d0
+box_hi  = 0.d0
 box_len = 0.d0
 
 do i = 1, numnp
@@ -103,94 +99,91 @@ volume = box_len(1)*box_len(2)*box_len(3)
 write(iow,'(/A43,E16.9,A11)')adjl('System volume:',43),volume,' Angstrom^3'
 write(6  ,'(/A43,E16.9,A11)')adjl('System volume:',43),volume,' Angstrom^3'
 
-!*******************************************************************!
-!                       Deal with the elements                      !
-!*******************************************************************!
+!read types and numbers of elements
 read (12,'(A60)') dummy
 
-!element types
-read (12,*) nmeltypes
+read (12,*) num_elem_types
 
 do i = 1, 6
     read (12,'(A60)') dummy
 enddo
 
-!VERTEX ELEMENTS
-call read_matrix_bounds(vtxnum, vtxel)
+!----------------vertex elements------------------!
+read(12,*) num_nodes_per_vertex_elem
+read(12,*) num_vertex_elem
+allocate(vertex_node_id(num_nodes_per_vertex_elem,num_vertex_elem))
 
-allocate(vtxelement(vtxnum,vtxel))
-
-call read_integer(vtxnum, vtxel, vtxelement)
-
-read (12,'(A60)') dummy
-
-call read_matrix_bounds(vtxparnum, vtxparel)
-
-allocate(vtxpar(vtxparnum,vtxparel))
-
-call read_integer(vtxparnum, vtxparel, vtxpar)
+call read_integer_value(num_nodes_per_vertex_elem, num_vertex_elem, vertex_node_id)
 
 read (12,'(A60)') dummy
 
-allocate(vtxentity(vtxel))
+read(12,*) num_params_per_vertex_elem
+read(12,*) num_vertex_params
+allocate(vertex_param(num_params_per_vertex_elem,num_vertex_params))
 
-call entity(vtxel, vtxentity)
+call read_real_value(num_params_per_vertex_elem, num_vertex_params, vertex_param)
+
+read (12,'(A60)') dummy
+
+allocate(vertex_entity_id(num_vertex_elem))
+
+call entity(num_vertex_elem, vertex_entity_id)
 
 do i = 1, 8
     read (12,'(A60)') dummy
 enddo
 
-!EDGE ELEMENTS
-call read_matrix_bounds(edgnum, edgel)
+!------------------edge elements------------------!
+read(12,*) num_nodes_per_edge_elem
+read(12,*) num_edge_elem
+allocate(edge_node_id(num_nodes_per_edge_elem,num_edge_elem))
 
-allocate(edgelement(edgnum,edgel))
-
-call read_integer(edgnum, edgel, edgelement)
+call read_integer_value(num_nodes_per_edge_elem, num_edge_elem, edge_node_id)
 
 read(12,'(A60)') dummy
 
-call read_matrix_bounds(edgparnum, edgparel)
+read(12,*) num_params_per_edge_elem
+read(12,*) num_edge_params
+allocate(edge_param(num_params_per_edge_elem,num_edge_params))
 
-allocate(edgpar(edgparnum,edgparel))
-
-call read_real(edgparnum, edgparel, edgpar)
+call read_real_value(num_params_per_edge_elem, num_edge_params, edge_param)
 
 read (12,'(A60)') dummy
 
-allocate(edgentity(edgel))
+allocate(edge_entity_id(num_edge_elem))
 
-call entity(edgel, edgentity)
+call entity(num_edge_elem, edge_entity_id)
 
 do i = 1, 9
     read (12,'(A60)') dummy
 enddo
 
-!FACE ELEMENTS
-call read_matrix_bounds(fcnum, fcel)
+!------------------face elements------------------!
+read(12,*) num_nodes_per_face_elem
+read(12,*) num_face_elem
+allocate(face_node_id(num_nodes_per_face_elem,num_face_elem))
 
-allocate(fcelement(fcnum,fcel))
-
-call read_integer(fcnum, fcel, fcelement)
-
-read (12,'(A60)') dummy
-
-!change the values of face element so as to start from 1 instead from 0
-fcelement = fcelement + 1
-
-call read_matrix_bounds(fcparnum, fcparel)
-
-allocate(fcpar(fcparnum,fcparel))
-
-call read_real(fcparnum, fcparel, fcpar)
+call read_integer_value(num_nodes_per_face_elem, num_face_elem, face_node_id)
 
 read (12,'(A60)') dummy
 
-allocate(fcentity(fcel))
+face_node_id = face_node_id + 1 !change the values of face elements so that they start from 1 instead from 0
 
-call entity(fcel, fcentity)
-!changes the values of element entinty so as to start from 1 instead from 0
-fcentity = fcentity + 1
+read(12,*) num_params_per_face_elem
+read(12,*) num_face_params
+allocate(face_param(num_params_per_face_elem,num_face_params))
 
+call read_real_value(num_params_per_face_elem, num_face_params, face_param)
+
+read (12,'(A60)') dummy
+
+allocate(face_entity_id(num_face_elem))
+
+call entity(num_face_elem, face_entity_id)
+
+face_entity_id = face_entity_id + 1 !change the value of face id's so that they start from 1 instead from 0
+
+!-------------------------------------------------!
 !up/down pairs
 read(12,'(A60)') dummy
 read(12,*) idummy
@@ -203,12 +196,12 @@ do i = 1, 6
     read(12,'(A60)') dummy
 enddo
 
-!DOMAIN ELEMENTS
-call read_matrix_bounds(nel, numel)
-
+!------------------domain elements------------------!
+read(12,*) nel
+read(12,*) numel
 allocate(ix(nel,numel))
 
-call read_integer(nel, numel, ix)
+call read_integer_value(nel, numel, ix)
 
 do i = 1, numel
     do j = 1, nel
@@ -226,10 +219,8 @@ if (nel>4) then
 endif
 
 all_el = nel * nel * numel
-
-!*******************************************************************!
-!                  Allocate and initialize the arrays               !
-!*******************************************************************!
+!---------------------------------------------------!
+!allocate and initialize arrays for matrix assembly
 allocate(F_m%row(all_el))
 allocate(F_m%col(all_el))
 allocate(F_m%g(all_el))
@@ -238,21 +229,17 @@ allocate(F_m%c(all_el))
 allocate(F_m%k(all_el))
 allocate(F_m%w(all_el))
 
-F_m%g = 0.d0
-F_m%k = 0.d0
-F_m%c = 0.d0
-F_m%rh = 0.d0
+F_m%g   = 0.d0
+F_m%k   = 0.d0
+F_m%c   = 0.d0
+F_m%rh  = 0.d0
 F_m%row = 0
 F_m%col = 0
 
 allocate(con_l2(all_el))
 con_l2 = 0
 
-
-!*******************************************************************!
-!                   construct the con_12 matrix                     !
-!*******************************************************************!
-
+!assembly the con_12 (hash) matrix
 allocate(key%ints(2))
 n_keys = nel * numel
 call h%reserve(n_keys*2)
@@ -280,30 +267,73 @@ do m1 = 1, numel
 end do
 call h%clear()
 
-!*******************************************************************!
-!          Find all elements belonging to dirichlet q=0 faces       !
-!*******************************************************************!
+!determine all elements belonging to dirichlet faces
 allocate(elem_in_q0_face(numnp))
 elem_in_q0_face = .false.
 
 write(iow,'(/A54)')'* Find all elements belonging to dirichlet q=0 faces..'
 write(6  ,'(/A54)')'* Find all elements belonging to dirichlet q=0 faces..'
 
-do j = 1, fcel
+#ifdef DEBUG_OUTPUTS
+open(unit=123, file='dir_faces.txt')
+#endif
+
+is_dir_face      = .false.
+
+do j = 1, num_face_elem
     do i1 = 1, n_dirichlet_faces
-        if (fcentity(j)==ids_dirichlet_faces(i1))then
-            do i = 1, fcnum
-                idummy= fcelement(i,j)
+        if (face_entity_id(j)==ids_dirichlet_faces(i1)) then
+            do i = 1, num_nodes_per_face_elem
+                idummy= face_node_id(i,j)
+
+                !if the node belongs to a dirichlet face
                 elem_in_q0_face(idummy) = .True.
+
+                !find if a node is located at a corner
+                k1 = 0
+                do m1 = 1, ndm
+                    if (dabs(xc(m1, idummy) - box_lo(m1)) < tol) then
+                        k1 = k1 + 1
+                    endif
+                    if (dabs(xc(m1, idummy) - box_hi(m1)) < tol) then
+                        k1 = k1 + 1
+                    endif
+                enddo
+
+                !if a node is located at a corner skip the loop
+                if (k1 > 1) cycle
+
+                do m1 = 1, ndm
+                    if (dabs(xc(m1, idummy) - box_lo(m1)) < tol) then
+                        is_dir_face(m1,1) = .true.
+                    endif
+                    if (dabs(xc(m1, idummy) - box_hi(m1)) < tol) then
+                        is_dir_face(m1,2) = .true.
+                    endif
+                enddo
+#ifdef DEBUG_OUTPUTS
+                write(123,'(3(E16.8),6(L3))') xc(1, idummy), xc(2, idummy), xc(3, idummy), &
+    &                                 (is_dir_face(k1,1), k1 = 1,3), (is_dir_face(k1,2), k1 = 1,3)
+#endif
             enddo
         endif
     enddo
-enddo
 
-!*******************************************************************!
-!                          DEBUG SECTION                            !
-!*******************************************************************!
+    !nanoparticles section
+    !do i1 = 1, n_nanopart_faces
+        !if (face_entity_id(j)==ids_nanopart_faces(i1)) then
+            !do i = 1, num_nodes_per_face_elem
+                !idummy = face_node_id(i,j)
+
+                !if the node belongs to a dirichlet face
+                !elem_in_q0_face(idummy) = .True.
+            !enddo
+        !endif
+    !enddo
+enddo
+!-------------------------DEBUG SECTION-----------------------------!
 #ifdef DEBUG_OUTPUTS
+close(123)
 close(13)
 
 open(unit=77, file='com_12.out.txt')
@@ -323,18 +353,13 @@ do i = 1, numnp
     write(77,'(F21.15,1X,F21.15,1X,F21.15)') (xc(j,i), j = 1, ndm)
 enddo
 close(77)
-
-
+!-------------------------------------------------------------------!
 ! APS profile section
 ! APS TEMP: this should be encapsulated into a subroutine
-! APS: DO NOT PANIC
 prof_bin = 0.5d0
 nbin = nint((box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin) + 1
 
 allocate(prof_1D_node(nbin))
-
-!write(6,*)"Profile options"
-!write(6,*)prof_dim, prof_bin, nbin
 
 prof_1D_node=0
 do i = 1, numnp
@@ -359,71 +384,58 @@ close(120)
 
 return
 !--------------------------------------------------------------------!
-end subroutine  mesh_io_3d
+end subroutine mesh
 
 
 
-subroutine read_matrix_bounds(num, el)
+subroutine read_integer_value(num_per_elem, num_elem, id)
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-integer :: num, el
-!--------------------------------------------------------------------!
-read(12,*) num
-read(12,*) el
+integer :: num_per_elem, num_elem, i, j
 
-return
-!--------------------------------------------------------------------!
-end subroutine read_matrix_bounds
-
-
-
-subroutine read_integer(num, el, element)
-!--------------------------------------------------------------------!
-implicit none
-!--------------------------------------------------------------------!
-integer :: num, el, i, j
-
-integer :: element(num,el)
+integer, dimension(num_per_elem, num_elem) :: id
 
 character(len=60) :: dum
 !--------------------------------------------------------------------!
 read (12,'(A60)') dum
 
-if (el.ne.0) then
-    if (num.eq.1) then
-        do i = 1, el
-            read(12,*)  element(1,i)
+if (num_elem.ne.0) then
+    if (num_per_elem.eq.1) then
+        do i = 1, num_elem
+            read(12,*)  id(1,i)
         enddo
     else
-        do i = 1, el
-            read(12,*)  (element(j,i), j = 1, num)
+        do i = 1, num_elem
+            read(12,*)  (id(j,i), j = 1, num_per_elem)
         enddo
     endif
 endif
 
 return
 !--------------------------------------------------------------------!
-end subroutine read_integer
+end subroutine read_integer_value
 
-subroutine entity(el, endity)
+
+
+subroutine entity(num_elem, entity_id)
 !--------------------------------------------------------------------!
 use error_handing
 implicit none
 !--------------------------------------------------------------------!
-integer :: el, equal, i!, num
+integer :: num_elem, num_entities, i
 
-integer :: endity(el)
+integer, dimension(num_elem) :: entity_id
 
 character(len=60) :: dum
 !--------------------------------------------------------------------!
-read(12,*)equal
+read(12,*) num_entities
 
 read (12,'(A60)') dum
 
-if (equal.eq.el) then
-    do i = 1, el
-        read(12,*)  endity(i)
+if (num_entities.eq.num_elem) then
+    do i = 1, num_entities
+        read(12,*)  entity_id(i)
     enddo
 else
     ERROR_MESSAGE='Error in entity..'
@@ -436,30 +448,30 @@ end subroutine entity
 
 
 
-subroutine read_real(num, el, element)
+subroutine read_real_value(num_per_elem, num_params, id)
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-integer:: num, el, i, j
+integer:: num_per_elem, num_params, i, j
 
-real(8) :: element(num,el)
+real(8), dimension(num_per_elem, num_params) :: id
 
 character(len=60) :: dum
 !--------------------------------------------------------------------!
 read (12,'(A60)') dum
 
-if (el.ne.0) then
-    if (num.eq.1) then
-        do i = 1, el
-            read(12,*)  element(1,i)
+if (num_params.ne.0) then
+    if (num_per_elem.eq.1) then
+        do i = 1, num_params
+            read(12,*)  id(1,i)
         enddo
     else
-        do i = 1, el
-            read(12,*)  (element(j,i), j = 1, num)
+        do i = 1, num_params
+            read(12,*)  (id(j,i), j = 1, num_per_elem)
         enddo
     endif
 endif
 
 return
 !--------------------------------------------------------------------!
-end subroutine read_real
+end subroutine read_real_value

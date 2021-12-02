@@ -7,30 +7,49 @@ use write_helper
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-integer :: k1
+integer :: k1, m1, n1
 
 character(20), intent(in) :: field_in_filename
 
 real(8), intent(out), dimension(numnp) :: Ufield, wa
-real(8)                                :: surf_pot, distance
+real(8)                                :: distance, r12, Urep, Uatt, Utot
 !------------------------------------------------------------------------------------------------------!
 open(unit=211, file = 'Usolid.out.txt')
+Ufield = 0.d0
 do k1 = 1, numnp
-    if (geom_type.eq.1) then
-        distance = dsqrt(xc(1,k1)**2 + xc(2,k1)**2 + xc(3,k1)**2)
-    elseif(geom_type.eq.0) then
-        distance = xc(1,k1)
-    endif
+    ! loop over all dirichlet faces
+    do m1 = 1, 3
+        do n1 = 1, 2
+            if (is_dir_face(m1,n1)) then
 
-    Ufield(k1) = surf_pot(distance)
-    write(211,('(E16.9,2X,E19.9)')) distance, Ufield(k1)
+                if (n1.eq.1) then
+                    distance = xc(m1,k1) - box_lo(m1)
+                elseif (n1.eq.2) then
+                    distance = box_hi(m1) - xc(m1,k1)
+                endif
 
-    if (Ufield(k1).ne.Ufield(k1)) then
-        Ufield(k1) = 0.d0
-        write(ERROR_MESSAGE,'(''Hamaker assumed a NaN value for x = '',E16.9,''. NaN was changed to '',E16.9)') distance, Ufield(k1)
-        call exit_with_error(0,2,0,ERROR_MESSAGE)
-    endif
+                call surf_pot(Temp, distance, sphere_radius, rho_0, sigma1, sigma2, Aps, Asio2, r12, Urep, Uatt, Utot)
+                Ufield(k1) = Ufield(k1) + Utot
+
+                if (Ufield(k1).ne.Ufield(k1)) then
+                    write(ERROR_MESSAGE,'(''Hamaker assumed a NaN value for x = '',E16.9,''. &
+                                        & NaN was changed to '',E16.9)') distance, Ufield(k1)
+                    call exit_with_error(1,2,1,ERROR_MESSAGE)
+                endif
+
+                if (distance.lt.0.d0) then
+                    write(ERROR_MESSAGE,'(''Hamaker distance smaller than zero! ('',E16.9,'').'')') distance
+                    call exit_with_error(1,2,1,ERROR_MESSAGE)
+                endif
+
+                write(211,'(E17.9E3,2X,E17.9E3,2X,E17.9E3,2X,E17.9E3,2X,E17.9E3)') distance, r12, Uatt, Urep, Utot
+            endif
+        enddo
+    enddo
+    !Nanoparticle section
+    !       distance = dsqrt(xc(1,k1)**2 + xc(2,k1)**2 + xc(3,k1)**2)
 enddo
+
 close(211)
 !*******************************************************************!
 !                             READ FIELD                            !
