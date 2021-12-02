@@ -54,8 +54,26 @@ do k1 = 1, numnp
             endif
         enddo
     enddo
-    !Nanoparticle section
-    !       distance = dsqrt(xc(1,k1)**2 + xc(2,k1)**2 + xc(3,k1)**2)
+
+   !loop over all nanoparticle faces
+   do m1 = 1, n_nanopart_faces
+
+           distance = dsqrt( (xc(1,k1)-center_np(1,m1))**2+(xc(2,k1)-center_np(2,m1))**2 &
+   &                        +(xc(3,k1)-center_np(3,m1))**2 )
+
+           call hamaker_sphere_sphere(Temp, distance, radius_np(m1), rho_0, sigma_pol, sigma_np(m1), A_pol, A_np(m1), &
+   &                                  r12, Urep, Uatt, Utot)
+
+           Ufield(k1) = Ufield(k1) + Utot
+
+           if (Ufield(k1).ne.Ufield(k1)) then
+               write(ERROR_MESSAGE,'(''Hamaker assumed a NaN value for x = '',E16.9,''. &
+                                   & NaN was changed to '',E16.9)') distance, Ufield(k1)
+               call exit_with_error(1,2,1,ERROR_MESSAGE)
+           endif
+
+           write(211,'(E17.9E3,2X,E17.9E3,2X,E17.9E3,2X,E17.9E3,2X,E17.9E3)') distance, r12, Uatt, Urep, Utot
+   enddo
 enddo
 
 close(211)
