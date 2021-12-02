@@ -50,6 +50,7 @@ RUNDIR=run
 MODULES=$(OBJDIR)/parser_vars.o\
 	$(OBJDIR)/constants.o\
 	$(OBJDIR)/kcw.o\
+	$(OBJDIR)/geometry.o\
 	$(OBJDIR)/fhash_mod.o\
 	$(OBJDIR)/mpistuff.o\
 	$(OBJDIR)/error_handing.o\

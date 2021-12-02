@@ -1,7 +1,7 @@
 subroutine init_field(field_in_filename, Ufield, wa)
 !------------------------------------------------------------------------------------------------------!
 use parser_vars
-use kcw
+use geometry
 use error_handing
 use write_helper
 !------------------------------------------------------------------------------------------------------!

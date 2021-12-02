@@ -1,6 +1,6 @@
 subroutine qprint(ns, q_final, q_type)
 !--------------------------------------------------------------------!
-use kcw
+use geometry
 use constants
 !--------------------------------------------------------------------!
 implicit none

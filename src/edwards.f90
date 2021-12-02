@@ -1,6 +1,7 @@
 subroutine edwards(ds, ns, mumps_matrix_type, q, q_final)
 !----------------------------------------------------------------------------------------------------------!
 use kcw
+use geometry
 #ifdef USE_MPI
 use mpistuff
 #endif

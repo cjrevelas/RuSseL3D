@@ -1,7 +1,7 @@
 subroutine adhesion_tension(qf_final, qgr_final, wa, Ufield, phia_fr, phia_gr, part_func, adh_ten)
 !-------------------------------------------------------------------------------------------------!
 use parser_vars
-use kcw
+use geometry
 use constants
 !-------------------------------------------------------------------------------------------------!
 implicit none

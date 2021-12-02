@@ -5,6 +5,7 @@ use constants
 use error_handing
 use write_helper
 use kcw
+use geometry
 #ifdef USE_MPI
 use mpistuff
 #endif
