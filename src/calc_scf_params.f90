@@ -6,10 +6,6 @@ use write_helper
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-!set the value of Hamaker constants
-Aps   = Aps * 1.e-20
-Asio2 = Asio2 * 1.e-20
-
 write(iow,'(/''*Initialization of usefull quantities..'')')
 write(6  ,'(/''*Initialization of usefull quantities..'')')
 

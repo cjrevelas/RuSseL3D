@@ -65,7 +65,7 @@ if (mumps_par%MYID.eq.0) then
     mumps_par%N   = numnp
     mumps_par%NNZ = NNZ
 
-    allocate(mumps_par%IRN( mumps_par%NNZ))
+    allocate(mumps_par%IRN(mumps_par%NNZ))
     allocate(mumps_par%JCN(mumps_par%NNZ))
     allocate(mumps_par%A(mumps_par%NNZ))
     allocate(mumps_par%RHS(mumps_par%N))

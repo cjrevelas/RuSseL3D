@@ -106,7 +106,7 @@ clean:
 	$(RM) $(OBJDIR)/*.o $(OBJDIR)/*.mod
 
 cleaner:
-	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/*.exe $(RUNDIR)/*.out.txt $(RUNDIR)/*.bin $(RUNDIR)/fort.*
+	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/*.exe $(RUNDIR)/*.out.txt $(RUNDIR)/*out.bin $(RUNDIR)/fort.*
 #-----------------------------------------------------------RUN TESTS TO VERIFY CHANGES-----------------------------------------------------------#
 test:
 	./test_integrity/test_integrity.sh

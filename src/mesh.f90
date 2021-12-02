@@ -275,7 +275,7 @@ write(iow,'(/A54)')'* Find all elements belonging to dirichlet q=0 faces..'
 write(6  ,'(/A54)')'* Find all elements belonging to dirichlet q=0 faces..'
 
 #ifdef DEBUG_OUTPUTS
-open(unit=123, file='dir_faces.txt')
+open(unit=123, file='dir_faces.out.txt')
 #endif
 
 is_dir_face      = .false.

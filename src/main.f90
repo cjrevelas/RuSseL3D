@@ -275,11 +275,10 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     wa_std_error = SQRT(wa_std_error / float((numnp - 1)))
     wa_ave       = wa_ave / numnp
 
-    ! TEMP NEW
-    wa_ave = wa_ave * chainlen_free
-    wa_max = wa_max * chainlen_free
-    wa_max_abs = wa_max_abs
-    max_error = max_error * chainlen_free
+    wa_ave       = wa_ave * chainlen_free
+    wa_max       = wa_max * chainlen_free
+    wa_max_abs   = wa_max_abs
+    max_error    = max_error * chainlen_free
     wa_std_error = wa_std_error * chainlen_free
 
     !*******************************************************************!
@@ -305,7 +304,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     if (scheme_type.eq.2) then
         mix_tol = 0.1d0  * kapa
         frac    = frac
-        wa_step = 4.d0 *exp(-dble(iter)/10.d0)
+        wa_step = 4.d0 *exp(-dble(iter)/10.d0) / chainlen_free
 
         n_outside = 0
         do k1 = 1, numnp

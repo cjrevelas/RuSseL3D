@@ -22,8 +22,7 @@ F_m%rh = F_m%c
 
 set_diag_to_one=.true.
 
-!in case the matrix is symmetric remove the zero lines and rows
-!diagonal componets with Dirichlet BC q=0.
+!in case the matrix is symmetric remove the zero lines and rows diagonal componets with Dirichlet BC q=0.
 if (mumps_matrix_type.eq.1.or.mumps_matrix_type.eq.2) then
     do i1 = 1, all_el
         f = F_m%col(i1)
@@ -54,7 +53,8 @@ if (mumps_matrix_type.eq.0) then
         endif
     enddo
 endif
-!***********************DETERMINE NON-ZERO ENTRIES*******************!
+
+!determine non_zero entries
 NNZ = 0
 do i = 1, all_el
     if (abs(F_m%g(i)) > tol) then

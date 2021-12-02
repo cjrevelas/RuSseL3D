@@ -4,8 +4,8 @@ implicit none
 !----------------------------------------------------------------------------------------------------------!
 integer(4) :: status
 !----------------------------------------------------------------------------------------------------------!
-status = system("date +%s > time.temp")
-open(unit=78, file = 'time.temp')
+status = system("date +%s > time.out.txt")
+open(unit=78, file = 'time.out.txt')
 read(78, '(I20)')get_sys_time
 close(78)
 return
