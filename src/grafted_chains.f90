@@ -4,12 +4,12 @@ use constants
 !-------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------!
-integer, intent(in)                        :: numnp
+integer, intent(in)                   :: numnp
 
-real(8), intent(in)                        :: chainlen, rho_0
-real(8), intent(in), dimension(numnp)      :: phia
-real(8), intent(out)                       :: nch_gr
-real(8)                                    :: sum_f, Q
+real(8), intent(in)                   :: chainlen, rho_0
+real(8), intent(in), dimension(numnp) :: phia
+real(8), intent(out)                  :: nch_gr
+real(8)                               :: sum_f, Q
 !-------------------------------------------------------------------------------------------!
 sum_f = 0.d0
 
