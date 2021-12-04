@@ -320,16 +320,16 @@ do j = 1, num_face_elem
     enddo
 
     !nanoparticles section
-    !do i1 = 1, n_nanopart_faces
-        !if (face_entity_id(j)==ids_nanopart_faces(i1)) then
-            !do i = 1, num_nodes_per_face_elem
-                !idummy = face_node_id(i,j)
+    do i1 = 1, n_nanopart_faces
+        if (face_entity_id(j)==ids_nanopart_faces(i1)) then
+            do i = 1, num_nodes_per_face_elem
+                idummy = face_node_id(i,j)
 
                 !if the node belongs to a dirichlet face
-                !elem_in_q0_face(idummy) = .True.
-            !enddo
-        !endif
-    !enddo
+                elem_in_q0_face(idummy) = .True.
+            enddo
+        endif
+    enddo
 enddo
 !-------------------------DEBUG SECTION-----------------------------!
 #ifdef DEBUG_OUTPUTS
