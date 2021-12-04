@@ -5,8 +5,9 @@ implicit none
 !****************************TIME DISCRETIZATION********************************!
 integer :: ns_free_ed, ns_free_conv, ns_free_max, time_integration_scheme
 integer :: ns_gr_ed, ns_gr_conv
-real(8) :: chainlen_free, chainlen_gr
-real(8) :: ds_ave_free, ds_ave_gr
+real(8) :: chainlen_free, chainlen_free_max, chainlen_gr
+real(8) :: ds_ave_free_ed, ds_ave_gr_ed
+real(8) :: ds_ave_free_conv, ds_ave_gr_conv
 
 !*******************************INDICES AND FLAGS*******************************!
 integer :: iow, ioe, iterations, field_init_scheme, init_iter, output_every, print_ev

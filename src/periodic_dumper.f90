@@ -1,4 +1,4 @@
-subroutine periodic_dumper(qf_final, qgr_final, phia_fr, phia_gr, wa, wa_new, wa_mix)
+subroutine periodic_dumper(qf_final, qgr_final, qf_interp_ff, qf_interp_fg, qgr_interp, phia_fr, phia_gr, wa, wa_new, wa_mix)
 !-----------------------------------------------------------------------------------------------------------!
 use parser_vars
 use geometry
@@ -7,9 +7,12 @@ implicit none
 !-----------------------------------------------------------------------------------------------------------!
 integer :: k1
 
-real(8), intent(in), dimension(numnp)           :: phia_fr, phia_gr, wa, wa_new, wa_mix
-real(8), intent(in), dimension(numnp,ns_free_ed+1) :: qf_final
-real(8), intent(in), dimension(numnp,ns_gr_ed+1)   :: qgr_final
+real(8), intent(in), dimension(numnp)                :: phia_fr, phia_gr, wa, wa_new, wa_mix
+real(8), intent(in), dimension(numnp,ns_free_ed+1)   :: qf_final
+real(8), intent(in), dimension(numnp,ns_free_conv+1) :: qf_interp_ff
+real(8), intent(in), dimension(numnp,ns_gr_conv+1)   :: qf_interp_fg
+real(8), intent(in), dimension(numnp,ns_gr_ed+1)     :: qgr_final
+real(8), intent(in), dimension(numnp,ns_gr_conv+1)   :: qgr_interp
 !-----------------------------------------------------------------------------------------------------------!
 open (unit=121, file = 'wa.out.txt', status='unknown', position='append')
 open (unit=122, file = 'wa_new.out.txt', status='unknown', position='append')
@@ -46,10 +49,13 @@ enddo
 close(120)
 
 !print the restricted partition functions
-call qprint(ns_free_ed, qf_final,"free")
+call qprint(ns_free_ed, qf_final, "free")
+call qprint(ns_free_conv, qf_interp_ff, "frcf")
+call qprint(ns_gr_conv, qf_interp_fg, "frcg")
 
 if (use_grafted.eq.1) then
-   call qprint(ns_gr_ed, qgr_final,"graf")
+   call qprint(ns_gr_ed, qgr_final, "graf")
+   call qprint(ns_gr_conv, qgr_interp, "grcv")
 endif
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine periodic_dumper

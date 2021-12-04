@@ -1,4 +1,4 @@
-subroutine init_time(ns, ds_ave, ds, koeff)
+subroutine init_time(ns, ds_ave, ds, xs, koeff)
 !------------------------------------------------------------------------------------------------------!
 use constants
 use parser_vars
@@ -8,15 +8,16 @@ implicit none
 integer, intent(in) :: ns
 
 real(8), intent(in)                   :: ds_ave
-real(8), intent(out), dimension(ns+1) :: ds, koeff
+real(8), intent(out), dimension(ns+1) :: ds, xs, koeff
 
 integer :: k1
-
-real(8), dimension(ns+1) :: xs
 !------------------------------------------------------------------------------------------------------!
 !constant step size scheme
 if (time_integration_scheme.eq.1) then
     ds = ds_ave
+    do k1 = 2, ns+1
+        xs(k1) = xs(k1-1) + ds_ave
+    enddo
 elseif (time_integration_scheme.eq.2) then
     ds(1)=0.d0
     do k1 = 2, ns+1

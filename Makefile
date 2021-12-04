@@ -56,6 +56,7 @@ MODULES=$(OBJDIR)/parser_vars.o\
 	$(OBJDIR)/error_handing.o\
 	$(OBJDIR)/write_helper.o\
 	$(OBJDIR)/force_fields.o\
+	$(OBJDIR)/interp.o\
 
 
 
