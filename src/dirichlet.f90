@@ -1,4 +1,4 @@
-subroutine dirichlet(ds, ns, mumps_matrix_type)
+subroutine dirichlet(ds, mumps_matrix_type)
 !------------------------------------------------------------------------------------------------------!
 use kcw
 use geometry
@@ -6,18 +6,18 @@ use constants
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-integer, intent(in) :: ns, mumps_matrix_type
+integer, intent(in) :: mumps_matrix_type
 integer             :: i, f, i1
 
 logical, dimension(nel*numel) :: set_diag_to_one
 
-real(8), intent(in), dimension(ns+1) :: ds
+real(8), intent(in) :: ds
 
 #ifdef PRINT_AFULL
 real(8), allocatable, dimension(:,:) :: A_full
 #endif
 !------------------------------------------------------------------------------------------------------!
-F_m%g  = F_m%c + ds(1)*(F_m%k + F_m%w)
+F_m%g  = F_m%c + ds*(F_m%k + F_m%w)
 F_m%rh = F_m%c
 
 set_diag_to_one=.true.

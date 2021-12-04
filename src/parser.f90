@@ -492,11 +492,11 @@ endif
 
 if (log_time_integration_scheme) then
     if ( time_integration_scheme.eq.1) then
-        write(iow,'(3x,A40,I16)')adjl('Time integration with Simpson Rule:',40),time_integration_scheme
-        write(6  ,'(3x,A40,I16)')adjl('Time integration with Simpson Rule:',40),time_integration_scheme
+        write(iow,'(3x,A40,I16)')adjl('Time integr with uniform spacing:',40),time_integration_scheme
+        write(6  ,'(3x,A40,I16)')adjl('Time integr with uniform spacing:',40),time_integration_scheme
     elseif ( time_integration_scheme.eq.2) then
-        write(iow,'(3x,A40,I16)')adjl('Time integration with quad var step:',40),time_integration_scheme
-        write(6  ,'(3x,A40,I16)')adjl('Time integration with quad var step:',40),time_integration_scheme
+        write(iow,'(3x,A40,I16)')adjl('Time integr with non-uniform spacing::',40),time_integration_scheme
+        write(6  ,'(3x,A40,I16)')adjl('Time integr with non-uniform spacing:',40),time_integration_scheme
     else
         write(ERROR_MESSAGE,'(''Time integration scheme does not exist:'',I16)') time_integration_scheme
         call exit_with_error(1,1,1,ERROR_MESSAGE)

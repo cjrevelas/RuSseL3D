@@ -3,11 +3,11 @@
 ###################################################################################################################################################
 #--------------------------------------------------SET COMPILER FLAGS AND LIBRARIES TO BE LINKED--------------------------------------------------#
 MAKE_MPI_RUN=1
-MAKE_PRODUCTION_RUN=0
+MAKE_PRODUCTION_RUN=1
 
 PROD_OPTIONS=
 DEBUG_OPTIONS= -DDEBUG_OUTPUTS #-DPRINT_AFULL
-BOTH_OPTIONS= #-DVARIABLE_DS_SCHEME# -DMUMPS_REPORT
+BOTH_OPTIONS= -DVARIABLE_DS_SCHEME# -DMUMPS_REPORT
 
 #MPI/MUMPS SECTION
 ifeq ($(MAKE_MPI_RUN),0)
