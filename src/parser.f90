@@ -37,8 +37,8 @@ logical :: log_use_grafted                 = .false.
 logical :: log_n_free_seg                  = .false.
 logical :: log_n_gr_seg                    = .false.
 logical :: log_Rg2_per_mon_free            = .false.
-logical :: log_len_free_seg                = .false.
-logical :: log_len_gr_seg                  = .false.
+logical :: log_chainlen_free               = .false.
+logical :: log_chainlen_gr                 = .false.
 logical :: log_Rg2_per_mon_gr              = .false.
 logical :: log_interf_area                 = .false.
 !--------------------------------------------------------------------------------!
@@ -73,17 +73,17 @@ do
             read(line,'(E16.9)') Rg2_per_mon_gr
             log_Rg2_per_mon_gr = .true.
         elseif (index(line,'# number of free segments') > 0) then
-            read(line,'(I6)') ns_free
+            read(line,'(2(I6))') ns_free_ed, ns_free_conv
             log_n_free_seg = .true.
         elseif (index(line,'# number of grafted segments') > 0) then
-            read(line,'(I6)') ns_gr
+            read(line,'(2(I6))') ns_gr_ed, ns_gr_conv
             log_n_gr_seg = .true.
-        elseif (index(line,'# length of a free segment') > 0) then
-            read(line,'(E16.9)') ds_ave_free
-            log_len_free_seg = .true.
-        elseif (index(line,'# length of a grafted segment') > 0) then
-            read(line,'(E16.9)') ds_ave_gr
-            log_len_gr_seg = .true.
+        elseif (index(line,'# chain length of free chains') > 0) then
+            read(line,'(E16.9)') chainlen_free
+            log_chainlen_free = .true.
+        elseif (index(line,'# chain length of grafted chains ') > 0) then
+            read(line,'(E16.9)') chainlen_gr
+            log_chainlen_gr = .true.
         elseif (index(line,'# output every') > 0) then
             read(line,'(I6)') output_every
             log_output_every = .true.
@@ -196,15 +196,15 @@ else
 endif
 
 if (log_n_free_seg) then
-    if ( ns_free > 0) then
-        write(iow,'(3x,A40,I16)')adjl('Number of free segments:',40),ns_free
-        write(6  ,'(3x,A40,I16)')adjl('Number of free segments:',40),ns_free
-        if (mod(ns_free,2).ne.0) then
-            write(ERROR_MESSAGE,'(''ns_free is not an even number: '',I16)') ns_free
+    if ( ns_free_ed>0 .and. ns_free_conv>0) then
+        write(iow,'(3x,A40,I16,I16)')adjl('Number of free segments:',40),ns_free_ed, ns_free_conv
+        write(6  ,'(3x,A40,I16,I16)')adjl('Number of free segments:',40),ns_free_ed, ns_free_conv
+        if (mod(ns_free_ed,2).ne.0 .or. mod(ns_free_conv,2).ne.0) then
+            write(ERROR_MESSAGE,'(''ns_free is not an even number: '',I16,I16)') ns_free_ed, ns_free_conv
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        write(ERROR_MESSAGE,'(''ns_free is negative: '',I16)') ns_free
+        write(ERROR_MESSAGE,'(''ns_free is negative: '',I16,I16)') ns_free_ed, ns_free_conv
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
@@ -212,16 +212,16 @@ else
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
-if (log_len_free_seg) then
-    if ( ds_ave_free > 0 ) then
-        write(iow,'(3x,A40,E16.9)')adjl('Length of a free segment:',40),ds_ave_free
-        write(6  ,'(3x,A40,E16.9)')adjl('Length of a free segment:',40),ds_ave_free
+if (log_chainlen_free) then
+    if ( chainlen_free > 0 ) then
+        write(iow,'(3x,A40,E16.9)')adjl('Chain length of free chains:',40),chainlen_free
+        write(6  ,'(3x,A40,E16.9)')adjl('Chain length of free chains:',40),chainlen_free
     else
-        write(ERROR_MESSAGE,'(''Length of free segment is negative: '',E16.9)') ds_ave_free
+        write(ERROR_MESSAGE,'(''Chain length of free chains is negative: '',E16.9)') chainlen_free
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    ERROR_MESSAGE='Length of free segment was not detected..'
+    ERROR_MESSAGE='Chain length of free chains was not detected..'
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
@@ -557,15 +557,15 @@ endif
 
 if (use_grafted.eq.1) then
     if (log_n_gr_seg) then
-        if ( ns_gr > 0) then
-            write(iow,'(3x,A40,I16)')adjl('Number of grafted segments:',40),ns_gr
-            write(6  ,'(3x,A40,I16)')adjl('Number of grafted segments:',40),ns_gr
-            if (mod(ns_gr,2).ne.0) then
-                write(ERROR_MESSAGE,'(''ns_grafted is not an even number: '',I16)') ns_gr
+        if (ns_gr_ed>0 .and. ns_gr_conv>0) then
+            write(iow,'(3x,A40,I16,I16)')adjl('Number of grafted segments:',40),ns_gr_ed, ns_gr_conv
+            write(6  ,'(3x,A40,I16,I16)')adjl('Number of grafted segments:',40),ns_gr_ed, ns_gr_conv
+            if (mod(ns_gr_ed,2).ne.0 .or. mod(ns_gr_conv,2).ne.0) then
+                write(ERROR_MESSAGE,'(''ns_grafted is not an even number: '',I16,I16)') ns_gr_ed, ns_gr_conv
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
         else
-            write(ERROR_MESSAGE,'(''ns_grafted is negative: '',I16)') ns_gr
+            write(ERROR_MESSAGE,'(''ns_grafted is negative: '',I16,I16)') ns_gr_ed, ns_gr_conv
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -573,20 +573,16 @@ if (use_grafted.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
-    if (log_len_gr_seg) then
-        if ( ds_ave_gr > 0 ) then
-            write(iow,'(3x,A40,E16.9)')adjl('Length of a grafted segment:',40),ds_ave_gr
-            write(6  ,'(3x,A40,E16.9)')adjl('Length of a grafted segment:',40),ds_ave_gr
+    if (log_chainlen_gr) then
+        if ( chainlen_gr > 0 ) then
+            write(iow,'(3x,A40,E16.9)')adjl('Chain length of grafted chains:',40),chainlen_gr
+            write(6  ,'(3x,A40,E16.9)')adjl('Chain length of grafted chains:',40),chainlen_gr
         else
-            write(ERROR_MESSAGE,'(''Length of grafted segment is negative: '',E16.9)') ds_ave_gr
+            write(ERROR_MESSAGE,'(''Chain length of grafted chains is negative: '',E16.9)') chainlen_gr
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE='Length of grafted segment was not detected..'
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-    if (ds_ave_gr.ne.ds_ave_free) then
-        write(ERROR_MESSAGE,'(''Lengths of grafted and free segments are not equal: '',2(E16.9))') ds_ave_gr, ds_ave_free
+        ERROR_MESSAGE='Chain length of grafted chains was not detected..'
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 

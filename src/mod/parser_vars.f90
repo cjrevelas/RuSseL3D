@@ -3,7 +3,8 @@ module parser_vars
 implicit none
 !-------------------------------------------------------------------------------!
 !****************************TIME DISCRETIZATION********************************!
-integer :: ns_free, ns_gr, ns_free_max, time_integration_scheme
+integer :: ns_free_ed, ns_free_conv, ns_free_max, time_integration_scheme
+integer :: ns_gr_ed, ns_gr_conv
 real(8) :: chainlen_free, chainlen_gr
 real(8) :: ds_ave_free, ds_ave_gr
 
