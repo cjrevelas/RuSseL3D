@@ -1,6 +1,6 @@
 {
   "name": "russel3d",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "The source files of RuSseL3D",
   "main": "index.js",
   "scripts": {

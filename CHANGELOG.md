@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/mokkapps/changelog-generator-demo/compare/v2.2.0...v3.0.0) (2021-12-04)
+
+
+### Features
+
+* add chain contour interpolation functionality ([d4f7e3a](https://github.com/mokkapps/changelog-generator-demo/commits/d4f7e3ab42acce9611e19784a24821a94c175bc5))
+* add functionality for spherical nanoparticles ([a43963a](https://github.com/mokkapps/changelog-generator-demo/commits/a43963ae0077314de06b8a7f2db3bf89bb751e4a))
+* add generic force_fields module to replace surf_pot ([7bceb53](https://github.com/mokkapps/changelog-generator-demo/commits/7bceb5399f559b094451c3e386a35a87b7fcd6d4))
+* add geometry module to hold geom/mesh variables ([cdcf120](https://github.com/mokkapps/changelog-generator-demo/commits/cdcf1204a7b227af0eee13c6aa3ef6cd4eccca88))
+* add option for nonuniform chain contour stepping ([96f295d](https://github.com/mokkapps/changelog-generator-demo/commits/96f295d68ad285c2035351b3a9e06e45838de1fe))
+* automatic detection of Dirichlet face ids ([ffb1b88](https://github.com/mokkapps/changelog-generator-demo/commits/ffb1b8893bac2294ec839c5c8b7583ffa9720122))
+* determine contour value at all contour points ([212b14f](https://github.com/mokkapps/changelog-generator-demo/commits/212b14f696a5f86b7f3525794a8d336715366fa7))
+* different ns for diffusion and convolution ([211ffe9](https://github.com/mokkapps/changelog-generator-demo/commits/211ffe93552d0d210d250cb35bdeac3aa62a144d))
+* export all individual energy terms ([224e803](https://github.com/mokkapps/changelog-generator-demo/commits/224e80391a036d3258615d84f7e9d72c8014a55e))
+* interf_area is read from parser ([3dc37c9](https://github.com/mokkapps/changelog-generator-demo/commits/3dc37c96f443ccc07d825b4584df1188ec564c31))
+* **mesh:** enable auto nanoparticle face ids detection ([ea2c868](https://github.com/mokkapps/changelog-generator-demo/commits/ea2c868d05f6e2cc4632dc601b6493fd8c8a1faa))
+* read chain length and ns instead of ds and ns ([b51c007](https://github.com/mokkapps/changelog-generator-demo/commits/b51c007feccfefd202c34e501bf8b88474320390))
+* **surf_pot:** export attr, rep and total surface potential ([3bc7925](https://github.com/mokkapps/changelog-generator-demo/commits/3bc7925b7335aa141368fd16418f41fb1841310e))
+
+
+### Bug Fixes
+
+* **adh_ten:** correct calculation of term4 ([5fde860](https://github.com/mokkapps/changelog-generator-demo/commits/5fde860b3e58885085feaada9ba7681ce4a5e873))
+* **adh_ten:** remove the doubling of interf_area ([5b7d456](https://github.com/mokkapps/changelog-generator-demo/commits/5b7d456f0f0442090b42bde016f44fe9c322e662))
+* **adh_ten:** term4 takes into account all grafted chains ([df586b8](https://github.com/mokkapps/changelog-generator-demo/commits/df586b8a0e70ad78cde0599a2ccdfcf2942e6b22))
+* **grafted_init_cond:** read number of gps without format ([3f4bd43](https://github.com/mokkapps/changelog-generator-demo/commits/3f4bd436599bdc3dadb31bf7c1adadc5e43ce375))
+* temporary fix for distance on 3D Hamaker potantial ([d44ea41](https://github.com/mokkapps/changelog-generator-demo/commits/d44ea410f78f6aa220665fbf056be52f40accddf))
+
 ## [2.2.0](https://github.com/mokkapps/changelog-generator-demo/compare/v2.1.0...v2.2.0) (2021-12-01)
 
 
