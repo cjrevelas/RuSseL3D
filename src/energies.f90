@@ -1,4 +1,4 @@
-subroutine adhesion_tension(qf_final, qgr_final, wa, Ufield, phia_fr, phia_gr, part_func, adh_ten)
+subroutine energies(qf_final, qgr_final, wa, Ufield, phia_fr, phia_gr, part_func, adh_ten)
 !-------------------------------------------------------------------------------------------------!
 use parser_vars
 use geometry
@@ -10,7 +10,7 @@ integer :: k1
 
 real(8), intent(in), dimension(numnp)               :: wa, Ufield, phia_fr, phia_gr
 real(8), intent(in), dimension(numnp,ns_free_max+1) :: qf_final
-real(8), intent(in), dimension(numnp,ns_gr+1)       :: qgr_final
+real(8), intent(in), dimension(numnp,ns_gr_ed+1)       :: qgr_final
 real(8), intent(in)                                 :: part_func
 real(8), intent(out)                                :: adh_ten
 real(8)                                             :: Q, sum_final
@@ -38,7 +38,7 @@ term3 = volume * 1.0d-30 * (1.d00 - part_func) !red: translational entropy of fr
 term4 = 0.d0
 do k1 = 1, numnp
     if (qgr_final(k1,1).gt.tol) then
-        term4 = term4 + log(qf_final(k1,ns_gr+1))
+        term4 = term4 + log(qf_final(k1,ns_gr_ed+1))
     endif
 enddo
 term4 = -chainlen_free / rho_0 * term4 !green: translational entropy of grafted chains
@@ -63,4 +63,4 @@ close(837)
 
 return
 !-------------------------------------------------------------------------------------------------!
-end subroutine adhesion_tension
+end subroutine energies

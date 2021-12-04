@@ -79,7 +79,7 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/mesh.o\
 	$(OBJDIR)/gausspoints.o\
 	$(OBJDIR)/edwards.o\
-	$(OBJDIR)/adh_ten.o\
+	$(OBJDIR)/energies.o\
 	$(OBJDIR)/main.o\
 	$(OBJDIR)/mumps_sub.o\
 	$(OBJDIR)/get_sys_time.o\

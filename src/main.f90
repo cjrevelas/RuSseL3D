@@ -252,8 +252,8 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         wa_new(k1) = kapa * (phia_fr(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)
     enddo
 
-    !calculate adhesion tension
-    call adhesion_tension(qf_final, qgr_final, wa, Ufield, phia_fr, phia_gr, part_func, adh_ten)
+    !calculate energy terms and adhesion tension
+    call energies(qf_final, qgr_final, wa, Ufield, phia_fr, phia_gr, part_func, adh_ten)
 
     !*******************************************************************!
     !   COMPUTE DIFFERENCES BETWEEN OLD (wa) AND NEW (wa_new) fields    !
