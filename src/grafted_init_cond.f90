@@ -26,7 +26,7 @@ endif
 read(iog,*)
 read(iog,*)
 read(iog,*)
-read(iog,'(I10)') num_gpoints
+read(iog,*) num_gpoints
 read(iog,*)
 read(iog,*)
 read(iog,*)
