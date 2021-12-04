@@ -27,7 +27,7 @@ real(8)                              :: wa_std_error = 0.d0, max_error = 200000.
 real(8)                              :: mix_tol = 0.d0, wa_step = 0.d0, wa_ave = 0.d0
 real(8)                              :: part_func = 0.d0, nch_gr = 0.d0
 real(8)                              :: adh_ten = 0.d0
-real(8), allocatable, dimension(:)   :: ds_free, ds_gr
+real(8), allocatable, dimension(:)   :: ds_free_ed, ds_gr_ed
 real(8), allocatable, dimension(:)   :: koeff_free, koeff_gr
 real(8), allocatable, dimension(:)   :: wa, wa_new, wa_mix, Ufield
 real(8), allocatable, dimension(:)   :: phia_fr, phia_gr
@@ -102,39 +102,39 @@ call mesh
 allocate(rdiag1(numnp))
 allocate(wa(numnp),wa_mix(numnp),wa_new(numnp),Ufield(numnp))
 
-wa         = 0.d0
-wa_mix     = 0.d0
-wa_new     = 0.d0
-Ufield     = 0.d0
-rdiag1     = 0.d0
+wa     = 0.d0
+wa_mix = 0.d0
+wa_new = 0.d0
+Ufield = 0.d0
+rdiag1 = 0.d0
 
-allocate(ds_free(ns_free_max+1))
+allocate(ds_free_ed(ns_free_max+1))
 allocate(koeff_free(ns_free_max+1))
 allocate(phia_fr(numnp))
 allocate(qf(numnp,2))
 allocate(qf_final(numnp,ns_free_max+1))
 
-ds_free    = 0.d0
+ds_free_ed = 0.d0
 koeff_free = 0.d0
 phia_fr    = 0.d0
 qf_final   = 0.d0
 qf         = 0.d0
 
 if (use_grafted.eq.1) then
-    allocate(koeff_gr(ns_gr+1))
-    allocate(ds_gr(ns_gr+1))
+    allocate(koeff_gr(ns_gr_ed+1))
+    allocate(ds_gr_ed(ns_gr_ed+1))
     allocate(qgr(numnp,2))
 
-    koeff_gr   = 0.d0
-    ds_gr      = 0.d0
-    qgr        = 0.d0
+    koeff_gr = 0.d0
+    ds_gr_ed = 0.d0
+    qgr      = 0.d0
 endif
 
-allocate(qgr_final(numnp,ns_gr+1))
-qgr_final  = 0.d0
+allocate(qgr_final(numnp,ns_gr_ed+1))
+qgr_final = 0.d0
 
 allocate(phia_gr(numnp))
-phia_gr    = 0.d0
+phia_gr = 0.d0
 
 #ifdef USE_MPI
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
@@ -154,10 +154,10 @@ write(6  ,'(''   Number of nodes per element (nel):     '',I16)') nel
 write(6  ,'(''   Number of matrix indeces:              '',I16)') all_el
 
 !initialize time integration scheme
-call init_time(ns_free, ds_ave_free, ds_free, koeff_free)
+call init_time(ns_free_ed, ds_ave_free, ds_free_ed, koeff_free)
 
 if (use_grafted.eq.1) then
-    call init_time(ns_gr, ds_ave_gr, ds_gr, koeff_gr)
+    call init_time(ns_gr_ed, ds_ave_gr, ds_gr_ed, koeff_gr)
 endif
 
 !initialize field
@@ -209,14 +209,13 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     enddo
 
     !solve
-    call edwards(ds_free, ns_free_max, mumps_matrix_type, qf, qf_final)
+    call edwards(ds_free_ed, ns_free_max, mumps_matrix_type, qf, qf_final)
 
     !*******************SOLVE EDWARDS PDE FOR GRAFTED CHAINS*************************!
     !initial value of propagator, qgr(numnp,0) = 0.0 for all numnp except for gp
     !the initial values are stored to qgr_final for s=0
 
     if (use_grafted.eq.1) then
-
         !perform matrix assembly
         call matrix_assemble(Rg2_per_mon_gr, wa)
 
@@ -225,22 +224,22 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         qgr_final = 0.d0
 
         !assign initial conditions at the grafting points
-        call grafted_init_cond(ns_gr, numnp, gp_filename, qgr, qgr_final)
+        call grafted_init_cond(ns_gr_ed, numnp, gp_filename, qgr, qgr_final)
 
         !solve
-        call edwards(ds_gr, ns_gr, mumps_matrix_type, qgr, qgr_final)
+        call edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final)
     endif
 
     !*********************CONVOLUTION AND ENERGY***********************************!
     !calculate reduced segment density profiles of free and grafted chains
-    call convolution(numnp, chainlen_free, ns_free, koeff_free, qf_final, qf_final, phia_fr)
+    call convolution(numnp, chainlen_free, ns_free_ed, koeff_free, qf_final, qf_final, phia_fr)
 
     if (use_grafted.eq.1) then
-        call convolution(numnp, chainlen_gr, ns_gr, koeff_gr, qgr_final, qf_final, phia_gr)
+        call convolution(numnp, chainlen_gr, ns_gr_ed, koeff_gr, qgr_final, qf_final, phia_gr)
     endif
 
     !calculate partition function of free chains
-    call part_fun(numnp, ns_free, qf_final, part_func)
+    call part_fun(numnp, ns_free_ed, qf_final, part_func)
 
     !calculated number of grafted chains
     if (use_grafted.eq.1) then
