@@ -34,10 +34,10 @@ logical :: log_mumps_matrix_type           = .false.
 logical :: log_time_integration_scheme     = .false.
 logical :: log_output_every                = .false.
 logical :: log_use_grafted                 = .false.
-logical :: log_n_free_seg                  = .false.
+logical :: log_n_matrix_seg                  = .false.
 logical :: log_n_gr_seg                    = .false.
-logical :: log_Rg2_per_mon_free            = .false.
-logical :: log_chainlen_free               = .false.
+logical :: log_Rg2_per_mon_matrix            = .false.
+logical :: log_chainlen_matrix               = .false.
 logical :: log_chainlen_gr                 = .false.
 logical :: log_Rg2_per_mon_gr              = .false.
 logical :: log_interf_area                 = .false.
@@ -66,21 +66,21 @@ do
         write(*,*)"Input parameter file was read!"
         exit
     else
-        if (index(line,'# Rg2 per monomer for free chains') > 0) then
-            read(line,'(E16.9)') Rg2_per_mon_free
-            log_Rg2_per_mon_free = .true.
+        if (index(line,'# Rg2 per monomer for matrix chains') > 0) then
+            read(line,'(E16.9)') Rg2_per_mon_matrix
+            log_Rg2_per_mon_matrix = .true.
         elseif (index(line,'# Rg2 per monomer for grafted chains') > 0) then
             read(line,'(E16.9)') Rg2_per_mon_gr
             log_Rg2_per_mon_gr = .true.
-        elseif (index(line,'# number of free segments') > 0) then
-            read(line,'(2(I6))') ns_free_ed, ns_free_conv
-            log_n_free_seg = .true.
+        elseif (index(line,'# number of matrix segments') > 0) then
+            read(line,'(2(I6))') ns_matrix_ed, ns_matrix_conv
+            log_n_matrix_seg = .true.
         elseif (index(line,'# number of grafted segments') > 0) then
             read(line,'(2(I6))') ns_gr_ed, ns_gr_conv
             log_n_gr_seg = .true.
-        elseif (index(line,'# chain length of free chains') > 0) then
-            read(line,'(E16.9)') chainlen_free
-            log_chainlen_free = .true.
+        elseif (index(line,'# chain length of matrix chains') > 0) then
+            read(line,'(E16.9)') chainlen_matrix
+            log_chainlen_matrix = .true.
         elseif (index(line,'# chain length of grafted chains ') > 0) then
             read(line,'(E16.9)') chainlen_gr
             log_chainlen_gr = .true.
@@ -195,46 +195,46 @@ else
     output_every = 1
 endif
 
-if (log_n_free_seg) then
-    if ( ns_free_ed>0 .and. ns_free_conv>0) then
-        write(iow,'(3x,A40,I16,I16)')adjl('Number of free segments:',40),ns_free_ed, ns_free_conv
-        write(6  ,'(3x,A40,I16,I16)')adjl('Number of free segments:',40),ns_free_ed, ns_free_conv
-        if (mod(ns_free_ed,2).ne.0 .or. mod(ns_free_conv,2).ne.0) then
-            write(ERROR_MESSAGE,'(''ns_free is not an even number: '',I16,I16)') ns_free_ed, ns_free_conv
+if (log_n_matrix_seg) then
+    if ( ns_matrix_ed>0 .and. ns_matrix_conv>0) then
+        write(iow,'(3x,A40,I16,I16)')adjl('Number of matrix segments:',40),ns_matrix_ed, ns_matrix_conv
+        write(6  ,'(3x,A40,I16,I16)')adjl('Number of matrix segments:',40),ns_matrix_ed, ns_matrix_conv
+        if (mod(ns_matrix_ed,2).ne.0 .or. mod(ns_matrix_conv,2).ne.0) then
+            write(ERROR_MESSAGE,'(''ns_matrix is not an even number: '',I16,I16)') ns_matrix_ed, ns_matrix_conv
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        write(ERROR_MESSAGE,'(''ns_free is negative: '',I16,I16)') ns_free_ed, ns_free_conv
+        write(ERROR_MESSAGE,'(''ns_matrix is negative: '',I16,I16)') ns_matrix_ed, ns_matrix_conv
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    ERROR_MESSAGE='Number of free segments was not detected..'
+    ERROR_MESSAGE='Number of matrix segments was not detected..'
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
-if (log_chainlen_free) then
-    if ( chainlen_free > 0 ) then
-        write(iow,'(3x,A40,E16.9)')adjl('Chain length of free chains:',40),chainlen_free
-        write(6  ,'(3x,A40,E16.9)')adjl('Chain length of free chains:',40),chainlen_free
+if (log_chainlen_matrix) then
+    if ( chainlen_matrix > 0 ) then
+        write(iow,'(3x,A40,E16.9)')adjl('Chain length of matrix chains:',40),chainlen_matrix
+        write(6  ,'(3x,A40,E16.9)')adjl('Chain length of matrix chains:',40),chainlen_matrix
     else
-        write(ERROR_MESSAGE,'(''Chain length of free chains is negative: '',E16.9)') chainlen_free
+        write(ERROR_MESSAGE,'(''Chain length of matrix chains is negative: '',E16.9)') chainlen_matrix
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    ERROR_MESSAGE='Chain length of free chains was not detected..'
+    ERROR_MESSAGE='Chain length of matrix chains was not detected..'
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
-if (log_Rg2_per_mon_free) then
-    if ( Rg2_per_mon_free > 0 ) then
-        write(iow,'(3x,A40,E16.9)')adjl('Rg2 per free monomer:',40),Rg2_per_mon_free
-        write(6  ,'(3x,A40,E16.9)')adjl('Rg2 per free monomer:',40),Rg2_per_mon_free
+if (log_Rg2_per_mon_matrix) then
+    if ( Rg2_per_mon_matrix > 0 ) then
+        write(iow,'(3x,A40,E16.9)')adjl('Rg2 per matrix monomer:',40),Rg2_per_mon_matrix
+        write(6  ,'(3x,A40,E16.9)')adjl('Rg2 per matrix monomer:',40),Rg2_per_mon_matrix
     else
-        write(ERROR_MESSAGE,'(''Rg2 per free monomer is negative: '',E16.9)') Rg2_per_mon_free
+        write(ERROR_MESSAGE,'(''Rg2 per matrix monomer is negative: '',E16.9)') Rg2_per_mon_matrix
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    ERROR_MESSAGE='Rg2 per free monomer was not detected..'
+    ERROR_MESSAGE='Rg2 per matrix monomer was not detected..'
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
@@ -595,7 +595,7 @@ if (use_grafted.eq.1) then
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE='Rg2 per free monomer was not detected..'
+        ERROR_MESSAGE='Rg2 per matrix monomer was not detected..'
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 

@@ -27,12 +27,12 @@ real(8)                              :: wa_std_error = 0.d0, max_error = 200000.
 real(8)                              :: mix_tol = 0.d0, wa_step = 0.d0, wa_ave = 0.d0
 real(8)                              :: part_func = 0.d0, nch_gr = 0.d0
 real(8)                              :: adh_ten = 0.d0
-real(8), allocatable, dimension(:)   :: ds_free_ed, ds_gr_ed, ds_free_conv, ds_gr_conv
-real(8), allocatable, dimension(:)   :: koeff_free_ed, koeff_gr_ed, koeff_free_conv, koeff_gr_conv
-real(8), allocatable, dimension(:)   :: xs_free_ed, xs_free_conv, xs_gr_ed, xs_gr_conv
+real(8), allocatable, dimension(:)   :: ds_matrix_ed, ds_gr_ed, ds_matrix_conv, ds_gr_conv
+real(8), allocatable, dimension(:)   :: koeff_matrix_ed, koeff_gr_ed, koeff_matrix_conv, koeff_gr_conv
+real(8), allocatable, dimension(:)   :: xs_matrix_ed, xs_matrix_conv, xs_gr_ed, xs_gr_conv
 real(8), allocatable, dimension(:)   :: wa, wa_new, wa_mix, Ufield
-real(8), allocatable, dimension(:)   :: phia_fr, phia_gr
-real(8), allocatable, dimension(:,:) :: qf, qf_final, qf_interp_ff, qf_interp_fg
+real(8), allocatable, dimension(:)   :: phia_mx, phia_gr
+real(8), allocatable, dimension(:,:) :: qm, qm_final, qm_interp_mm, qm_interp_mg
 real(8), allocatable, dimension(:,:) :: qgr, qgr_final, qgr_interp
 !-------------------------------------------------------------------!
 !*******************************************************************!
@@ -76,12 +76,6 @@ endif
 !-------------------------------------------------------------------!
 iow = 10
 open(unit=iow, file = 'scft.out.txt')
-write(iow,'(''Polymer FEM_3D 1 Sept 19 '')')
-write(iow,'(''Polumer Bulk with solid surfaces   ''/    &
-          & ''---------------------------------  ''/    &
-          & ''SCF theory, Gaussian string model  ''/    &
-          & ''Finite Element solution with       ''/    &
-          & ''successive substitutions           '')')
 
 !initialize the error log
 ioe = 11
@@ -109,26 +103,26 @@ wa_new = 0.d0
 Ufield = 0.d0
 rdiag1 = 0.d0
 
-allocate(ds_free_ed(ns_free_ed+1),ds_free_conv(ns_free_conv+1))
-allocate(xs_free_ed(ns_free_ed+1),xs_free_conv(ns_free_conv+1))
-allocate(koeff_free_ed(ns_free_ed+1),koeff_free_conv(ns_free_conv+1))
-allocate(phia_fr(numnp))
-allocate(qf(numnp,2))
-allocate(qf_final(numnp,ns_free_ed+1))
-allocate(qf_interp_ff(numnp,ns_free_conv+1))
-allocate(qf_interp_fg(numnp,ns_gr_conv+1))
+allocate(ds_matrix_ed(ns_matrix_ed+1),ds_matrix_conv(ns_matrix_conv+1))
+allocate(xs_matrix_ed(ns_matrix_ed+1),xs_matrix_conv(ns_matrix_conv+1))
+allocate(koeff_matrix_ed(ns_matrix_ed+1),koeff_matrix_conv(ns_matrix_conv+1))
+allocate(phia_mx(numnp))
+allocate(qm(numnp,2))
+allocate(qm_final(numnp,ns_matrix_ed+1))
+allocate(qm_interp_mm(numnp,ns_matrix_conv+1))
+allocate(qm_interp_mg(numnp,ns_gr_conv+1))
 
-ds_free_ed      = 0.d0
-ds_free_conv    = 0.d0
-xs_free_ed      = 0.d0
-xs_free_conv    = 0.d0
-koeff_free_ed   = 0.d0
-koeff_free_conv = 0.d0
-phia_fr         = 0.d0
-qf_final        = 0.d0
-qf              = 0.d0
-qf_interp_ff    = 0.d0
-qf_interp_fg    = 0.d0
+ds_matrix_ed      = 0.d0
+ds_matrix_conv    = 0.d0
+xs_matrix_ed      = 0.d0
+xs_matrix_conv    = 0.d0
+koeff_matrix_ed   = 0.d0
+koeff_matrix_conv = 0.d0
+phia_mx           = 0.d0
+qm_final          = 0.d0
+qm                = 0.d0
+qm_interp_mm      = 0.d0
+qm_interp_mg      = 0.d0
 
 if (use_grafted.eq.1) then
     allocate(ds_gr_ed(ns_gr_ed+1),ds_gr_conv(ns_gr_conv+1))
@@ -171,8 +165,8 @@ write(6  ,'(''   Number of nodes per element (nel):     '',I16)') nel
 write(6  ,'(''   Number of matrix indeces:              '',I16)') all_el
 
 !initialize time integration scheme
-call init_time(ns_free_ed, ds_ave_free_ed, ds_free_ed, xs_free_ed, koeff_free_ed)
-call init_time(ns_free_conv, ds_ave_free_conv, ds_free_conv, xs_free_conv, koeff_free_conv)
+call init_time(ns_matrix_ed, ds_ave_matrix_ed, ds_matrix_ed, xs_matrix_ed, koeff_matrix_ed)
+call init_time(ns_matrix_conv, ds_ave_matrix_conv, ds_matrix_conv, xs_matrix_conv, koeff_matrix_conv)
 
 if (use_grafted.eq.1) then
     call init_time(ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, koeff_gr_ed)
@@ -215,72 +209,49 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !update field
     wa = wa_mix
 
-    !perform matrix assembly
-    call matrix_assemble(Rg2_per_mon_free, wa)
+    call matrix_assemble(Rg2_per_mon_matrix, wa)
 
     !**********************SOLVE EDWARDS PDE FOR FREE CHAINS*************************!
-    !initial value of propagator, qf(numnp,0) = 1.0 for all numnp
     do i1 = 1, numnp
-       qf(i1,1)       = 1.d0
-       qf_final(i1,1) = 1.d0
+       qm(i1,1)       = 1.d0
+       qm_final(i1,1) = 1.d0
     enddo
 
-    !solve
-    call edwards(ds_free_ed, ns_free_ed, mumps_matrix_type, qf, qf_final)
+    call edwards(ds_matrix_ed, ns_matrix_ed, mumps_matrix_type, qm, qm_final)
 
     !*******************SOLVE EDWARDS PDE FOR GRAFTED CHAINS*************************!
-    !initial value of propagator, qgr(numnp,0) = 0.0 for all numnp except for gp
-    !the initial values are stored to qgr_final for s=0
-
     if (use_grafted.eq.1) then
-        !perform matrix assembly
         call matrix_assemble(Rg2_per_mon_gr, wa)
 
-        !re-initialize grafted propagators
         qgr       = 0.d0
         qgr_final = 0.d0
 
-        !assign initial conditions at the grafting points
         call grafted_init_cond(ns_gr_ed, numnp, gp_filename, qgr, qgr_final)
 
-        !solve
         call edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final)
     endif
 
     !*********************CONVOLUTION AND ENERGY***********************************!
-
-    !if (time_integration_scheme.eq.2) then
-    !    do i1 = 1, numnp
-    !        call interp_linear(1, ns_free_ed+1, xs_free_ed, qf_final(i1,:), ns_free_conv+1, xs_free_conv, qf_interp_ff(i1,:))
-    !    enddo
-    !    call convolution(numnp, chainlen_free, ns_free_conv, koeff_free_conv, qf_interp_ff, qf_interp_ff, phia_fr)
-    !else
-    !    call convolution(numnp, chainlen_free, ns_free_ed, koeff_free_ed, qf_final, qf_final, phia_fr)
-    !endif
-
     do i1 = 1, numnp
-        call interp_linear(1, ns_free_ed+1, xs_free_ed, qf_final(i1,:), ns_free_conv+1, xs_free_conv, qf_interp_ff(i1,:))
+        call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(i1,:), ns_matrix_conv+1, xs_matrix_conv, qm_interp_mm(i1,:))
     enddo
 
-    !call convolution(numnp, chainlen_free, ns_free_ed, koeff_free_ed, qf_final, qf_final, phia_fr)
-    call convolution(numnp, chainlen_free, ns_free_conv, koeff_free_conv, qf_interp_ff, qf_interp_ff, phia_fr)
+    call convolution(numnp, chainlen_matrix, ns_matrix_conv, koeff_matrix_conv, qm_interp_mm, qm_interp_mm, phia_mx)
 
     if (use_grafted.eq.1) then
         do i1 = 1, numnp
-            call interp_linear(1, ns_free_ed+1, xs_free_ed, qf_final(i1,:), ns_gr_conv+1, xs_gr_conv, qf_interp_fg(i1,:))
+            call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(i1,:), ns_gr_conv+1, xs_gr_conv, qm_interp_mg(i1,:))
         enddo
 
         do i1 = 1, numnp
             call interp_linear(1, ns_gr_ed+1, xs_gr_ed, qgr_final(i1,:), ns_gr_conv+1, xs_gr_conv, qgr_interp(i1,:))
         enddo
 
-        !call convolution(numnp, chainlen_gr, ns_gr_ed, koeff_gr_ed, qgr_final, qf_final, phia_gr)
-        call convolution(numnp, chainlen_gr, ns_gr_conv, koeff_gr_conv, qgr_interp, qf_interp_fg, phia_gr)
+        call convolution(numnp, chainlen_gr, ns_gr_conv, koeff_gr_conv, qgr_interp, qm_interp_mg, phia_gr)
     endif
 
-    !calculate partition function of free chains
-    call part_fun(numnp, ns_free_conv, qf_interp_ff, part_func)
-    !call part_fun(numnp, ns_free_ed, qf_final, part_func)
+    !calculate partition function of matrix chains
+    call part_fun(numnp, ns_matrix_conv, qm_interp_mm, part_func)
 
     !calculated number of grafted chains
     if (use_grafted.eq.1) then
@@ -289,11 +260,11 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     !calculate the new field
     do k1 = 1, numnp
-        wa_new(k1) = kapa * (phia_fr(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)
+        wa_new(k1) = kapa * (phia_mx(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)
     enddo
 
     !calculate energy terms and adhesion tension
-    call energies(qf_interp_fg, qgr_interp, wa, Ufield, phia_fr, phia_gr, part_func, adh_ten)
+    call energies(qm_interp_mg, qgr_interp, wa, Ufield, phia_mx, phia_gr, part_func, adh_ten)
 
     !*******************************************************************!
     !   COMPUTE DIFFERENCES BETWEEN OLD (wa) AND NEW (wa_new) fields    !
@@ -315,11 +286,11 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     wa_std_error = SQRT(wa_std_error / float((numnp - 1)))
     wa_ave       = wa_ave / numnp
 
-    wa_ave       = wa_ave * chainlen_free
-    wa_max       = wa_max * chainlen_free
+    wa_ave       = wa_ave * chainlen_matrix
+    wa_max       = wa_max * chainlen_matrix
     wa_max_abs   = wa_max_abs
-    max_error    = max_error * chainlen_free
-    wa_std_error = wa_std_error * chainlen_free
+    max_error    = max_error * chainlen_matrix
+    wa_std_error = wa_std_error * chainlen_matrix
 
     !*******************************************************************!
     !                         APPLY MIXING RULE                         !
@@ -329,7 +300,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         if (iter.eq.1) then
             frac = 1.d0
         else if (iter.eq.2) then
-            frac = 1.d0 / (wa_max_abs * chainlen_free * 10.d0)
+            frac = 1.d0 / (wa_max_abs * chainlen_matrix * 10.d0)
         else
             frac = min(frac * mix_coef_frac, mix_coef_kapa)
         endif
@@ -344,11 +315,11 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     if (scheme_type.eq.2) then
         mix_tol = 0.1d0  * kapa
         frac    = frac
-        wa_step = 4.d0 *exp(-dble(iter)/10.d0) / chainlen_free
+        wa_step = 4.d0 *exp(-dble(iter)/10.d0) / chainlen_matrix
 
         n_outside = 0
         do k1 = 1, numnp
-            if (dabs(wa_new(k1)-wa(k1)) * chainlen_free > mix_tol.and.iter.le.60) then
+            if (dabs(wa_new(k1)-wa(k1)) * chainlen_matrix > mix_tol.and.iter.le.60) then
                 n_outside = n_outside + 1
 
                 if (wa_new(k1).gt.wa(k1)) then
@@ -388,14 +359,14 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     !*******************************************************************!
     !output the data every so many steps
     if (mod(iter,output_every).eq.0) then
-        call periodic_dumper(qf_final, qgr_final, qf_interp_ff, qf_interp_fg, qgr_interp, phia_fr, phia_gr, wa, wa_new, wa_mix)
+        call periodic_dumper(qm_final, qgr_final, qm_interp_mm, qm_interp_mg, qgr_interp, phia_mx, phia_gr, wa, wa_new, wa_mix)
         call export_field(wa_mix, numnp, iter)
     endif
 
 enddo!iter
 
 !output the data at the end of the simulation
-call periodic_dumper(qf_final, qgr_final, qf_interp_ff, qf_interp_fg, qgr_interp, phia_fr, phia_gr, wa, wa_new, wa_mix)
+call periodic_dumper(qm_final, qgr_final, qm_interp_mm, qm_interp_mg, qgr_interp, phia_mx, phia_gr, wa, wa_new, wa_mix)
 call export_field(wa_mix, numnp, iter)
 
 write(iow,'(I10,1X,9(E19.9e3,1X))')  iter, frac, adh_ten, nch_gr, max_error, wa_std_error, &
@@ -411,22 +382,18 @@ else
     write(6  ,'(/''Convergence of '',I10, '' iterations'')') iterations
 endif
 
-
-
 write(iow,'(''-----------------------------------'')')
 write(6  ,'(''-----------------------------------'')')
-write(iow,'(3x,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
-write(6  ,'(3x,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
-write(iow,'(3x,A40,E16.9)')adjl('Partition function Q:'   ,40),part_func
-write(6  ,'(3x,A40,E16.9)')adjl('Partition function Q:'   ,40),part_func
-write(iow,'(3x,A40,E16.9)')adjl('n/n_bulk:',40)               ,nch_gr * chainlen_gr / (rho_0*volume*1.d-30)
-write(6  ,'(3x,A40,E16.9)')adjl('n/n_bulk:',40)               ,nch_gr * chainlen_gr / (rho_0*volume*1.d-30)
+write(iow,'(3X,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
+write(6  ,'(3X,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
+write(iow,'(3X,A40,E16.9)')adjl('Partition function of matrix chains:',40),part_func
+write(6  ,'(3X,A40,E16.9)')adjl('Partition function of matrix chains:',40),part_func
 
 ! Please do not alter the output of the following line!
-write(iow,'(3x,A40,E16.9)')adjl('grafting density (A^-2):',40),nch_gr/interf_area
+write(iow,'(3X,A40,E16.9)')adjl('grafting density (A^-2):',40),nch_gr/interf_area
 
 t_final = get_sys_time()
-write(6  ,'(3x,A40,I16)')adjl('Run duration:',40), t_final - t_init
+write(6  ,'(3X,A40,I16)')adjl('Run duration:',40), t_final - t_init
 
 #ifdef USE_MPI
 !root will send a stop signal to the slaves

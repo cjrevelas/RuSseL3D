@@ -3,15 +3,14 @@ module parser_vars
 implicit none
 !-------------------------------------------------------------------------------!
 !****************************TIME DISCRETIZATION********************************!
-integer :: ns_free_ed, ns_free_conv, ns_free_max, time_integration_scheme
-integer :: ns_gr_ed, ns_gr_conv
-real(8) :: chainlen_free, chainlen_free_max, chainlen_gr
-real(8) :: ds_ave_free_ed, ds_ave_gr_ed
-real(8) :: ds_ave_free_conv, ds_ave_gr_conv
+integer :: ns_matrix_ed, ns_matrix_conv, ns_gr_ed, ns_gr_conv
+integer :: time_integration_scheme
+real(8) :: chainlen_matrix, chainlen_matrix_max, chainlen_gr
+real(8) :: ds_ave_matrix_ed, ds_ave_gr_ed, ds_ave_matrix_conv, ds_ave_gr_conv
 
 !*******************************INDICES AND FLAGS*******************************!
-integer :: iow, ioe, iterations, field_init_scheme, init_iter, output_every, print_ev
-integer :: use_grafted
+integer :: iow, ioe, iterations, field_init_scheme, init_iter
+integer :: use_grafted, print_ev, output_every
 
 !************************************DOMAIN*************************************!
 integer               :: prof_dim
@@ -27,7 +26,7 @@ real(8), allocatable, dimension(:,:) :: center_np
 
 !*************************SCF MODEL AND POTENTIAL DATA**************************!
 real(8) :: Temp, mon_mass, massden, kapa, kappa_T, rho_0
-real(8) :: Rg2_per_mon_free, Rg2_per_mon_gr, sphere_radius
+real(8) :: Rg2_per_mon_matrix, Rg2_per_mon_gr, sphere_radius
 real(8) :: A_pol, sigma_pol
 
 !*************************SCF CONVERGENCE SCHEME********************************!

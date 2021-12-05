@@ -19,24 +19,29 @@ if (use_grafted.eq.1) then
     write(iow,'(3x,A40,E16.9)')adjl('Length of a grafted segment for convol:',40) ,ds_ave_gr_conv
     write(6  ,'(3x,A40,E16.9)')adjl('Length of a grafted segment for convol:',40) ,ds_ave_gr_conv
 
-    write(iow,'(3x,A40,E16.9,A10)')adjl('Square of radius of Gyration of grafted ch:',40),Rg2_per_mon_gr*chainlen_gr,' Angstroms'
-    write(6  ,'(3x,A40,E16.9,A10)')adjl('Square of radius of Gyration of grafted ch:',40),Rg2_per_mon_gr*chainlen_gr,' Angstroms'
+    !calculate the radius of gyration of grafted chains
+    write(iow,'(3x,A40,E16.9,A10)')adjl('Squared gyration radius of grafted ch:',40)&
+                                                  &,Rg2_per_mon_gr*chainlen_gr,' Angstroms'
+    write(6  ,'(3x,A40,E16.9,A10)')adjl('Squared gyration radius of grafted ch:',40)&
+                                                  &,Rg2_per_mon_gr*chainlen_gr,' Angstroms'
 
-    chainlen_free_max = max(chainlen_free, chainlen_gr)
+    chainlen_matrix_max = max(chainlen_matrix, chainlen_gr)
 else
-    chainlen_free_max = chainlen_free
+    chainlen_matrix_max = chainlen_matrix
 endif
 
-ds_ave_free_ed   = chainlen_free_max / dble(ns_free_ed)
-ds_ave_free_conv = chainlen_free / dble(ns_free_conv)
-write(iow,'(3x,A40,E16.9)')adjl('Length of a free segment for Edwards:',40),ds_ave_free_ed
-write(6  ,'(3x,A40,E16.9)')adjl('Length of a free segment for Edwards:',40),ds_ave_free_ed
-write(iow,'(3x,A40,E16.9)')adjl('Length of a free segment for convol:',40) ,ds_ave_free_conv
-write(6  ,'(3x,A40,E16.9)')adjl('Length of a free segment for convol:',40) ,ds_ave_free_conv
+ds_ave_matrix_ed   = chainlen_matrix_max / dble(ns_matrix_ed)
+ds_ave_matrix_conv = chainlen_matrix / dble(ns_matrix_conv)
+write(iow,'(3x,A40,E16.9)')adjl('Length of a matrix segment for Edwards:',40),ds_ave_matrix_ed
+write(6  ,'(3x,A40,E16.9)')adjl('Length of a matrix segment for Edwards:',40),ds_ave_matrix_ed
+write(iow,'(3x,A40,E16.9)')adjl('Length of a matrix segment for convol:',40) ,ds_ave_matrix_conv
+write(6  ,'(3x,A40,E16.9)')adjl('Length of a matrix segment for convol:',40) ,ds_ave_matrix_conv
 
-!calculate the radius of gyration of free and grafted chains
-write(iow,'(3x,A40,E16.9,A10)')adjl('Square of radius of Gyration of free ch:',40),Rg2_per_mon_free * chainlen_free,' Angstroms'
-write(6  ,'(3x,A40,E16.9,A10)')adjl('Square of radius of Gyration of free ch:',40),Rg2_per_mon_free * chainlen_free,' Angstroms'
+!calculate the radius of gyration of matrix chains
+write(iow,'(3x,A40,E16.9,A10)')adjl('Squared gyration radius of matrix ch:',40)&
+                                   &,Rg2_per_mon_matrix * chainlen_matrix,' Angstroms'
+write(6  ,'(3x,A40,E16.9,A10)')adjl('Squared gyration radius of matrix ch:',40)&
+                                   &,Rg2_per_mon_matrix * chainlen_matrix,' Angstroms'
 
 !calculate segment density in the bulk, rho_0, in mol_segments/m3
 rho_0 = massden/mon_mass*1.d06
@@ -47,6 +52,5 @@ write(6  ,'(3x,A40,E16.9,A8)')adjl('Segment density in bulk (rho):',40),rho_0,' 
 kapa = 1.d0 /(kappa_T * boltz_const_Joule_molK * Temp * rho_0)
 write(iow,'(3x,A40,E16.9)')adjl('kapa = 1/[k_T k_B T rho_0]:',40),kapa
 write(6  ,'(3x,A40,E16.9)')adjl('kapa = 1/[k_T k_B T rho_0]:',40),kapa
-
 !------------------------------------------------------------------------------------------------------!
 end subroutine calc_scf_params
