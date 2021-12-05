@@ -65,76 +65,76 @@ do
         exit
     else
         if (index(line,'# Rg2 per monomer for matrix chains') > 0) then
-            read(line,'(E16.9)') Rg2_per_mon_matrix
+            read(line,*) Rg2_per_mon_matrix
             log_Rg2_per_mon_matrix = .true.
         elseif (index(line,'# Rg2 per monomer for grafted chains') > 0) then
-            read(line,'(E16.9)') Rg2_per_mon_gr
+            read(line,*) Rg2_per_mon_gr
             log_Rg2_per_mon_gr = .true.
         elseif (index(line,'# number of matrix segments') > 0) then
-            read(line,'(2(I7))') ns_matrix_ed, ns_matrix_conv
+            read(line,*) ns_matrix_ed, ns_matrix_conv
             log_n_matrix_seg = .true.
         elseif (index(line,'# number of grafted segments') > 0) then
-            read(line,'(2(I7))') ns_gr_ed, ns_gr_conv
+            read(line,*) ns_gr_ed, ns_gr_conv
             log_n_gr_seg = .true.
         elseif (index(line,'# chain length of matrix chains') > 0) then
-            read(line,'(E16.9)') chainlen_matrix
+            read(line,*) chainlen_matrix
             log_chainlen_matrix = .true.
         elseif (index(line,'# chain length of grafted chains ') > 0) then
-            read(line,'(E16.9)') chainlen_gr
+            read(line,*) chainlen_gr
             log_chainlen_gr = .true.
         elseif (index(line,'# output every') > 0) then
-            read(line,'(I6)') output_every
+            read(line,*) output_every
             log_output_every = .true.
         elseif (index(line,'# interfacial area') > 0) then
-            read(line,'(E16.9)') interf_area
+            read(line,*) interf_area
             log_interf_area = .true.
         elseif (index(line,'# temperature') > 0) then
-            read(line,'(E16.9)') temp
+            read(line,*) temp
             log_temperature = .true.
         elseif (index(line,'# Hamaker constant of polymer') > 0) then
-            read(line,'(E16.9)') A_pol
+            read(line,*) A_pol
             log_Hamaker_constant_of_polymer = .true.
         elseif (index(line,'# mass density') > 0) then
-            read(line,'(E16.9)') massden
+            read(line,*) massden
             log_mass_density = .true.
         elseif (index(line,'# isothermal compressibility') > 0) then
-            read(line,'(E16.9)') kappa_T
+            read(line,*) kappa_T
             log_isothermal_compressibility = .true.
         elseif (index(line,'# use grafted') > 0) then
-            read(line,'(I6)') use_grafted
+            read(line,*) use_grafted
             log_use_grafted = .true.
         elseif (index(line,'# number of iterations') > 0) then
-            read(line,'(I10)') iterations
+            read(line,*) iterations
             log_number_of_iterations = .true.
         elseif (index(line,'# maximum error') > 0) then
-            read(line,'(F16.4)') max_error_tol
+            read(line,*) max_error_tol
             log_maximum_error = .true.
         elseif (index(line,'# fraction of new field') > 0) then
-            read(line,'(F16.9)') frac
+            read(line,*) frac
             log_fraction_of_new_field = .true.
         elseif (index(line,'# monomer mass') > 0) then
-            read(line,'(F16.9)') mon_mass
+            read(line,*) mon_mass
             log_monomer_mass = .true.
         elseif (index(line,'# sigma polymer') > 0) then
-            read(line,'(F16.9)') sigma_pol
+            read(line,*) sigma_pol
             log_sigma_polymer = .true.
         elseif (index(line,'# initialize field') > 0) then
-            read(line,'(I10)') field_init_scheme
+            read(line,*) field_init_scheme
             log_field_init_scheme= .true.
         elseif (index(line,'# set initial iteration') > 0) then
-            read(line,'(I10)') init_iter
+            read(line,*) init_iter
             log_set_initial_iteration= .true.
         elseif (index(line,'# convergence scheme') > 0) then
-            read(line,'(I10)') scheme_type
+            read(line,*) scheme_type
             log_convergence_scheme = .true.
         elseif (index(line,'# mumps matrix type') > 0) then
-            read(line,'(I10)') mumps_matrix_type
+            read(line,*) mumps_matrix_type
             log_mumps_matrix_type = .true.
         elseif (index(line,'# time integration scheme') > 0) then
-            read(line,'(I10)') time_integration_scheme
+            read(line,*) time_integration_scheme
             log_time_integration_scheme = .true.
         elseif (index(line,'# n dirichlet faces') > 0) then
-            read(line,'(I10)') n_dirichlet_faces
+            read(line,*) n_dirichlet_faces
             if (n_dirichlet_faces > 0) then
                 allocate(ids_dirichlet_faces(n_dirichlet_faces))
                 allocate(sigma_plate(n_dirichlet_faces))
@@ -147,7 +147,7 @@ do
                 log_n_dirichlet_faces = .true.
             endif
         elseif (index(line,'# n nanoparticle faces') > 0) then
-            read(line,'(I10)') n_nanopart_faces
+            read(line,*) n_nanopart_faces
             if (n_nanopart_faces > 0) then
                 allocate(ids_nanopart_faces(n_nanopart_faces))
                 allocate(center_np(3,n_nanopart_faces))
@@ -163,7 +163,7 @@ do
                 log_n_nanopart_faces = .true.
             endif
         elseif (index(line,'# profile dimension') > 0) then
-            read(line,'(I6)') prof_dim
+            read(line,*) prof_dim
             log_profile_dimension = .true.
         endif
    endif
