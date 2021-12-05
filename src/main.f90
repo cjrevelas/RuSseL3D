@@ -4,52 +4,45 @@
 !          IT APPLIES AN ANDERSON MIXING RULE WITH RESPECT TO THE FIELD IN ORDER TO CONVERGE TO A SELF-CONSISTENT SOLUTION.        !
 !      IT OFFERS THE ABILITY TO WORK WITH BOTH MATRIX AND GRAFTED CHAINS IN THE PRESENCE OF PLANAR SOLID SURFACES OR NANOPARTICLES.!
 !                                                      DATE: 01/07/2019                                                            !
-!                         AUTHORS: APOSTOLIS T. LAKKAS, CONSTANTINOS J. REVELAS, ARISTOTELIS P. SGOUROS                            !
+!                         AUTHORS: CONSTANTINOS J. REVELAS, ARISTOTELIS P. SGOUROS, APOSTOLIS T. LAKKAS                            !
 !----------------------------------------------------------------------------------------------------------------------------------!
 !----------------------------------------------------------------------------------------------------------------------------------!
 program FEM_3D
-!-------------------------------------------------------------------!
+!----------------------------------------------------------------------------------------------------------------------------------!
 use parser_vars
+use init_vars
 use constants
 use error_handing
 use write_helper
-use kcw
 use geometry
 #ifdef USE_MPI
 use mpistuff
 #endif
-!-------------------------------------------------------------------!
+!----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
-!-------------------------------------------------------------------!
+!----------------------------------------------------------------------------------------------------------------------------------!
 #ifdef USE_MPI
 include 'mpif.h'
 #endif
-!-------------------------------------------------------------------!
-integer :: i1, k1, iter, n_outside
+!----------------------------------------------------------------------------------------------------------------------------------!
+integer :: i1, k1, iter
 integer :: get_sys_time, t_init, t_final
 
 logical :: sym
 
-character(20) :: gp_filename = "gnodes.lammpstrj"
-character(20) :: field_in_filename = 'field_in.bin'
+character(20) :: gp_filename = "gnodes.in.lammpstrj"
+character(20) :: field_in_filename = 'field.in.bin'
 
-real(8)                              :: chainlen
-real(8)                              :: wa_max = 0.d0, wa_max_abs = 0.d0
-real(8)                              :: wa_std_error = 0.d0, max_error = 200000.d0
-real(8)                              :: mix_tol = 0.d0, wa_step = 0.d0, wa_ave = 0.d0
-real(8)                              :: part_func = 0.d0, nch_gr = 0.d0
-real(8)                              :: adh_ten = 0.d0
-real(8), allocatable, dimension(:)   :: ds_matrix_ed, ds_gr_ed, ds_matrix_conv, ds_gr_conv
-real(8), allocatable, dimension(:)   :: koeff_matrix_ed, koeff_gr_ed, koeff_matrix_conv, koeff_gr_conv
-real(8), allocatable, dimension(:)   :: xs_matrix_ed, xs_matrix_conv, xs_gr_ed, xs_gr_conv
-real(8), allocatable, dimension(:)   :: wa, wa_new, wa_mix, Ufield
-real(8), allocatable, dimension(:)   :: phia_mx, phia_gr
-real(8), allocatable, dimension(:,:) :: qm, qm_final, qm_interp_mm, qm_interp_mg
-real(8), allocatable, dimension(:,:) :: qgr, qgr_final, qgr_interp
-!-------------------------------------------------------------------!
-!*******************************************************************!
-!                           MPI SECTION                             !
-!*******************************************************************!
+real(8) :: chainlen
+real(8) :: wa_max = 0.d0, wa_max_abs = 0.d0
+real(8) :: wa_std_error = 0.d0, max_error = 200000.d0
+real(8) :: wa_step = 0.d0, wa_ave = 0.d0
+real(8) :: part_func = 0.d0, nch_gr = 0.d0
+real(8) :: adh_ten = 0.d0
+!----------------------------------------------------------------------------------------------------------------------------------!
+!**************************************************************************************************************!
+!                                                    MPI SECTION                                               !
+!**************************************************************************************************************!
 #ifdef USE_MPI
 call mpi_init(ierr)
 call MPI_Comm_size(MPI_COMM_WORLD, n_proc, ierr)
@@ -84,85 +77,29 @@ if (.not.root) then
     goto 1000
 endif
 #endif
-!-------------------------------------------------------------------!
+
 iow = 10
-open(unit=iow, file = 'scft.out.txt')
+open(unit=iow, file = 'log.out.txt')
 
 !initialize the error log
 ioe = 11
 open(unit=ioe, file = 'error.out.txt', status='replace')
 close(ioe)
-!*******************************************************************!
-!                       INITIALIZATION SECTION                      !
-!*******************************************************************!
-!parse the input data from the datafile
+!**************************************************************************************************************!
+!                                             INITIALIZATION SECTION                                           !
+!**************************************************************************************************************!
 call parser
 
-!calculate essential scf parameters
 call calc_scf_params
 
-!read the input from the mesh file and generate it
 call mesh
 
-!allocate and initialize essential scf arrays
-allocate(rdiag1(numnp))
-allocate(wa(numnp),wa_mix(numnp),wa_new(numnp),Ufield(numnp))
-
-wa     = 0.d0
-wa_mix = 0.d0
-wa_new = 0.d0
-Ufield = 0.d0
-rdiag1 = 0.d0
-
-allocate(ds_matrix_ed(ns_matrix_ed+1),ds_matrix_conv(ns_matrix_conv+1))
-allocate(xs_matrix_ed(ns_matrix_ed+1),xs_matrix_conv(ns_matrix_conv+1))
-allocate(koeff_matrix_ed(ns_matrix_ed+1),koeff_matrix_conv(ns_matrix_conv+1))
-allocate(phia_mx(numnp))
-allocate(qm(numnp,2))
-allocate(qm_final(numnp,ns_matrix_ed+1))
-allocate(qm_interp_mm(numnp,ns_matrix_conv+1))
-allocate(qm_interp_mg(numnp,ns_gr_conv+1))
-
-ds_matrix_ed      = 0.d0
-ds_matrix_conv    = 0.d0
-xs_matrix_ed      = 0.d0
-xs_matrix_conv    = 0.d0
-koeff_matrix_ed   = 0.d0
-koeff_matrix_conv = 0.d0
-phia_mx           = 0.d0
-qm_final          = 0.d0
-qm                = 0.d0
-qm_interp_mm      = 0.d0
-qm_interp_mg      = 0.d0
-
-if (use_grafted.eq.1) then
-    allocate(ds_gr_ed(ns_gr_ed+1),ds_gr_conv(ns_gr_conv+1))
-    allocate(xs_gr_ed(ns_gr_ed+1),xs_gr_conv(ns_gr_conv+1))
-    allocate(koeff_gr_ed(ns_gr_ed+1),koeff_gr_conv(ns_gr_conv+1))
-    allocate(qgr(numnp,2))
-
-    ds_gr_ed      = 0.d0
-    ds_gr_conv    = 0.d0
-    xs_gr_ed      = 0.d0
-    xs_gr_conv    = 0.d0
-    koeff_gr_ed   = 0.d0
-    koeff_gr_conv = 0.d0
-    qgr           = 0.d0
-endif
-
-allocate(qgr_final(numnp,ns_gr_ed+1))
-allocate(qgr_interp(numnp,ns_gr_conv+1))
-qgr_final  = 0.d0
-qgr_interp = 0.d0
-
-allocate(phia_gr(numnp))
-phia_gr = 0.d0
+call init_vars_and_arrays
 
 #ifdef USE_MPI
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 #endif
 
-!output mesh characteristics
 write(iow,'(/''Mesh characteristics..'')')
 write(iow,'(''   Number of mesh points (numnp):         '',I16)') numnp
 write(iow,'(''   Number of elements (numel):            '',I16)') numel
@@ -194,12 +131,8 @@ if (use_grafted.eq.1) then
     call init_time(sym, chainlen, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, koeff_gr_conv)
 endif
 
-!initialize field
 call init_field(field_in_filename, Ufield, wa)
 wa_mix = wa
-
-!initialize files in case this is not a restart
-call init_files
 
 !**************************************************************************************************************!
 !                                        LOOPS FOR FIELD CONVERGENCE                                           !
