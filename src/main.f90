@@ -158,14 +158,14 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     !flush output
     close(iow)
-    open(unit=iow, file = 'scft.out.txt', position = 'append')
+    open(unit=iow, file = 'log.out.txt', position = 'append')
 
     !update field
     wa = wa_mix
 
     call matrix_assemble(Rg2_per_mon_matrix, wa)
 
-    !**********************SOLVE EDWARDS PDE FOR FREE CHAINS*************************!
+    !diffusion
     do i1 = 1, numnp
        qm(i1,1)       = 1.d0
        qm_final(i1,1) = 1.d0
@@ -358,6 +358,5 @@ end if
 
 1000 call MPI_FINALIZE(ierr)
 #endif
-write(iow,'(/''Done!'')')
 !------------------------------------------------------------------------------------------------------------------!
 end program FEM_3D

@@ -14,7 +14,7 @@ use geometry
 implicit none
 !--------------------------------------------------------------------!
 character(len=15) :: dummy
-character(len=13) :: mesh_filename
+character(len=14) :: mesh_filename
 
 integer :: idummy, i, j, i1, j1, k1, m1
 integer :: num_elem_types
@@ -44,7 +44,7 @@ integer :: n_keys
 integer :: key_value
 logical :: success
 !--------------------------------------------------------------------!
-mesh_filename = 'mesh.mphtxt'
+mesh_filename = 'mesh.in.mphtxt'
 
 write(iow,'(/A42,A15)')adjl('*Reading mesh from file:',42),mesh_filename
 write(6  ,'(/A42,A15)')adjl('*Reading mesh from file:',42),mesh_filename
@@ -378,14 +378,6 @@ do i = 1, nbin
 enddo
 close(77)
 #endif
-
-!APS TODO: move this to a better place!!!
-print_ev = 3
-open (unit=120, file = 'header.out.txt')
-do k1 = 1, numnp, print_ev
-    write(120,'(E13.5)',advance='no') xc(prof_dim,k1)
-enddo
-close(120)
 
 return
 !--------------------------------------------------------------------!

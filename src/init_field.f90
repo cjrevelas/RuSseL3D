@@ -16,7 +16,7 @@ real(8), intent(out), dimension(numnp) :: Ufield, wa
 real(8)                                :: distance, r12, Urep, Uatt, Utot
 real(8)                                :: sigma_plate_temp, A_plate_temp
 !------------------------------------------------------------------------------------------------------!
-open(unit=211, file = 'Usolid.out.txt')
+open(unit=211, file = 'usolid.out.txt')
 Ufield = 0.d0
 
 do k1 = 1, numnp
@@ -25,8 +25,8 @@ do k1 = 1, numnp
         do n1 = 1, 2
             if (is_dir_face(m1,n1)) then
 
-                sigma_plate_temp = sigma_plate(1)
-                A_plate_temp     = A_plate(1)
+                sigma_plate_temp        = sigma_plate(1)
+                A_plate_temp            = A_plate(1)
 
                 if (n1.eq.1) then
                     distance = xc(m1,k1) - box_lo(m1)
@@ -36,7 +36,6 @@ do k1 = 1, numnp
 
                 call hamaker_sphere_plate(Temp, distance, rho_0, sigma_pol, sigma_plate_temp, A_pol, &
     &                                     A_plate_temp, r12, Urep, Uatt, Utot)
-
                 Ufield(k1) = Ufield(k1) + Utot
 
                 if (Ufield(k1).ne.Ufield(k1)) then
@@ -63,7 +62,6 @@ do k1 = 1, numnp
 
            call hamaker_sphere_sphere(Temp, distance, radius_np(m1), rho_0, sigma_pol, sigma_np(m1), A_pol, A_np(m1), &
    &                                  r12, Urep, Uatt, Utot)
-
            Ufield(k1) = Ufield(k1) + Utot
 
            if (Ufield(k1).ne.Ufield(k1)) then
@@ -77,9 +75,8 @@ do k1 = 1, numnp
 enddo
 
 close(211)
-!*******************************************************************!
-!                             READ FIELD                            !
-!*******************************************************************!
+
+!read field
 if (field_init_scheme.eq.0) then
     wa = 0.d0
 elseif (field_init_scheme.eq.1) then
