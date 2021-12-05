@@ -24,8 +24,6 @@ logical :: log_monomer_mass                = .false.
 logical :: log_sigma_polymer               = .false.
 logical :: log_field_init_scheme           = .false.
 logical :: log_set_initial_iteration       = .true.
-logical :: log_mix_coef_fraction           = .false.
-logical :: log_mix_coef_kapa               = .false.
 logical :: log_n_dirichlet_faces           = .false.
 logical :: log_n_nanopart_faces            = .false.
 logical :: log_profile_dimension           = .false.
@@ -126,12 +124,6 @@ do
         elseif (index(line,'# set initial iteration') > 0) then
             read(line,'(I10)') init_iter
             log_set_initial_iteration= .true.
-        elseif (index(line,'# mix coef fraction') > 0) then
-            read(line,'(F16.9)') mix_coef_frac
-            log_mix_coef_fraction = .true.
-        elseif (index(line,'# mix coef kapa') > 0) then
-            read(line,'(F16.9)') mix_coef_kapa
-            log_mix_coef_kapa = .true.
         elseif (index(line,'# convergence scheme') > 0) then
             read(line,'(I10)') scheme_type
             log_convergence_scheme = .true.
@@ -374,28 +366,6 @@ if (log_sigma_polymer) then
 else
     ERROR_MESSAGE='sigma_polymer not detected..'
     call exit_with_error(1,1,1,ERROR_MESSAGE)
-endif
-
-if (log_mix_coef_fraction.and.mix_coef_frac.ge.0.d0) then
-    write(iow,'(3x,A40,E16.9)')adjl('Mix coef fraction:',40),mix_coef_frac
-    write(6  ,'(3x,A40,E16.9)')adjl('Mix coef fraction:',40),mix_coef_frac
-else
-    mix_coef_frac = 1.d0
-    write(iow,'(3x,A40)')adjl('Mix coef fraction not found or negative..',40)
-    write(iow,'(3x,A40,E16.9)')adjl('---It was set to the default value:',40), mix_coef_frac
-    write(6  ,'(3x,A40)')adjl('Mix coef fraction not found or negative..',40)
-    write(6  ,'(3x,A40,E16.9)')adjl('---It was set to the default value:',40), mix_coef_frac
-endif
-
-if (log_mix_coef_kapa.and.mix_coef_frac.ge.0.d0) then
-    write(iow,'(3x,A40,E16.9)')adjl('Mix coef kapa:',40),mix_coef_kapa
-    write(6  ,'(3x,A40,E16.9)')adjl('Mix coef kapa:',40),mix_coef_kapa
-else
-    mix_coef_kapa = 10.d0
-    write(iow,'(3x,A40)')adjl('Mix coef kapa not found or negative..',40)
-    write(iow,'(3x,A40,E16.9)')adjl('---It was set to the default value:',40), mix_coef_kapa
-    write(6  ,'(3x,A40)')adjl('Mix coef kapa not found or negative..',40)
-    write(6  ,'(3x,A40,E16.9)')adjl('---It was set to the default value:',40), mix_coef_kapa
 endif
 
 if (log_n_dirichlet_faces.and.n_dirichlet_faces>0) then

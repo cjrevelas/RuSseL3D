@@ -246,80 +246,21 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     max_error    = max_error * chainlen_matrix
     wa_std_error = wa_std_error * chainlen_matrix
 
-    !*******************************************************************!
-    !                         APPLY MIXING RULE                         !
-    !*******************************************************************!
-    !original convergence scheme 1: tolis
-    if (scheme_type.eq.1) then
-        if (iter.eq.1) then
-            frac = 1.d0
-        else if (iter.eq.2) then
-            frac = 1.d0 / (wa_max_abs * chainlen_matrix * 10.d0)
-        else
-            frac = min(frac * mix_coef_frac, mix_coef_kapa)
-        endif
+    !field mixing rule
+    do k1 = 1, numnp
+        wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
+    enddo
 
-        !mixing the fields..
-        do k1 = 1, numnp
-            wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
-        enddo
-    endif
-
-    !experimental convergence scheme 2: 1/wa_max
-    if (scheme_type.eq.2) then
-        mix_tol = 0.1d0  * kapa
-        frac    = frac
-        wa_step = 4.d0 *exp(-dble(iter)/10.d0) / chainlen_matrix
-
-        n_outside = 0
-        do k1 = 1, numnp
-            if (dabs(wa_new(k1)-wa(k1)) * chainlen_matrix > mix_tol.and.iter.le.60) then
-                n_outside = n_outside + 1
-
-                if (wa_new(k1).gt.wa(k1)) then
-                    wa_mix(k1) = wa(k1) + wa_step*rand()
-                else if (wa_new(k1).lt.wa(k1)) then
-                    wa_mix(k1) = wa(k1) - wa_step*rand()
-                endif
-            else
-                !APS TEMP
-                !if (k1.eq.gnode_id) then
-                !    wa_mix(k1) = (1.d0 - 0.1d0) * wa(k1) + 0.1d0 * wa_new(k1)
-                !else
-                !    wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
-                !endif
-            endif
-        enddo
-
-        !do k1 = 1, numnp
-        !    if (elem_in_q0_face(k1)) then
-        !        wa(k1) = -kapa
-        !    endif
-        !enddo
-    endif
-
-    !experimental convergence scheme 3: 1/wa_max_abs
-    if (scheme_type.eq.3) then
-        !fraction remains constant throughout the simulation
-        frac = frac
-        !mixing the fields..
-        do k1 = 1, numnp
-            wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
-        enddo
-    endif
-
-    !*******************************************************************!
-    !                           PERIODIC DUMPER                         !
-    !*******************************************************************!
-    !output the data every so many steps
+    !output data every so many steps
     if (mod(iter,output_every).eq.0) then
         call periodic_dumper(qm_final, qgr_final, qm_interp_mm, qm_interp_mg, qgr_interp, phia_mx, phia_gr, wa, wa_new, wa_mix)
         call export_field(wa_mix, numnp, iter)
     endif
+enddo
 
-enddo!iter
-
-!output the data at the end of the simulation
+!**************************************************************************************************************!
+!                                             EXPORT SIMULATION RESULTS                                        !
+!**************************************************************************************************************!
 call periodic_dumper(qm_final, qgr_final, qm_interp_mm, qm_interp_mg, qgr_interp, phia_mx, phia_gr, wa, wa_new, wa_mix)
 call export_field(wa_mix, numnp, iter)
 

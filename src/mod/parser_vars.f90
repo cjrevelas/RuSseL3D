@@ -14,7 +14,7 @@ integer :: use_grafted, print_ev, output_every
 
 !************************************DOMAIN*************************************!
 integer               :: prof_dim
-real(8)               :: volume, interf_area
+real(8)               :: interf_area
 real(8), dimension(3) :: box_lo, box_hi, box_len
 
 !*******************************BOUNDARY CONDITIONS*****************************!
@@ -31,7 +31,7 @@ real(8) :: A_pol, sigma_pol
 
 !*************************SCF CONVERGENCE SCHEME********************************!
 integer :: scheme_type
-real(8) :: max_error_tol, frac, mix_coef_frac, mix_coef_kapa
+real(8) :: max_error_tol, frac
 
 !*********************************MUMPS OPTIONS*********************************!
 integer :: mumps_matrix_type
