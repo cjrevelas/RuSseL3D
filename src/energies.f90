@@ -13,7 +13,7 @@ real(8), intent(in), dimension(numnp,ns_gr_conv+1)  :: qm_interp_mg
 real(8), intent(in), dimension(numnp,ns_gr_conv+1)  :: qgr_interp
 real(8), intent(in)                                 :: part_func
 real(8), intent(out)                                :: adh_ten
-real(8)                                             :: Q, sum_final
+real(8)                                             :: Q, sum_final, vol
 real(8)                                             :: term1, term2, term3, term4
 real(8)                                             :: part_sum1, part_sum2, part_sum3, part_sum4
 real(8), dimension(numnp)                           :: dterm1, dterm2
@@ -28,12 +28,12 @@ do k1 = 1, numnp
    dterm2(k1) = -(wa(k1) - Ufield(k1)) * (phia_mx(k1) + phia_gr(k1)) * chainlen_matrix      !pink: rho-w interaction
 enddo
 
-call spat_3d(dterm1, term1, Q)
-call spat_3d(dterm2, term2, Q)
+call spat_3d(dterm1, term1, Q, vol)
+call spat_3d(dterm2, term2, Q, vol)
 
 term1 = term1 * 1.0d-30
 term2 = term2 * 1.0d-30
-term3 = volume * 1.0d-30 * (1.d00 - part_func) !red: translational entropy of matrix chains
+term3 = vol   * 1.0d-30 * (1.d00 - part_func) !red: translational entropy of matrix chains
 
 term4 = 0.d0
 do k1 = 1, numnp

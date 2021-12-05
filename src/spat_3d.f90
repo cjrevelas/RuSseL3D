@@ -1,4 +1,4 @@
-subroutine spat_3d(u_spat, sum_out, Q)
+subroutine spat_3d(u_spat, sum_out, Q, vol)
 !--------------------------------------------------------------------!
 use parser_vars
 use geometry
@@ -11,8 +11,8 @@ integer :: lint
 integer :: i, j, ii, l, n
 
 real(8), intent(in), dimension(numnp) :: u_spat
-real(8), intent(out)                  :: sum_out, Q
-real(8)                               :: xsj, uqp, sumel, volel, vol
+real(8), intent(out)                  :: sum_out, Q, vol
+real(8)                               :: xsj, uqp, sumel, volel
 real(8), dimension(nel)               :: ul
 real(8), dimension(ndm, nel)          :: xl
 real(8), dimension(4,11)              :: shp
