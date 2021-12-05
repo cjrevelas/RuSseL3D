@@ -1,3 +1,12 @@
+!----------------------------------------------------------------------------------------------------------------------------------!
+!----------------------------------------------------------------------------------------------------------------------------------!
+!                 THIS IS THE FINITE ELEMENT CODE WHICH RUNS A SELF-CONSISTENT FIELD SIMULATION IN THREE DIMENSIONS.               !
+!          IT APPLIES AN ANDERSON MIXING RULE WITH RESPECT TO THE FIELD IN ORDER TO CONVERGE TO A SELF-CONSISTENT SOLUTION.        !
+!      IT OFFERS THE ABILITY TO WORK WITH BOTH MATRIX AND GRAFTED CHAINS IN THE PRESENCE OF PLANAR SOLID SURFACES OR NANOPARTICLES.!
+!                                                      DATE: 01/07/2019                                                            !
+!                         AUTHORS: APOSTOLIS T. LAKKAS, CONSTANTINOS J. REVELAS, ARISTOTELIS P. SGOUROS                            !
+!----------------------------------------------------------------------------------------------------------------------------------!
+!----------------------------------------------------------------------------------------------------------------------------------!
 program FEM_3D
 !-------------------------------------------------------------------!
 use parser_vars
@@ -19,9 +28,12 @@ include 'mpif.h'
 integer :: i1, k1, iter, n_outside
 integer :: get_sys_time, t_init, t_final
 
+logical :: sym
+
 character(20) :: gp_filename = "gnodes.lammpstrj"
 character(20) :: field_in_filename = 'field_in.bin'
 
+real(8)                              :: chainlen
 real(8)                              :: wa_max = 0.d0, wa_max_abs = 0.d0
 real(8)                              :: wa_std_error = 0.d0, max_error = 200000.d0
 real(8)                              :: mix_tol = 0.d0, wa_step = 0.d0, wa_ave = 0.d0
@@ -57,8 +69,7 @@ end if
 
 flag_continue = .true.
 
-!the slaves will enter the mumps subroutine until they receive a stop
-!signal from master proc
+!the slaves will enter the mumps subroutine until they receive a stop signal from master proc
 if (.not.root) then
     !receive the matrix type from root
     call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
@@ -165,12 +176,22 @@ write(6  ,'(''   Number of nodes per element (nel):     '',I16)') nel
 write(6  ,'(''   Number of matrix indeces:              '',I16)') all_el
 
 !initialize time integration scheme
-call init_time(ns_matrix_ed, ds_ave_matrix_ed, ds_matrix_ed, xs_matrix_ed, koeff_matrix_ed)
-call init_time(ns_matrix_conv, ds_ave_matrix_conv, ds_matrix_conv, xs_matrix_conv, koeff_matrix_conv)
+sym      = .false.
+chainlen = chainlen_matrix_max
+call init_time(sym, chainlen, ns_matrix_ed, ds_ave_matrix_ed, ds_matrix_ed, xs_matrix_ed, koeff_matrix_ed)
+
+sym      = .true.
+chainlen = chainlen_matrix
+call init_time(sym, chainlen, ns_matrix_conv, ds_ave_matrix_conv, ds_matrix_conv, xs_matrix_conv, koeff_matrix_conv)
 
 if (use_grafted.eq.1) then
-    call init_time(ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, koeff_gr_ed)
-    call init_time(ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, koeff_gr_conv)
+    sym      = .false.
+    chainlen = chainlen_gr
+    call init_time(sym, chainlen, ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, koeff_gr_ed)
+
+    sym      = .true.
+    chainlen = chainlen_gr
+    call init_time(sym, chainlen, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, koeff_gr_conv)
 endif
 
 !initialize field
@@ -195,7 +216,7 @@ t_init = get_sys_time()
 iter   = init_iter
 do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
-    iter=iter+1
+    iter = iter + 1
 
     write(iow,'(I10,1X,9(E19.9e3,1X))')              iter-1, frac, adh_ten, nch_gr, max_error, wa_std_error, &
    &                                                 wa_max, wa_max_abs, wa_ave, wa_step
