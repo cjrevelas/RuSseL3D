@@ -24,8 +24,8 @@ t_init = get_sys_time()
 !************************START TRANSIENT SOLUTION*********************!
 do time_step = 2, ns+1
 
-    call dirichlet(ds(1), mumps_matrix_type)
-    !call dirichlet(ds(time_step), mumps_matrix_type)
+    !call dirichlet(ds(1), mumps_matrix_type)
+    call dirichlet(ds(time_step), mumps_matrix_type)
 
 #ifdef USE_MPI
     !send a continue (.true.) signal to the slaves
