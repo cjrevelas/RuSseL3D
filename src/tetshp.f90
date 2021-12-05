@@ -15,24 +15,22 @@ real(8)                               :: detr
 real(8), dimension(3,3)               :: xs, xsi, a
 real(8), dimension(3)                 :: te
 !-----------------------------------------------------------------------------------!
-save
-
 !linear shape functions and their derivatives
 if(abs(nel).eq.4) then
-     shp(1,1) =  1.d00 !shp(1,1) = -1.d0
-     shp(1,2) =  0.d00 !shp(1,2) =  0.d0
-     shp(1,3) =  0.d00 !shp(1,3) =  0.d0
-     shp(1,4) = -1.d00 !shp(1,4) =  1.d0
+     shp(1,1) =  1.d00
+     shp(1,2) =  0.d00
+     shp(1,3) =  0.d00
+     shp(1,4) = -1.d00
 
-     shp(2,1) =  0.d00 !shp(2,1) = -1.d0
-     shp(2,2) =  1.d00 !shp(2,2) =  1.d0
-     shp(2,3) =  0.d00 !shp(2,3) =  0.d0
-     shp(2,4) = -1.d00 !shp(2,4) =  0.d0
+     shp(2,1) =  0.d00
+     shp(2,2) =  1.d00
+     shp(2,3) =  0.d00
+     shp(2,4) = -1.d00
 
-     shp(3,1) =  0.d00 !shp(3,1) = -1.d0
-     shp(3,2) =  0.d00 !shp(3,2) =  0.d0
-     shp(3,3) =  1.d00 !shp(3,3) =  1.d0
-     shp(3,4) = -1.d00 !shp(3,4) =  0.d0
+     shp(3,1) =  0.d00
+     shp(3,2) =  0.d00
+     shp(3,3) =  1.d00
+     shp(3,4) = -1.d00
 
      shp(4, 1) = xi(1)
      shp(4, 2) = xi(2)
@@ -78,7 +76,7 @@ elseif(abs(nel).eq.10 .or. abs(nel).eq.11  .or.&
      shp(3, 9) = -4.d0*xi(2)
      shp(3,10) =  4.d0*(xi(4) - xi(3))
 
-!compute shape functions and store in shp(4,*)
+     !compute shape functions and store in shp(4,*)
      shp(4, 1) = (2.d0*xi(1) - 1.d0) * xi(1)
      shp(4, 2) = (2.d0*xi(2) - 1.d0) * xi(2)
      shp(4, 3) = (2.d0*xi(3) - 1.d0) * xi(3)
@@ -90,74 +88,7 @@ elseif(abs(nel).eq.10 .or. abs(nel).eq.11  .or.&
      shp(4, 9) = 4.d0 * xi(4) * xi(2)
      shp(4,10) = 4.d0 * xi(4) * xi(3)
 
-
-     if(nel.eq.14 .or. nel.eq.15) then
-
-        !mid-face shape functions
-        shp(1,11) =  27.0d0*(xi(1) - xi(2))*xi(4)
-        shp(1,12) =  27.0d0*xi(3)*xi(4)
-        shp(1,13) = -27.0d0*xi(3)*xi(4)
-        shp(1,14) =  27.0d0*(xi(1) - xi(2))*xi(3)
-
-        shp(2,11) = -27.0d0*xi(2)*xi(4)
-        shp(2,12) =  27.0d0*xi(2)*xi(4)
-        shp(2,13) =  27.0d0*(xi(1) - xi(3))*xi(4)
-        shp(2,14) =  27.0d0*(xi(1) - xi(3))*xi(2)
-
-        shp(3,11) =  27.0d0*(xi(1) - xi(4))*xi(2)
-        shp(3,12) =  27.0d0*xi(2)*xi(3)
-        shp(3,13) =  27.0d0*(xi(1) - xi(4))*xi(3)
-        shp(3,14) = -27.0d0*xi(2)*xi(3)
-
-        shp(4,11) =  27.0d0*xi(1)*xi(2)*xi(4)
-        shp(4,12) =  27.0d0*xi(2)*xi(3)*xi(4)
-        shp(4,13) =  27.0d0*xi(3)*xi(1)*xi(4)
-        shp(4,14) =  27.0d0*xi(1)*xi(2)*xi(3)
-
-        !correct vertex and mid-edge shape functions
-        do j = 1,4
-            shp(j, 1) = shp(j, 1)&
-                      + (1./9.) *(shp(j,13) + shp(j,11) + shp(j,14))
-            shp(j, 2) = shp(j, 2)&
-                      + (1./9.) *(shp(j,11) + shp(j,12) + shp(j,14))
-            shp(j, 3) = shp(j, 3)& 
-                      + (1./9.) *(shp(j,12) + shp(j,13) + shp(j,14))
-            shp(j, 4) = shp(j, 4)&
-                      + (1./9.) *(shp(j,11) + shp(j,12) + shp(j,13))
-            shp(j, 5) = shp(j, 5) - (4./9.)*(shp(j,11) + shp(j,14))
-            shp(j, 6) = shp(j, 6) - (4./9.)*(shp(j,12) + shp(j,14))
-            shp(j, 7) = shp(j, 7) - (4./9.)*(shp(j,13) + shp(j,14))
-            shp(j, 8) = shp(j, 8) - (4./9.)*(shp(j,13) + shp(j,11))
-            shp(j, 9) = shp(j, 9) - (4./9.)*(shp(j,11) + shp(j,12))
-            shp(j,10) = shp(j,10) - (4./9.)*(shp(j,12) + shp(j,13))
-          enddo
-     endif
-
-     !interior node functions for 11 and 15-node element
-     if(nel.eq.11 .or. nel.eq.15) then
-
-         shp(1,nel) = 256.d0*(xi(1) - xi(2))*xi(3)*xi(4)
-         shp(2,nel) = 256.d0*(xi(1) - xi(3))*xi(2)*xi(4)
-         shp(3,nel) = 256.d0*(xi(1) - xi(4))*xi(2)*xi(3)
-         shp(4,nel) = 256.d0*xi(1)*xi(2)*xi(3)*xi(4)
-
-         !correct vertex shape functions for interior values
-         do j = 1, 4
-            do i = 1, 4
-                 shp(i,j) = shp(i,j) + 0.125d0*shp(i,nel)
-            enddo
-         enddo
-
-         !correct mid-edge shape functions for interior values
-         do j = 5 ,10
-            do i = 1 ,4
-                 shp(i,j) = shp(i,j) - 0.250d0*shp(i,nel)
-            enddo
-         enddo
-     endif
-
      nnel = nel
-
 else
     !error - higher than quadratic not coded
     write(*,2000) nel
@@ -210,32 +141,7 @@ do j = 1, 3
    enddo
 enddo
 
-!heirarchic interior node function for 4-node
-if (nel.eq.-4) then
-
-    shp(1,5) = 256.d0*(xi(1) - xi(2))*xi(3)*xi(4)
-    shp(2,5) = 256.d0*(xi(1) - xi(3))*xi(2)*xi(4)
-    shp(3,5) = 256.d0*(xi(1) - xi(4))*xi(2)*xi(3)
-    shp(4,5) = 256.d0*xi(1)*xi(2)*xi(3)*xi(4)
-
-    nnel = 5
-
-!hierarchical bubble function for 10 and 14-node element
-elseif (nel.eq.-10 .or. nel.eq.-14) then
-
-    if (abs(nel).eq.10) then
-        nnel = 11
-    else
-        nnel = 15
-    endif
-
-    shp(1,nnel) = 256.d0*(xi(1) - xi(2))*xi(3)*xi(4)
-    shp(2,nnel) = 256.d0*(xi(1) - xi(3))*xi(2)*xi(4)
-    shp(3,nnel) = 256.d0*(xi(1) - xi(4))*xi(2)*xi(3)
-    shp(4,nnel) = 256.d0*xi(1)*xi(2)*xi(3)*xi(4)
-endif
-
-!compute shape function derivatives
+!compute shape function derivatives wrt to real node coordinates
 do k = 1, nnel
    do i = 1, 3
         te(i) = shp(1,k)*xs(1,i) + shp(2,k)*xs(2,i) + shp(3,k)*xs(3,i)
