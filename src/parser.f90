@@ -34,10 +34,10 @@ logical :: log_mumps_matrix_type           = .false.
 logical :: log_time_integration_scheme     = .false.
 logical :: log_output_every                = .false.
 logical :: log_use_grafted                 = .false.
-logical :: log_n_matrix_seg                  = .false.
+logical :: log_n_matrix_seg                = .false.
 logical :: log_n_gr_seg                    = .false.
-logical :: log_Rg2_per_mon_matrix            = .false.
-logical :: log_chainlen_matrix               = .false.
+logical :: log_Rg2_per_mon_matrix          = .false.
+logical :: log_chainlen_matrix             = .false.
 logical :: log_chainlen_gr                 = .false.
 logical :: log_Rg2_per_mon_gr              = .false.
 logical :: log_interf_area                 = .false.
@@ -73,10 +73,10 @@ do
             read(line,'(E16.9)') Rg2_per_mon_gr
             log_Rg2_per_mon_gr = .true.
         elseif (index(line,'# number of matrix segments') > 0) then
-            read(line,'(2(I6))') ns_matrix_ed, ns_matrix_conv
+            read(line,'(2(I7))') ns_matrix_ed, ns_matrix_conv
             log_n_matrix_seg = .true.
         elseif (index(line,'# number of grafted segments') > 0) then
-            read(line,'(2(I6))') ns_gr_ed, ns_gr_conv
+            read(line,'(2(I7))') ns_gr_ed, ns_gr_conv
             log_n_gr_seg = .true.
         elseif (index(line,'# chain length of matrix chains') > 0) then
             read(line,'(E16.9)') chainlen_matrix

@@ -15,7 +15,7 @@ do k1 = 1, numnp
     summer = 0.d0
 
     do time_step = 1, ns+1
-        summer = summer + koeff(time_step)*q1(k1,time_step)*q2(k1,ns+2-time_step)
+        summer = summer + koeff(time_step) * q1(k1,time_step) * q2(k1,ns+2-time_step)
     enddo
 
     phia(k1) = summer / chainlen

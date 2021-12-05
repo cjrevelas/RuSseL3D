@@ -17,13 +17,14 @@ real(8), dimension(ndm,nel)           :: xl
 real(8), dimension(4,11)              :: shp
 real(8), dimension(5,11)              :: sv
 !-----------------------------------------------------------------------------------------------------------!
-i1=0
+i1 = 0
 
-F_m%c=0.d0
-F_m%k=0.d0
-F_m%g=0.d0
-F_m%w=0.d0
+F_m%c = 0.d0
+F_m%k = 0.d0
+F_m%g = 0.d0
+F_m%w = 0.d0
 
+!assembly element matrices
 do nn = 1, numel
     !1. loop over all nodes of current element
     !2. find global index of node
@@ -65,6 +66,7 @@ do nn = 1, numel
     enddo !l
 enddo !nn
 
+!assembly global matrix using element matrices and con_12 hash matrix created in mesh.f90
 do i = 1, all_el
      if (con_l2(i)/=i) then
          F_m%k(con_l2(i)) = F_m%k(con_l2(i)) + F_m%k(i)

@@ -15,7 +15,7 @@ sum_f = 0.d0
 
 call spat_3d(phia, sum_f, Q)
 
-nch_gr = sum_f*1.0d-30*rho_0*avogadro_constant/chainlen
+nch_gr = sum_f * 1.0d-30 * rho_0 * avogadro_constant / chainlen
 
 return
 !-------------------------------------------------------------------------------------------!

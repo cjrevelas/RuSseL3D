@@ -30,7 +30,7 @@ integer, allocatable, dimension(:)   :: vertex_entity_id, edge_entity_id, face_e
 integer, allocatable, dimension(:,:) :: vertex_node_id, edge_node_id, face_node_id
 real(8), allocatable, dimension(:,:) :: vertex_param, edge_param, face_param
 
-real(8) :: tol=1.e-8
+real(8) :: tol = 1.e-8
 
 !profile section variables
 integer, allocatable, dimension(:) :: prof_1D_node
@@ -240,7 +240,9 @@ allocate(con_l2(all_el))
 con_l2 = 0
 
 !assembly the con_12 (hash) matrix
-allocate(key%ints(2))
+allocate(key%ints(2)) !each key points to a pair (2) of nodes
+
+!total number of required keys
 n_keys = nel * numel
 call h%reserve(n_keys*2)
 
@@ -253,14 +255,17 @@ do m1 = 1, numel
             F_m%row(all_el) = ix(j1,m1)
             F_m%col(all_el) = ix(i1,m1)
 
-            key%ints(1) =  ix(j1,m1)
-            key%ints(2) =  ix(i1,m1)
+            !define the pair of nodes to be examined and assigned a key_value
+            key%ints(1) = ix(j1,m1)
+            key%ints(2) = ix(i1,m1)
+
+            !assign key_value to the pair
             call h%get(key, key_value, success)
             if (success) then
-               con_l2(all_el) = key_value
+               con_l2(all_el) = key_value      !this pair has already been met, thus assigned a key_value
             else
-               call h%set(key, all_el)
-               con_l2(all_el) = all_el
+               call h%set(key, all_el)         !store the new key_value for next iteration's check
+               con_l2(all_el) = all_el         !this pair is met for the first time
             endif
         end do
     end do
