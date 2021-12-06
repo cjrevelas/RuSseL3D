@@ -10,7 +10,7 @@ real(8) :: ds_ave_matrix_ed, ds_ave_gr_ed, ds_ave_matrix_conv, ds_ave_gr_conv
 
 !*******************************INDICES AND FLAGS*******************************!
 integer :: iow, ioe, iterations, field_init_scheme, init_iter
-integer :: use_grafted, print_ev, output_every
+integer :: use_grafted, grafted_ic_from_delta, print_ev, output_every
 
 !************************************DOMAIN*************************************!
 integer               :: prof_dim

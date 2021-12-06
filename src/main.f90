@@ -15,6 +15,7 @@ use constants
 use error_handing
 use write_helper
 use geometry
+use delta
 #ifdef USE_MPI
 use mpistuff
 #endif
@@ -134,6 +135,9 @@ endif
 call init_field(field_in_filename, Ufield, wa)
 wa_mix = wa
 
+if (use_grafted.eq.1) then
+    call find_delta(numnp, ds_gr_conv, koeff_gr_conv, wa_mix, num_gpoints)
+endif
 !**************************************************************************************************************!
 !                                        LOOPS FOR FIELD CONVERGENCE                                           !
 !**************************************************************************************************************!
@@ -174,17 +178,31 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     call edwards(ds_matrix_ed, ns_matrix_ed, mumps_matrix_type, qm, qm_final)
 
     if (use_grafted.eq.1) then
+        do i1 = 1, numnp
+            call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(i1,:), ns_gr_conv+1, xs_gr_conv, qm_interp_mg(i1,:))
+        enddo
+
         call matrix_assemble(Rg2_per_mon_gr, wa)
 
         qgr       = 0.d0
         qgr_final = 0.d0
 
-        call grafted_init_cond(ns_gr_ed, numnp, gp_filename, qgr, qgr_final)
+        do i1 = 1, num_gpoints
+            gnode_id = gpid(i1)
+            if (grafted_ic_from_delta.eq.1) then
+                initValue = delta_numer(i1) * chainlen_gr &
+                                            * 1.d0 / (qm_interp_mg(gnode_id, ns_gr_conv+1) * (rho_0 * avogadro_constant) )
+            else
+                initValue = gp_init_value(i1)
+            endif
+
+            qgr(gnode_id,1)       = initValue
+            qgr_final(gnode_id,1) = initValue
+        enddo
 
         call edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final)
     endif
 
-    !convolution
     do i1 = 1, numnp
         call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(i1,:), ns_matrix_conv+1, xs_matrix_conv, qm_interp_mm(i1,:))
     enddo
@@ -192,10 +210,6 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     call convolution(numnp, chainlen_matrix, ns_matrix_conv, koeff_matrix_conv, qm_interp_mm, qm_interp_mm, phia_mx)
 
     if (use_grafted.eq.1) then
-        do i1 = 1, numnp
-            call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(i1,:), ns_gr_conv+1, xs_gr_conv, qm_interp_mg(i1,:))
-        enddo
-
         do i1 = 1, numnp
             call interp_linear(1, ns_gr_ed+1, xs_gr_ed, qgr_final(i1,:), ns_gr_conv+1, xs_gr_conv, qgr_interp(i1,:))
         enddo

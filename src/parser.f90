@@ -34,6 +34,7 @@ logical :: log_output_every                = .false.
 logical :: log_use_grafted                 = .false.
 logical :: log_n_matrix_seg                = .false.
 logical :: log_n_gr_seg                    = .false.
+logical :: log_grafted_ic_from_delta       = .false.
 logical :: log_Rg2_per_mon_matrix          = .false.
 logical :: log_chainlen_matrix             = .false.
 logical :: log_chainlen_gr                 = .false.
@@ -133,7 +134,10 @@ do
         elseif (index(line,'# time integration scheme') > 0) then
             read(line,*) time_integration_scheme
             log_time_integration_scheme = .true.
-        elseif (index(line,'# n dirichlet faces') > 0) then
+        elseif (index(line,"# calculate grafted initial condition using delta function") > 0) then
+            read(line,*) grafted_ic_from_delta
+            log_grafted_ic_from_delta = .true.
+        elseif (index(line,"# n dirichlet faces") > 0) then
             read(line,*) n_dirichlet_faces
             if (n_dirichlet_faces > 0) then
                 allocate(ids_dirichlet_faces(n_dirichlet_faces))
@@ -326,12 +330,11 @@ else
     write(6  ,'(3x,A40,E16.9)')adjl('---It was set to the default value:',40),max_error_tol
 endif
 
-if (log_fraction_of_new_field) then
-    if ( frac.ge.0 .and. frac.le.1) then
-        write(iow,'(3x,A40,E16.9)')adjl('Initial fraction of new field:',40),frac
-        write(6  ,'(3x,A40,E16.9)')adjl('Initial fraction of new field:',40),frac
+    if (log_grafted_ic_from_delta) then
+        write(iow,'(3X,A40,1X,I15)')adjl("Grafted ic from delta:",40),grafted_ic_from_delta
+        write(6  ,'(3X,A40,1X,I15)')adjl("Grafted ic from delta:",40),grafted_ic_from_delta
     else
-        write(ERROR_MESSAGE,'(''Initial fraction of new field is negative or larger than unity:'',E16.9)') frac
+        ERROR_MESSAGE="Grafted ic from delta variable was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
