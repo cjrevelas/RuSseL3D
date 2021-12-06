@@ -3,12 +3,11 @@ subroutine parser
 use parser_vars
 use write_helper
 use error_handing
+use iofiles
 !--------------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------------!
 character(100) :: line
-character(15)  :: input_filename = 'input.in.txt'
-character(12)  :: field_filename = 'field.in.bin'
 
 integer :: Reason
 integer :: i1, id
@@ -41,18 +40,13 @@ logical :: log_chainlen_gr                 = .false.
 logical :: log_Rg2_per_mon_gr              = .false.
 logical :: log_interf_area                 = .false.
 !--------------------------------------------------------------------------------!
-!*******************************************************************!
-!                    Read the input parameter file                  !
-!*******************************************************************!
-write(iow,'(/''*Reading parameters from file'',A16,/)') input_filename
-write(6  ,'(/''*Reading parameters from file'',A16,/)') input_filename
+!parse input file to retrieve simulation parameters
+inquire(file=input_filename, exist=file_exists)
 
-INQUIRE(FILE=input_filename, EXIST=FILE_EXISTS)
-
-if (FILE_EXISTS) then
+if (file_exists) then
     open(unit=256, file = input_filename)
 else
-    write(ERROR_MESSAGE,'(''File '',A15,'' does not exist!'')')input_filename
+    write(ERROR_MESSAGE,'("File ",A15," does not exist!")')input_filename
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 

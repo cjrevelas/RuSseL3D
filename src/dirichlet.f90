@@ -3,6 +3,7 @@ subroutine dirichlet(ds, mumps_matrix_type)
 use kcw
 use geometry
 use constants
+use iofiles
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
@@ -17,7 +18,7 @@ real(8), intent(in) :: ds
 real(8), allocatable, dimension(:,:) :: A_full
 #endif
 !------------------------------------------------------------------------------------------------------!
-F_m%g  = F_m%c + ds*(F_m%k + F_m%w)
+F_m%g  = F_m%c + ds * (F_m%k + F_m%w)
 F_m%rh = F_m%c
 
 set_diag_to_one=.true.
@@ -80,16 +81,19 @@ enddo
 #ifdef PRINT_AFULL
 allocate(A_full(numnp,numnp))
 A_full = 0.d0
+
 do i1 = 1, NNZ
    f = A_m%col(i1)
    i = A_m%row(i1)
    A_full(i,f)=A_m%value(i1)
 enddo
-open(unit=255, file = 'A_full.out.txt')
+
+open(unit=255, file = A_matrix_full)
 do i = 1, numnp
    write(255,*)(A_full(i,f), f = 1, numnp)
 enddo
 close(255)
+
 deallocate(A_full)
 #endif
 !------------------------------------------------------------------------------------------------------!

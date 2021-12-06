@@ -15,6 +15,7 @@ use constants
 use error_handing
 use write_helper
 use geometry
+use iofiles
 use delta
 #ifdef USE_MPI
 use mpistuff
@@ -80,11 +81,11 @@ endif
 #endif
 
 iow = 10
-open(unit=iow, file = 'log.out.txt')
+open(unit=iow, file = logfile)
 
 !initialize the error log
 ioe = 11
-open(unit=ioe, file = 'error.out.txt', status='replace')
+open(unit=ioe, file = errorfile, status='replace')
 close(ioe)
 !**************************************************************************************************************!
 !                                             INITIALIZATION SECTION                                           !
@@ -162,7 +163,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     !flush output
     close(iow)
-    open(unit=iow, file = 'log.out.txt', position = 'append')
+    open(unit=iow, file = logfile, position = 'append')
 
     !update field
     wa = wa_mix

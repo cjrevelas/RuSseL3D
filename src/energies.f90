@@ -3,6 +3,7 @@ subroutine energies(qm_interp_mg, qgr_interp, wa, Ufield, phia_mx, phia_gr, part
 use parser_vars
 use geometry
 use constants
+use iofiles
 !-------------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------------!
@@ -49,16 +50,9 @@ part_sum2 = term2 * rho_0 * boltz_const_Joule_molK * Temp / chainlen_matrix * 1.
 part_sum3 = term3 * rho_0 * boltz_const_Joule_molK * Temp / chainlen_matrix * 1.0D+03
 part_sum4 = term4 * rho_0 * boltz_const_Joule_K    * Temp / chainlen_matrix * 1.0D+03
 
-sum_final = part_sum1 + part_sum2 + part_sum3 + part_sum4
-
-adh_ten = - sum_final/(interf_area*1.D-20) ! adh_ten = (Omega_bulk - Omega) / A
-
-!flush output
-open(unit=837, file = 'energy_terms.out.txt')
-write(837,'(6(A19,1X))')      "part_sum1", "part_sum2", "part_sum3", "part_sum4", &
-   &                          "sum_final", "adh_ten"
-write(837,'(6(E19.9e2,1X))')  part_sum1, part_sum2, part_sum3, part_sum4, &
-   &                          sum_final, adh_ten
+open(unit=837, file = energy_terms)
+write(837,'(6(A19,1X))')      "term1", "term2", "term3", "term4", "adh_ten"
+write(837,'(6(E19.9e2,1X))')  term1*1.d03, term2*1.d03, term3*1.d03, term4*1.d03, adh_ten
 close(837)
 
 return

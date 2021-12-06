@@ -1,5 +1,7 @@
 subroutine simpsonkoef_S(ds_ave, ns, koeff)
 !------------------------------------------------------------------------------------!
+use iofiles
+!------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------!
 integer, intent(in) :: ns
@@ -34,8 +36,8 @@ do n = 1, ns+1
     koeff(n) = koeff(n) * ds_ave
 enddo
 
-open(unit=400, file = 'simpson_coeffs.out.txt')
-write(400,'(5(A17))')          "n","s",     "ds",   "coeff",  "coeff_reduced"
+open(unit=400, file = simpson)
+write(400,'(5(A17))')   "n", "s", "ds", "coeff", "coeff_reduced"
 do n = 1, ns+1
     write(400,'(I17, 4(E17.9))')n, (n-1)*ds_ave, ds_ave, koeff(n), koeff(n)/ds_ave
 enddo

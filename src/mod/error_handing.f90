@@ -1,5 +1,7 @@
 module error_handing
 !--------------------------------------------------------------------!
+use iofiles
+!--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
 character(100) :: ERROR_MESSAGE
@@ -17,8 +19,7 @@ subroutine exit_with_error(STOP_SIGNAL, ERROR_TYPE, SCREEN, ERROR_MESSAGE)
     integer        :: STOP_SIGNAL
     integer        :: SCREEN
 
-
-    open(unit=ioe, file = 'error.out.txt', position = 'append')
+    open(unit=ioe, file = errorfile, position = 'append')
 
     if (ERROR_TYPE.eq.1) then
         write(ioe,'(A12)',advance='no')'PROBLEM BETWEEN COMPUTER AND SCREEN:'

@@ -10,11 +10,11 @@ use write_helper
 use parser_vars
 use kcw
 use geometry
+use iofiles
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
 character(len=15) :: dummy
-character(len=14) :: mesh_filename
 
 integer :: idummy, i, j, i1, j1, k1, m1
 integer :: num_elem_types
@@ -44,17 +44,12 @@ integer :: n_keys
 integer :: key_value
 logical :: success
 !--------------------------------------------------------------------!
-mesh_filename = 'mesh.in.mphtxt'
+inquire(file=mesh_filename, exist=file_exists)
 
-write(iow,'(/A42,A15)')adjl('*Reading mesh from file:',42),mesh_filename
-write(6  ,'(/A42,A15)')adjl('*Reading mesh from file:',42),mesh_filename
-
-INQUIRE(FILE=mesh_filename, EXIST=FILE_EXISTS)
-
-if (FILE_EXISTS) then
+if (file_exists) then
     open(unit=12, file=mesh_filename)
 else
-    write(ERROR_MESSAGE,'(''File '',A15,'' does not exist!'')')mesh_filename
+    write(ERROR_MESSAGE,'("File ",A15," does not exist!")') mesh_filename
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
@@ -280,7 +275,7 @@ write(iow,'(/A54)')'* Find all elements belonging to dirichlet q=0 faces..'
 write(6  ,'(/A54)')'* Find all elements belonging to dirichlet q=0 faces..'
 
 #ifdef DEBUG_OUTPUTS
-open(unit=123, file='dir_faces.out.txt')
+open(unit=123, file = dir_faces)
 #endif
 
 is_dir_face      = .false.
@@ -341,19 +336,19 @@ enddo
 close(123)
 close(13)
 
-open(unit=77, file='com_12.out.txt')
+open(unit=77, file = com_12)
 do i1 = 1, all_el
      write(77,*) i1, F_m%row(i1), F_m%col(i1), con_l2(i1), con_l2(i1)/=i1
 enddo
 close(77)
 
-open (unit=77, file='inter.out.txt')
+open (unit=77, file = inter)
 do i = 1, numel
     write(77,'(I9,10(2X,I9))') (ix(j,i), j = 1, nel)
 enddo
 close(77)
 
-open(77, file = 'mesh.out.txt')
+open(77, file = mesh_out)
 do i = 1, numnp
     write(77,'(F21.15,1X,F21.15,1X,F21.15)') (xc(j,i), j = 1, ndm)
 enddo
@@ -372,7 +367,7 @@ do i = 1, numnp
     prof_1D_node(ibin) = prof_1D_node(ibin) + 1
 enddo
 
-open(77, file = 'prof_mp.out.txt')
+open(77, file = "prof_mp.out.txt")
 do i = 1, nbin
     write(77,*)i, prof_1D_node(i)
 enddo

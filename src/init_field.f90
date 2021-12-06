@@ -5,18 +5,18 @@ use geometry
 use error_handing
 use write_helper
 use force_fields
+use iofiles
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
 integer :: k1, m1, n1
 
-character(20), intent(in) :: field_in_filename
-
 real(8), intent(out), dimension(numnp) :: Ufield, wa
 real(8)                                :: distance, r12, Urep, Uatt, Utot
 real(8)                                :: sigma_plate_temp, A_plate_temp
 !------------------------------------------------------------------------------------------------------!
-open(unit=211, file = 'usolid.out.txt')
+open(unit=211, file = usolid)
+
 Ufield = 0.d0
 
 do k1 = 1, numnp
@@ -79,21 +79,23 @@ close(211)
 !read field
 if (field_init_scheme.eq.0) then
     wa = 0.d0
+
 elseif (field_init_scheme.eq.1) then
-    write(iow,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_in_filename
-    write(6  ,'(/A40,5x,A12)')adjl('*Reading field from file:',40),field_in_filename
+    write(iow,'(A40,5X,A12)')adjl("Reading field from file:",40),field_in_filename
+    write(6  ,'(A40,5X,A12)')adjl("Reading field from file:",40),field_in_filename
 
-    INQUIRE(FILE=field_in_filename, EXIST=FILE_EXISTS)
+    inquire(file = field_in_filename, exist = file_exists)
 
-    if (FILE_EXISTS) then
+    if (file_exists) then
         open(unit=655, file = field_in_filename, Form='unformatted')
     else
-        write(ERROR_MESSAGE,'(''File '',A15,'' does not exist!'')')field_in_filename
+        write(ERROR_MESSAGE,'("File ",A15," does not exist!")')field_in_filename
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
     read(655) wa
     close(655)
+
 elseif (field_init_scheme.eq.2) then
     do k1 = 1, numnp
         if (elem_in_q0_face(k1)) then

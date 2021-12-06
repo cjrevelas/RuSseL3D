@@ -2,6 +2,7 @@ subroutine matrix_assemble(Rg2_per_mon, wa)
 !-----------------------------------------------------------------------------------------------------------!
 use kcw
 use geometry
+use iofiles
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!   
@@ -43,7 +44,7 @@ do nn = 1, numel
 
     do l = 1, lint
 
-        i1 = nel*nel*(nn-1)
+        i1 = nel*nel*(nn-1)     !this index goes from zero to all_el=nel*nel*numel
 
         call tetshp(sv(1,l), xl, ndm, nel, xsj, shp)
 
@@ -60,7 +61,7 @@ do nn = 1, numel
                                       * (shp(1,n)*shp(1,m)+shp(2,n)*shp(2,m)+shp(3,n)*shp(3,m))*xsj*sv(5,l)
 
                 F_m%w(i1) = F_m%w(i1) + &
-                                wa(n_1)*shp(4,n)*shp(4,m)*xsj*sv(5,l)
+                                      wa(n_1)*shp(4,n)*shp(4,m)*xsj*sv(5,l)
             enddo !n
         enddo !m
     enddo !l
@@ -69,6 +70,7 @@ enddo !nn
 !assembly global matrix using element matrices and con_12 hash matrix created in mesh.f90
 do i = 1, all_el
      if (con_l2(i)/=i) then
+         !add up contributions of same pairs met multiple times
          F_m%k(con_l2(i)) = F_m%k(con_l2(i)) + F_m%k(i)
          F_m%k(i)=0.
          F_m%c(con_l2(i)) = F_m%c(con_l2(i)) + F_m%c(i)
@@ -79,8 +81,8 @@ do i = 1, all_el
 enddo
 
 #ifdef DEBUG_OUTPUTS
-open(unit=400, file = 'matrix_assembly_kcw.out.txt')
-write(400,'(3(A20))')"F_m%k","F_m%c","F_m%w"
+open(unit=400, file = matrix_assembly)
+write(400,'(3(A20))') "F_m%k","F_m%c","F_m%w"
 do i = 1, all_el
     write(400,'(3(E20.9))')F_m%k(i), F_m%c(i), F_m%w(i)
 enddo
