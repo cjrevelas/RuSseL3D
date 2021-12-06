@@ -1,8 +1,9 @@
-subroutine parser
+subroutine parser()
 !--------------------------------------------------------------------------------!
 use parser_vars
 use write_helper
 use error_handing
+use eos
 use iofiles
 !--------------------------------------------------------------------------------!
 implicit none
@@ -41,6 +42,9 @@ logical :: log_Hamaker_constant_of_polymer = .false.
 logical :: log_wall_distance               = .false.
 logical :: log_fraction_of_new_field       = .false.
 logical :: log_maximum_error               = .false.
+
+logical :: log_eos_type                    = .false.
+logical :: log_eos_coeffs                  = .false.
 !--------------------------------------------------------------------------------!
 !parse input file to retrieve simulation parameters
 inquire(file=input_filename, exist=file_exists)
@@ -132,6 +136,16 @@ do
         elseif (index(line,"# time integration scheme") > 0) then
             read(line,*) time_integration_scheme
             log_time_integration_scheme = .true.
+        elseif (index(line,"# EOS type") > 0) then
+            read(line,*) eos_type
+            log_eos_type = .true.
+        elseif (index(line,"# EOS coeffs") > 0) then
+            if (eos_type.eq.eos_helfand) then 
+                read(line,*) hlf_kappa_T
+            elseif (eos_type.eq.eos_sl)  then 
+                read(line,*) rho_star, T_star, P_star
+            endif
+            log_eos_coeffs = .true.
         elseif (index(line,"# calculate grafted initial condition using delta function") > 0) then
             read(line,*) grafted_ic_from_delta
             log_grafted_ic_from_delta = .true.
@@ -557,33 +571,45 @@ if (log_fraction_of_new_field) then
     if (frac.ge.0 .and. frac.le.1) then
         write(iow,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40),frac
         write(6  ,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40),frac
+
+write(iow,*)
+write(*,*)
+write(iow,'(A85)')adjl('-------------------------------NONBONDED INTERACTIONS---------------------------------',85)
+write(*  ,'(A85)')adjl('-------------------------------NONBONDED INTERACTIONS---------------------------------',85)
+
+
+if (log_eos_type) then
+    if (eos_type.eq.eos_helfand) then
+        write(iow,'(3X,A40,I9)')adjl("Equation of state: Helfand",40),eos_type
+        write(*  ,'(3X,A40,I9)')adjl("Equation of state: Helfand",40),eos_type
+    elseif (eos_type.eq.eos_sl) then
+        write(iow,'(3X,A45,I9)')adjl("Equation of state: Sanchez-Lacombe",40),eos_type
+        write(*  ,'(3X,A45,I9)')adjl("Equation of state: Sanchez-Lacombe",40),eos_type
     else
-        write(ERROR_MESSAGE,'("Initial fraction of new field is negative or larger than unity:",E16.9)') frac
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
+        write(*  ,'(A45,I11)') 'EOS flag different than 0 (HF) or 1 (SL)',eos_type
+        STOP
     endif
 else
-    frac = 1.d0
-    write(iow,'(3X,A40)')adjl("No initial fraction of new field.",40)
-    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),frac
-    write(6  ,'(3X,A40)')adjl("No initial fraction of new field.",40)
-    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),frac
+    write(iow,'(A45)') 'EOS flag not set'
+    write(*  ,'(A45)') 'EOS flag not set'
+    STOP
 endif
 
-if (log_maximum_error) then
-    if (max_error_tol.ge.0.d0) then
-        write(iow,'(3X,A40,E16.9)')adjl("Maximum tolerance error:",40),max_error_tol
-        write(6  ,'(3X,A40,E16.9)')adjl("Maximum tolerance error:",40),max_error_tol
-    else
-        write(ERROR_MESSAGE,'("Maximum tolerance error is negative:",E16.9)') max_error_tol
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
+
+if (log_eos_coeffs) then
+    if (eos_type.eq.eos_helfand) then
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
+        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
+    elseif (eos_type.eq.eos_sl) then
+        write(iow,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
+        write(*  ,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
     endif
 else
-    max_error_tol = 0.d0
-    write(iow,'(3X,A40)')adjl("Max error not found",40)
-    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),max_error_tol
-    write(6  ,'(3X,A40)')adjl("Max error not found.",40)
-    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),max_error_tol
+    write(iow,'(A40)') "EOS coeffs were not found"
+    write(*  ,'(A40)') "EOS coeffs were not found"
+    STOP
 endif
+
 
 return
 !--------------------------------------------------------------------------------!

@@ -11,6 +11,7 @@ program FEM_3D
 !----------------------------------------------------------------------------------------------------------------------------------!
 use parser_vars
 use arrays
+use eos
 use constants
 use error_handing
 use write_helper
@@ -216,10 +217,10 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     endif
 
     do k1 = 1, numnp
-        wa_new(k1) = kapa * (phia_mx(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)
+        wa_new(k1) = (eos_df_drho(phi_total(k1)) - eos_df_drho(1.d0)) / (boltz_const_Joule_K*Temp) + Ufield(k1)
     enddo
 
-    call energies(qm_interp_mg, wa, Ufield, phia_mx, phia_gr, part_func, num_gpoints, gpid, free_energy)
+    call energies(qm_interp_mg, wa, Ufield, phi_total, part_func, num_gpoints, gpid, free_energy)
 
     !compare and mix the old and the new field
     max_error    = 0.d00
