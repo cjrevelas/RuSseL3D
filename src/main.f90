@@ -32,6 +32,7 @@ integer :: i1, k1, iter, get_sys_time, t_init, t_final, gnode_id
 logical :: sym
 
 real(8) :: chainlen = 0.d0, wa_max = 0.d0, wa_std_error = 0.d0, max_error = 200000.d0
+real(8) :: part_func = 0.d0, nch_gr = 0.d0, free_energy = 0.d0
 !----------------------------------------------------------------------------------------------------------------------------------!
 !**************************************************************************************************************!
 !                                                    MPI SECTION                                               !
@@ -132,8 +133,8 @@ wa_mix = wa
 write(iow,'(/"Initiating the simulation with ",I10," iterations",/)') iterations
 write(6  ,'(/"Initiating the simulation with ",I10," iterations",/)') iterations
 
-write(iow,'(A10,1X,6(A19,1X),A16)') "iter", "fraction", "adh_ten", "n_gr_chains", "max_error", "std_error", "wa_max"
-write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "adh_ten", "n_gr_chains", "max_error", "std_error", "wa_max"
+write(iow,'(A10,1X,6(A19,1X),A16)') "iter", "fraction", "free_energy", "n_gr_chains", "max_error", "std_error", "wa_max"
+write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "free_energy", "n_gr_chains", "max_error", "std_error", "wa_max"
 
 t_init = get_sys_time()
 iter   = init_iter
@@ -142,8 +143,8 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     iter = iter + 1
 
-    write(iow,'(I10,1X,6(E19.9e3,1X))')              iter-1, frac, adh_ten, nch_gr, max_error, wa_std_error, wa_max
-    write(6  ,'(I4 ,1X,6(E14.4e3,1X))',advance='no') iter-1, frac, adh_ten, nch_gr, max_error, wa_std_error, wa_max
+    write(iow,'(I10,1X,6(E19.9e3,1X))') iter-1, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
+    write(6  ,'(I4 ,1X,6(E14.4e3,1X))') iter-1, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
 
     !flush output
     close(iow)
@@ -220,7 +221,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         wa_new(k1) = kapa * (phia_mx(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)
     enddo
 
-    call energies(qm_interp_mg, qgr_interp, wa, Ufield, phia_mx, phia_gr, part_func, adh_ten)
+    call energies(qm_interp_mg, wa, Ufield, phia_mx, phia_gr, part_func, num_gpoints, gpid, free_energy)
 
     !compare and mix the old and the new field
     max_error    = 0.d00
@@ -253,16 +254,16 @@ enddo
 call periodic_dumper(qm_final, qgr_final, qm_interp_mm, qm_interp_mg, qgr_interp, phia_mx, phia_gr, wa, wa_new, wa_mix)
 call export_field(wa_mix, numnp, iter)
 
-write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, adh_ten, nch_gr, max_error, wa_std_error, wa_max
-write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, adh_ten, nch_gr, max_error, wa_std_error, wa_max
+write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
+write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
 
 if (max_error.lt.max_error_tol) then
     write(iow,'("Convergence of max error",F16.9)') max_error
     write(6  ,'("Convergence of max error",F16.9)') max_error
 endif
 
-write(iow,'(3X,A40,E16.9)')adjl("Adhesion tension (mN/m):",40),             adh_ten
-write(6  ,'(3X,A40,E16.9)')adjl("Adhesion tension (mN/m):",40),             adh_ten
+write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),             free_energy
+write(6  ,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),             free_energy
 write(iow,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), part_func
 write(6  ,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), part_func
 write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             nch_gr/interf_area
