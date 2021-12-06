@@ -1,10 +1,8 @@
-subroutine mesh
+subroutine mesh()
 !--------------------------------------------------------------------!
-!fhash module
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
-!/fhash module
 use error_handing
 use write_helper
 use parser_vars
@@ -14,28 +12,16 @@ use iofiles
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-character(len=15) :: dummy
+character(len=200) :: line, line_internal
 
-integer :: idummy, i, j, i1, j1, k1, m1
-integer :: num_elem_types
+integer                              :: nbin, ibin
+integer                              :: reason, reason_internal, idummy, i, j, i1, j1, k1, m1
+integer                              :: num_nodes_per_face_elem, num_face_elem
+integer, allocatable, dimension(:)   :: face_entity_id, temp3
+integer, allocatable, dimension(:,:) :: face_node_id
+integer, allocatable, dimension(:)   :: prof_1D_node
 
-integer :: num_nodes_per_vertex_elem, num_vertex_elem
-integer :: num_params_per_vertex_elem, num_vertex_params
-integer :: num_nodes_per_edge_elem, num_edge_elem
-integer :: num_params_per_edge_elem, num_edge_params
-integer :: num_nodes_per_face_elem, num_face_elem
-integer :: num_params_per_face_elem, num_face_params
-
-integer, allocatable, dimension(:)   :: vertex_entity_id, edge_entity_id, face_entity_id, temp3
-integer, allocatable, dimension(:,:) :: vertex_node_id, edge_node_id, face_node_id
-real(8), allocatable, dimension(:,:) :: vertex_param, edge_param, face_param
-
-real(8) :: box_volume = 0.d0, tol = 1.e-8
-
-!profile section variables
-integer, allocatable, dimension(:) :: prof_1D_node
-real(8)                            :: prof_bin
-integer                            :: nbin, ibin
+real(8) :: box_volume = 0.d0, tol = 1.e-8, prof_bin
 
 !fhash module variables
 type(fhash_type__ints_double) :: h
@@ -53,169 +39,124 @@ else
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
-do i = 1, 17
-    read(12,'(A60)') dummy
+do
+    read(12,'(A100)',IOSTAT=reason) line  
+
+    if (reason>0) then
+        write(*,*) "Something went wrong!"
+    elseif (reason<0) then
+        write(*,*) "Mesh file was read!"
+        exit
+    else
+        if (index(line,"# sdim") > 0) then
+            read(line,*) ndm
+        elseif (index(line,"# number of mesh points") > 0) then
+            read(line,*) numnp
+            allocate(xc(ndm,numnp))
+        elseif (index(line,"# Mesh point coordinates") > 0) then
+            
+            box_lo  = 0.d0
+            box_hi  = 0.d0
+            box_len = 0.d0
+
+            do i = 1, numnp
+                read(12,*) (xc(j,i), j = 1, ndm)
+                
+                do j = 1, ndm
+                    box_hi(j) = max(xc(j,i), box_hi(j))
+                    box_lo(j) = min(xc(j,i), box_lo(j))
+                enddo
+            enddo
+
+            write(iow,'("Box dimensions")')
+            write(iow,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
+            write(6  ,'("Box dimensions")')
+            write(6  ,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
+
+            do j = 1, ndm
+                box_len(j) = box_hi(j) - box_lo(j)
+                write(iow,'(I5,2X,3(E16.9,2X))')j, box_len(j), box_lo(j), box_hi(j)
+                write(6  ,'(I5,2X,3(E16.9,2X))')j, box_len(j), box_lo(j), box_hi(j)
+            enddo
+
+            box_volume = box_len(1) * box_len(2) * box_len(3)
+            write(iow,'(A43,E16.9,A13)')adjl("Box volume:",43),box_volume," [Angstrom^3]"
+            write(6  ,'(A43,E16.9,A13)')adjl("Box volume:",43),box_volume," [Angstrom^3]"
+        elseif (index(line," tet") > 0) then
+            
+            read(12,*)
+            read(12,*)
+            read(12,*) nel
+            read(12,*) numel
+            allocate(ix(nel,numel))
+            all_el = nel * nel * numel
+
+            read(12,*) 
+
+            do i = 1, numel
+                read(12,*) (ix(j,i), j = 1, nel)
+            enddo
+
+            do i = 1, numel
+                do j = 1, nel
+                    ix(j,i) = ix(j,i) + 1
+                enddo
+            enddo
+
+            if (nel>4) then
+                allocate(temp3(numel))
+                do i = 1, numel
+                    temp3(i) = ix(7,i)
+                    ix(7,i)  = ix(6,i)
+                    ix(6,i)  = temp3(i)
+                enddo
+            endif
+        elseif (index(line," tri") > 0) then
+
+            read(12,*)
+            read(12,*)
+            read(12,*) num_nodes_per_face_elem
+            read(12,*) num_face_elem
+            allocate(face_node_id(num_nodes_per_face_elem,num_face_elem))
+            
+            read(12,*)
+            
+            do i = 1, num_face_elem
+                read(12,*) (face_node_id(j,i), j = 1, num_nodes_per_face_elem)             
+            enddo
+
+            face_node_id = face_node_id + 1
+
+            allocate(face_entity_id(num_face_elem))
+
+            do
+                read(12,'(A100)',IOSTAT=reason_internal) line_internal  
+
+                if (reason_internal>0) then
+                    write(*,*) "Something went wrong!"
+                elseif (reason_internal<0) then
+                    write(*,*) "Yaouza"
+                    exit
+                else
+                    if(index(line_internal,'# number of geometric entity indices') > 0) then
+                        read(12,*)
+
+                        do i = 1, num_face_elem
+                            read(12,*)  face_entity_id(i)
+                        enddo
+
+                        exit       
+                    endif
+                endif
+            enddo
+
+            face_entity_id = face_entity_id + 1
+        endif
+    endif
 enddo
 
-read(12,*) ndm
-read(12,*) numnp
+close(12)
 
-allocate(xc(ndm,numnp))
-
-do i = 1, 3
-    read(12,'(A60)') dummy
-enddo
-
-!reading meshpoint coordinates and calculating box dimensions
-box_lo  = 0.d0
-box_hi  = 0.d0
-box_len = 0.d0
-
-do i = 1, numnp
-    read(12,*) (xc(j,i), j = 1, ndm)
-
-    do j = 1, ndm
-       box_hi(j) = max(xc(j,i), box_hi(j))
-       box_lo(j) = min(xc(j,i), box_lo(j))
-    enddo
-enddo
-
-write(iow,'("Box dimensions")')
-write(iow,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
-write(6  ,'("Box dimensions")')
-write(6  ,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
-
-do j = 1, ndm
-    box_len(j) = box_hi(j) - box_lo(j)
-    write(iow,'(I5,2X,3(E16.9,2X))')j, box_len(j), box_lo(j), box_hi(j)
-    write(6  ,'(I5,2X,3(E16.9,2X))')j, box_len(j), box_lo(j), box_hi(j)
-enddo
-
-box_volume = box_len(1) * box_len(2) * box_len(3)
-write(iow,'(A43,E16.9,A13)')adjl("Box volume:",43),box_volume,' [Angstrom^3]'
-write(6  ,'(A43,E16.9,A13)')adjl("Box volume:",43),box_volume,' [Angstrom^3]'
-
-!read types and numbers of elements
-read (12,'(A60)') dummy
-
-read (12,*) num_elem_types
-
-do i = 1, 6
-    read (12,'(A60)') dummy
-enddo
-
-!----------------vertex elements------------------!
-read(12,*) num_nodes_per_vertex_elem
-read(12,*) num_vertex_elem
-allocate(vertex_node_id(num_nodes_per_vertex_elem,num_vertex_elem))
-
-call read_integer_value(num_nodes_per_vertex_elem, num_vertex_elem, vertex_node_id)
-
-read (12,'(A60)') dummy
-
-read(12,*) num_params_per_vertex_elem
-read(12,*) num_vertex_params
-allocate(vertex_param(num_params_per_vertex_elem,num_vertex_params))
-
-call read_real_value(num_params_per_vertex_elem, num_vertex_params, vertex_param)
-
-read (12,'(A60)') dummy
-
-allocate(vertex_entity_id(num_vertex_elem))
-
-call entity(num_vertex_elem, vertex_entity_id)
-
-do i = 1, 8
-    read (12,'(A60)') dummy
-enddo
-
-!------------------edge elements------------------!
-read(12,*) num_nodes_per_edge_elem
-read(12,*) num_edge_elem
-allocate(edge_node_id(num_nodes_per_edge_elem,num_edge_elem))
-
-call read_integer_value(num_nodes_per_edge_elem, num_edge_elem, edge_node_id)
-
-read(12,'(A60)') dummy
-
-read(12,*) num_params_per_edge_elem
-read(12,*) num_edge_params
-allocate(edge_param(num_params_per_edge_elem,num_edge_params))
-
-call read_real_value(num_params_per_edge_elem, num_edge_params, edge_param)
-
-read (12,'(A60)') dummy
-
-allocate(edge_entity_id(num_edge_elem))
-
-call entity(num_edge_elem, edge_entity_id)
-
-do i = 1, 9
-    read (12,'(A60)') dummy
-enddo
-
-!------------------face elements------------------!
-read(12,*) num_nodes_per_face_elem
-read(12,*) num_face_elem
-allocate(face_node_id(num_nodes_per_face_elem,num_face_elem))
-
-call read_integer_value(num_nodes_per_face_elem, num_face_elem, face_node_id)
-
-read (12,'(A60)') dummy
-
-face_node_id = face_node_id + 1 !change the values of face elements so that they start from 1 instead from 0
-
-read(12,*) num_params_per_face_elem
-read(12,*) num_face_params
-allocate(face_param(num_params_per_face_elem,num_face_params))
-
-call read_real_value(num_params_per_face_elem, num_face_params, face_param)
-
-read (12,'(A60)') dummy
-
-allocate(face_entity_id(num_face_elem))
-
-call entity(num_face_elem, face_entity_id)
-
-face_entity_id = face_entity_id + 1 !change the value of face id's so that they start from 1 instead from 0
-
-!-------------------------------------------------!
-!up/down pairs
-read(12,'(A60)') dummy
-read(12,*) idummy
-
-do i = 1, idummy
-    read(12,'(A60)') dummy
-enddo
-
-do i = 1, 6
-    read(12,'(A60)') dummy
-enddo
-
-!------------------domain elements------------------!
-read(12,*) nel
-read(12,*) numel
-allocate(ix(nel,numel))
-
-call read_integer_value(nel, numel, ix)
-
-do i = 1, numel
-    do j = 1, nel
-        ix(j,i) = ix(j,i) + 1
-    enddo
-enddo
-
-if (nel>4) then
-    allocate(temp3(numel))
-    do i = 1, numel
-        temp3(i) = ix(7,i)
-        ix(7,i)  = ix(6,i)
-        ix(6,i)  = temp3(i)
-    enddo
-endif
-
-all_el = nel * nel * numel
-!---------------------------------------------------!
 !allocate and initialize arrays for matrix assembly
 allocate(F_m%row(all_el))
 allocate(F_m%col(all_el))
@@ -376,93 +317,3 @@ close(77)
 return
 !--------------------------------------------------------------------!
 end subroutine mesh
-
-
-
-subroutine read_integer_value(num_per_elem, num_elem, id)
-!--------------------------------------------------------------------!
-implicit none
-!--------------------------------------------------------------------!
-integer :: num_per_elem, num_elem, i, j
-
-integer, dimension(num_per_elem, num_elem) :: id
-
-character(len=60) :: dum
-!--------------------------------------------------------------------!
-read (12,'(A60)') dum
-
-if (num_elem.ne.0) then
-    if (num_per_elem.eq.1) then
-        do i = 1, num_elem
-            read(12,*)  id(1,i)
-        enddo
-    else
-        do i = 1, num_elem
-            read(12,*)  (id(j,i), j = 1, num_per_elem)
-        enddo
-    endif
-endif
-
-return
-!--------------------------------------------------------------------!
-end subroutine read_integer_value
-
-
-
-subroutine entity(num_elem, entity_id)
-!--------------------------------------------------------------------!
-use error_handing
-implicit none
-!--------------------------------------------------------------------!
-integer :: num_elem, num_entities, i
-
-integer, dimension(num_elem) :: entity_id
-
-character(len=60) :: dum
-!--------------------------------------------------------------------!
-read(12,*) num_entities
-
-read (12,'(A60)') dum
-
-if (num_entities.eq.num_elem) then
-    do i = 1, num_entities
-        read(12,*)  entity_id(i)
-    enddo
-else
-    ERROR_MESSAGE="Error in entity.."
-    call exit_with_error(1,1,1,ERROR_MESSAGE)
-endif
-
-return
-!--------------------------------------------------------------------!
-end subroutine entity
-
-
-
-subroutine read_real_value(num_per_elem, num_params, id)
-!--------------------------------------------------------------------!
-implicit none
-!--------------------------------------------------------------------!
-integer:: num_per_elem, num_params, i, j
-
-real(8), dimension(num_per_elem, num_params) :: id
-
-character(len=60) :: dum
-!--------------------------------------------------------------------!
-read (12,'(A60)') dum
-
-if (num_params.ne.0) then
-    if (num_per_elem.eq.1) then
-        do i = 1, num_params
-            read(12,*)  id(1,i)
-        enddo
-    else
-        do i = 1, num_params
-            read(12,*)  (id(j,i), j = 1, num_per_elem)
-        enddo
-    endif
-endif
-
-return
-!--------------------------------------------------------------------!
-end subroutine read_real_value
