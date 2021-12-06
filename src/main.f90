@@ -173,7 +173,6 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     call edwards(ds_matrix_ed, ns_matrix_ed, mumps_matrix_type, qm, qm_final)
 
-    !*******************SOLVE EDWARDS PDE FOR GRAFTED CHAINS*************************!
     if (use_grafted.eq.1) then
         call matrix_assemble(Rg2_per_mon_gr, wa)
 
@@ -185,7 +184,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         call edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final)
     endif
 
-    !*********************CONVOLUTION AND ENERGY***********************************!
+    !convolution
     do i1 = 1, numnp
         call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(i1,:), ns_matrix_conv+1, xs_matrix_conv, qm_interp_mm(i1,:))
     enddo
@@ -204,10 +203,8 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         call convolution(numnp, chainlen_gr, ns_gr_conv, koeff_gr_conv, qgr_interp, qm_interp_mg, phia_gr)
     endif
 
-    !calculate partition function of matrix chains
     call part_fun(numnp, ns_matrix_conv, qm_interp_mm, part_func)
 
-    !calculated number of grafted chains
     if (use_grafted.eq.1) then
         call grafted_chains(numnp, chainlen_gr, rho_0, phia_gr, nch_gr)
     endif
@@ -217,12 +214,9 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         wa_new(k1) = kapa * (phia_mx(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)
     enddo
 
-    !calculate energy terms and adhesion tension
     call energies(qm_interp_mg, qgr_interp, wa, Ufield, phia_mx, phia_gr, part_func, adh_ten)
 
-    !*******************************************************************!
-    !   COMPUTE DIFFERENCES BETWEEN OLD (wa) AND NEW (wa_new) fields    !
-    !*******************************************************************!
+    !compare the old and the new field
     wa_ave       = 0.d0
     max_error    = 0.d00
     wa_std_error = 0.d00
@@ -284,7 +278,6 @@ write(6  ,'(3X,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
 write(iow,'(3X,A40,E16.9)')adjl('Partition function of matrix chains:',40),part_func
 write(6  ,'(3X,A40,E16.9)')adjl('Partition function of matrix chains:',40),part_func
 
-! Please do not alter the output of the following line!
 write(iow,'(3X,A40,E16.9)')adjl('grafting density (A^-2):',40),nch_gr/interf_area
 
 t_final = get_sys_time()

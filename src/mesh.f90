@@ -30,7 +30,7 @@ integer, allocatable, dimension(:)   :: vertex_entity_id, edge_entity_id, face_e
 integer, allocatable, dimension(:,:) :: vertex_node_id, edge_node_id, face_node_id
 real(8), allocatable, dimension(:,:) :: vertex_param, edge_param, face_param
 
-real(8) :: tol = 1.e-8
+real(8) :: box_volume = 0.d0, tol = 1.e-8
 
 !profile section variables
 integer, allocatable, dimension(:) :: prof_1D_node
@@ -95,9 +95,9 @@ do j = 1, ndm
     write(6  ,'(I5,2x,3(E16.9,2x))')j, box_len(j), box_lo(j), box_hi(j)
 enddo
 
-volume = box_len(1)*box_len(2)*box_len(3)
-write(iow,'(/A43,E16.9,A11)')adjl('System volume:',43),volume,' Angstrom^3'
-write(6  ,'(/A43,E16.9,A11)')adjl('System volume:',43),volume,' Angstrom^3'
+box_volume = box_len(1) * box_len(2) * box_len(3)
+write(iow,'(/A43,E16.9,A11)')adjl('Box volume:',43),box_volume,' Angstrom^3'
+write(6  ,'(/A43,E16.9,A11)')adjl('Box volume:',43),box_volume,' Angstrom^3'
 
 !read types and numbers of elements
 read (12,'(A60)') dummy
