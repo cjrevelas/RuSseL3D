@@ -37,11 +37,20 @@ do k1 = 1, numnp
 enddo
 term4 = - boltz_const_Joule_K * Temp * term4 !green: entropy of grafted chains
 
-adh_ten = (term1 + term2 + term3 + term4) * 1.d03 / (interf_area*1.d-20) 
+adh_ten = (term1 + term2 + term3 + term4) * 1.d03 / (interf_area*1.d-20)
 
 open(unit=837, file = energy_terms)
 write(837,'(6(A19,1X))')      "term1", "term2", "term3", "term4", "adh_ten"
 write(837,'(6(E19.9e2,1X))')  term1*1.d03, term2*1.d03, term3*1.d03, term4*1.d03, adh_ten
+
+write(837,*)  "id", "qm(ns)", "Energy"
+do k1 = 1, numnp
+    if (qgr_interp(k1,1).gt.tol) then
+        write(837,'(I10,2(E19.9e2))') k1, qm_interp_mg(k1,ns_gr_conv+1), &
+    &                                 -boltz_const_Joule_K * Temp * log(qm_interp_mg(k1,ns_gr_conv+1))
+    endif
+enddo
+
 close(837)
 
 return
