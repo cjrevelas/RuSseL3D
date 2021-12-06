@@ -49,6 +49,7 @@ MODULES=$(OBJDIR)/parser_vars.o\
 	$(OBJDIR)/mpistuff.o\
 	$(OBJDIR)/write_helper.o\
 	$(OBJDIR)/interp.o\
+	$(OBJDIR)/arrays.o\
 	$(OBJDIR)/iofiles.o\
 	$(OBJDIR)/error_handing.o\
 	$(OBJDIR)/force_fields.o\
