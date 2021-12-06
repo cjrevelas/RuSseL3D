@@ -531,9 +531,8 @@ endif
 if (log_wall_distance) then
     write(iow,'(3X,A40,E16.9,A11)')adjl("Wall distance for Hamaker:",40),wall_distance," [Angstrom]"
     write(6  ,'(3X,A40,E16.9,A11)')adjl("Wall distance for Hamaker:",40),wall_distance," [Angstrom]"
-    wall_distance = wall_distance * 1e-10
 else
-    wall_distance = 0.d0
+    wall_distance = 5.d0
     write(iow,'(3X,A24)')adjl("Wall distance not found.",40)
     write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value: ",40),wall_distance," [Angstrom]"
     write(6  ,'(3X,A24)')adjl("Wall distance not found.",40)
