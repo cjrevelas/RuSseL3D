@@ -23,6 +23,7 @@ logical :: log_n_gr_seg                    = .false.
 logical :: log_mumps_matrix_type           = .false.
 logical :: log_time_integration_scheme     = .false.
 logical :: log_grafted_ic_from_delta       = .false.
+logical :: log_calc_delta_every            = .false.
 logical :: log_n_dirichlet_faces           = .false.
 logical :: log_n_nanopart_faces            = .false.
 
@@ -134,6 +135,9 @@ do
         elseif (index(line,"# calculate grafted initial condition using delta function") > 0) then
             read(line,*) grafted_ic_from_delta
             log_grafted_ic_from_delta = .true.
+        elseif (index(line,"# calculate delta every so many steps using delta function") > 0) then
+            read(line,*) calc_delta_every
+            log_calc_delta_every = .true.
         elseif (index(line,"# n dirichlet faces") > 0) then
             read(line,*) n_dirichlet_faces
             if (n_dirichlet_faces > 0) then
@@ -299,11 +303,21 @@ if (use_grafted.eq.1) then
     if (log_grafted_ic_from_delta) then
         write(iow,'(3X,A40,1X,I15)')adjl("Grafted ic from delta:",40),grafted_ic_from_delta
         write(6  ,'(3X,A40,1X,I15)')adjl("Grafted ic from delta:",40),grafted_ic_from_delta
+        if (log_calc_delta_every) then
+            if (calc_delta_every.gt.0) then
+                write(iow,'(3X,A40,1X,I15)')adjl("Delta is calculated every:",40),calc_delta_every
+                write(6  ,'(3X,A40,1X,I15)')adjl("Delta is calculated every:",40),calc_delta_every
+            else
+                write(iow,'(3X,A40)')adjl("Delta is read from file",40)
+                write(6  ,'(3X,A40)')adjl("Delta is read from file",40)
+            endif
+        endif
     else
-        ERROR_MESSAGE="Grafted ic from delta variable was not detected."
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
+        write(iow,'(3X,A40)')adjl("The initial conditions are read from file.",40)
+        write(6  ,'(3X,A40)')adjl("The initial conditions are read from file.",40)
     endif
 endif
+
 
 if (log_mumps_matrix_type) then
     if (mumps_matrix_type == 0) then

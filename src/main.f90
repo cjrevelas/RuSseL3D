@@ -27,13 +27,11 @@ implicit none
 include 'mpif.h'
 #endif
 !----------------------------------------------------------------------------------------------------------------------------------!
-integer :: i1, k1, iter, get_sys_time, t_init, t_final
-integer :: num_gpoints = 0, gnode_id = 0
+integer :: i1, k1, iter, get_sys_time, t_init, t_final, gnode_id
 
 logical :: sym
 
 real(8) :: chainlen = 0.d0, wa_max = 0.d0, wa_std_error = 0.d0, max_error = 200000.d0
-real(8) :: part_func = 0.d0, nch_gr = 0.d0, adh_ten = 0.d0, initValue = 0.d0
 !----------------------------------------------------------------------------------------------------------------------------------!
 !**************************************************************************************************************!
 !                                                    MPI SECTION                                               !
@@ -128,9 +126,6 @@ call init_field(Ufield, wa)
 
 wa_mix = wa
 
-if (use_grafted.eq.1) then
-    call find_delta(numnp, ds_gr_conv, koeff_gr_conv, wa_mix, num_gpoints)
-endif
 !**************************************************************************************************************!
 !                                        LOOPS FOR FIELD CONVERGENCE                                           !
 !**************************************************************************************************************!
@@ -171,6 +166,21 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
             call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(i1,:), ns_gr_conv+1, xs_gr_conv, qm_interp_mg(i1,:))
         enddo
 
+        ! recompute the delta functions if they exceed
+        if (grafted_ic_from_delta.eq.1) then
+            if ( (iter-1.eq.0) .or.   &
+     &           (mod(iter,calc_delta_every).eq.0 .and. (abs(nch_gr-dble(num_gpoints))/dble(num_gpoints))>0.005d0) ) then 
+                call find_delta(numnp, qm_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, koeff_gr_conv, wa_mix, num_gpoints, &
+     &                          gpid, delta_numer, gp_init_value)
+            endif
+
+            do i1 = 1, num_gpoints
+                gnode_id = gpid(i1)
+                gp_init_value(i1) = delta_numer(i1) * chainlen_gr &
+                                  * 1.d0 / (qm_interp_mg(gnode_id, ns_gr_conv+1) * (rho_0 * avogadro_constant) )
+            enddo
+        endif
+
         call matrix_assemble(Rg2_per_mon_gr, wa)
 
         qgr       = 0.d0
@@ -178,15 +188,9 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
         do i1 = 1, num_gpoints
             gnode_id = gpid(i1)
-            if (grafted_ic_from_delta.eq.1) then
-                initValue = delta_numer(i1) * chainlen_gr &
-                                            * 1.d0 / (qm_interp_mg(gnode_id, ns_gr_conv+1) * (rho_0 * avogadro_constant) )
-            else
-                initValue = gp_init_value(i1)
-            endif
 
-            qgr(gnode_id,1)       = initValue
-            qgr_final(gnode_id,1) = initValue
+            qgr(gnode_id,1)       = gp_init_value(i1)
+            qgr_final(gnode_id,1) = gp_init_value(i1)
         enddo
 
         call edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final)
