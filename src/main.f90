@@ -10,7 +10,7 @@
 program FEM_3D
 !----------------------------------------------------------------------------------------------------------------------------------!
 use parser_vars
-use init_vars
+use arrays
 use constants
 use error_handing
 use write_helper
@@ -27,20 +27,13 @@ implicit none
 include 'mpif.h'
 #endif
 !----------------------------------------------------------------------------------------------------------------------------------!
-integer :: i1, k1, iter
-integer :: get_sys_time, t_init, t_final
+integer :: i1, k1, iter, get_sys_time, t_init, t_final
+integer :: num_gpoints = 0, gnode_id = 0
 
 logical :: sym
 
-character(20) :: gp_filename = "gnodes.in.lammpstrj"
-character(20) :: field_in_filename = 'field.in.bin'
-
-real(8) :: chainlen
-real(8) :: wa_max = 0.d0, wa_max_abs = 0.d0
-real(8) :: wa_std_error = 0.d0, max_error = 200000.d0
-real(8) :: wa_step = 0.d0, wa_ave = 0.d0
-real(8) :: part_func = 0.d0, nch_gr = 0.d0
-real(8) :: adh_ten = 0.d0
+real(8) :: chainlen = 0.d0, wa_max = 0.d0, wa_std_error = 0.d0, max_error = 200000.d0
+real(8) :: part_func = 0.d0, nch_gr = 0.d0, adh_ten = 0.d0, initValue = 0.d0
 !----------------------------------------------------------------------------------------------------------------------------------!
 !**************************************************************************************************************!
 !                                                    MPI SECTION                                               !
@@ -57,9 +50,9 @@ else
 endif
 
 if (root) then
-    write (*,*)
-    write (*,'(a,i4,a)') ' MPI run with ', n_proc, ' procs.'
-    write (*,*)
+    write (6,*)
+    write (6,'("MPI run with ",I4," procs")') n_proc
+    write (6,*)
 end if
 
 flag_continue = .true.
@@ -96,23 +89,21 @@ call calc_scf_params
 
 call mesh
 
-call init_vars_and_arrays
+call init_arrays
 
 #ifdef USE_MPI
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 #endif
 
-write(iow,'(/''Mesh characteristics..'')')
-write(iow,'(''   Number of mesh points (numnp):         '',I16)') numnp
-write(iow,'(''   Number of elements (numel):            '',I16)') numel
-write(iow,'(''   Number of nodes per element (nel):     '',I16)') nel
-write(iow,'(''   Number of matrix indeces:              '',I16)') all_el
+write(iow,'("Number of mesh points (numnp):         ",I16)') numnp
+write(iow,'("Number of elements (numel):            ",I16)') numel
+write(iow,'("Number of nodes per element (nel):     ",I16)') nel
+write(iow,'("Number of matrix indeces:              ",I16)') all_el
 
-write(6  ,'(/''Mesh characteristics..'')')
-write(6  ,'(''   Number of mesh points (numnp):         '',I16)') numnp
-write(6  ,'(''   Number of elements (numel):            '',I16)') numel
-write(6  ,'(''   Number of nodes per element (nel):     '',I16)') nel
-write(6  ,'(''   Number of matrix indeces:              '',I16)') all_el
+write(6,'("Number of mesh points (numnp):         ",I16)') numnp
+write(6,'("Number of elements (numel):            ",I16)') numel
+write(6,'("Number of nodes per element (nel):     ",I16)') nel
+write(6,'("Number of matrix indeces:              ",I16)') all_el
 
 !initialize time integration scheme
 sym      = .false.
@@ -133,7 +124,8 @@ if (use_grafted.eq.1) then
     call init_time(sym, chainlen, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, koeff_gr_conv)
 endif
 
-call init_field(field_in_filename, Ufield, wa)
+call init_field(Ufield, wa)
+
 wa_mix = wa
 
 if (use_grafted.eq.1) then
@@ -142,24 +134,21 @@ endif
 !**************************************************************************************************************!
 !                                        LOOPS FOR FIELD CONVERGENCE                                           !
 !**************************************************************************************************************!
-write(iow,'(/''*Initiating the simulation with '',I10,'' iterations'',/)') iterations
-write(6  ,'(/''*Initiating the simulation with '',I10,'' iterations'',/)') iterations
+write(iow,'(/"Initiating the simulation with ",I10," iterations",/)') iterations
+write(6  ,'(/"Initiating the simulation with ",I10," iterations",/)') iterations
 
-write(iow,'(A10,1x,9(A19,1X),A16)') 'iter', 'fraction', 'adh_ten', 'n_gr_chains', 'max_error', 'std_error', &
-    &                               'wa_max', 'wa_max_abs', 'wa_ave', 'wa_step'
-write(6  ,'(A4, 1x,9(A14,1X),A12)') 'iter', 'fraction', 'adh_ten', 'n_gr_chains', 'max_error', 'std_error', &
-    &                               'wa_max', 'wa_max_abs', 'wa_ave', 'wa_step', 'progress (%)'
+write(iow,'(A10,1X,6(A19,1X),A16)') "iter", "fraction", "adh_ten", "n_gr_chains", "max_error", "std_error", "wa_max"
+write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "adh_ten", "n_gr_chains", "max_error", "std_error", "wa_max"
 
 t_init = get_sys_time()
 iter   = init_iter
+
 do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     iter = iter + 1
 
-    write(iow,'(I10,1X,9(E19.9e3,1X))')              iter-1, frac, adh_ten, nch_gr, max_error, wa_std_error, &
-   &                                                 wa_max, wa_max_abs, wa_ave, wa_step
-    write(6  ,'(I4 ,1X,9(E14.4e3,1X))',advance='no') iter-1, frac, adh_ten, nch_gr, max_error, wa_std_error, &
-   &                                                 wa_max, wa_max_abs, wa_ave, wa_step
+    write(iow,'(I10,1X,6(E19.9e3,1X))')              iter-1, frac, adh_ten, nch_gr, max_error, wa_std_error, wa_max
+    write(6  ,'(I4 ,1X,6(E14.4e3,1X))',advance='no') iter-1, frac, adh_ten, nch_gr, max_error, wa_std_error, wa_max
 
     !flush output
     close(iow)
@@ -170,7 +159,6 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     call matrix_assemble(Rg2_per_mon_matrix, wa)
 
-    !diffusion
     do i1 = 1, numnp
        qm(i1,1)       = 1.d0
        qm_final(i1,1) = 1.d0
@@ -224,79 +212,62 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         call grafted_chains(numnp, chainlen_gr, rho_0, phia_gr, nch_gr)
     endif
 
-    !calculate the new field
     do k1 = 1, numnp
         wa_new(k1) = kapa * (phia_mx(k1) + phia_gr(k1) - 1.d0) + Ufield(k1)
     enddo
 
     call energies(qm_interp_mg, qgr_interp, wa, Ufield, phia_mx, phia_gr, part_func, adh_ten)
 
-    !compare the old and the new field
-    wa_ave       = 0.d0
+    !compare and mix the old and the new field
     max_error    = 0.d00
     wa_std_error = 0.d00
     wa_max       = 0.d0
-    wa_max_abs   = 0.d0
 
     do k1 = 1, numnp
-        wa_ave       = wa_ave + wa_new(k1)
         max_error    = max(max_error, dabs(wa_new(k1) - wa(k1)))
         wa_std_error = wa_std_error + (wa_new(k1) - wa(k1))**2
         wa_max       = max(wa_max, wa_new(k1))
-        wa_max_abs   = max(wa_max_abs, dabs(wa_new(k1)))
     enddo
 
     wa_std_error = SQRT(wa_std_error / float((numnp - 1)))
-    wa_ave       = wa_ave / numnp
-
-    wa_ave       = wa_ave * chainlen_matrix
     wa_max       = wa_max * chainlen_matrix
-    wa_max_abs   = wa_max_abs
     max_error    = max_error * chainlen_matrix
     wa_std_error = wa_std_error * chainlen_matrix
 
-    !field mixing rule
     do k1 = 1, numnp
         wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
     enddo
 
-    !output data every so many steps
     if (mod(iter,output_every).eq.0) then
         call periodic_dumper(qm_final, qgr_final, qm_interp_mm, qm_interp_mg, qgr_interp, phia_mx, phia_gr, wa, wa_new, wa_mix)
         call export_field(wa_mix, numnp, iter)
     endif
 enddo
-
 !**************************************************************************************************************!
 !                                             EXPORT SIMULATION RESULTS                                        !
 !**************************************************************************************************************!
 call periodic_dumper(qm_final, qgr_final, qm_interp_mm, qm_interp_mg, qgr_interp, phia_mx, phia_gr, wa, wa_new, wa_mix)
 call export_field(wa_mix, numnp, iter)
 
-write(iow,'(I10,1X,9(E19.9e3,1X))')  iter, frac, adh_ten, nch_gr, max_error, wa_std_error, &
-   &                                 wa_max, wa_max_abs, wa_ave, wa_step
-write(6  ,'(I4 ,1X,9(E14.4e3,1X))')  iter, frac, adh_ten, nch_gr, max_error, wa_std_error, &
-   &                                 wa_max, wa_max_abs, wa_ave, wa_step
+write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, adh_ten, nch_gr, max_error, wa_std_error, wa_max
+write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, adh_ten, nch_gr, max_error, wa_std_error, wa_max
 
 if (max_error.lt.max_error_tol) then
-    write(iow,'(/''Convergence of max error'',F16.9)') max_error
-    write(6  ,'(/''Convergence of max error'',F16.9)') max_error
-else
-    write(iow,'(/''Convergence of '',I10, '' iterations'')') iterations
-    write(6  ,'(/''Convergence of '',I10, '' iterations'')') iterations
+    write(iow,'("Convergence of max error",F16.9)') max_error
+    write(6  ,'("Convergence of max error",F16.9)') max_error
 endif
 
-write(iow,'(''-----------------------------------'')')
-write(6  ,'(''-----------------------------------'')')
-write(iow,'(3X,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
-write(6  ,'(3X,A40,E16.9)')adjl('Adhesion tension (mN/m):',40),adh_ten
-write(iow,'(3X,A40,E16.9)')adjl('Partition function of matrix chains:',40),part_func
-write(6  ,'(3X,A40,E16.9)')adjl('Partition function of matrix chains:',40),part_func
-
-write(iow,'(3X,A40,E16.9)')adjl('grafting density (A^-2):',40),nch_gr/interf_area
+write(iow,'(3X,A40,E16.9)')adjl("Adhesion tension (mN/m):",40),             adh_ten
+write(6  ,'(3X,A40,E16.9)')adjl("Adhesion tension (mN/m):",40),             adh_ten
+write(iow,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), part_func
+write(6  ,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), part_func
+write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             nch_gr/interf_area
+write(6  ,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             nch_gr/interf_area
+write(iow,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            nch_gr
+write(6  ,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            nch_gr
 
 t_final = get_sys_time()
-write(6  ,'(3X,A40,I16)')adjl('Run duration:',40), t_final - t_init
+write(6,'(3X,A40,I16)')adjl('Run duration:',40), t_final - t_init
 
 #ifdef USE_MPI
 !root will send a stop signal to the slaves

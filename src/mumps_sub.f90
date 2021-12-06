@@ -1,5 +1,4 @@
 subroutine mumps_sub(mumps_matrix_type)
-!This file is part of MUMPS 5.2.1, released on Fri Jun 14 14:46:05 UTC2019
 !--------------------------------------------------------------------------!
 use kcw
 use geometry
@@ -28,10 +27,10 @@ mumps_par%PAR  = 1  !working host processor
 if (mumps_matrix_type.eq.0) then
     mumps_par%SYM  = 0
 elseif (mumps_matrix_type.eq.1) then
-    mumps_par%SYM  = 1
+    mumps_par%SYM       = 1
     mumps_par%ICNTL(13) = 0
 elseif (mumps_matrix_type.eq.2) then
-    mumps_par%SYM  = 2
+    mumps_par%SYM     = 2
     mumps_par%CNTL(1) = 0
 else
     ERROR_MESSAGE="MUMPS SUBROUTINE: mumps_matrix_type not between 0-2."
@@ -92,14 +91,14 @@ if (mumps_par%INFOG(1).lt.0) then
 endif
 
 !solution has been assembled on the host
-if (mumps_par%MYID.eq.0 ) then
+if (mumps_par%MYID.eq.0) then
     do i = 1, mumps_par%N
         rdiag1(i) = mumps_par%RHS(i)
     enddo
 endif
 
 !deallocate user data
- if (mumps_par%MYID.eq.0 ) then
+ if (mumps_par%MYID.eq.0) then
     deallocate(mumps_par%IRN)
     deallocate(mumps_par%JCN)
     deallocate(mumps_par%A)

@@ -39,10 +39,10 @@ integer                            :: nbin, ibin
 
 !fhash module variables
 type(fhash_type__ints_double) :: h
-type(ints_type) :: key
-integer :: n_keys
-integer :: key_value
-logical :: success
+type(ints_type)               :: key
+integer                       :: n_keys
+integer                       :: key_value
+logical                       :: success
 !--------------------------------------------------------------------!
 inquire(file=mesh_filename, exist=file_exists)
 
@@ -80,19 +80,20 @@ do i = 1, numnp
     enddo
 enddo
 
-write(iow,'(/''Box dimensions..'')')
-write(iow,'(A5,2x,3(A16,2x))') 'dim','length','min','max'
-write(6  ,'(/''Box dimensions..'')')
-write(6  ,'(A5,2x,3(A16,2x))') 'dim','length','min','max'
+write(iow,'("Box dimensions")')
+write(iow,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
+write(6  ,'("Box dimensions")')
+write(6  ,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
+
 do j = 1, ndm
     box_len(j) = box_hi(j) - box_lo(j)
-    write(iow,'(I5,2x,3(E16.9,2x))')j, box_len(j), box_lo(j), box_hi(j)
-    write(6  ,'(I5,2x,3(E16.9,2x))')j, box_len(j), box_lo(j), box_hi(j)
+    write(iow,'(I5,2X,3(E16.9,2X))')j, box_len(j), box_lo(j), box_hi(j)
+    write(6  ,'(I5,2X,3(E16.9,2X))')j, box_len(j), box_lo(j), box_hi(j)
 enddo
 
 box_volume = box_len(1) * box_len(2) * box_len(3)
-write(iow,'(/A43,E16.9,A11)')adjl('Box volume:',43),box_volume,' Angstrom^3'
-write(6  ,'(/A43,E16.9,A11)')adjl('Box volume:',43),box_volume,' Angstrom^3'
+write(iow,'(A43,E16.9,A13)')adjl("Box volume:",43),box_volume,' [Angstrom^3]'
+write(6  ,'(A43,E16.9,A13)')adjl("Box volume:",43),box_volume,' [Angstrom^3]'
 
 !read types and numbers of elements
 read (12,'(A60)') dummy
@@ -235,7 +236,7 @@ allocate(con_l2(all_el))
 con_l2 = 0
 
 !assembly the con_12 (hash) matrix
-allocate(key%ints(2)) !each key points to a pair (2) of nodes
+allocate(key%ints(2)) !each key is defined by a pair (2) of nodes
 
 !total number of required keys
 n_keys = nel * numel
@@ -256,35 +257,33 @@ do m1 = 1, numel
 
             !assign key_value to the pair
             call h%get(key, key_value, success)
+
             if (success) then
                con_l2(all_el) = key_value      !this pair has already been met, thus assigned a key_value
             else
                call h%set(key, all_el)         !store the new key_value for next iteration's check
                con_l2(all_el) = all_el         !this pair is met for the first time
             endif
-        end do
-    end do
-end do
+        enddo
+    enddo
+enddo
 call h%clear()
 
 !determine all elements belonging to dirichlet faces
 allocate(elem_in_q0_face(numnp))
 elem_in_q0_face = .false.
 
-write(iow,'(/A54)')'* Find all elements belonging to dirichlet q=0 faces..'
-write(6  ,'(/A54)')'* Find all elements belonging to dirichlet q=0 faces..'
-
 #ifdef DEBUG_OUTPUTS
 open(unit=123, file = dir_faces)
 #endif
 
-is_dir_face      = .false.
+is_dir_face = .false.
 
 do j = 1, num_face_elem
     do i1 = 1, n_dirichlet_faces
         if (face_entity_id(j)==ids_dirichlet_faces(i1)) then
             do i = 1, num_nodes_per_face_elem
-                idummy= face_node_id(i,j)
+                idummy = face_node_id(i,j)
 
                 !if the node belongs to a dirichlet face
                 elem_in_q0_face(idummy) = .True.
@@ -430,7 +429,7 @@ if (num_entities.eq.num_elem) then
         read(12,*)  entity_id(i)
     enddo
 else
-    ERROR_MESSAGE='Error in entity..'
+    ERROR_MESSAGE="Error in entity.."
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 

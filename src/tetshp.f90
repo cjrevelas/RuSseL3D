@@ -152,6 +152,6 @@ do k = 1, nnel
    enddo
 enddo
 
-2000  format(/' *ERROR* TETSHP not coded for nel =',i4)
+2000  format(/" *ERROR* TETSHP not coded for nel =",I4)
 !-----------------------------------------------------------------------------------!
 end subroutine tetshp

@@ -86,13 +86,13 @@ module FHASH_MODULE_NAME
   public :: FHASH_TYPE_ITERATOR_NAME
 
   type kv_type
-    KEY_TYPE :: key
+    KEY_TYPE   :: key
     VALUE_TYPE :: value
   end type
 
   type node_type
     type(kv_type), allocatable :: kv
-    type(node_type), pointer :: next => null()
+    type(node_type), pointer :: next => null()   !this pointer points to an object of type node_type
 
     contains
       ! If kv is not allocated, allocate and set to the key, value passed in.
@@ -128,7 +128,7 @@ module FHASH_MODULE_NAME
     private
 
     integer :: n_buckets = 0
-    integer :: n_keys = 0
+    integer :: n_keys    = 0
     type(node_type), allocatable :: buckets(:)
 
     contains
@@ -174,12 +174,12 @@ module FHASH_MODULE_NAME
 
   contains
 
-  function bucket_count(this)
-    class(FHASH_TYPE_NAME), intent(inout) :: this
-    integer :: bucket_count
-
-    bucket_count = this%n_buckets
-  end function
+  function bucket_count(this)                              !OK
+    class(FHASH_TYPE_NAME), intent(inout) :: this          !OK
+    integer                               :: bucket_count  !OK
+                                                           !OK
+    bucket_count = this%n_buckets                          !OK
+  end function                                             !OK
 
   function n_collisions(this)
     class(FHASH_TYPE_NAME), intent(inout) :: this
@@ -203,42 +203,42 @@ module FHASH_MODULE_NAME
     endif
   end function
 
-  subroutine reserve(this, n_buckets)
-    class(FHASH_TYPE_NAME), intent(inout) :: this
-    integer, intent(in) :: n_buckets
-    integer, dimension(29) :: sizes
-    integer :: i
+  subroutine reserve(this, n_buckets)                                            !OK
+    class(FHASH_TYPE_NAME), intent(inout) :: this                                !OK
+    integer, intent(in)                   :: n_buckets                           !OK
+    integer, dimension(29)                :: sizes                               !OK
+    integer                               :: i                                   !OK
+                                                                                 !OK
+    if (this%key_count() > 0) stop 'Cannot reserve when fhash is not empty.'     !OK
+                                                                                 !OK
+    sizes = (/5, 11, 23, 47, 97, 199, 409, 823, 1741, 3469, 6949, 14033, &       !OK
+      & 28411, 57557, 116731, 236897, 480881, 976369,1982627, 4026031, &         !OK
+      & 8175383, 16601593, 33712729, 68460391, 139022417, 282312799, &           !OK
+      & 573292817, 1164186217, 2147483647/)                                      !OK
+    do i = 1, size(sizes)   !size(sizes)=29                                      !OK
+      if (sizes(i) >= n_buckets) then                                            !OK
+        this%n_buckets = sizes(i)                                                !OK
+        allocate(this%buckets(this%n_buckets))                                   !OK
+        return                                                                   !OK
+      endif                                                                      !OK
+    enddo                                                                        !OK
+  end subroutine                                                                 !OK
 
-    if (this%key_count() > 0) stop 'Cannot reserve when fhash is not empty.'
-
-    sizes = (/5, 11, 23, 47, 97, 199, 409, 823, 1741, 3469, 6949, 14033, &
-      & 28411, 57557, 116731, 236897, 480881, 976369,1982627, 4026031, &
-      & 8175383, 16601593, 33712729, 68460391, 139022417, 282312799, &
-      & 573292817, 1164186217, 2147483647/)
-    do i = 1, size(sizes)
-      if (sizes(i) >= n_buckets) then
-        this%n_buckets = sizes(i)
-        allocate(this%buckets(this%n_buckets))
-        return
-      endif
-    enddo
-  end subroutine
-
-  function key_count(this)
-    class(FHASH_TYPE_NAME), intent(inout) :: this
-    integer :: key_count
-
-    key_count = this%n_keys
-  end function
+  function key_count(this)                                !OK
+    class(FHASH_TYPE_NAME), intent(inout) :: this         !OK
+    integer :: key_count                                  !OK
+                                                          !OK
+    key_count = this%n_keys                               !OK
+  end function                                            !OK
 
   subroutine set(this, key, value)
     class(FHASH_TYPE_NAME), intent(inout) :: this
-    KEY_TYPE, intent(in) :: key
-    VALUE_TYPE, intent(in) :: value
-    integer :: bucket_id
-    logical :: is_new
+    KEY_TYPE, intent(in)                  :: key
+    VALUE_TYPE, intent(in)                :: value
+    integer                               :: bucket_id
+    logical                               :: is_new
 
-    bucket_id = modulo(hash_value(key), this%n_buckets) + 1
+    bucket_id = modulo(hash_value(key), this%n_buckets) + 1    !this is the actual hash function
 
     call this%buckets(bucket_id)%node_set(key, value, is_new)
 
@@ -247,9 +247,9 @@ module FHASH_MODULE_NAME
 
   recursive subroutine node_set(this, key, value, is_new)
     class(node_type), intent(inout) :: this
-    KEY_TYPE, intent(in) :: key
-    VALUE_TYPE, intent(in) :: value
-    logical, optional, intent(out) :: is_new
+    KEY_TYPE, intent(in)            :: key
+    VALUE_TYPE, intent(in)          :: value
+    logical, optional, intent(out)  :: is_new
 
     if (.not. allocated(this%kv)) then
       allocate(this%kv)
@@ -267,9 +267,9 @@ module FHASH_MODULE_NAME
 
   subroutine get(this, key, value, success)
     class(FHASH_TYPE_NAME), intent(inout) :: this
-    KEY_TYPE, intent(in) :: key
-    VALUE_TYPE, intent(out) :: value
-    logical, optional, intent(out) :: success
+    KEY_TYPE, intent(in)                  :: key
+    VALUE_TYPE, intent(out)               :: value
+    logical, optional, intent(out)        :: success
     integer :: bucket_id
 
     bucket_id = modulo(hash_value(key), this%n_buckets) + 1
@@ -278,9 +278,9 @@ module FHASH_MODULE_NAME
 
   recursive subroutine node_get(this, key, value, success)
     class(node_type), intent(inout) :: this
-    KEY_TYPE, intent(in) :: key
-    VALUE_TYPE, intent(out) :: value
-    logical, optional, intent(out) :: success
+    KEY_TYPE, intent(in)            :: key
+    VALUE_TYPE, intent(out)         :: value
+    logical, optional, intent(out)  :: success
 
     if (.not. allocated(this%kv)) then
       ! Not found. (Initial node in the bucket not set)

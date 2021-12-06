@@ -11,9 +11,9 @@ character(len=100) :: MESSAGE
 contains
 
 subroutine output(TARGET, iow, MESSAGE)
-   character(len=100) MESSAGE
-   integer :: TARGET
-   integer :: iow
+   character(len=100) :: MESSAGE
+   integer            :: TARGET
+   integer            :: iow
 
    if (TARGET.eq.0) then
       write(iow,*)MESSAGE
@@ -29,8 +29,8 @@ subroutine output(TARGET, iow, MESSAGE)
 end subroutine output
 
 function adjl(string,length) result(r)
-   character(len=*) :: string
-   integer          :: length
+   character(len=*)      :: string
+   integer               :: length
    character(len=length) :: r
    r = adjustl(string)
 end function adjl

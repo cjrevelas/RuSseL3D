@@ -14,7 +14,7 @@ character(20)                              :: file_name
 real(8), intent(in), dimension(numnp,ns+1) :: q_final
 real(8)                                    :: iq_final
 !--------------------------------------------------------------------!
-write(file_name,'(''q'',A4,''.out.txt'')') q_type
+write(file_name,'("q",A4,".out.txt")') q_type
 
 open(unit=363, file = file_name)
 do i1 = 1, numnp

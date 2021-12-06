@@ -24,6 +24,7 @@ t_init = get_sys_time()
 
 do time_step = 2, ns+1
 
+    !set essential BCs and form the LHS of the linear system of equations to be solved
     !call dirichlet(ds(1), mumps_matrix_type)
     call dirichlet(ds(time_step), mumps_matrix_type)
 
@@ -33,11 +34,12 @@ do time_step = 2, ns+1
 #endif
 
     if (ns.ge.10.and.mod(time_step+1,ns/10).eq.0) then
-        write(6,'(I3,1x)',advance='no') nint((time_step-2.d0)/ns*100.d0)
+        write(6,'(I3,1X)',advance='no') nint((time_step-2.d0)/ns*100.d0)
     elseif (ns.lt.10.and.mod(time_step+1,1).eq.0) then
-        write(6,'(I3,1x)',advance='no') nint((time_step-2.d0)/ns*100.d0)
+        write(6,'(I3,1X)',advance='no') nint((time_step-2.d0)/ns*100.d0)
     endif
 
+    !form the RHS of the linear system of equations to be solved
     rdiag1 = 0.
 
     do i1 = 1, all_el
@@ -51,8 +53,10 @@ do time_step = 2, ns+1
         if (elem_in_q0_face(i)) rdiag1(i) = 0.
     enddo
 
+    !solve the linear system of equations
     call mumps_sub(mumps_matrix_type)
 
+    !update solution/propagator
     do i1 = 1,numnp
          q(i1,2) = rdiag1(i1)
     enddo
@@ -67,14 +71,13 @@ do time_step = 2, ns+1
     deallocate(A_m%value)
     deallocate(A_m%col)
     deallocate(A_m%row)
-
 enddo
 
-write(6,'(1x,I3)',advance='no') 100
+write(6,'(1X,I3)',advance='no') 100
 
 t_final = get_sys_time()
 
-write(6,'('' :'',I6)') t_final - t_init
+write(6,'(" :",I6)') t_final - t_init
 
 return
 !----------------------------------------------------------------------------------------------------------!
