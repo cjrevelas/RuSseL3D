@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://github.com/mokkapps/changelog-generator-demo/compare/v3.0.0...v3.1.0) (2021-12-06)
+
+
+### Features
+
+* add calc_delta_every flag ([366488e](https://github.com/mokkapps/changelog-generator-demo/commits/366488ee3408821e142ef5c41f3dfe752b8eb805))
+* add hard sphere wall for Hamaker (wall_dist) ([a63b156](https://github.com/mokkapps/changelog-generator-demo/commits/a63b15691852dad79e26e70c7833dbcb12ae2375))
+* contour-step is a function of the current step ([2546c35](https://github.com/mokkapps/changelog-generator-demo/commits/2546c35608521d8a60bb6745fd86735968a8f779))
+* determine numerical and analytic delta for grafted chains ([6ce7c02](https://github.com/mokkapps/changelog-generator-demo/commits/6ce7c02b83f8036420d27322548a1e2f4871dc33))
+* **energies:** export mx propagator and term4 ([c611c3b](https://github.com/mokkapps/changelog-generator-demo/commits/c611c3b58348818f643b8409fb18a7ba6d03917c))
+* **force_fields:** add sphere-plate Hamaker potential ([ca9fd5e](https://github.com/mokkapps/changelog-generator-demo/commits/ca9fd5edd7741dc431145799c670fdd47971310e))
+* **iofiles:** gathers all io file names ([b802a56](https://github.com/mokkapps/changelog-generator-demo/commits/b802a56db115691ba2193aa815f91ed706c448ee))
+* **mesh:** upgrade mesh parser to be more flexible ([41bdcb9](https://github.com/mokkapps/changelog-generator-demo/commits/41bdcb9ef591aace9a5abde40603a7cd355e2c33))
+* set default hard sphere wall dist equal to 5.0 Angstrom ([f7d741a](https://github.com/mokkapps/changelog-generator-demo/commits/f7d741a6efe56cbd3de0513212241330135d541d))
+
+
+### Bug Fixes
+
+* **adh_ten:** change sign ([cf5823c](https://github.com/mokkapps/changelog-generator-demo/commits/cf5823c1062a114fc43b7027bc889c9773252020))
+* **force_fields:** h_12 input argument is not initialized to 0.0 ([a837d29](https://github.com/mokkapps/changelog-generator-demo/commits/a837d2952431c903eca7aa9a1f4d5651a3da19d9))
+* **get_sys_time:** remove junk time.out.txt file ([5c5957e](https://github.com/mokkapps/changelog-generator-demo/commits/5c5957e01f1df6008355ad4b594e34d5a4182e47))
+* **init_field:** determine hss by removing wall_dist ([cf80383](https://github.com/mokkapps/changelog-generator-demo/commits/cf80383f0856056ac6654cd6ad445186ff88613f))
+* **parser:** read input variables without format ([f4a4333](https://github.com/mokkapps/changelog-generator-demo/commits/f4a4333f60233446382c107a7e938e5ea41e1ec1))
+
 ## [3.0.0](https://github.com/mokkapps/changelog-generator-demo/compare/v2.2.0...v3.0.0) (2021-12-04)
 
 
