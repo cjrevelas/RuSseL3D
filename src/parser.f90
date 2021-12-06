@@ -39,6 +39,7 @@ logical :: log_chainlen_matrix             = .false.
 logical :: log_chainlen_gr                 = .false.
 logical :: log_Rg2_per_mon_gr              = .false.
 logical :: log_interf_area                 = .false.
+logical :: log_wall_distance               = .false.
 !--------------------------------------------------------------------------------!
 !parse input file to retrieve simulation parameters
 inquire(file=input_filename, exist=file_exists)
@@ -105,6 +106,9 @@ do
             read(line,*) max_error_tol
             log_maximum_error = .true.
         elseif (index(line,'# fraction of new field') > 0) then
+        elseif (index(line,"# wall distance") > 0) then
+            read(line,*) wall_distance
+            log_wall_distance = .true.
             read(line,*) frac
             log_fraction_of_new_field = .true.
         elseif (index(line,'# monomer mass') > 0) then
@@ -561,6 +565,19 @@ if (use_grafted.eq.1) then
             write(ERROR_MESSAGE,'(''Rg2 per grafted monomer is negative: '',E16.9)') Rg2_per_mon_gr
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
+
+if (log_wall_distance) then
+    write(iow,'(3X,A40,E16.9,A11)')adjl("Wall distance for Hamaker:",40),wall_distance," [Angstrom]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("Wall distance for Hamaker:",40),wall_distance," [Angstrom]"
+    wall_distance = wall_distance * 1e-10
+else
+    wall_distance = 0.d0
+    write(iow,'(3X,A24)')adjl("Wall distance not found.",40)
+    write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value: ",40),wall_distance," [Angstrom]"
+    write(6  ,'(3X,A24)')adjl("Wall distance not found.",40)
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value: ",40),wall_distance," [Angstrom]"
+endif
+
     else
         ERROR_MESSAGE='Rg2 per matrix monomer was not detected..'
         call exit_with_error(1,1,1,ERROR_MESSAGE)
