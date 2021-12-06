@@ -63,6 +63,7 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/parser.o\
 	$(OBJDIR)/init_field.o\
 	$(OBJDIR)/init_arrays.o\
+	$(OBJDIR)/init_delta.o\
 	$(OBJDIR)/calc_scf_params.o\
 	$(OBJDIR)/init_time.o\
 	$(OBJDIR)/simpsonkoef.o\

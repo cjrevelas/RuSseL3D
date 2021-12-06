@@ -83,12 +83,10 @@ close(ioe)
 !                                             INITIALIZATION SECTION                                           !
 !**************************************************************************************************************!
 call parser
-
 call calc_scf_params
-
 call mesh
-
 call init_arrays
+call init_delta
 
 #ifdef USE_MPI
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
