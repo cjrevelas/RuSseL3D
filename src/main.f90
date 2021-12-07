@@ -293,6 +293,8 @@ enddo
 !**************************************************************************************************************!
 call periodic_dumper(qm_final, qgr_final, qm_interp_mm, qm_interp_mg, qgr_interp, phia_mx, phia_gr, wa, wa_new, wa_mix)
 call export_field(wa_mix, numnp, iter)
+call compute_phi_end_middle(ns_matrix_ed, qm_final, qm_final, "matrix")
+call compute_phi_end_middle(ns_gr_conv, qgr_interp, qm_interp_mg, "graftd")
 
 write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
 write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
