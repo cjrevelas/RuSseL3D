@@ -30,7 +30,7 @@ call qprint(ns_matrix_conv, qm_interp_mm, "mxcf")
 call qprint(ns_gr_conv, qm_interp_mg, "mxcg")
 #endif
 
-if (use_grafted.eq.1) then
+if (grafted_exist.eq.1) then
    call qprint(ns_gr_ed, qgr_final, "graf")
 #ifdef DEBUG_OUTPUTS
    call qprint(ns_gr_conv, qgr_interp, "grcv")

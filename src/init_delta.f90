@@ -1,4 +1,4 @@
-subroutine init_delta
+subroutine init_delta()
 !-----------------------------------------------------------------------------------------------------------!
 use geometry
 use parser_vars
@@ -11,7 +11,7 @@ implicit none
 !-----------------------------------------------------------------------------------------------------------!
 integer :: i1, iog
 
-if (use_grafted.eq.1) then
+if (grafted_exist.eq.1) then
     iog = 19 
 
     inquire(file = gp_filename, exist = file_exists)
@@ -32,7 +32,6 @@ if (use_grafted.eq.1) then
     read(iog,*)
     read(iog,*)
     read(iog,*)
-
 
     allocate(gpid(num_gpoints), delta_numer(num_gpoints), gp_init_value(num_gpoints))
 

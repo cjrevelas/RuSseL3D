@@ -15,12 +15,12 @@ real(8), intent(out), dimension(ns+1) :: ds, xs, koeff
 integer :: k1
 !------------------------------------------------------------------------------------------------------!
 !constant step size scheme
-if (time_integration_scheme.eq.1) then
+if (contour_integration_scheme.eq.1) then
     ds = ds_ave
     do k1 = 2, ns+1
         xs(k1) = xs(k1-1) + ds_ave
     enddo
-elseif (time_integration_scheme.eq.2) then
+elseif (contour_integration_scheme.eq.2) then
     ds(1)=0.d0
     do k1 = 2, ns+1
         if (sym) then

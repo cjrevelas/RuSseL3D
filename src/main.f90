@@ -84,8 +84,8 @@ close(ioe)
 !                                             INITIALIZATION SECTION                                           !
 !**************************************************************************************************************!
 call parser
-call calc_scf_params
-call mesh
+call init_scf_params
+call import_mesh
 call init_arrays
 call init_delta
 
@@ -93,17 +93,6 @@ call init_delta
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 #endif
 
-write(iow,'("Number of mesh points (numnp):         ",I16)') numnp
-write(iow,'("Number of elements (numel):            ",I16)') numel
-write(iow,'("Number of nodes per element (nel):     ",I16)') nel
-write(iow,'("Number of matrix indeces:              ",I16)') all_el
-
-write(6,'("Number of mesh points (numnp):         ",I16)') numnp
-write(6,'("Number of elements (numel):            ",I16)') numel
-write(6,'("Number of nodes per element (nel):     ",I16)') nel
-write(6,'("Number of matrix indeces:              ",I16)') all_el
-
-!initialize time integration scheme
 sym      = .false.
 chainlen = chainlen_matrix_max
 call init_time(sym, chainlen, ns_matrix_ed, ds_ave_matrix_ed, ds_matrix_ed, xs_matrix_ed, koeff_matrix_ed)
@@ -112,7 +101,7 @@ sym      = .true.
 chainlen = chainlen_matrix
 call init_time(sym, chainlen, ns_matrix_conv, ds_ave_matrix_conv, ds_matrix_conv, xs_matrix_conv, koeff_matrix_conv)
 
-if (use_grafted.eq.1) then
+if (grafted_exist.eq.1) then
     sym      = .false.
     chainlen = chainlen_gr
     call init_time(sym, chainlen, ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, koeff_gr_ed)
@@ -129,8 +118,10 @@ wa_mix = wa
 !**************************************************************************************************************!
 !                                        LOOPS FOR FIELD CONVERGENCE                                           !
 !**************************************************************************************************************!
-write(iow,'(/"Initiating the simulation with ",I10," iterations",/)') iterations
-write(6  ,'(/"Initiating the simulation with ",I10," iterations",/)') iterations
+write(iow,*)
+write(*,*)
+write(iow,'(A85)')adjl('-----------------------------------SIMULATION STARTS-----------------------------------',85)
+write(*  ,'(A85)')adjl('-----------------------------------SIMULATION STARTS-----------------------------------',85)
 
 write(iow,'(A10,1X,6(A19,1X),A16)') "iter", "fraction", "free_energy", "n_gr_chains", "max_error", "std_error", "wa_max"
 write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "free_energy", "n_gr_chains", "max_error", "std_error", "wa_max"
@@ -161,7 +152,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     call edwards(ds_matrix_ed, ns_matrix_ed, mumps_matrix_type, qm, qm_final)
 
-    if (use_grafted.eq.1) then
+    if (grafted_exist.eq.1) then
         do i1 = 1, numnp
             call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(i1,:), ns_gr_conv+1, xs_gr_conv, qm_interp_mg(i1,:))
         enddo
@@ -177,7 +168,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
             do i1 = 1, num_gpoints
                 gnode_id = gpid(i1)
                 gp_init_value(i1) = delta_numer(i1) * chainlen_gr &
-                                  * 1.d0 / (qm_interp_mg(gnode_id, ns_gr_conv+1) * (rho_0 * avogadro_constant) )
+                                  * 1.d0 / (qm_interp_mg(gnode_id, ns_gr_conv+1) * (rho_mol_bulk * n_avog) )
             enddo
         endif
 
@@ -202,7 +193,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     call convolution(numnp, chainlen_matrix, ns_matrix_conv, koeff_matrix_conv, qm_interp_mm, qm_interp_mm, phia_mx)
 
-    if (use_grafted.eq.1) then
+    if (grafted_exist.eq.1) then
         do i1 = 1, numnp
             call interp_linear(1, ns_gr_ed+1, xs_gr_ed, qgr_final(i1,:), ns_gr_conv+1, xs_gr_conv, qgr_interp(i1,:))
         enddo
@@ -212,8 +203,8 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     call part_fun(numnp, ns_matrix_conv, qm_interp_mm, part_func)
 
-    if (use_grafted.eq.1) then
-        call grafted_chains(numnp, chainlen_gr, rho_0, phia_gr, nch_gr)
+    if (grafted_exist.eq.1) then
+        call grafted_chains(numnp, chainlen_gr, rho_mol_bulk, phia_gr, nch_gr)
     endif
 
     do k1 = 1, numnp
@@ -223,8 +214,8 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
     call energies(qm_interp_mg, wa, Ufield, phi_total, part_func, num_gpoints, gpid, free_energy)
 
     !compare and mix the old and the new field
-    max_error    = 0.d00
-    wa_std_error = 0.d00
+    max_error    = 0.d0
+    wa_std_error = 0.d0
     wa_max       = 0.d0
 
     do k1 = 1, numnp
@@ -233,7 +224,7 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         wa_max       = max(wa_max, wa_new(k1))
     enddo
 
-    wa_std_error = SQRT(wa_std_error / float((numnp - 1)))
+    wa_std_error = sqrt(wa_std_error / float((numnp - 1)))
     wa_max       = wa_max * chainlen_matrix
     max_error    = max_error * chainlen_matrix
     wa_std_error = wa_std_error * chainlen_matrix
@@ -256,13 +247,18 @@ call export_field(wa_mix, numnp, iter)
 write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
 write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
 
+write(iow,*)
+write(*,*)
+write(iow,'(A85)')adjl('-----------------------------------SUMMARIZED RESULTS-----------------------------------',85)
+write(*  ,'(A85)')adjl('-----------------------------------SUMMARIZED RESULTS-----------------------------------',85)
+
 if (max_error.lt.max_error_tol) then
     write(iow,'("Convergence of max error",F16.9)') max_error
     write(6  ,'("Convergence of max error",F16.9)') max_error
 endif
 
-write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),             free_energy
-write(6  ,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),             free_energy
+write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 free_energy
+write(6  ,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 free_energy
 write(iow,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), part_func
 write(6  ,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), part_func
 write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             nch_gr/interf_area

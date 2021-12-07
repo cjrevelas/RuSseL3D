@@ -44,7 +44,7 @@ qgr_final         = 0.d0
 qgr_interp        = 0.d0
 phia_gr           = 0.d0
 
-if (use_grafted.eq.1) then
+if (grafted_exist.eq.1) then
     allocate(ds_gr_ed(ns_gr_ed+1),ds_gr_conv(ns_gr_conv+1))
     allocate(xs_gr_ed(ns_gr_ed+1),xs_gr_conv(ns_gr_conv+1))
     allocate(koeff_gr_ed(ns_gr_ed+1),koeff_gr_conv(ns_gr_conv+1))

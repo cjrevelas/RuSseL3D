@@ -29,7 +29,7 @@ real(8)                                            :: initValue = 0.d0
 !------------------------------------------------------------------------------------------------------!
 allocate(delta_anal(num_gpoints))
 
-delta_anal    = 0.d0
+delta_anal = 0.d0
 
 !analytic delta calculation
 do i1 = 1, num_gpoints
@@ -47,7 +47,7 @@ do i1 = 1, num_gpoints
     qgr_final = 0.d0
 
     initValue = delta_anal(i1) * chainlen_gr &
-                               * 1.d0 / (qm_interp_mg(gpid(i1), ns_gr_conv+1) * (rho_0 * avogadro_constant) )
+                               * 1.d0 / (qm_interp_mg(gpid(i1), ns_gr_conv+1) * (rho_mol_bulk * n_avog) )
 
     qgr(gpid(i1),1)       = initValue
     qgr_final(gpid(i1),1) = initValue
@@ -61,7 +61,7 @@ do i1 = 1, num_gpoints
 
     call convolution(numnp, chainlen_gr, ns_gr_conv, koeff_gr_conv, qgr_interp, qm_interp_mg, phia_gr)
 
-    call grafted_chains(numnp, chainlen_gr, rho_0, phia_gr, nch_gr)
+    call grafted_chains(numnp, chainlen_gr, rho_mol_bulk, phia_gr, nch_gr)
 
     delta_numer(i1) = delta_anal(i1) / nch_gr
 enddo

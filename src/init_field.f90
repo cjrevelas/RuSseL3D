@@ -28,7 +28,7 @@ do k1 = 1, numnp
         do n1 = 1, 2
             if (is_dir_face(m1,n1)) then
 
-                number_density = rho_0 * avogadro_constant
+                number_density = rho_mol_bulk * n_avog
                 radius_pol     = (3./4./pi/number_density)**(1./3.) * 1.d10
 
                 if (n1.eq.1) then
@@ -63,7 +63,7 @@ do k1 = 1, numnp
     enddo
 
    !loop over all nanoparticle faces
-   number_density   = rho_0 * avogadro_constant
+   number_density   = rho_mol_bulk * n_avog
    radius_pol       = (3./4./pi/number_density)**(1./3.) * 1.d10
 
    do m1 = 1, n_nanopart_faces
