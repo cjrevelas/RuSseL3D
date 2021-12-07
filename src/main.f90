@@ -272,6 +272,9 @@ do iter = init_iter+1, iterations
     max_error    = max_error * chainlen_matrix
     wa_std_error = wa_std_error * chainlen_matrix
 
+    free_energy_error = abs(free_energy - free_energy_prev)
+    free_energy_prev  = free_energy
+
     do k1 = 1, numnp
         wa_mix(k1) = (1.d0 - frac) * wa(k1) + frac * wa_new(k1)
     enddo
@@ -280,6 +283,10 @@ do iter = init_iter+1, iterations
         call periodic_dumper(qm_final, qgr_final, qm_interp_mm, qm_interp_mg, qgr_interp, phia_mx, phia_gr, wa, wa_new, wa_mix)
         call export_field(wa_mix, numnp, iter)
     endif
+
+    convergence = (max_error<=max_error_tol).or.(free_energy_error<=free_energy_error_tol)
+
+    if (convergence) exit 
 enddo
 !**************************************************************************************************************!
 !                                             EXPORT SIMULATION RESULTS                                        !
