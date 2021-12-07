@@ -1,4 +1,4 @@
-subroutine energies(qm_interp_mg, wa, Ufield, phi_total, part_func, num_gpoints, gpid, free_energy)
+subroutine energies(qm_interp_mg, phi_total, part_func, num_gpoints, gpid, free_energy)
 !-------------------------------------------------------------------------------------------------!
 use parser_vars
 use eos
@@ -13,7 +13,7 @@ integer, intent(in), dimension(num_gpoints) :: gpid
 integer                                     :: k1, gnode_id
 
 real(8), intent(in), dimension(numnp,ns_gr_conv+1) :: qm_interp_mg
-real(8), intent(in), dimension(numnp)              :: wa, Ufield, phi_total
+real(8), intent(in), dimension(numnp)              :: phi_total
 real(8), intent(in)                                :: part_func
 real(8), intent(out)                               :: free_energy
 real(8)                                            :: Q=0.d0, vol=0.d0
