@@ -12,6 +12,7 @@ real(8) :: ds_ave_matrix_ed, ds_ave_gr_ed, ds_ave_matrix_conv, ds_ave_gr_conv
 integer :: iow, ioe, iterations, field_init_scheme, init_iter
 integer :: matrix_exist, grafted_exist, calc_delta_every, grafted_ic_from_delta
 integer :: print_ev, output_every
+logical :: square_gradient
 
 !domain
 integer               :: prof_dim
@@ -28,14 +29,14 @@ real(8), allocatable, dimension(:,:) :: center_np
 !scf model and potential data
 real(8) :: Temp, Pres, mon_mass, massden, kapa, kappa_T
 real(8) :: rho_mass_bulk, rho_mol_bulk, rho_seg_bulk
+real(8) :: k_gr, k_gr_tilde
 real(8) :: Rg2_per_mon_matrix, Rg2_per_mon_gr, sphere_radius
 real(8) :: A_pol, sigma_pol, wall_distance
 
 !convergence scheme
 integer :: scheme_type
+integer :: mumps_matrix_type
 real(8) :: max_error_tol, frac
 
-!mumps solver options
-integer :: mumps_matrix_type
 !-------------------------------------------------------------------------------!
 end module parser_vars

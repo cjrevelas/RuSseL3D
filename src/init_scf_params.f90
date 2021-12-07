@@ -34,6 +34,7 @@ if (eos_type.eq.eos_helfand) then
 elseif (eos_type.eq.eos_sl) then
     write(iow,'(3X,A45)') adjl("Computation of polymer  mass density from SL EoS",45)
     write(*  ,'(3X,A45)') adjl("Computation of polymer  mass density from SL EoS",45)
+    V_star         = boltz_const_Joule_K * T_star / P_star
     T_tilde        = Temp / T_star
     P_tilde        = Pres / P_star
     rsl_N          = (mon_mass * P_star) / (rho_star * 1.d03 * boltz_const_Joule_molK * T_star)
@@ -44,6 +45,11 @@ elseif (eos_type.eq.eos_sl) then
 
     write(iow,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), rho_mass_bulk/gr_cm3_to_kg_m3
     write(*  ,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), rho_mass_bulk/gr_cm3_to_kg_m3
+
+    k_gr = 2.d0 * P_star * rsl_N**2 * V_star**(8.d0/3.d0) * k_gr_tilde
+    !write(*,*) k_gr_tilde
+    !write(*,*) k_gr
+    !STOP
 endif
 !------------------------------------------------------------------------------------------------------!
 end subroutine init_scf_params

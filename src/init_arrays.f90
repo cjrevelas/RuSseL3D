@@ -11,6 +11,7 @@ use iofiles
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
 allocate(rdiag1(numnp))
+allocate(d2phi_dr2(numnp))
 allocate(wa(numnp),wa_mix(numnp),wa_new(numnp),Ufield(numnp))
 allocate(ds_matrix_ed(ns_matrix_ed+1),ds_matrix_conv(ns_matrix_conv+1))
 allocate(xs_matrix_ed(ns_matrix_ed+1),xs_matrix_conv(ns_matrix_conv+1))
@@ -23,6 +24,7 @@ allocate(qm_interp_mg(numnp,ns_gr_conv+1))
 allocate(qgr_final(numnp,ns_gr_ed+1))
 allocate(qgr_interp(numnp,ns_gr_conv+1))
 
+d2phi_dr2         = 0.d0
 wa                = 0.d0
 wa_mix            = 0.d0
 wa_new            = 0.d0

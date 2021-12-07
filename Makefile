@@ -60,6 +60,8 @@ MODULES=$(OBJDIR)/parser_vars.o\
 OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/get_part_func.o\
 	$(OBJDIR)/get_nchains.o\
+        $(OBJDIR)/compute_gradient.o\
+        $(OBJDIR)/compute_phi_end_middle.o\
 	$(OBJDIR)/periodic_dumper.o\
 	$(OBJDIR)/export_field.o\
 	$(OBJDIR)/parser.o\
@@ -82,7 +84,10 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/mumps_sub.o\
 	$(OBJDIR)/get_sys_time.o\
 	$(OBJDIR)/dirichlet.o\
-	$(OBJDIR)/convolution.o
+	$(OBJDIR)/convolution.o\
+	$(OBJDIR)/interp_fem.o\
+	$(OBJDIR)/matinv4.o\
+	$(OBJDIR)/isInside.o\
 
 EXEC=$(RUNDIR)/fem_3d.exe
 #-----------------------------------------------------------------COMPILE AND LINK----------------------------------------------------------------#

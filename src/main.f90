@@ -28,12 +28,19 @@ implicit none
 include 'mpif.h'
 #endif
 !----------------------------------------------------------------------------------------------------------------------------------!
-integer :: i1, k1, iter, get_sys_time, t_init, t_final, gnode_id
+integer :: i1, k1, iter, get_sys_time, t_init, t_final, gnode_id, node_id
 
-logical :: sym
+logical :: sym, convergence = .false.
 
-real(8) :: chainlen = 0.d0, wa_max = 0.d0, wa_std_error = 0.d0, max_error = 200000.d0
-real(8) :: part_func = 0.d0, nch_gr = 0.d0, free_energy = 0.d0
+real(8) :: compute_gradient, interp_fem
+real(8) :: phi_plus_dx = 0.D0, phi_plus_dy = 0.D0, phi_plus_dz = 0.D0
+real(8) :: phi_minus_dx = 0.D0, phi_minus_dy = 0.D0, phi_minus_dz = 0.D0
+real(8) :: dphi2_dx2 = 0.D0, dphi2_dy2 = 0.D0, dphi2_dz2 = 0.D0
+real(8), allocatable, dimension(:) :: dphi2_dr2
+
+real(8) :: chainlen = 0.d0, part_func = 0.d0, nch_gr = 0.d0 
+real(8) :: wa_max = 0.d0, wa_std_error = 0.d0, max_error = 200000.d0
+real(8) :: free_energy_prev = 1.d10, free_energy = 0.d0, free_energy_error = 1.d10, free_energy_error_tol = 1.d-6
 !----------------------------------------------------------------------------------------------------------------------------------!
 !**************************************************************************************************************!
 !                                                    MPI SECTION                                               !
@@ -87,6 +94,8 @@ call parser
 call init_scf_params
 call import_mesh
 call init_arrays
+allocate(dphi2_dr2(numnp))
+dphi2_dr2=0.d0
 call init_delta
 
 #ifdef USE_MPI
@@ -210,10 +219,43 @@ do iter = init_iter+1, iterations
     endif
 
     do k1 = 1, numnp
-        wa_new(k1) = (eos_df_drho(phi_total(k1)) - eos_df_drho(1.d0)) / (boltz_const_Joule_K*Temp) + Ufield(k1)
+        dphi2_dr2(k1) = compute_gradient(k1, phi_total)
+        !STOP
+    enddo
+    STOP
+    !phi_plus_dx = interp_fem(1, xc(1,1)+dx, xc(2,1), xc(3,1), phi_total(1))
+    !phi_plus_dy = interp_fem(1, xc(1,1), xc(2,1)+dy, xc(3,1), phi_total(1))
+    !phi_plus_dz = interp_fem(1, xc(1,1), xc(2,1), xc(3,1)+dz, phi_total(1))
+
+    !dphi2_dx2 = (phi_plus_dx -2.D0*phi_total(1) + phi_total(1)) / (dx*1.D-10)**2.D0
+    !dphi2_dy2 = (phi_plus_dy -2.D0*phi_total(1) + phi_total(1)) / (dy*1.D-10)**2.D0
+    !dphi2_dz2 = (phi_plus_dz -2.D0*phi_total(1) + phi_total(1)) / (dz*1.D-10)**2.D0
+
+    !dphi2_dr2(1) = dphi2_dx2 + dphi2_dy2 + dphi2_dz2
+
+    !phi_minus_dx = interp_fem(numnp, xc(1,numnp)-dx, xc(2,numnp), xc(3,numnp), phi_total(numnp))
+    !phi_minus_dy = interp_fem(numnp, xc(1,numnp), xc(2,numnp)-dy, xc(3,numnp), phi_total(numnp))
+    !phi_minus_dz = interp_fem(numnp, xc(1,numnp), xc(2,numnp), xc(3,numnp)-dz, phi_total(numnp))
+
+    !dphi2_dx2 = (phi_total(numnp) -2.D0*phi_total(numnp) + phi_minus_dx) / (dx*1.D-10)**2.D0
+    !dphi2_dy2 = (phi_total(numnp) -2.D0*phi_total(numnp) + phi_minus_dy) / (dy*1.D-10)**2.D0
+    !dphi2_dz2 = (phi_total(numnp) -2.D0*phi_total(numnp) + phi_minus_dz) / (dz*1.D-10)**2.D0
+
+    !dphi2_dr2(numnp) = dphi2_dx2 + dphi2_dy2 + dphi2_dz2
+
+    !do k1 = 1, numnp
+    !    write(123,*) xc(3,k1), phi_total(k1), dphi2_dr2(k1)
+    !enddo
+    !node_id = 200
+    !dphi2_dr2 = compute_gradient(node_id, phi_total)
+
+
+    do k1 = 1, numnp
+        wa_new(k1) = (eos_df_drho(phi_total(k1)) - eos_df_drho(1.d0)) / (boltz_const_Joule_K*Temp) - &
+                   & k_gr * (rho_seg_bulk * dphi2_dr2(k1)) / (boltz_const_Joule_K * Temp) + Ufield(k1)
     enddo
 
-    call energies(qm_interp_mg, wa, Ufield, phi_total, part_func, num_gpoints, gpid, free_energy)
+    call energies(qm_interp_mg, phi_total, part_func, num_gpoints, gpid, free_energy)
 
     max_error    = 0.d0
     wa_std_error = 0.d0

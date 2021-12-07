@@ -46,6 +46,7 @@ logical :: log_wall_distance               = .false.
 
 logical :: log_eos_type                    = .false.
 logical :: log_eos_coeffs                  = .false.
+logical :: log_influence_param             = .false.
 
 logical :: log_output_every                = .false.
 logical :: log_profile_dimension           = .false.
@@ -149,12 +150,15 @@ do
             read(line,*) eos_type
             log_eos_type = .true.
         elseif (index(line,"# EOS coeffs") > 0) then
-            if (eos_type.eq.eos_helfand) then
+            if (eos_type.eq.eos_helfand) then 
                 read(line,*) hlf_kappa_T
-            elseif (eos_type.eq.eos_sl)  then
+            elseif (eos_type.eq.eos_sl)  then 
                 read(line,*) rho_star, T_star, P_star
             endif
             log_eos_coeffs = .true.
+        elseif (index(line, "# EOS influence parameter") > 0) then
+            read(line,*) k_gr_tilde
+            log_influence_param = .true.
         elseif (index(line,"# calculate grafted initial condition using delta function") > 0) then
             read(line,*) grafted_ic_from_delta
             log_grafted_ic_from_delta = .true.
@@ -734,8 +738,8 @@ endif
 
 if (log_eos_coeffs) then
     if (eos_type.eq.eos_helfand) then
-        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
-        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
+        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
     elseif (eos_type.eq.eos_sl) then
         write(iow,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
         write(*  ,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
@@ -744,6 +748,17 @@ else
     write(iow,'(A40)') "EOS coeffs were not found"
     write(*  ,'(A40)') "EOS coeffs were not found"
     STOP
+endif
+
+if  (log_influence_param) then
+    square_gradient = .true.
+    write(iow,'(3X,A40,E16.9,A14)')adjl("Influence parameter:",45), k_gr_tilde, " [J*m^5/mol^2]"
+    write(*  ,'(3X,A40,E16.9,A14)')adjl("Influence parameter:",45), k_gr_tilde, " [J*m^5/mol^2]"
+else
+    k_gr_tilde = 0.d0
+    square_gradient = .false.
+    write(iow,'(3X,A40,E16.9,A14)')adjl("Influence parameter not found. Auto:",45), k_gr_tilde, " [J*m^5/mol^2]"
+    write(*  ,'(3X,A40,E16.9,A14)')adjl("Influence parameter not found. Auto:",45), k_gr_tilde, " [J*m^5/mol^2]"
 endif
 
 
