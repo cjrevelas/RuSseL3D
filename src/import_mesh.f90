@@ -1,4 +1,4 @@
-subroutine mesh()
+subroutine import_mesh()
 !--------------------------------------------------------------------!
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
@@ -68,9 +68,11 @@ do
                 enddo
             enddo
 
-            write(iow,'("Box dimensions")')
+            write(iow,*)
+            write(*,*)
+            write(iow,'(A85)')adjl('-------------------------------------BOX DIMENSIONS----------------------------------',85)
+            write(*  ,'(A85)')adjl('-------------------------------------BOX DIMENSIONS----------------------------------',85)
             write(iow,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
-            write(6  ,'("Box dimensions")')
             write(6  ,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
 
             do j = 1, ndm
@@ -89,7 +91,23 @@ do
             read(12,*) nel
             read(12,*) numel
             allocate(ix(nel,numel))
+
             all_el = nel * nel * numel
+
+            write(iow,*)
+            write(*,*)
+            write(iow,'(A85)')adjl('--------------------------------------SPATIAL MESH-----------------------------------',85)
+            write(*  ,'(A85)')adjl('--------------------------------------SPATIAL MESH-----------------------------------',85)
+
+            write(iow,'("Number of mesh points (numnp):         ",I16)') numnp
+            write(iow,'("Number of elements (numel):            ",I16)') numel
+            write(iow,'("Number of nodes per element (nel):     ",I16)') nel
+            write(iow,'("Number of matrix indeces:              ",I16)') all_el
+
+            write(6,'("Number of mesh points (numnp):         ",I16)') numnp
+            write(6,'("Number of elements (numel):            ",I16)') numel
+            write(6,'("Number of nodes per element (nel):     ",I16)') nel
+            write(6,'("Number of matrix indeces:              ",I16)') all_el
 
             read(12,*) 
 
@@ -316,4 +334,4 @@ close(77)
 
 return
 !--------------------------------------------------------------------!
-end subroutine mesh
+end subroutine import_mesh

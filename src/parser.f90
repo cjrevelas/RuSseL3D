@@ -3,6 +3,7 @@ subroutine parser()
 use parser_vars
 use write_helper
 use error_handing
+use flags
 use eos
 use iofiles
 !--------------------------------------------------------------------------------!

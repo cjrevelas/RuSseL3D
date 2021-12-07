@@ -43,6 +43,8 @@ RUNDIR=run
 
 MODULES=$(OBJDIR)/parser_vars.o\
 	$(OBJDIR)/constants.o\
+        $(OBJDIR)/flags.o\
+        $(OBJDIR)/eos.o\
 	$(OBJDIR)/kcw.o\
 	$(OBJDIR)/geometry.o\
 	$(OBJDIR)/fhash_mod.o\
@@ -64,7 +66,7 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/init_field.o\
 	$(OBJDIR)/init_arrays.o\
 	$(OBJDIR)/init_delta.o\
-	$(OBJDIR)/calc_scf_params.o\
+	$(OBJDIR)/init_scf_params.o\
 	$(OBJDIR)/init_time.o\
 	$(OBJDIR)/simpsonkoef.o\
 	$(OBJDIR)/quadinterp_koef.o\
@@ -72,7 +74,7 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/tetshp.o\
 	$(OBJDIR)/find_delta.o\
 	$(OBJDIR)/qprint.o\
-	$(OBJDIR)/mesh.o\
+	$(OBJDIR)/import_mesh.o\
 	$(OBJDIR)/gausspoints.o\
 	$(OBJDIR)/edwards.o\
 	$(OBJDIR)/energies.o\
@@ -109,4 +111,7 @@ cleaner:
 #-----------------------------------------------------------RUN TESTS TO VERIFY CHANGES-----------------------------------------------------------#
 test:
 	./test_integrity/test_integrity.sh
+
+cleantest:
+	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/*.exe $(RUNDIR)/*.out.txt $(RUNDIR)/*out.bin $(RUNDIR)/fort.* $(RUNDIR)/field.in.bin $(RUNDIR)/LOG*
 ###################################################################################################################################################
