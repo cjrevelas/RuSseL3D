@@ -15,7 +15,7 @@ implicit none
 character(len=200) :: line, line_internal
 
 integer                              :: nbin, ibin
-integer                              :: reason, reason_internal, idummy, i, j, i1, j1, k1, m1
+integer                              :: reason, reason_internal, idummy, i, j, i1, j1, k1, m1, i_node, ii, jj
 integer                              :: num_nodes_per_face_elem, num_face_elem
 integer, allocatable, dimension(:)   :: face_entity_id, temp3
 integer, allocatable, dimension(:,:) :: face_node_id
@@ -40,7 +40,7 @@ else
 endif
 
 do
-    read(12,'(A100)',IOSTAT=reason) line  
+    read(12,'(A100)',IOSTAT=reason) line
 
     if (reason>0) then
         write(*,*) "Something went wrong!"
@@ -54,14 +54,14 @@ do
             read(line,*) numnp
             allocate(xc(ndm,numnp))
         elseif (index(line,"# Mesh point coordinates") > 0) then
-            
+
             box_lo  = 0.d0
             box_hi  = 0.d0
             box_len = 0.d0
 
             do i = 1, numnp
                 read(12,*) (xc(j,i), j = 1, ndm)
-                
+
                 do j = 1, ndm
                     box_hi(j) = max(xc(j,i), box_hi(j))
                     box_lo(j) = min(xc(j,i), box_lo(j))
@@ -85,7 +85,7 @@ do
             write(iow,'(A43,E16.9,A13)')adjl("Box volume:",43),box_volume," [Angstrom^3]"
             write(6  ,'(A43,E16.9,A13)')adjl("Box volume:",43),box_volume," [Angstrom^3]"
         elseif (index(line," tet") > 0) then
-            
+
             read(12,*)
             read(12,*)
             read(12,*) nel
@@ -109,7 +109,7 @@ do
             write(6,'("Number of nodes per element (nel):     ",I16)') nel
             write(6,'("Number of matrix indeces:              ",I16)') all_el
 
-            read(12,*) 
+            read(12,*)
 
             do i = 1, numel
                 read(12,*) (ix(j,i), j = 1, nel)
@@ -136,11 +136,11 @@ do
             read(12,*) num_nodes_per_face_elem
             read(12,*) num_face_elem
             allocate(face_node_id(num_nodes_per_face_elem,num_face_elem))
-            
+
             read(12,*)
-            
+
             do i = 1, num_face_elem
-                read(12,*) (face_node_id(j,i), j = 1, num_nodes_per_face_elem)             
+                read(12,*) (face_node_id(j,i), j = 1, num_nodes_per_face_elem)
             enddo
 
             face_node_id = face_node_id + 1
@@ -148,7 +148,7 @@ do
             allocate(face_entity_id(num_face_elem))
 
             do
-                read(12,'(A100)',IOSTAT=reason_internal) line_internal  
+                read(12,'(A100)',IOSTAT=reason_internal) line_internal
 
                 if (reason_internal>0) then
                     write(*,*) "Something went wrong!"
@@ -163,7 +163,7 @@ do
                             read(12,*)  face_entity_id(i)
                         enddo
 
-                        exit       
+                        exit
                     endif
                 endif
             enddo
@@ -174,6 +174,39 @@ do
 enddo
 
 close(12)
+
+!compute the maximum number of elements per node
+
+! compute the array elements of node
+
+allocate(n_el_node(numnp))
+n_el_node = 0
+
+max_el_node = 0
+do ii = 1, numel
+   do jj = 1, 4
+      i_node = ix(jj, ii)
+      n_el_node(i_node) = n_el_node(i_node) + 1
+      max_el_node = max(max_el_node, n_el_node(i_node))
+!      write(*,*)max_el_node, n_el_node(i_node)
+   enddo
+enddo
+
+write(iow,'("Maximum number of elements per node: ",I5)')max_el_node
+write(6  ,'("Maximum number of elements per node: ",I5)')max_el_node
+
+allocate(el_node(numnp, max_el_node))
+el_node = 0
+
+n_el_node = 0
+do ii = 1, numel
+   do jj = 1, 4
+      i_node = ix(jj, ii)
+      n_el_node(i_node) = n_el_node(i_node) + 1
+!      write(*,*)max_el_node, n_el_node(i_node)
+      el_node(i_node, n_el_node(i_node)) = ii
+   enddo
+enddo
 
 !allocate and initialize arrays for matrix assembly
 allocate(F_m%row(all_el))
