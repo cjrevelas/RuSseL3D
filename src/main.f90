@@ -201,6 +201,12 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         call convolution(numnp, chainlen_gr, ns_gr_conv, koeff_gr_conv, qgr_interp, qm_interp_mg, phia_gr)
     endif
 
+    phi_total = 0.d0
+    do k1 = 1, numnp
+        if (matrix_exist.eq.1)  phi_total(k1) = phi_total(k1) + phia_mx(k1)
+        if (grafted_exist.eq.1) phi_total(k1) = phi_total(k1) + phia_gr(k1)
+    enddo
+
     call part_fun(numnp, ns_matrix_conv, qm_interp_mm, part_func)
 
     if (grafted_exist.eq.1) then
