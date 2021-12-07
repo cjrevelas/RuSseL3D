@@ -61,7 +61,7 @@ do i1 = 1, num_gpoints
 
     call convolution(numnp, chainlen_gr, ns_gr_conv, koeff_gr_conv, qgr_interp, qm_interp_mg, phia_gr)
 
-    call grafted_chains(numnp, chainlen_gr, rho_mol_bulk, phia_gr, nch_gr)
+    call get_nchains(numnp, chainlen_gr, rho_mol_bulk, phia_gr, nch_gr)
 
     delta_numer(i1) = delta_anal(i1) / nch_gr
 enddo

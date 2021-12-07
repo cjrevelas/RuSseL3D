@@ -95,26 +95,25 @@ call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 
 sym      = .false.
 chainlen = chainlen_matrix_max
-call init_time(sym, chainlen, ns_matrix_ed, ds_ave_matrix_ed, ds_matrix_ed, xs_matrix_ed, koeff_matrix_ed)
+call init_chain_contour(sym, chainlen, ns_matrix_ed, ds_ave_matrix_ed, ds_matrix_ed, xs_matrix_ed, koeff_matrix_ed)
 
 sym      = .true.
 chainlen = chainlen_matrix
-call init_time(sym, chainlen, ns_matrix_conv, ds_ave_matrix_conv, ds_matrix_conv, xs_matrix_conv, koeff_matrix_conv)
+call init_chain_contour(sym, chainlen, ns_matrix_conv, ds_ave_matrix_conv, ds_matrix_conv, xs_matrix_conv, koeff_matrix_conv)
 
 if (grafted_exist.eq.1) then
     sym      = .false.
     chainlen = chainlen_gr
-    call init_time(sym, chainlen, ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, koeff_gr_ed)
+    call init_chain_contour(sym, chainlen, ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, koeff_gr_ed)
 
     sym      = .true.
     chainlen = chainlen_gr
-    call init_time(sym, chainlen, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, koeff_gr_conv)
+    call init_chain_contour(sym, chainlen, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, koeff_gr_conv)
 endif
 
 call init_field(Ufield, wa)
 
 wa_mix = wa
-
 !**************************************************************************************************************!
 !                                        LOOPS FOR FIELD CONVERGENCE                                           !
 !**************************************************************************************************************!
@@ -129,10 +128,7 @@ write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "free_energy", "n_gr_cha
 t_init = get_sys_time()
 iter   = init_iter
 
-do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
-
-    iter = iter + 1
-
+do iter = init_iter+1, iterations
     write(iow,'(I10,1X,6(E19.9e3,1X))') iter-1, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
     write(6  ,'(I4 ,1X,6(E14.4e3,1X))') iter-1, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
 
@@ -207,10 +203,10 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
         if (grafted_exist.eq.1) phi_total(k1) = phi_total(k1) + phia_gr(k1)
     enddo
 
-    call part_fun(numnp, ns_matrix_conv, qm_interp_mm, part_func)
+    call get_part_func(numnp, ns_matrix_conv, qm_interp_mm, part_func)
 
     if (grafted_exist.eq.1) then
-        call grafted_chains(numnp, chainlen_gr, rho_mol_bulk, phia_gr, nch_gr)
+        call get_nchains(numnp, chainlen_gr, rho_mol_bulk, phia_gr, nch_gr)
     endif
 
     do k1 = 1, numnp
@@ -219,7 +215,6 @@ do while ((iter.lt.iterations).and.(max_error.gt.max_error_tol))
 
     call energies(qm_interp_mg, wa, Ufield, phi_total, part_func, num_gpoints, gpid, free_energy)
 
-    !compare and mix the old and the new field
     max_error    = 0.d0
     wa_std_error = 0.d0
     wa_max       = 0.d0

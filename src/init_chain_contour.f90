@@ -1,4 +1,4 @@
-subroutine init_time(sym, chainlen, ns, ds_ave, ds, xs, koeff)
+subroutine init_chain_contour(sym, chainlen, ns, ds_ave, ds, xs, koeff)
 !------------------------------------------------------------------------------------------------------!
 use constants
 use parser_vars
@@ -35,4 +35,4 @@ endif
 
 call quadinterp_koef(ds, ns, koeff)
 !------------------------------------------------------------------------------------------------------!
-end subroutine init_time
+end subroutine init_chain_contour

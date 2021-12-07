@@ -1,4 +1,4 @@
-subroutine grafted_chains(numnp, chainlen, rho_mol_bulk, phia, nch_gr)
+subroutine get_nchains(numnp, chainlen, rho_mol_bulk, phia, nch_gr)
 !-------------------------------------------------------------------------------------------!
 use constants
 !-------------------------------------------------------------------------------------------!
@@ -19,4 +19,4 @@ nch_gr = sum_f * 1.0d-30 * rho_mol_bulk * n_avog / chainlen
 
 return
 !-------------------------------------------------------------------------------------------!
-end subroutine grafted_chains
+end subroutine get_nchains   

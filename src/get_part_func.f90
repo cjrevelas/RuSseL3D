@@ -1,4 +1,4 @@
-subroutine part_fun(numnp, ns, q_final, part_func)
+subroutine get_part_func(numnp, ns, q_final, part_func)
 !-------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------!
@@ -9,7 +9,7 @@ real(8), intent(in), dimension(numnp,ns+1) :: q_final
 real(8), intent(out)                       :: part_func
 real(8)                                    :: sum_f, Q, vol
 real(8), dimension(numnp)                  :: q_last
-!-------------------------------------------------------------------------------------------! 
+!-------------------------------------------------------------------------------------------!
 sum_f = 0.d0
 
 do k1 = 1, numnp
@@ -22,4 +22,4 @@ part_func = Q
 
 return
 !-------------------------------------------------------------------------------------------!
-end subroutine part_fun
+end subroutine get_part_func

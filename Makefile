@@ -58,8 +58,8 @@ MODULES=$(OBJDIR)/parser_vars.o\
 	$(OBJDIR)/delta.o\
 
 OBJECTS=$(OBJDIR)/matrix_assemble.o\
-	$(OBJDIR)/part_fun.o\
-	$(OBJDIR)/grafted_chains.o\
+	$(OBJDIR)/get_part_func.o\
+	$(OBJDIR)/get_nchains.o\
 	$(OBJDIR)/periodic_dumper.o\
 	$(OBJDIR)/export_field.o\
 	$(OBJDIR)/parser.o\
@@ -67,7 +67,7 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/init_arrays.o\
 	$(OBJDIR)/init_delta.o\
 	$(OBJDIR)/init_scf_params.o\
-	$(OBJDIR)/init_time.o\
+	$(OBJDIR)/init_chain_contour.o\
 	$(OBJDIR)/simpsonkoef.o\
 	$(OBJDIR)/quadinterp_koef.o\
 	$(OBJDIR)/spat_3d.o\
