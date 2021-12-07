@@ -43,10 +43,10 @@ do k1 = 1, num_gpoints
     gnode_id = gpid(k1)
     r_gpoint = min(abs(xc(3,gnode_id) - box_lo(3)), abs(box_hi(3) - xc(3,gnode_id)))
 
-    term4_gpoint(k1) = - boltz_const_Joule_K * Temp * log(qm_interp_mg(gnode_id,ns_gr_conv+1)) !green: entropy of grafted chains
-    term4            = term4 + term4_gpoint(k1) 
-    
-    term4_norm_gpoint(k1) = - boltz_const_Joule_K * Temp * log(r_ref / r_gpoint) 
+    term4_gpoint(k1) = - boltz_const_Joule_K * Temp * log(qm_interp_mg(gnode_id,ns_gr_conv+1))
+    term4            = term4 + term4_gpoint(k1)
+
+    term4_norm_gpoint(k1) = - boltz_const_Joule_K * Temp * log(r_ref / r_gpoint)
     term4_norm            = term4_norm + term4_norm_gpoint(k1)
 enddo
 
