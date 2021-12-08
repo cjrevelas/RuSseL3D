@@ -9,20 +9,6 @@ use error_handing
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-if (grafted_exist.eq.1) then
-    ds_ave_gr_ed   = chainlen_gr / dble(ns_gr_ed)
-    ds_ave_gr_conv = chainlen_gr / dble(ns_gr_conv)
-
-    chainlen_matrix_max = max(chainlen_matrix, chainlen_gr)
-else
-    chainlen_matrix_max = chainlen_matrix
-endif
-
-if (matrix_exist.eq.1) then
-    ds_ave_matrix_ed   = chainlen_matrix_max / dble(ns_matrix_ed)
-    ds_ave_matrix_conv = chainlen_matrix / dble(ns_matrix_conv)
-endif
-
 if (eos_type.eq.eos_helfand) then
     rho_mol_bulk = massden/mon_mass*1.d06
     write(iow,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40),rho_mol_bulk," [mol/m^3]"
@@ -47,9 +33,6 @@ elseif (eos_type.eq.eos_sl) then
     write(*  ,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), rho_mass_bulk/gr_cm3_to_kg_m3
 
     k_gr = 2.d0 * P_star * rsl_N**2 * V_star**(8.d0/3.d0) * k_gr_tilde
-    !write(*,*) k_gr_tilde
-    !write(*,*) k_gr
-    !STOP
 endif
 !------------------------------------------------------------------------------------------------------!
 end subroutine init_scf_params

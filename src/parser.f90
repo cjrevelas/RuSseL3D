@@ -27,13 +27,13 @@ logical :: log_fraction_of_new_field       = .false.
 
 logical :: log_matrix_exist                = .false.
 logical :: log_Rg2_per_mon_matrix          = .false.
-logical :: log_n_matrix_seg                = .false.
+logical :: log_ds_ave_matrix               = .false.
 logical :: log_chainlen_matrix             = .false.
 
 logical :: log_grafted_exist               = .false.
 logical :: log_Rg2_per_mon_gr              = .false.
 logical :: log_chainlen_gr                 = .false.
-logical :: log_n_gr_seg                    = .false.
+logical :: log_ds_ave_gr                   = .false.
 logical :: log_grafted_ic_from_delta       = .false.
 logical :: log_calc_delta_every            = .false.
 
@@ -134,12 +134,12 @@ do
         elseif (index(line,"# use grafted") > 0) then
             read(line,*) grafted_exist
             log_grafted_exist = .true.
-        elseif (index(line,"# number of matrix segments") > 0) then
-            read(line,*) ns_matrix_ed, ns_matrix_conv
-            log_n_matrix_seg = .true.
-        elseif (index(line,"# number of grafted segments") > 0) then
-            read(line,*) ns_gr_ed, ns_gr_conv
-            log_n_gr_seg = .true.
+        elseif (index(line,"# contour step of matrix chains") > 0) then
+            read(line,*) ds_ave_matrix_ed, ds_ave_matrix_conv
+            log_ds_ave_matrix = .true.
+        elseif (index(line,"# contour step of grafted chains") > 0) then
+            read(line,*) ds_ave_gr_ed, ds_ave_gr_conv
+            log_ds_ave_gr = .true.
         elseif (index(line,"# mumps matrix type") > 0) then
             read(line,*) mumps_matrix_type
             log_mumps_matrix_type = .true.
@@ -150,9 +150,9 @@ do
             read(line,*) eos_type
             log_eos_type = .true.
         elseif (index(line,"# EOS coeffs") > 0) then
-            if (eos_type.eq.eos_helfand) then 
+            if (eos_type.eq.eos_helfand) then
                 read(line,*) hlf_kappa_T
-            elseif (eos_type.eq.eos_sl)  then 
+            elseif (eos_type.eq.eos_sl)  then
                 read(line,*) rho_star, T_star, P_star
             endif
             log_eos_coeffs = .true.
@@ -269,65 +269,17 @@ else
 endif
 
 
-if (log_matrix_exist) then
-    if (matrix_exist.eq.1) then
-        write(iow,*)
-        write(*,*)
-        write(iow,'(A85)')adjl('-------------------------------------MATRIX CHAINS-----------------------------------',85)
-        write(*  ,'(A85)')adjl('-------------------------------------MATRIX CHAINS-----------------------------------',85)
-    else
-        matrix_exist = 0
-    endif
-else
-    continue
-endif
-
-
 if (matrix_exist.eq.1) then
-    if (log_Rg2_per_mon_matrix) then
-        if (Rg2_per_mon_matrix>0) then
-            write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40),Rg2_per_mon_matrix,"[Angstrom^2]"
-            write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40),Rg2_per_mon_matrix,"[Angstrom^2]"
-        else
-            write(ERROR_MESSAGE,'("Rg2 per matrix monomer is negative: ",E16.9)') Rg2_per_mon_matrix
-            call exit_with_error(1,1,1,ERROR_MESSAGE)
-        endif
-    else
-        ERROR_MESSAGE="Rg2 per matrix monomer was not detected."
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-
     if (log_chainlen_matrix) then
         if (chainlen_matrix>0) then
-            write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40),chainlen_matrix,"[monomers]"
-            write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40),&
-                                                             & dsqrt(Rg2_per_mon_matrix*chainlen_matrix),"[Angstrom]"
-            write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40),chainlen_matrix,"[monomers]"
-            write(6  ,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40),&
-                                                             & dsqrt(Rg2_per_mon_matrix*chainlen_matrix),"[Angstrom]"
+
+            chainlen_matrix_max = chainlen_matrix
         else
             write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') chainlen_matrix
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
         ERROR_MESSAGE="Chain length of matrix chains was not detected."
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-
-    if (log_n_matrix_seg) then
-        if (ns_matrix_ed>0 .and. ns_matrix_conv>0) then
-            write(iow,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40),ns_matrix_ed, ns_matrix_conv
-            write(6  ,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40),ns_matrix_ed, ns_matrix_conv
-            if (mod(ns_matrix_ed,2).ne.0 .or. mod(ns_matrix_conv,2).ne.0) then
-                write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') ns_matrix_ed, ns_matrix_conv
-                call exit_with_error(1,1,1,ERROR_MESSAGE)
-            endif
-        else
-            write(ERROR_MESSAGE,'("ns_matrix is negative: ",I16,I16)') ns_matrix_ed, ns_matrix_conv
-            call exit_with_error(1,1,1,ERROR_MESSAGE)
-        endif
-    else
-        ERROR_MESSAGE="Number of matrix segments was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 endif
@@ -362,13 +314,14 @@ if (grafted_exist.eq.1) then
     endif
 
     if (log_chainlen_gr) then
-        if ( chainlen_gr > 0 ) then
+        if (chainlen_gr>0) then
             write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of grafted chains:",40),chainlen_gr,"[monomers]"
             write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of grafted chains:",40),&
                                                               & dsqrt(Rg2_per_mon_gr*chainlen_gr),"[Angstrom]"
             write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of grafted chains:",40),chainlen_gr,"[monomers]"
             write(6  ,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of grafted chains:",40),&
                                                               & dsqrt(Rg2_per_mon_gr*chainlen_gr),"[Angstrom]"
+            chainlen_matrix_max = max(chainlen_matrix, chainlen_gr)
         else
             write(ERROR_MESSAGE,'("Chain length of grafted chains is negative: ",E16.9)') chainlen_gr
             call exit_with_error(1,1,1,ERROR_MESSAGE)
@@ -378,20 +331,81 @@ if (grafted_exist.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
-    if (log_n_gr_seg) then
-        if (ns_gr_ed>0 .and. ns_gr_conv>0) then
-            write(iow,'(3X,A40,I9,I7)')adjl("Number of grafted segments:",40),ns_gr_ed, ns_gr_conv
-            write(6  ,'(3X,A40,I9,I7)')adjl("Number of grafted segments:",40),ns_gr_ed, ns_gr_conv
+
+    if (log_ds_ave_gr) then
+        if (ds_ave_gr_ed>0 .and. ds_ave_gr_conv>0) then
+            ns_gr_ed   = 2 * nint(0.5d0 * chainlen_gr / ds_ave_gr_ed)
+            ns_gr_conv = 2 * nint(0.5d0 * chainlen_gr / ds_ave_gr_conv)
+            write(iow,'(3X,A40,I9,I7)')adjl("Number of grafted segments:",40), ns_gr_ed, ns_gr_conv
+            write(6  ,'(3X,A40,I9,I7)')adjl("Number of grafted segments:",40), ns_gr_ed, ns_gr_conv
+
             if (mod(ns_gr_ed,2).ne.0 .or. mod(ns_gr_conv,2).ne.0) then
                 write(ERROR_MESSAGE,'("ns_grafted is not an even number: ",I16,I16)') ns_gr_ed, ns_gr_conv
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
         else
-            write(ERROR_MESSAGE,'("ns_grafted is negative: ",I16,I16)') ns_gr_ed, ns_gr_conv
+            write(ERROR_MESSAGE,'("Contour step of grafted chains is negative: ",E16.9,E16.9)') ds_ave_gr_ed, ds_ave_gr_conv
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE="Number of grafted segments was not detected."
+        ERROR_MESSAGE="Contour step of grafted chains was not detected."
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+endif
+
+
+if (log_matrix_exist) then
+    if (matrix_exist.eq.1) then
+        write(iow,*)
+        write(*,*)
+        write(iow,'(A85)')adjl('-------------------------------------MATRIX CHAINS-----------------------------------',85)
+        write(*  ,'(A85)')adjl('-------------------------------------MATRIX CHAINS-----------------------------------',85)
+    else
+        matrix_exist = 0
+    endif
+else
+    continue
+endif
+
+
+if (matrix_exist.eq.1) then
+    if (log_Rg2_per_mon_matrix) then
+        if (Rg2_per_mon_matrix>0) then
+            write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40),Rg2_per_mon_matrix,"[Angstrom^2]"
+            write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40),Rg2_per_mon_matrix,"[Angstrom^2]"
+        else
+            write(ERROR_MESSAGE,'("Rg2 per matrix monomer is negative: ",E16.9)') Rg2_per_mon_matrix
+            call exit_with_error(1,1,1,ERROR_MESSAGE)
+        endif
+    else
+        ERROR_MESSAGE="Rg2 per matrix monomer was not detected."
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+
+    write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40),chainlen_matrix,"[monomers]"
+    write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40),&
+                                                             & dsqrt(Rg2_per_mon_matrix*chainlen_matrix),"[Angstrom]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40),chainlen_matrix,"[monomers]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40),&
+                                                             & dsqrt(Rg2_per_mon_matrix*chainlen_matrix),"[Angstrom]"
+    if (log_ds_ave_matrix) then
+        if (ds_ave_matrix_ed>0 .and. ds_ave_matrix_conv>0) then
+            ns_matrix_ed   = 2 * nint(0.5d0 * chainlen_matrix_max / ds_ave_matrix_ed)
+            ns_matrix_conv = 2 * nint(0.5d0 * chainlen_matrix     / ds_ave_matrix_conv)
+
+            write(iow,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_matrix_ed, ns_matrix_conv
+            write(6  ,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_matrix_ed, ns_matrix_conv
+
+            if (mod(ns_matrix_ed,2).ne.0 .or. mod(ns_matrix_conv,2).ne.0) then
+                write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') ns_matrix_ed, ns_matrix_conv
+                call exit_with_error(1,1,1,ERROR_MESSAGE)
+            endif
+        else
+            write(ERROR_MESSAGE,'("Contour step of matrix chains is negative: ",E16.9,E16.9)') ds_ave_matrix_ed, ds_ave_matrix_conv
+            call exit_with_error(1,1,1,ERROR_MESSAGE)
+        endif
+    else
+        ERROR_MESSAGE="Contour step of matrix chains was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 endif
@@ -738,8 +752,8 @@ endif
 
 if (log_eos_coeffs) then
     if (eos_type.eq.eos_helfand) then
-        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
-        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
+        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
     elseif (eos_type.eq.eos_sl) then
         write(iow,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
         write(*  ,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
