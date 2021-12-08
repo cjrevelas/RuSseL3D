@@ -11,7 +11,7 @@ integer             :: time_step, i1, ii2
 character(4)                               :: q_type
 character(20)                              :: file_name
 
-real(8), intent(in), dimension(numnp,ns+1) :: q_final
+real(8), intent(in), dimension(ns+1,numnp) :: q_final
 real(8)                                    :: iq_final
 !--------------------------------------------------------------------!
 write(file_name,'("q",A4,".out.txt")') q_type
@@ -22,7 +22,7 @@ do i1 = 1, numnp
         write(363,'(E20.9)',advance='no') xc(ii2,i1)
     enddo
     do time_step = 1, ns+1
-        iq_final = q_final(i1,time_step)
+        iq_final = q_final(time_step,i1)
         if (dabs(iq_final)<tol) then
             iq_final = 0.d0
         endif

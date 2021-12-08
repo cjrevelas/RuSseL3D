@@ -151,21 +151,21 @@ do iter = init_iter+1, iterations
     call matrix_assemble(Rg2_per_mon_matrix, wa)
 
     do i1 = 1, numnp
-       qm(i1,1)       = 1.d0
-       qm_final(i1,1) = 1.d0
+       qm(1,i1)       = 1.d0
+       qm_final(1,i1) = 1.d0
     enddo
 
     call edwards(ds_matrix_ed, ns_matrix_ed, mumps_matrix_type, qm, qm_final)
 
     if (grafted_exist.eq.1) then
         do i1 = 1, numnp
-            call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(i1,:), ns_gr_conv+1, xs_gr_conv, qm_interp_mg(i1,:))
+            call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(:,i1), ns_gr_conv+1, xs_gr_conv, qm_interp_mg(:,i1))
         enddo
 
         ! recompute the delta functions if they exceed
         if (grafted_ic_from_delta.eq.1) then
             if ( (iter-1.eq.0) .or.   &
-     &           (mod(iter,calc_delta_every).eq.0 .and. (abs(nch_gr-dble(num_gpoints))/dble(num_gpoints))>0.005d0) ) then 
+     &           (mod(iter,calc_delta_every).eq.0 .and. (abs(nch_gr-dble(num_gpoints))/dble(num_gpoints))>0.005d0) ) then
                 call find_delta(numnp, qm_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, koeff_gr_conv, wa_mix, num_gpoints, &
      &                          gpid, delta_numer, gp_init_value)
             endif
@@ -173,7 +173,7 @@ do iter = init_iter+1, iterations
             do i1 = 1, num_gpoints
                 gnode_id = gpid(i1)
                 gp_init_value(i1) = delta_numer(i1) * chainlen_gr &
-                                  * 1.d0 / (qm_interp_mg(gnode_id, ns_gr_conv+1) * (rho_mol_bulk * n_avog) )
+                                  * 1.d0 / (qm_interp_mg(ns_gr_conv+1,gnode_id) * (rho_mol_bulk * n_avog))
             enddo
         endif
 
@@ -185,22 +185,22 @@ do iter = init_iter+1, iterations
         do i1 = 1, num_gpoints
             gnode_id = gpid(i1)
 
-            qgr(gnode_id,1)       = gp_init_value(i1)
-            qgr_final(gnode_id,1) = gp_init_value(i1)
+            qgr(1,gnode_id)       = gp_init_value(i1)
+            qgr_final(1,gnode_id) = gp_init_value(i1)
         enddo
 
         call edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final)
     endif
 
     do i1 = 1, numnp
-        call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(i1,:), ns_matrix_conv+1, xs_matrix_conv, qm_interp_mm(i1,:))
+        call interp_linear(1, ns_matrix_ed+1, xs_matrix_ed, qm_final(:,i1), ns_matrix_conv+1, xs_matrix_conv, qm_interp_mm(:,i1))
     enddo
 
     call convolution(numnp, chainlen_matrix, ns_matrix_conv, koeff_matrix_conv, qm_interp_mm, qm_interp_mm, phia_mx)
 
     if (grafted_exist.eq.1) then
         do i1 = 1, numnp
-            call interp_linear(1, ns_gr_ed+1, xs_gr_ed, qgr_final(i1,:), ns_gr_conv+1, xs_gr_conv, qgr_interp(i1,:))
+            call interp_linear(1, ns_gr_ed+1, xs_gr_ed, qgr_final(:,i1), ns_gr_conv+1, xs_gr_conv, qgr_interp(:,i1))
         enddo
 
         call convolution(numnp, chainlen_gr, ns_gr_conv, koeff_gr_conv, qgr_interp, qm_interp_mg, phia_gr)

@@ -9,14 +9,14 @@ implicit none
 integer :: k1
 
 real(8), intent(in), dimension(numnp)                  :: phia_mx, phia_gr, wa, wa_new, wa_mix
-real(8), intent(in), dimension(numnp,ns_matrix_ed+1)   :: qm_final
-real(8), intent(in), dimension(numnp,ns_matrix_conv+1) :: qm_interp_mm
-real(8), intent(in), dimension(numnp,ns_gr_conv+1)     :: qm_interp_mg
-real(8), intent(in), dimension(numnp,ns_gr_ed+1)       :: qgr_final
-real(8), intent(in), dimension(numnp,ns_gr_conv+1)     :: qgr_interp
+real(8), intent(in), dimension(ns_matrix_ed+1,numnp)   :: qm_final
+real(8), intent(in), dimension(ns_matrix_conv+1,numnp) :: qm_interp_mm
+real(8), intent(in), dimension(ns_gr_conv+1,numnp)     :: qm_interp_mg
+real(8), intent(in), dimension(ns_gr_ed+1,numnp)       :: qgr_final
+real(8), intent(in), dimension(ns_gr_conv+1,numnp)     :: qgr_interp
 !-----------------------------------------------------------------------------------------------------------!
 open (unit=120, file = profiles)
-write(120,'(A13,8(A19))') "np", "x", "y", "z", "phi_m", "phi_g", "wa", "wa_new", "wa_mix"
+write(120,'(A13,A11,2A19,2A21,A15,A22,A19)') "np", "x", "y", "z", "phi_m", "phi_g", "wa", "wa_new", "wa_mix"
 do k1 = 1, numnp
    write(120,'(I13,8(E19.9E3))') k1, xc(1,k1), xc(2,k1), xc(3,k1), phia_mx(k1), &
    &                             phia_gr(k1), wa(k1), wa_new(k1), wa_mix(k1)

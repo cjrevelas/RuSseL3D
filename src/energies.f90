@@ -12,7 +12,7 @@ integer, intent(in)                         :: num_gpoints
 integer, intent(in), dimension(num_gpoints) :: gpid
 integer                                     :: k1, gnode_id
 
-real(8), intent(in), dimension(numnp,ns_gr_conv+1) :: qm_interp_mg
+real(8), intent(in), dimension(ns_gr_conv+1,numnp) :: qm_interp_mg
 real(8), intent(in), dimension(numnp)              :: phi_total
 real(8), intent(in)                                :: part_func
 real(8), intent(out)                               :: free_energy
@@ -43,7 +43,7 @@ do k1 = 1, num_gpoints
     gnode_id = gpid(k1)
     r_gpoint = min(abs(xc(3,gnode_id) - box_lo(3)), abs(box_hi(3) - xc(3,gnode_id)))
 
-    term4_gpoint(k1) = - boltz_const_Joule_K * Temp * log(qm_interp_mg(gnode_id,ns_gr_conv+1))
+    term4_gpoint(k1) = - boltz_const_Joule_K * Temp * log(qm_interp_mg(ns_gr_conv+1,gnode_id))
     term4            = term4 + term4_gpoint(k1)
 
     term4_norm_gpoint(k1) = - boltz_const_Joule_K * Temp * log(r_ref / r_gpoint)
@@ -59,14 +59,15 @@ term4_norm = term4_norm * 1.d03 / (interf_area*1.d-20)
 free_energy = term1 + term2 + term3 + term4 + term4_norm
 
 open(unit=837, file = energy_terms)
-write(837,'(6(A19,1X))')      "term1", "term2", "term3", "term4", "term4_norm", "free_energy"
-write(837,'(6(E19.9e2,1X))')   term1,   term2,   term3,   term4,   term4_norm,   free_energy
+write(837,'(A14,3A20,A22,A21)')   "term1", "term2", "term3", "term4", "term4_norm", "free_energy"
+write(837,'(6(E19.9E2,1X))')   term1,   term2,   term3,   term4,   term4_norm,   free_energy
 
 if (num_gpoints.ne.0) then
-    write(837,'(A10,3(1X,A19))')  "id", "qm(ns)", "term4_gpoint", "term4_norm_gpoint"
+    write(837,*)
+    write(837,'(A9,A17,A23,A22)')  "id", "qm(ns)", "term4_gpoint", "term4_norm_gpoint"
     do k1 = 1, num_gpoints
         gnode_id   = gpid(k1)
-        write(837,'(I10,3(1X,E19.9e2))') gnode_id, qm_interp_mg(gnode_id,ns_gr_conv+1), term4_gpoint(k1), term4_norm_gpoint(k1)
+        write(837,'(I10,3(1X,E19.9e2))') gnode_id, qm_interp_mg(ns_gr_conv+1,gnode_id), term4_gpoint(k1), term4_norm_gpoint(k1)
     enddo
 endif
 

@@ -17,12 +17,12 @@ allocate(ds_matrix_ed(ns_matrix_ed+1),ds_matrix_conv(ns_matrix_conv+1))
 allocate(xs_matrix_ed(ns_matrix_ed+1),xs_matrix_conv(ns_matrix_conv+1))
 allocate(koeff_matrix_ed(ns_matrix_ed+1),koeff_matrix_conv(ns_matrix_conv+1))
 allocate(phia_mx(numnp),phia_gr(numnp),phi_total(numnp))
-allocate(qm(numnp,2))
-allocate(qm_final(numnp,ns_matrix_ed+1))
-allocate(qm_interp_mm(numnp,ns_matrix_conv+1))
-allocate(qm_interp_mg(numnp,ns_gr_conv+1))
-allocate(qgr_final(numnp,ns_gr_ed+1))
-allocate(qgr_interp(numnp,ns_gr_conv+1))
+allocate(qm(2,numnp))
+allocate(qm_final(ns_matrix_ed+1,numnp))
+allocate(qm_interp_mm(ns_matrix_conv+1,numnp))
+allocate(qm_interp_mg(ns_gr_conv+1,numnp))
+allocate(qgr_final(ns_gr_ed+1,numnp))
+allocate(qgr_interp(ns_gr_conv+1,numnp))
 
 d2phi_dr2         = 0.d0
 wa                = 0.d0
@@ -50,7 +50,7 @@ if (grafted_exist.eq.1) then
     allocate(ds_gr_ed(ns_gr_ed+1),ds_gr_conv(ns_gr_conv+1))
     allocate(xs_gr_ed(ns_gr_ed+1),xs_gr_conv(ns_gr_conv+1))
     allocate(koeff_gr_ed(ns_gr_ed+1),koeff_gr_conv(ns_gr_conv+1))
-    allocate(qgr(numnp,2))
+    allocate(qgr(2,numnp))
 
     ds_gr_ed      = 0.d0
     ds_gr_conv    = 0.d0
