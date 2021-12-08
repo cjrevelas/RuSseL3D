@@ -45,7 +45,6 @@ do
     if (reason>0) then
         write(*,*) "Something went wrong!"
     elseif (reason<0) then
-        write(*,*) "Mesh file was read!"
         exit
     else
         if (index(line,"# sdim") > 0) then
@@ -72,18 +71,21 @@ do
             write(*,*)
             write(iow,'(A85)')adjl('-------------------------------------BOX DIMENSIONS----------------------------------',85)
             write(*  ,'(A85)')adjl('-------------------------------------BOX DIMENSIONS----------------------------------',85)
+
             write(iow,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
             write(6  ,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
-
             do j = 1, ndm
                 box_len(j) = box_hi(j) - box_lo(j)
                 write(iow,'(I5,2X,3(E16.9,2X))')j, box_len(j), box_lo(j), box_hi(j)
                 write(6  ,'(I5,2X,3(E16.9,2X))')j, box_len(j), box_lo(j), box_hi(j)
             enddo
 
+            write(6,*)
+            write(iow,*)
+
             box_volume = box_len(1) * box_len(2) * box_len(3)
-            write(iow,'(A43,E16.9,A13)')adjl("Box volume:",43),box_volume," [Angstrom^3]"
-            write(6  ,'(A43,E16.9,A13)')adjl("Box volume:",43),box_volume," [Angstrom^3]"
+            write(iow,'(3X,A40,E16.9,A13)')adjl("Box volume:",40),box_volume," [Angstrom^3]"
+            write(6  ,'(3X,A40,E16.9,A13)')adjl("Box volume:",40),box_volume," [Angstrom^3]"
         elseif (index(line," tet") > 0) then
 
             read(12,*)
@@ -99,15 +101,15 @@ do
             write(iow,'(A85)')adjl('--------------------------------------SPATIAL MESH-----------------------------------',85)
             write(*  ,'(A85)')adjl('--------------------------------------SPATIAL MESH-----------------------------------',85)
 
-            write(iow,'("Number of mesh points (numnp):         ",I16)') numnp
-            write(iow,'("Number of elements (numel):            ",I16)') numel
-            write(iow,'("Number of nodes per element (nel):     ",I16)') nel
-            write(iow,'("Number of matrix indeces:              ",I16)') all_el
+            write(iow,'(3X,"Number of mesh points (numnp):         ",I16)') numnp
+            write(iow,'(3X,"Number of elements (numel):            ",I16)') numel
+            write(iow,'(3X,"Number of nodes per element (nel):     ",I16)') nel
+            write(iow,'(3X,"Number of matrix indeces:              ",I16)') all_el
 
-            write(6,'("Number of mesh points (numnp):         ",I16)') numnp
-            write(6,'("Number of elements (numel):            ",I16)') numel
-            write(6,'("Number of nodes per element (nel):     ",I16)') nel
-            write(6,'("Number of matrix indeces:              ",I16)') all_el
+            write(6,'(3X,"Number of mesh points (numnp):         ",I16)') numnp
+            write(6,'(3X,"Number of elements (numel):            ",I16)') numel
+            write(6,'(3X,"Number of nodes per element (nel):     ",I16)') nel
+            write(6,'(3X,"Number of matrix indeces:              ",I16)') all_el
 
             read(12,*)
 
@@ -329,7 +331,7 @@ close(13)
 
 open(unit=77, file = com_12)
 do i1 = 1, all_el
-     write(77,*) i1, F_m%row(i1), F_m%col(i1), con_l2(i1), con_l2(i1)/=i1
+     write(77,'(4I8,L8)') i1, F_m%row(i1), F_m%col(i1), con_l2(i1), con_l2(i1)/=i1
 enddo
 close(77)
 
@@ -340,6 +342,7 @@ enddo
 close(77)
 
 open(77, file = mesh_out)
+write(77,'(A13,2A22)') 'x', 'y', 'z'
 do i = 1, numnp
     write(77,'(F21.15,1X,F21.15,1X,F21.15)') (xc(j,i), j = 1, ndm)
 enddo

@@ -19,6 +19,7 @@ real(8)                                :: radius_np_actual = 0.d0, radius_pol = 
 real(8)                                :: Urep = 0.d0, Uatt = 0.d0
 !------------------------------------------------------------------------------------------------------!
 open(unit=211, file = usolid)
+write(211,'(3A16,2A19)') "r_center_surf", "r_surf", "Uatt", "Urep", "Utot"
 
 Ufield = 0.d0
 
