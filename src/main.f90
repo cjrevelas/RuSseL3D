@@ -28,17 +28,17 @@ implicit none
 include 'mpif.h'
 #endif
 !----------------------------------------------------------------------------------------------------------------------------------!
-integer :: i1, k1, iter, get_sys_time, t_init, t_final, gnode_id, node_id
+integer :: i1, k1, iter, get_sys_time, t_init, t_final, gnode_id!, node_id
 
 logical :: sym, convergence = .false.
 
-real(8) :: compute_gradient, interp_fem
-real(8) :: phi_plus_dx = 0.D0, phi_plus_dy = 0.D0, phi_plus_dz = 0.D0
-real(8) :: phi_minus_dx = 0.D0, phi_minus_dy = 0.D0, phi_minus_dz = 0.D0
-real(8) :: dphi2_dx2 = 0.D0, dphi2_dy2 = 0.D0, dphi2_dz2 = 0.D0
+!real(8) :: compute_gradient, interp_fem
+!real(8) :: phi_plus_dx = 0.D0, phi_plus_dy = 0.D0, phi_plus_dz = 0.D0
+!real(8) :: phi_minus_dx = 0.D0, phi_minus_dy = 0.D0, phi_minus_dz = 0.D0
+!real(8) :: dphi2_dx2 = 0.D0, dphi2_dy2 = 0.D0, dphi2_dz2 = 0.D0
 real(8), allocatable, dimension(:) :: dphi2_dr2
 
-real(8) :: chainlen = 0.d0, part_func = 0.d0, nch_gr = 0.d0 
+real(8) :: chainlen = 0.d0, part_func = 0.d0, nch_gr = 0.d0
 real(8) :: wa_max = 0.d0, wa_std_error = 0.d0, max_error = 200000.d0
 real(8) :: free_energy_prev = 1.d10, free_energy = 0.d0, free_energy_error = 1.d10, free_energy_error_tol = 1.d-6
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -135,11 +135,10 @@ write(iow,'(A10,1X,6(A19,1X),A16)') "iter", "fraction", "free_energy", "n_gr_cha
 write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "free_energy", "n_gr_chains", "max_error", "std_error", "wa_max"
 
 t_init = get_sys_time()
-iter   = init_iter
 
-do iter = init_iter+1, iterations
-    write(iow,'(I10,1X,6(E19.9e3,1X))') iter-1, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
-    write(6  ,'(I4 ,1X,6(E14.4e3,1X))') iter-1, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
+do iter = init_iter, iterations-1
+    write(iow,'(I10,1X,6(E19.9E3,1X))') iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
+    write(6  ,'(I4 ,1X,6(E14.4E3,1X))') iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
 
     !flush output
     close(iow)
@@ -218,11 +217,11 @@ do iter = init_iter+1, iterations
         call get_nchains(numnp, chainlen_gr, rho_mol_bulk, phia_gr, nch_gr)
     endif
 
-    do k1 = 1, numnp
-        dphi2_dr2(k1) = compute_gradient(k1, phi_total)
+    !do k1 = 1, numnp
+    !    dphi2_dr2(k1) = compute_gradient(k1, phi_total)
         !STOP
-    enddo
-    STOP
+    !enddo
+    !STOP
     !phi_plus_dx = interp_fem(1, xc(1,1)+dx, xc(2,1), xc(3,1), phi_total(1))
     !phi_plus_dy = interp_fem(1, xc(1,1), xc(2,1)+dy, xc(3,1), phi_total(1))
     !phi_plus_dz = interp_fem(1, xc(1,1), xc(2,1), xc(3,1)+dz, phi_total(1))
