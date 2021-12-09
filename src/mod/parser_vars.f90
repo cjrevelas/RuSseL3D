@@ -28,7 +28,7 @@ real(8), allocatable, dimension(:)   :: A_plate, sigma_plate
 real(8), allocatable, dimension(:,:) :: center_np
 
 !scf model and potential data
-real(8) :: Temp, Pres, mon_mass, massden, kapa, kappa_T
+real(8) :: Temp, beta, Pres, mon_mass, massden, kapa, kappa_T
 real(8) :: rho_mass_bulk, rho_mol_bulk, rho_seg_bulk
 real(8) :: k_gr, k_gr_tilde
 real(8) :: Rg2_per_mon_mx, Rg2_per_mon_gr, sphere_radius

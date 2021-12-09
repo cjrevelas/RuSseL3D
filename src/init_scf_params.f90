@@ -2,7 +2,8 @@ subroutine init_scf_params()
 !------------------------------------------------------------------------------------------------------!
 use parser_vars,  only: chainlen_mx, iow, k_gr, k_gr_tilde, massden, mon_mass, pres, &
 &                       rho_mass_bulk, rho_mol_bulk, rho_seg_bulk, temp
-use constants,    only: boltz_const_Joule_K, boltz_const_Joule_molK, gr_cm3_to_kg_m3, N_avog
+use constants,    only: boltz_const_Joule_K, boltz_const_Joule_molK, gr_cm3_to_kg_m3, N_avog, kg_m3_to_gr_m3, &
+&                       m3_to_cm3
 use eos,          only: eos_type, kapa, V_star, P_star, T_star, rho_star, rho_tilde_bulk, P_tilde, T_tilde, &
 &                       rsl_N, hlf_kappa_T, eos_rho_tilde_0
 use flags,        only: eos_helfand, eos_sl
@@ -11,7 +12,7 @@ use write_helper, only: adjl
 implicit none
 !------------------------------------------------------------------------------------------------------!
 if (eos_type.eq.eos_helfand) then
-    rho_mol_bulk = massden/mon_mass*1.d06
+    rho_mol_bulk = massden/mon_mass*m3_to_cm3
     write(iow,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40),rho_mol_bulk," [mol/m^3]"
     write(6  ,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40),rho_mol_bulk," [mol/m^3]"
 
@@ -24,7 +25,7 @@ elseif (eos_type.eq.eos_sl) then
     V_star         = boltz_const_Joule_K * T_star / P_star
     T_tilde        = Temp / T_star
     P_tilde        = Pres / P_star
-    rsl_N          = (mon_mass * P_star) / (rho_star * 1.d03 * boltz_const_Joule_molK * T_star)
+    rsl_N          = (mon_mass * P_star) / (rho_star * kg_m3_to_gr_m3 * boltz_const_Joule_molK * T_star)
     rho_tilde_bulk = eos_rho_tilde_0(T_tilde, P_tilde, rsl_N*chainlen_mx)
     rho_mass_bulk  = rho_tilde_bulk * rho_star
     rho_mol_bulk   = rho_mass_bulk / mon_mass * gr_cm3_to_kg_m3

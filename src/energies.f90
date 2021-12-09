@@ -3,7 +3,7 @@ subroutine energies(qmx_interp_mg, phi_total, part_func, num_gpoints, gpid, free
 use eos,         only: eos_ff, eos_df_drho
 use parser_vars, only: ns_gr_conv, chainlen_mx, interf_area, rho_mol_bulk, temp
 use geometry,    only: numnp, box_lo, box_hi, xc
-use constants,   only: n_avog, boltz_const_Joule_molK, boltz_const_Joule_K
+use constants,   only: n_avog, boltz_const_Joule_molK, N_to_mN, A2_to_m2, A3_to_m3
 use iofiles,     only: energy_terms
 !-------------------------------------------------------------------------------------------------!
 implicit none
@@ -35,9 +35,9 @@ enddo
 call spat_3d(dterm1, term1, Q, vol)
 call spat_3d(dterm2, term2, Q, vol)
 
-term1 = term1 * 1.0d-30
-term2 = term2 * 1.0d-30 * rho_mol_bulk * n_avog
-term3 = rho_mol_bulk * 1.0d-30 * vol * boltz_const_Joule_molK * Temp * (1.d00 - part_func) / chainlen_mx
+E_eos_f      = E_eos_f      * A3_to_m3
+E_eos_dfdrho = E_eos_dfdrho * A3_to_m3 * rho_mol_bulk * n_avog
+E_entropy_mx = rho_mol_bulk * A3_to_m3 * vol * boltz_const_Joule_molK * Temp * (1.d00 - part_func) / chainlen_mx
 
 do kk = 1, num_gpoints
     gnode_id = gpid(kk)
@@ -50,11 +50,11 @@ do kk = 1, num_gpoints
     term4_norm            = term4_norm + term4_norm_gpoint(kk)
 enddo
 
-term1      = term1      * 1.d03 / (interf_area*1.d-20)
-term2      = term2      * 1.d03 / (interf_area*1.d-20)
-term3      = term3      * 1.d03 / (interf_area*1.d-20)
-term4      = term4      * 1.d03 / (interf_area*1.d-20)
-term4_norm = term4_norm * 1.d03 / (interf_area*1.d-20)
+E_eos_f             = E_eos_f             * N_to_mN / (interf_area*A2_to_m2)
+E_eos_dfdrho        = E_eos_dfdrho        * N_to_mN / (interf_area*A2_to_m2)
+E_entropy_mx        = E_entropy_mx        * N_to_mN / (interf_area*A2_to_m2)
+E_entropy_gr        = E_entropy_gr        * N_to_mN / (interf_area*A2_to_m2)
+E_entropy_gr_normlz = E_entropy_gr_normlz * N_to_mN / (interf_area*A2_to_m2)
 
 free_energy = term1 + term2 + term3 + term4 + term4_norm
 

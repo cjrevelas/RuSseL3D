@@ -3,7 +3,7 @@ subroutine compute_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_c
 !------------------------------------------------------------------------------------------------------!
 use geometry,     only: node_in_q0_face
 use parser_vars,  only: ns_gr_conv, ns_gr_ed, chainlen_gr, mumps_matrix_type, rg2_per_mon_gr, rho_mol_bulk
-use constants,    only: n_avog
+use constants,    only: n_avog, m3_to_A3
 use write_helper, only: adjl
 use error_handing
 !------------------------------------------------------------------------------------------------------!
@@ -31,7 +31,7 @@ delta_anal = 0.d0
 
 !analytic delta calculation
 do ii = 1, num_gpoints
-    delta_anal(ii) = 1.d0 / volnp(gpid(ii)) * 1.e+30
+    delta_anal(ii) = 1.d0 / volnp(gpid(ii)) * m3_to_A3
 enddo
 
 !numerical delta calculation (simulation)

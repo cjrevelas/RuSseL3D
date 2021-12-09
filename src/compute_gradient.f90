@@ -1,6 +1,7 @@
 real(8) function compute_gradient(node_id, phi)
 !----------------------------------------------------------------------------------------------------------!
 use geometry
+use constants, only: A_to_m
 !----------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------!
@@ -27,9 +28,9 @@ phi_minus_dy = interp_fem(node_id, x_node_id, y_node_id-dy, z_node_id, phi)
 phi_plus_dz  = interp_fem(node_id, x_node_id, y_node_id, z_node_id+dz, phi)
 phi_minus_dz = interp_fem(node_id, x_node_id, y_node_id, z_node_id-dz, phi)
 
-dphi2_dx2 = (phi_plus_dx - 2.d00 * phi(node_id) + phi_minus_dx) / (dx*1.D-10)**2.D0
-dphi2_dy2 = (phi_plus_dy - 2.d00 * phi(node_id) + phi_minus_dy) / (dy*1.D-10)**2.D0
-dphi2_dz2 = (phi_plus_dz - 2.d00 * phi(node_id) + phi_minus_dz) / (dz*1.D-10)**2.D0
+dphi2_dx2 = (phi_plus_dx - 2.d00 * phi(node_id) + phi_minus_dx) / (dx*A_to_m)**2.d0
+dphi2_dy2 = (phi_plus_dy - 2.d00 * phi(node_id) + phi_minus_dy) / (dy*A_to_m)**2.d0
+dphi2_dz2 = (phi_plus_dz - 2.d00 * phi(node_id) + phi_minus_dz) / (dz*A_to_m)**2.d0
 
 compute_gradient = dphi2_dx2 + dphi2_dy2 + dphi2_dz2
 
