@@ -29,5 +29,6 @@ character(len=30) :: delta_out          = "o.delta.out.txt"
 character(len=30) :: brush_out          = "o.brush.out.txt"
 character(len=30) :: energy_terms       = "o.energy_terms.out.txt"
 character(len=20) :: logfile            = "o.log.out.txt"
+character(len=20) :: end_middle         = "o.phi_end_middle_"
 !-----------------------------------------------------------------------------------------------------------!
 end module iofiles

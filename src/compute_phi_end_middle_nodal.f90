@@ -32,7 +32,7 @@ enddo
 write(filename,'("o.phi_end_middle_",A1,".out.txt")') chain_type
 
 open(unit=122, file=filename)
-write(122,'(A11,2A18,A21,A20)') 'x', 'y', 'z', "phi_end", "phi_middle"
+write(122,'(5(A16))') 'x', 'y', 'z', "phi_end", "phi_middle"
 do kk = 1, numnp
     write (122,'(5(2X,E16.9))') (xc(jj,kk), jj=1,3), phi_end(kk), phi_middle(kk)
 enddo
