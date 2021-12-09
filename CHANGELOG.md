@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.2.0](https://github.com/mokkapps/changelog-generator-demo/compare/v3.1.0...v3.2.0) (2021-12-09)
+
+
+### Features
+
+* add compute_phi_end_middle subroutine ([27fcf5b](https://github.com/mokkapps/changelog-generator-demo/commits/27fcf5b7eb6b800fdb7893c24772df70e5e7cee2))
+* add exports, computes, gets and binning histogram ([47d2933](https://github.com/mokkapps/changelog-generator-demo/commits/47d2933f7c88d3e941aae758cda9e9ae729587d6))
+* add flag enum module ([e45b18a](https://github.com/mokkapps/changelog-generator-demo/commits/e45b18af8cd5d90d4b9bd1dec93b8dca5d2d9463))
+* add hybrid contour discr scheme ([5657d2a](https://github.com/mokkapps/changelog-generator-demo/commits/5657d2a381673d1add2d12c56a2b842184a3fe6d))
+* add phi_total variable ([127e84b](https://github.com/mokkapps/changelog-generator-demo/commits/127e84bee1747d1a3da000f40953913948bfdb93))
+* add square-gradient term (experimental) ([c967711](https://github.com/mokkapps/changelog-generator-demo/commits/c967711bcb46a639a2be55d0166a53589944da66))
+* add useful unit transformation constants ([a8ad62c](https://github.com/mokkapps/changelog-generator-demo/commits/a8ad62c8b32f2f2ece682b86ff44c77ef30055ab))
+* choose whether to export stuff from input ([259cb05](https://github.com/mokkapps/changelog-generator-demo/commits/259cb053dff7fe6a5e9949f3dce0c40703fbd4a4))
+* **constants:** add some useful constants ([3e3d8a5](https://github.com/mokkapps/changelog-generator-demo/commits/3e3d8a59d12d585d9f7bc36633283e3832f2910f))
+* contour discr options are: unif, symm, asymm, hybrid ([6e62818](https://github.com/mokkapps/changelog-generator-demo/commits/6e62818d63091059dd2f9f6fcc03ea60d5da4096))
+* **energies:** normalize term4 with respect to distance ([cbd41be](https://github.com/mokkapps/changelog-generator-demo/commits/cbd41be72433922b45455bdef60665ae11eb8e13))
+* generalize nonbonded interactions and add SL EoS ([b5b1131](https://github.com/mokkapps/changelog-generator-demo/commits/b5b113193cdaedc386ed91d66a3d44dde3556370))
+* **main:** add free energy convergence criterion ([abe680a](https://github.com/mokkapps/changelog-generator-demo/commits/abe680a931fbb9be0b1988f4cf185ac38d918595))
+* **mesh:** compute number of elements per node ([f9568cd](https://github.com/mokkapps/changelog-generator-demo/commits/f9568cd1c4092dc031646a4540b612e4e4a0f5a7))
+* read contour step, dN, instead of number of steps, n ([2629815](https://github.com/mokkapps/changelog-generator-demo/commits/26298151dd8f86e572d79bf97ea022fe1725595a))
+* separate io files in debug (d.) and output (o.) ([c9c3f30](https://github.com/mokkapps/changelog-generator-demo/commits/c9c3f30f7149963473d437c6dfb3ad5baf075c03))
+
+
+### Bug Fixes
+
+* **compute_phi_end_middle:** switch from 1D to 3D ([b30b858](https://github.com/mokkapps/changelog-generator-demo/commits/b30b858431d692ae75100d4be4d6089ac1cb0ae2))
+* **eos:** check whether rho_tilde is greater than 1.0 ([414a806](https://github.com/mokkapps/changelog-generator-demo/commits/414a80650d1c7465155029d9086110ac1b212a10))
+
 ## [3.1.0](https://github.com/mokkapps/changelog-generator-demo/compare/v3.0.0...v3.1.0) (2021-12-06)
 
 
