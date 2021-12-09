@@ -1,39 +1,38 @@
-subroutine quadinterp_koef(ds, ns, koeff)
+subroutine get_interp_quad_coeff(ds, ns, coeff)
 !------------------------------------------------------------------------------!
-use iofiles
+use iofiles, only: quad_interp
 !------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------!
 integer, intent(in) :: ns
-integer             :: n
+integer             :: nn
 
 real(8), intent(in), dimension(ns+1)  :: ds
-real(8), intent(out), dimension(ns+1) :: koeff
+real(8), intent(out), dimension(ns+1) :: coeff
 real(8), dimension(ns+1)              :: x
-
-x(1) = 0.d0
-do n = 2, ns+1
-   x(n) = x(n-1) + ds(n)
-enddo
 !------------------------------------------------------------------------------!
-koeff = 0.d0
+x(1) = 0.d0
+do nn = 2, ns+1
+   x(nn) = x(nn-1) + ds(nn)
+enddo
 
-do n = 2, ns, 2
-   koeff(n-1) = koeff(n-1) + ( x(n+1)-x(n-1) )*( 2*x(n-1)+x(n+1)-3*x(n) ) &
-      &                    / ( 6.d0 * ( x(n-1) - x(n) ))
+coeff = 0.d0
+do nn = 2, ns, 2
+   coeff(nn-1) = coeff(nn-1) + ( x(nn+1)-x(nn-1) )*( 2*x(nn-1)+x(nn+1)-3*x(nn) ) &
+      &                    / ( 6.d0 * ( x(nn-1) - x(nn) ))
 
-   koeff(n)   = koeff(n)   + ( x(n-1) - x(n+1) )**3.d0 &
-      &                    / ( 6.d0 * ( x(n) - x(n-1) ) * (x(n) - x(n+1) ) )
+   coeff(nn)   = coeff(nn)   + ( x(nn-1) - x(nn+1) )**3.d0 &
+      &                    / ( 6.d0 * ( x(nn) - x(nn-1) ) * (x(nn) - x(nn+1) ) )
 
-   koeff(n+1) = koeff(n+1) + ( x(n+1)-x(n-1) )*( 2*x(n+1)+x(n-1)-3*x(n) ) &
-      &                    / ( 6.d0 * ( x(n+1) - x(n) ))
+   coeff(nn+1) = coeff(nn+1) + ( x(nn+1)-x(nn-1) )*( 2*x(nn+1)+x(nn-1)-3*x(nn) ) &
+      &                    / ( 6.d0 * ( x(nn+1) - x(nn) ))
 enddo
 
 #ifdef DEBUG_OUTPUTS
 open(unit=400, file = quad_interp, position = 'append')
 write(400,'(5(A17))')  "n", "s", "ds", "coeff", "coeff_reduced"
-do n = 1, ns+1
-    write(400,'(I17, 4(E17.9))')n, x(n), ds(n), koeff(n), koeff(n)/ds(n)
+do nn = 1, ns+1
+    write(400,'(I17, 4(E17.9))') nn, x(nn), ds(nn), coeff(nn), coeff(nn)/ds(nn)
 enddo
 
 write(400,*)
@@ -45,4 +44,4 @@ close(400)
 
 return
 !------------------------------------------------------------------------------!
-end subroutine quadinterp_koef
+end subroutine get_interp_quad_coeff

@@ -1,16 +1,14 @@
-subroutine isInside(xl, x_test, y_test, z_test, lint, sv, volel, inside, shp)
-!--------------------------------------------------------------------------------------------------------------------------------------------!
-use geometry
+subroutine is_node_inside_el(xl, x_test, y_test, z_test, lint, sv, volel, inside, shp, ndm, nel)
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-integer, intent(in)  :: lint
+integer, intent(in)  :: lint, ndm, nel
 integer, intent(out) :: inside
 integer              :: p, k, l
 
 real(8), intent(in)                     :: x_test, y_test, z_test
-real(8), intent(inout), dimension(3, 4) :: xl
 real(8), intent(in), dimension(5, 11)   :: sv
+real(8), intent(inout), dimension(3, 4) :: xl
 real(8), intent(out), dimension(4, 11)  :: shp
 real(8), intent(out)                    :: volel
 real(8)                                 :: temp_x, temp_y, temp_z, vol_test, xsj
@@ -58,4 +56,4 @@ if (k==4) then
     inside = 1
 endif
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-end subroutine isInside
+end subroutine is_node_inside_el
