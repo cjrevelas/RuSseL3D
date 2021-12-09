@@ -1,67 +1,83 @@
-subroutine export_chains_area(numnp, node_in_q0_face, cell_of_np, ds_gr_ed, num_gpoints, gpid, gp_init_value)
-!------------------------------------------------------------------------------------------------------!
-use parser_vars,  only: ns_gr_ed, mumps_matrix_type
-!use hist,         only: nbin
+subroutine export_chains_area(node_in_q0_face, cell_of_np, chain_type, Rg2_per_mon, chainlen, ns_ed, ds_ed, q_final, phia, wa)
+!-----------------------------------------------------------------------------------------------------------------------!
+use parser_vars,  only: mumps_matrix_type, rho_seg_bulk
+use hist,         only: nbin
 use write_helper, only: adjl
-!------------------------------------------------------------------------------------------------------!
+use constants,    only: A3_to_m3
+use arrays,       only: volnp
+use geometry,     only: numnp
+use delta,        only: num_gpoints, gp_init_value, gpid
+!-----------------------------------------------------------------------------------------------------------------------!
 implicit none
-!------------------------------------------------------------------------------------------------------!
-integer, intent(in)                         :: numnp, num_gpoints
-integer, intent(in), dimension(numnp)       :: cell_of_np
-integer, intent(in), dimension(num_gpoints) :: gpid
-integer                                     :: bin, kk, ii, gnode_id
+!-----------------------------------------------------------------------------------------------------------------------!
+integer, intent(in), dimension(numnp) :: cell_of_np
+integer, intent(in)                   :: ns_ed
+integer                               :: bin, kk, ii, gnode_id
+
+character(len=2), intent(in) :: chain_type
 
 logical, intent(in), dimension(numnp) :: node_in_q0_face
 logical, dimension(numnp)             :: node_in_q0_face_new
 
-real(8), intent(in), dimension(num_gpoints) :: gp_init_value
-real(8), intent(in), dimension(ns_gr_ed+1)  :: ds_gr_ed
-real(8), dimension(2,numnp)                 :: qgr
-real(8), dimension(ns_gr_ed+1,numnp)        :: qgr_final
-!------------------------------------------------------------------------------------------------------!
-write(6,'(6X,A40)')adjl("*chains per area..",40)
-!------------------------------------------------------------------------------------------------------!
-do bin = 1, 3
-    write(6,*)"bin = ",bin
+real(8), intent(in), dimension(ns_ed+1)       :: ds_ed
+real(8), intent(in), dimension(ns_ed+1,numnp) :: q_final
+real(8), intent(in), dimension(numnp)         :: phia, wa
+real(8), intent(in)                           :: Rg2_per_mon, chainlen
+real(8), dimension(2,numnp)                   :: qshape
+real(8), dimension(ns_ed+1,numnp)             :: qshape_final
+real(8), dimension(nbin)                      :: p_cross, n_shape
+real(8)                                       :: sum_qshape=0.d0, sum_Q=0.d0, sum_phi=0.d0
+!-----------------------------------------------------------------------------------------------------------------------!
+do bin = 7, 30
+    write(6,*) "bin = ",bin
 
+    !assembly
+    call fem_matrix_assemble(Rg2_per_mon, wa)
+
+    !Dirichlet boundary conditions
     node_in_q0_face_new = node_in_q0_face
     do kk = 1, numnp
-        if (cell_of_np(kk) .eq. bin) node_in_q0_face_new(kk) = .True.
+        if (cell_of_np(kk).eq.bin) node_in_q0_face_new(kk) = .true.
     enddo
 
-    qgr       = 0.d0
-    qgr_final = 0.d0
+    !initial conditions
+    qshape       = 0.d0
+    qshape_final = 0.d0
+    if (chain_type.eq."mx") then
+        write(6,'(6X,A40)')adjl("Exporting matrix chains per area.",40)
+        qshape(1,:)       = 1.d0
+        qshape_final(1,:) = 1.d0
+    endif
+    if (chain_type.eq."gr") then
+        write(6,'(6X,A40)')adjl("Exporting grafted chains per area.",40)
 
-    do ii = 1, num_gpoints
-        gnode_id = gpid(ii)
+        do ii = 1, num_gpoints
+            gnode_id = gpid(ii)
 
-        qgr(1,gnode_id)       = gp_init_value(ii)
-        qgr_final(1,gnode_id) = gp_init_value(ii)
+            qshape(1,gnode_id)       = gp_init_value(ii)
+            qshape_final(1,gnode_id) = gp_init_value(ii)
+        enddo
+    endif
+
+    !solution
+    call solver_edwards(ds_ed, ns_ed, mumps_matrix_type, qshape, qshape_final, node_in_q0_face_new)
+
+    sum_qshape = 0.d0
+    sum_Q      = 0.d0
+    sum_phi    = 0.d0
+    do kk = 1, numnp
+        sum_qshape = sum_qshape + qshape_final(ns_ed+1,kk) * volnp(kk)
+        sum_Q      = sum_Q      + q_final(ns_ed+1,kk)      * volnp(kk)
+        sum_phi    = sum_phi    + phia(kk)                 * volnp(kk)
     enddo
 
-    call solver_edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final, node_in_q0_face_new)
+    p_cross(bin) = 1.d0 - sum_qshape / sum_Q
 
-    !integrate
-    !sum_final = 0.d0
-     !    sum_Q= 0.d0
-!    do mm = 0, nx
-!        sum_final = sum_final + coeff_x(mm) * qshape_final(mm,ns) *
-!layer_area(mm)
-!        sum_Q = sum_Q + coeff_x(mm) * q_final(mm,ns) * layer_area(mm)
-!    enddo
-!
-!    p_cross(kk)  = 1.0 - sum_final / sum_Q
-
+    n_shape(bin) = p_cross(bin) * rho_seg_bulk * sum_phi * A3_to_m3 / chainlen !/layer_area
+    write(*,*) "p_cross: ", p_cross(bin)
+    write(*,*) "n_shape: ", n_shape(bin)
 enddo
 
-!sum_phi = 0.0d0
-!do kk = 0, nx
-!    sum_phi = sum_phi + phi(kk) * coeff_x(kk) * layer_area(kk)
-!enddo
-!
-!do ii=0,nx
-!    n_shape(ii) = p_cross(ii) * rho_seg_bulk / chainlen * sum_phi * 1.e-30
-!/layer_area(ii)
-!enddo
-!------------------------------------------------------------------------------------------------------!
+return
+!-----------------------------------------------------------------------------------------------------------------------!
 end subroutine export_chains_area
