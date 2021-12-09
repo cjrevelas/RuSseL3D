@@ -16,7 +16,7 @@ character(40) :: file_name
 !-----------------------------------------------------------------------------------------------------------!
 write(6,'(3X,A40)')adjl("Computing some quantities:",40)
 
-call export_phi_nodal(phia_mx, phia_gr, numnp, xc)
+call export_phi_nodal(phia_mx, phia_gr, numnp, xc, volnp)
 call export_field(wa, wa_new, wa_mix)
 
 ! chains grafted to planar surfaces
@@ -74,9 +74,9 @@ if (gr_exist.eq.1) then
         file_name = ""
         write(file_name,'("o.brush99_np",I1,".out.txt")') mm
         call export_brush99(sph_cell_of_np(mm,:), num_gpoints, numnp, file_name, phia_gr, phia_gr_indiv, volnp, lbin, nbin)
-        file_name = ""
-        write(file_name,'("o.chains_area_w",I1,"_",I1,".out.txt")') mm, nn
-        call export_chains_area(numnp, node_in_q0_face, sph_cell_of_np(mm,:), ds_gr_ed, num_gpoints, gpid, gp_init_value)
+        !file_name = ""
+        !write(file_name,'("o.chains_area_w",I1,"_",I1,".out.txt")') mm, nn
+        !call export_chains_area(numnp, node_in_q0_face, sph_cell_of_np(mm,:), ds_gr_ed, num_gpoints, gpid, gp_init_value)
     enddo
 
 #ifdef DEBUG_OUTPUTS

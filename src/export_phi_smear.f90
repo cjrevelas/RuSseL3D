@@ -22,7 +22,7 @@ write(6,'(6X,A40)')adjl("*phi smeared..",40)
 phi_mx_smear = 0.d0
 phi_g_smear  = 0.d0
 
-Allocate(mass_layer(nbin))
+allocate(mass_layer(nbin))
 
 mass_layer = 0.d0
 do kk = 1, numnp

@@ -27,9 +27,9 @@ do ii = 1, num_gpoints
     numer = 0.d0
     denom = 0.d0
     do kk = 1, numnp
-        r_center_surf = dist_from_surf(kk)                   
-        numer         = numer + r_center_surf**2 * phia_gr_indiv(kk,ii) * volnp(ii)
-        denom         = denom + phia_gr_indiv(kk,ii) * volnp(ii)
+        r_center_surf = dist_from_surf(kk)
+        numer         = numer + r_center_surf**2 * phia_gr_indiv(kk,ii) * volnp(kk)
+        denom         = denom + phia_gr_indiv(kk,ii) * volnp(kk)
     enddo
     msq_brush_of_chain(ii) = SQRT(numer / denom)
     write(120,'(I19,F19.9)') ii, msq_brush_of_chain(ii)
@@ -51,9 +51,9 @@ msq_brush_of_chain_std = SQRT(msq_brush_of_chain_std / REAL(num_gpoints))
 numer = 0.d0
 denom = 0.d0
 do kk = 1, numnp
-    r_center_surf = dist_from_surf(kk)                   
-    numer         = numer + r_center_surf**2 * phia_gr(kk) * volnp(ii)
-    denom         = denom + phia_gr(kk) * volnp(ii)
+    r_center_surf = dist_from_surf(kk)
+    numer         = numer + r_center_surf**2 * phia_gr(kk) * volnp(kk)
+    denom         = denom + phia_gr(kk) * volnp(kk)
 enddo
 msq_brush_all = SQRT(numer / denom)
 write(120,'(A19,F19.9)') "mean",  msq_brush_of_chain_ave
