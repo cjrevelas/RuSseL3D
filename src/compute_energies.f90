@@ -59,9 +59,9 @@ do kk = 1, num_gpoints
     r_gpoint              =  MIN(ABS(xc(3,gnode_id)-box_lo(3)), ABS(box_hi(3)-xc(3,gnode_id)))
     term4_gpoint(kk)      = -LOG(qmx_interp_mg(ns_gr_conv+1,gnode_id)) / beta
     term4_norm_gpoint(kk) = -LOG(r_ref/r_gpoint) / beta
-    E_entropy_gr          =  E_entropy_gr        + term4_gpoint(kk) 
+    E_entropy_gr          =  E_entropy_gr        + term4_gpoint(kk)
     E_entropy_gr_normlz   =  E_entropy_gr_normlz + term4_norm_gpoint(kk)
-    E_stretching          =  E_stretching + compute_stretching_energy(gnode_id, qmx_interp_mg, qgr_interp)
+    E_stretching          =  E_stretching        + compute_stretching_energy(gnode_id, qmx_interp_mg, qgr_interp)
 enddo
 
 E_eos_f             = E_eos_f             * N_to_mN / (interf_area*A2_to_m2)
@@ -80,7 +80,7 @@ write(837,'(9A20)')     "E_ff", "E_dfdrho", "E_entropy_mx", "E_entropy_gr", "E_e
 write(837,'(9(E20.9E2))')E_eos_f, E_eos_dfdrho, E_entropy_mx, E_entropy_gr, E_entropy_gr_normlz, free_energy, E_stretching, E_field, E_solid
 
 if (num_gpoints.ne.0) then
-    write(837,*) 
+    write(837,*)
     write(837,'(4A20)')  "id", "qmx(ns)", "E_entropy_gp", "E_entropy_gp_norm"
     do kk = 1, num_gpoints
         gnode_id   = gpid(kk)

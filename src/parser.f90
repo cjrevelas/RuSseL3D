@@ -396,33 +396,33 @@ if (gr_exist.eq.1) then
 
     if (log_contour_discr_gr) then
         if (contour_discr_gr.eq.contour_uniform) then
-            write(iow,'(A44,A15)') "Edwards contour scheme for grafted chains:", "uniform"
-            write(6  ,'(A44,A15)') "Edwards contour scheme for grafted chains:", "uniform"
+            write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "uniform"
+            write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "uniform"
         elseif (contour_discr_gr.eq.contour_symm) then
-            write(iow,'(A44,A15)') "Edwards contour scheme for grafted chains:", "symm"
-            write(6  ,'(A44,A15)') "Edwards contour scheme for grafted chains:", "symm"
+            write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "symm"
+            write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "symm"
         elseif (contour_discr_gr.eq.contour_hybrid) then
-            write(iow,'(A44,A15)') "Edwards contour scheme for grafted chains:", "hybrid"
-            write(6  ,'(A44,A15)') "Edwards contour scheme for grafted chains:", "hybrid"
+            write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "hybrid"
+            write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "hybrid"
             if (xs_crit_gr < 0) then
                 write(ERROR_MESSAGE,'("Critical contour point of grafted chains is negative: ",E16.9)') xs_crit_gr
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             elseif (xs_crit_gr>0) then
-                write(iow,'(3X,A41,F16.9)')adjl("Critical contour point of grafted chains:",40), xs_crit_gr
-                write(6  ,'(3X,A41,F16.9)')adjl("Critical contour point of grafted chains:",40), xs_crit_gr
+                write(iow,'(3X,A40,F16.9)')adjl("Crit contour point of grafted chains:",40), xs_crit_gr
+                write(6  ,'(3X,A40,F16.9)')adjl("Crit contour point of grafted chains:",40), xs_crit_gr
             else
                 ERROR_MESSAGE="Critical contour point of grafted chains was not detected."
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
         elseif (contour_discr_gr.eq.contour_asymm) then
-            write(iow,'(A44,A15)') "Edwards contour scheme for grafted chains:", "asymm"
-            write(6  ,'(A44,A15)') "Edwards contour scheme for grafted chains:", "asymm"
+            write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "asymm"
+            write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "asymm"
         else
-            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme for grafted chains: ",I5)') contour_discr_gr
+            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme of grafted chains: ",I5)') contour_discr_gr
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE="Edwards contour scheme for grafted chains was not detected."
+        ERROR_MESSAGE="Edwards contour scheme of grafted chains was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 endif
@@ -484,33 +484,33 @@ if (mx_exist.eq.1) then
 
     if (log_contour_discr_mx) then
         if (contour_discr_mx.eq.contour_uniform) then
-            write(iow,'(A44,A15)') "Edwards contour scheme for matrix chains:", "uniform"
-            write(6  ,'(A44,A15)') "Edwards contour scheme for matrix chains:", "uniform"
+            write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "uniform"
+            write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "uniform"
         elseif (contour_discr_mx.eq.contour_symm) then
-            write(iow,'(A44,A15)') "Edwards contour scheme for matrix chains:", "symm"
-            write(6  ,'(A44,A15)') "Edwards contour scheme for matrix chains:", "symm"
+            write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "symm"
+            write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "symm"
         elseif (contour_discr_mx.eq.contour_hybrid) then
-            write(iow,'(A44,A15)') "Edwards contour scheme for matrix chains:", "hybrid"
-            write(6  ,'(A44,A15)') "Edwards contour scheme for matrix chains:", "hybrid"
+            write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "hybrid"
+            write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "hybrid"
             if (xs_crit_mx < 0) then
                 write(ERROR_MESSAGE,'("Critical contour point of matrix chains is negative: ",E16.9)') xs_crit_mx
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             elseif (xs_crit_mx > 0) then
-                write(iow,'(3X,A41,F16.9)')adjl("Critical contour point of matrix chains:",40), xs_crit_mx
-                write(6  ,'(3X,A41,F16.9)')adjl("Critical contour point of matrix chains:",40), xs_crit_mx
+                write(iow,'(3X,A40,F16.9)')adjl("Critical contour point of matrix chains:",40), xs_crit_mx
+                write(6  ,'(3X,A40,F16.9)')adjl("Critical contour point of matrix chains:",40), xs_crit_mx
             else
                 ERROR_MESSAGE="Critical contour point of matrix chains was not detected."
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
         elseif (contour_discr_mx.eq.contour_asymm) then
-            write(iow,'(A44,A15)') "Edwards contour scheme for matrix chains:", "asymm"
-            write(6  ,'(A44,A15)') "Edwards contour scheme for matrix chains:", "asymm"
+            write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
+            write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
         else
-            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme for matrix chains: ",I5)') contour_discr_mx
+            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme of matrix chains: ",I5)') contour_discr_mx
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE="Edwards contour scheme for matrix chains was not detected."
+        ERROR_MESSAGE="Edwards contour scheme of matrix chains was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 

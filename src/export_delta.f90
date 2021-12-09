@@ -31,14 +31,15 @@ enddo
 write(iog,'(A28)') "ITEM: ATOMS id type xu yu zu"
 
 do ii = 1, num_gpoints
-    write(iog,'(I10,2(1X,E20.9))') gpid(ii), gp_init_value(ii), delta_numer(ii)
+    !write(iog,'(I10,2(1X,E20.9),3(1X,F20.9))') gpid(ii), gp_init_value(ii), delta_numer(ii), (xc(jj,gpid(ii)),jj=1,ndm)
+    write(iog,'(I10,2(1X,E20.9))') gpid(ii), gp_init_value(ii), delta_numer(ii)!, (xc(jj,gpid(ii)),jj=1,ndm)
 enddo
 close(iog)
 
 open(unit=5, file = delta_out)
 write(5,'(A10,3A20)') "gpid", "qmx(rgi,Ng)", "Numerical delta", "Analytic delta"
 do ii = 1, num_gpoints
-    write(5,'(I10,3(1X,E20.9))') gpid(ii), qmx_interp_mg(ns_gr_conv+1,gpid(ii)), delta_numer(ii), 1.d0 / volnp(gpid(ii)) * m3_to_A3
+    write(5,'(I10,3E20.9)') gpid(ii), qmx_interp_mg(ns_gr_conv+1,gpid(ii)), delta_numer(ii), 1.d0 / volnp(gpid(ii)) * m3_to_A3
 enddo
 close(5)
 !------------------------------------------------------------------------------------------------------!
