@@ -13,6 +13,7 @@ implicit none
 !------------------------------------------------------------------------------------------------------!
 if (eos_type.eq.eos_helfand) then
     rho_mol_bulk = massden/mon_mass*m3_to_cm3
+    rho_seg_bulk = rho_mol_bulk * N_avog
     write(iow,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40),rho_mol_bulk," [mol/m^3]"
     write(6  ,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40),rho_mol_bulk," [mol/m^3]"
 
