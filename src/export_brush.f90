@@ -15,7 +15,7 @@ real(8)                                            :: numer, denom, r_center_sur
                                                       & msq_brush_of_chain_ave, msq_brush_of_chain_std
 real(8), dimension(num_gpoints)                    :: msq_brush_of_chain
 !-----------------------------------------------------------------------------------------------------------!
-write(6,'(6X,A40)')adjl("*mean brush thickness..",40)
+write(6,'(2X,A40)')adjl("Exportin mean brush thickness.",40)
 
 msq_brush_of_chain     = 0.d0
 msq_brush_all          = 0.d0

@@ -19,7 +19,7 @@ real(8)                                            :: brush99_of_chain_ave, brus
 real(8), dimension(num_gpoints)                    :: brush99_of_chain
 real(8), allocatable, dimension(:)                 :: mass_layer
 !-----------------------------------------------------------------------------------------------------------!
-write(6,'(6X,A40)')adjl("*99% brush thickness..",40)
+write(6,'(2X,A40)')adjl("Exporting 99% brush thickness.",40)
 
 allocate(mass_layer(nbin))
 open (unit=120, file = file_name)
@@ -80,6 +80,7 @@ write(120,'(A19,F19.9)') "mean" , brush99_of_chain_ave
 write(120,'(A19,F19.9)') "stdev", brush99_of_chain_std
 write(120,'(A19,F19.9)') "all"  , brush99_all
 
+write(6,'(2X,A40)')adjl("****************************************",40)
 close(120)
 deallocate(mass_layer)
 !-----------------------------------------------------------------------------------------------------------!

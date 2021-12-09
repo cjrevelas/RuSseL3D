@@ -17,7 +17,7 @@ real(8)                               :: np_mass
 real(8), dimension(nbin)              :: phi_mx_smear, phi_g_smear
 real(8), allocatable,dimension(:)     :: mass_layer
 !-----------------------------------------------------------------------------------------------------------!
-write(6,'(6X,A40)')adjl("*phi smeared..",40)
+write(6,'(2X,A40)')adjl("Exporting smeared density profiles.",40)
 
 phi_mx_smear = 0.d0
 phi_g_smear  = 0.d0

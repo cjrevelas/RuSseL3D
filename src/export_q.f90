@@ -15,7 +15,7 @@ character(20) :: file_name
 real(8), intent(in), dimension(ns+1,numnp) :: q_final
 real(8)                                    :: iq_final
 !--------------------------------------------------------------------!
-write(6,'(6X,A13,A4)')"*exporting q_",q_type
+write(6,'(2X,A23,A5,A8)')"Exporting propagator of",q_type," chains."
 
 write(file_name,'("o.q",A4,".out.txt")') q_type
 

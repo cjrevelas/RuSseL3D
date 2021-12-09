@@ -26,19 +26,19 @@ write(iog,'(A21)') "ITEM: NUMBER OF ATOMS"
 write(iog,'(I10)')  num_gpoints
 write(iog,'(A25)') "ITEM: BOX BOUNDS PP PP PP"
 do ii = 1, 3
-    write(iog,'(2(F19.15))') box_lo(ii), box_hi(ii)
+    write(iog,'(2(F20.9))') box_lo(ii), box_hi(ii)
 enddo
 write(iog,'(A28)') "ITEM: ATOMS id type xu yu zu"
 
 do ii = 1, num_gpoints
-    write(iog,'(I5,2(1X,E16.9))') gpid(ii), gp_init_value(ii), delta_numer(ii)
+    write(iog,'(I10,2(1X,E20.9))') gpid(ii), gp_init_value(ii), delta_numer(ii)
 enddo
 close(iog)
 
 open(unit=5, file = delta_out)
-write(5,'(A5,A16,A20,A17)') "gpid", "qmx(rgi,Ng)", "Numerical delta", "Analytic delta"
+write(5,'(A10,3A20)') "gpid", "qmx(rgi,Ng)", "Numerical delta", "Analytic delta"
 do ii = 1, num_gpoints
-    write(5,'(I5,3(1X,E18.9))') gpid(ii), qmx_interp_mg(ns_gr_conv+1,gpid(ii)), delta_numer(ii), 1.d0 / volnp(gpid(ii)) * m3_to_A3
+    write(5,'(I10,3(1X,E20.9))') gpid(ii), qmx_interp_mg(ns_gr_conv+1,gpid(ii)), delta_numer(ii), 1.d0 / volnp(gpid(ii)) * m3_to_A3
 enddo
 close(5)
 !------------------------------------------------------------------------------------------------------!

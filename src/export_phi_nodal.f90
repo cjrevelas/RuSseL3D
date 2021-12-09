@@ -1,6 +1,7 @@
 subroutine export_phi_nodal(phia_mx, phia_gr, numnp, xc, volnp)
 !-----------------------------------------------------------------------------------------------------------!
-use iofiles, only: phi_nodal
+use iofiles,      only: phi_nodal
+use write_helper, only: adjl
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
@@ -11,6 +12,8 @@ real(8), intent(in), dimension(numnp)   :: volnp
 real(8), intent(in), dimension(numnp)   :: phia_mx, phia_gr
 real(8), intent(in), dimension(3,numnp) :: xc
 !-----------------------------------------------------------------------------------------------------------!
+write(6,'(2X,A40)')adjl("****************************************",40)
+write(6,'(2X,A40)')adjl("Exporting density profiles.",40)
 open (unit=120, file = phi_nodal)
 write(120,'(7(A19))') "np", "x", "y", "z", "phi_m", "phi_g", "vol"
 do kk = 1, numnp

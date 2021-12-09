@@ -14,7 +14,7 @@ real(8), dimension(numnp)                :: phi_middle, phi_end
 character, intent(in) :: chain_type
 character(80)         :: filename = ''
 !----------------------------------------------------------------------------------------------------------!
-write(6,'(6X,A40)')adjl("*phi end/middle..",40)
+write(6,'(2X,A40)')adjl("Exporting end/middle density profiles.",40)
 
 phi_middle = 0.d0
 phi_end    = 0.d0
