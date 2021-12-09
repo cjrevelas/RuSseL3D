@@ -32,7 +32,7 @@ function adjl(string,length) result(r)
    character(len=*)      :: string
    integer               :: length
    character(len=length) :: r
-   r = adjustl(string)
+   r = ADJUSTL(string)
 end function adjl
 !--------------------------------------------------------------------!
 end module write_helper

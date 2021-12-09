@@ -92,7 +92,7 @@ module FHASH_MODULE_NAME
 
   type node_type
     type(kv_type), allocatable :: kv
-    type(node_type), pointer :: next => null()   !this pointer points to an object of type node_type
+    type(node_type), pointer :: next => NULL()   !this pointer points to an object of type node_type
 
     contains
       ! If kv is not allocated, allocate and set to the key, value passed in.
@@ -132,28 +132,13 @@ module FHASH_MODULE_NAME
     type(node_type), allocatable :: buckets(:)
 
     contains
-      ! Returns the number of buckets.
       procedure, public :: bucket_count
-
-      ! Return the number of collisions.
       procedure, public :: n_collisions
-
-      ! Reserve certain number of buckets.
       procedure, public :: reserve
-
-      ! Returns number of keys.
       procedure, public :: key_count
-
-      ! Set the value at a given a key.
       procedure, public :: set
-
-      ! Get the value at the given key.
       procedure, public :: get
-
-      ! Remove the value with the given key.
       procedure, public :: remove
-
-      ! Clear all the allocated memory (must be called to prevent memory leak).
       procedure, public :: clear
   end type
 
@@ -161,8 +146,8 @@ module FHASH_MODULE_NAME
     private
 
     integer :: bucket_id
-    type(node_type), pointer :: node_ptr => null()
-    type(FHASH_TYPE_NAME), pointer :: fhash_ptr => null()
+    type(node_type), pointer :: node_ptr => NULL()
+    type(FHASH_TYPE_NAME), pointer :: fhash_ptr => NULL()
 
     contains
       ! Set the iterator to the beginning of a hash table.
@@ -196,7 +181,7 @@ module FHASH_MODULE_NAME
     class(node_type), intent(inout) :: this
     integer :: depth
 
-    if (.not. associated(this%next)) then
+    if (.not. ASSOCIATED(this%next)) then
       depth = 1
     else
       depth = 1 + node_depth(this%next)
@@ -208,14 +193,13 @@ module FHASH_MODULE_NAME
     integer, intent(in)                   :: n_buckets
     integer, dimension(29)                :: sizes
     integer                               :: i
-
     if (this%key_count() > 0) stop 'Cannot reserve when fhash is not empty.'
 
     sizes = (/5, 11, 23, 47, 97, 199, 409, 823, 1741, 3469, 6949, 14033, &
       & 28411, 57557, 116731, 236897, 480881, 976369,1982627, 4026031, &
       & 8175383, 16601593, 33712729, 68460391, 139022417, 282312799, &
-      & 573292817, 1164186217, 2147483647/)
-    do i = 1, size(sizes)
+        573292817, 1164186217, 2147483647/)
+    do i = 1, SIZE(sizes)   !size(sizes)=29
       if (sizes(i) >= n_buckets) then
         this%n_buckets = sizes(i)
         allocate(this%buckets(this%n_buckets))
@@ -238,7 +222,7 @@ module FHASH_MODULE_NAME
     integer                               :: bucket_id
     logical                               :: is_new
 
-    bucket_id = modulo(hash_value(key), this%n_buckets) + 1    !this is the actual hash function
+    bucket_id = MODULO(hash_value(key), this%n_buckets) + 1    !this is the actual hash function
 
     call this%buckets(bucket_id)%node_set(key, value, is_new)
 
@@ -251,16 +235,16 @@ module FHASH_MODULE_NAME
     VALUE_TYPE, intent(in)          :: value
     logical, optional, intent(out)  :: is_new
 
-    if (.not. allocated(this%kv)) then
+    if (.not. ALLOCATED(this%kv)) then
       allocate(this%kv)
       this%kv%key = key
       this%kv%value VALUE_ASSIGNMENT value
-      if (present(is_new)) is_new = .true.
+      if (PRESENT(is_new)) is_new = .true.
     else if (this%kv%key == key) then
       this%kv%value VALUE_ASSIGNMENT value
-      if (present(is_new)) is_new = .false.
+      if (PRESENT(is_new)) is_new = .false.
     else
-      if (.not. associated(this%next)) allocate(this%next)
+      if (.not. ASSOCIATED(this%next)) allocate(this%next)
       call this%next%node_set(key, value, is_new)
     endif
   end subroutine
@@ -272,7 +256,7 @@ module FHASH_MODULE_NAME
     logical, optional, intent(out)        :: success
     integer :: bucket_id
 
-    bucket_id = modulo(hash_value(key), this%n_buckets) + 1
+    bucket_id = MODULO(hash_value(key), this%n_buckets) + 1
     call this%buckets(bucket_id)%node_get(key, value, success)
   end subroutine
 
@@ -282,16 +266,16 @@ module FHASH_MODULE_NAME
     VALUE_TYPE, intent(out)         :: value
     logical, optional, intent(out)  :: success
 
-    if (.not. allocated(this%kv)) then
+    if (.not. ALLOCATED(this%kv)) then
       ! Not found. (Initial node in the bucket not set)
-      if (present(success)) success = .false.
+      if (PRESENT(success)) success = .false.
     else if (this%kv%key == key) then
       value VALUE_ASSIGNMENT this%kv%value
-      if (present(success)) success = .true.
-    else if (associated(this%next)) then
+      if (PRESENT(success)) success = .true.
+    else if (ASSOCIATED(this%next)) then
       call this%next%node_get(key, value, success)
     else
-      if (present(success)) success = .false.
+      if (PRESENT(success)) success = .false.
     endif
   end subroutine
 
@@ -304,12 +288,12 @@ module FHASH_MODULE_NAME
     type(node_type)  ::  first
     logical ::  locSuccess
 
-    bucket_id = modulo(hash_value(key), this%n_buckets) + 1
+    bucket_id = MODULO(hash_value(key), this%n_buckets) + 1
     first = this%buckets(bucket_id)
 
-    if (allocated(first%kv)) then
+    if (ALLOCATED(first%kv)) then
       if (first%kv%key == key) then
-        if (associated(first%next)) then
+        if (ASSOCIATED(first%next)) then
           this%buckets(bucket_id)%kv%key =  this%buckets(bucket_id)%next%kv%key
           this%buckets(bucket_id)%kv%value VALUE_ASSIGNMENT this%buckets(bucket_id)%next%kv%value
           deallocate(first%next%kv)
@@ -326,7 +310,7 @@ module FHASH_MODULE_NAME
     endif
 
     if (locSuccess) this%n_keys = this%n_keys - 1
-    if (present(success)) success = locSuccess
+    if (PRESENT(success)) success = locSuccess
 
   end subroutine
 
@@ -335,7 +319,7 @@ module FHASH_MODULE_NAME
     KEY_TYPE, intent(in) :: key
     logical, intent(out) :: success
 
-    if (.not. allocated(this%kv)) then
+    if (.not. ALLOCATED(this%kv)) then
       ! Not found. (Initial node in the bucket not set)
       success = .false.
     else if (this%kv%key == key) then
@@ -343,7 +327,7 @@ module FHASH_MODULE_NAME
       nullify(this%next)
       deallocate(this%kv)
       success = .true.
-    else if (associated(this%next)) then
+    else if (ASSOCIATED(this%next)) then
       call this%next%node_remove(key, success, this)
     else
       success = .false.
@@ -354,10 +338,10 @@ module FHASH_MODULE_NAME
     class(FHASH_TYPE_NAME), intent(inout) :: this
     integer :: i
 
-    if (.not. allocated(this%buckets)) return
+    if (.not. ALLOCATED(this%buckets)) return
 
-    do i = 1, size(this%buckets)
-      if (associated(this%buckets(i)%next)) then
+    do i = 1, SIZE(this%buckets)
+      if (ASSOCIATED(this%buckets(i)%next)) then
         call this%buckets(i)%next%node_clear()
         deallocate(this%buckets(i)%next)
       endif
@@ -370,7 +354,7 @@ module FHASH_MODULE_NAME
   recursive subroutine node_clear(this)
     class(node_type), intent(inout) :: this
 
-    if (associated(this%next)) then
+    if (ASSOCIATED(this%next)) then
       call this%next%node_clear()
       deallocate(this%next)
       nullify(this%next)
@@ -392,14 +376,14 @@ module FHASH_MODULE_NAME
     VALUE_TYPE, intent(out) :: value
     integer, optional, intent(out) :: status
 
-    do while (.not. associated(this%node_ptr) .or. .not. allocated(this%node_ptr%kv))
+    do while (.not. ASSOCIATED(this%node_ptr) .or. .not. ALLOCATED(this%node_ptr%kv))
       if (this%bucket_id < this%fhash_ptr%n_buckets) then
         this%bucket_id = this%bucket_id + 1
         this%node_ptr => this%fhash_ptr%buckets(this%bucket_id)
       else
-        if (present(status)) status = -1
+        if (PRESENT(status)) status = -1
 #ifdef VALUE_TYPE_INIT
-        value VALUE_ASSIGNMENT int(VALUE_TYPE_INIT)
+        value VALUE_ASSIGNMENT INT(VALUE_TYPE_INIT)
 #endif
         return
       endif
@@ -407,7 +391,7 @@ module FHASH_MODULE_NAME
 
     key = this%node_ptr%kv%key
     value VALUE_ASSIGNMENT this%node_ptr%kv%value
-    if (present(status)) status = 0
+    if (PRESENT(status)) status = 0
     this%node_ptr => this%node_ptr%next
 
   end subroutine

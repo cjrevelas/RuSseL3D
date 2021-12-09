@@ -19,9 +19,9 @@ module ints_module
 #ifdef __GFORTRAN__
   interface assignment (=)
     module procedure ints_ptr_assign
-  end interface 
+  end interface
 #endif
-  
+
   contains
 
     function hash_value_ints(ints) result(hash)
@@ -30,8 +30,8 @@ module ints_module
       integer :: i
 
       hash = 0
-      do i = 1, size(ints%ints)
-        hash = xor(hash, ints%ints(i) + 1640531527 + ishft(hash, 6) + ishft(hash, -2))
+      do i = 1, SIZE(ints%ints)
+        hash = xor(hash, ints%ints(i) + 1640531527 + ISHFT(hash, 6) + ISHFT(hash, -2))
       enddo
     end function
 
@@ -40,12 +40,12 @@ module ints_module
       logical :: ints_equal
       integer :: i
 
-      if (size(lhs%ints) /= size(rhs%ints)) then
+      if (SIZE(lhs%ints) /= SIZE(rhs%ints)) then
         ints_equal = .false.
         return
       endif
 
-      do i = 1, size(lhs%ints)
+      do i = 1, SIZE(lhs%ints)
         if (lhs%ints(i) /= rhs%ints(i)) then
           ints_equal = .false.
           return
@@ -86,11 +86,11 @@ module int_module
 
   contains
 
-    function hash_value_int(int) result(hash)
-      integer, intent(in) :: int
+    function hash_value_int(INT) result(hash)
+      integer, intent(in) :: INT
       integer :: hash
 
-      hash = int
+      hash = INT
     end function
 end module
 
