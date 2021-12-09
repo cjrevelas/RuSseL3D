@@ -1,12 +1,9 @@
 subroutine init_arrays()
 !-----------------------------------------------------------------------------------------------------------!
-use geometry
-use kcw
-use parser_vars
+use geometry,    only: numnp
+use kcw,         only: rdiag1
+use parser_vars, only: ns_mx_ed, ns_mx_conv, mx_exist, gr_exist, ns_gr_ed, ns_gr_conv
 use arrays
-use delta
-use error_handing
-use iofiles
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!

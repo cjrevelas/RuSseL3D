@@ -1,7 +1,7 @@
 subroutine mumps_sub(mumps_matrix_type)
 !--------------------------------------------------------------------------!
-use kcw
-use geometry
+use kcw,          only: A_m, rdiag1, NNZ
+use geometry,     only: numnp
 use error_handing
 #ifdef USEMPI
 use mpistuff
@@ -9,8 +9,8 @@ use mpistuff
 !--------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------!
-include 'mpif.h'
-include 'dmumps_struc.h'
+include "mpif.h"
+include "dmumps_struc.h"
 !--------------------------------------------------------------------------!
 type(DMUMPS_STRUC) :: mumps_par
 

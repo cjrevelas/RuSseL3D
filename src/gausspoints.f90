@@ -1,15 +1,15 @@
-subroutine gausspoints(ll, lint, s)
+subroutine gausspoints(kk, lint, s)
 !--------------------------------------------------------------------!
 implicit  none
 !--------------------------------------------------------------------!
-integer, intent(in)  :: ll
+integer, intent(in)  :: kk
 integer, intent(out) :: lint
 integer              :: i, j
 
 real(8), intent(out), dimension(5,*) :: s
 !--------------------------------------------------------------------!
 !1 pt. quadrature O(h^2)
-if (ll.eq.1) then
+if (kk.eq.1) then
     lint = 1
 
     do i = 1, 4
@@ -19,7 +19,7 @@ if (ll.eq.1) then
     s(5,1) = 1.0d0/6.d0
 
 !4 pt. quadrature O(h^3)
-elseif (ll.eq.2) then
+elseif (kk.eq.2) then
     lint = 4
 
     s(5,4) = 0.25d0/6.d0
@@ -33,7 +33,7 @@ elseif (ll.eq.2) then
     enddo
 
 !11 pt. quadrature O(h^4)
-elseif (ll.eq.3) then
+elseif (kk.eq.3) then
     lint = 11
 
     do i = 1, 3

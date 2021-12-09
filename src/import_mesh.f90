@@ -4,11 +4,14 @@ use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use error_handing
-use write_helper
-use parser_vars
-use kcw
-use geometry
-use iofiles
+use write_helper, only: adjl
+use parser_vars,  only: iow, n_dirichlet_faces, n_nanopart_faces, prof_dim,     &
+&                       ids_dirichlet_faces, ids_nanopart_faces
+use geometry,     only: ix, xc, numnp, numel, el_node, is_dir_face, max_el_node,&
+&                       node_in_q0_face, nel, n_el_node, ndm, con_l2, all_el,   &
+&                       box_lo, box_hi, box_len
+use kcw,          only: F_m
+use iofiles,      only: mesh_filename, dir_faces, com_12, inter, mesh_out, mesh_prof
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
@@ -47,12 +50,12 @@ do
     elseif (reason<0) then
         exit
     else
-        if (index(line,"# sdim") > 0) then
+        if (INDEX(line,"# sdim") > 0) then
             read(line,*) ndm
-        elseif (index(line,"# number of mesh points") > 0) then
+        elseif (INDEX(line,"# number of mesh points") > 0) then
             read(line,*) numnp
             allocate(xc(ndm,numnp))
-        elseif (index(line,"# Mesh point coordinates") > 0) then
+        elseif (INDEX(line,"# Mesh point coordinates") > 0) then
 
             box_lo  = 0.d0
             box_hi  = 0.d0
@@ -86,7 +89,7 @@ do
             box_volume = box_len(1) * box_len(2) * box_len(3)
             write(iow,'(3X,A40,E16.9,A13)')adjl("Box volume:",40),box_volume," [Angstrom^3]"
             write(6  ,'(3X,A40,E16.9,A13)')adjl("Box volume:",40),box_volume," [Angstrom^3]"
-        elseif (index(line," tet") > 0) then
+        elseif (INDEX(line," tet") > 0) then
 
             read(12,*)
             read(12,*)
@@ -131,7 +134,7 @@ do
                     ix(6,i)  = temp3(i)
                 enddo
             endif
-        elseif (index(line," tri") > 0) then
+        elseif (INDEX(line," tri") > 0) then
 
             read(12,*)
             read(12,*)
@@ -158,7 +161,7 @@ do
                     write(*,*) "Yaouza"
                     exit
                 else
-                    if(index(line_internal,'# number of geometric entity indices') > 0) then
+                    if(INDEX(line_internal,'# number of geometric entity indices') > 0) then
                         read(12,*)
 
                         do i = 1, num_face_elem
@@ -189,13 +192,13 @@ do ii = 1, numel
    do jj = 1, 4
       i_node = ix(jj, ii)
       n_el_node(i_node) = n_el_node(i_node) + 1
-      max_el_node = max(max_el_node, n_el_node(i_node))
+      max_el_node = MAX(max_el_node, n_el_node(i_node))
 !      write(*,*)max_el_node, n_el_node(i_node)
    enddo
 enddo
 
-write(iow,'("Maximum number of elements per node: ",I5)')max_el_node
-write(6  ,'("Maximum number of elements per node: ",I5)')max_el_node
+write(iow,'(3X,"Maximum number of elements per node: ",I18)') max_el_node
+write(6  ,'(3X,"Maximum number of elements per node: ",I18)') max_el_node
 
 allocate(el_node(numnp, max_el_node))
 el_node = 0
@@ -264,8 +267,8 @@ enddo
 call h%clear()
 
 !determine all elements belonging to dirichlet faces
-allocate(elem_in_q0_face(numnp))
-elem_in_q0_face = .false.
+allocate(node_in_q0_face(numnp))
+node_in_q0_face = .false.
 
 #ifdef DEBUG_OUTPUTS
 open(unit=123, file = dir_faces)
@@ -280,15 +283,15 @@ do j = 1, num_face_elem
                 idummy = face_node_id(i,j)
 
                 !if the node belongs to a dirichlet face
-                elem_in_q0_face(idummy) = .True.
+                node_in_q0_face(idummy) = .True.
 
                 !find if a node is located at a corner
                 k1 = 0
                 do m1 = 1, ndm
-                    if (dabs(xc(m1, idummy) - box_lo(m1)) < tol) then
+                    if (DABS(xc(m1, idummy) - box_lo(m1)) < tol) then
                         k1 = k1 + 1
                     endif
-                    if (dabs(xc(m1, idummy) - box_hi(m1)) < tol) then
+                    if (DABS(xc(m1, idummy) - box_hi(m1)) < tol) then
                         k1 = k1 + 1
                     endif
                 enddo
@@ -297,10 +300,10 @@ do j = 1, num_face_elem
                 if (k1 > 1) cycle
 
                 do m1 = 1, ndm
-                    if (dabs(xc(m1, idummy) - box_lo(m1)) < tol) then
+                    if (DABS(xc(m1, idummy) - box_lo(m1)) < tol) then
                         is_dir_face(m1,1) = .true.
                     endif
-                    if (dabs(xc(m1, idummy) - box_hi(m1)) < tol) then
+                    if (DABS(xc(m1, idummy) - box_hi(m1)) < tol) then
                         is_dir_face(m1,2) = .true.
                     endif
                 enddo
@@ -319,7 +322,7 @@ do j = 1, num_face_elem
                 idummy = face_node_id(i,j)
 
                 !if the node belongs to a dirichlet face
-                elem_in_q0_face(idummy) = .True.
+                node_in_q0_face(idummy) = .True.
             enddo
         endif
     enddo
@@ -351,17 +354,17 @@ close(77)
 ! APS profile section
 ! APS TEMP: this should be encapsulated into a subroutine
 prof_bin = 0.5d0
-nbin = nint((box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin) + 1
+nbin = NINT((box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin) + 1
 
 allocate(prof_1D_node(nbin))
 
 prof_1D_node=0
 do i = 1, numnp
-    ibin = nint((xc(prof_dim,i) - box_lo(prof_dim))/prof_bin) + 1
+    ibin = NINT((xc(prof_dim,i) - box_lo(prof_dim))/prof_bin) + 1
     prof_1D_node(ibin) = prof_1D_node(ibin) + 1
 enddo
 
-open(77, file = "prof_mp.out.txt")
+open(77, file = mesh_prof)
 do i = 1, nbin
     write(77,*)i, prof_1D_node(i)
 enddo

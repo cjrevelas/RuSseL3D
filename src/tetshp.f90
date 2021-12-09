@@ -1,6 +1,6 @@
 subroutine tetshp(xi, xl, ndm, nel, xsj, shp)
 !-----------------------------------------------------------------------------------!
-use constants
+use constants, only: tol
 !-----------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------!
@@ -16,7 +16,7 @@ real(8), dimension(3,3)               :: xs, xsi, a
 real(8), dimension(3)                 :: te
 !-----------------------------------------------------------------------------------!
 !linear shape functions and their derivatives
-if(abs(nel).eq.4) then
+if(ABS(nel).eq.4) then
      shp(1,1) =  1.d00
      shp(1,2) =  0.d00
      shp(1,3) =  0.d00
@@ -40,8 +40,8 @@ if(abs(nel).eq.4) then
      nnel = 4
 
 !quadratic shape functions and derivatives
-elseif(abs(nel).eq.10 .or. abs(nel).eq.11  .or.&
-       abs(nel).eq.14 .or. abs(nel).eq.15) then
+elseif(ABS(nel).eq.10 .or. ABS(nel).eq.11  .or.&
+       ABS(nel).eq.14 .or. ABS(nel).eq.15) then
 
      shp(1, 1) =  4.d0*xi(1) - 1.d0
      shp(1, 2) =  0.d0
@@ -126,7 +126,7 @@ enddo
 !compute jacobian determinant
 xsj = xs(1,1)*xsi(1,1) + xs(1,2)*xsi(2,1) + xs(1,3)*xsi(3,1)
 
-if (dabs(xsj)>tol) then
+if (DABS(xsj)>tol) then
     detr = 1.d0/xsj
     xsj  = xsj!*(1./6.)
 else

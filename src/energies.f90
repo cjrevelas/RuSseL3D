@@ -1,18 +1,18 @@
-subroutine energies(qm_interp_mg, phi_total, part_func, num_gpoints, gpid, free_energy)
+subroutine energies(qmx_interp_mg, phi_total, part_func, num_gpoints, gpid, free_energy)
 !-------------------------------------------------------------------------------------------------!
-use parser_vars
-use eos
-use geometry
-use constants
-use iofiles
+use eos,         only: eos_ff, eos_df_drho
+use parser_vars, only: ns_gr_conv, chainlen_mx, interf_area, rho_mol_bulk, temp
+use geometry,    only: numnp, box_lo, box_hi, xc
+use constants,   only: n_avog, boltz_const_Joule_molK, boltz_const_Joule_K
+use iofiles,     only: energy_terms
 !-------------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------------!
 integer, intent(in)                         :: num_gpoints
 integer, intent(in), dimension(num_gpoints) :: gpid
-integer                                     :: k1, gnode_id
+integer                                     :: kk, gnode_id
 
-real(8), intent(in), dimension(ns_gr_conv+1,numnp) :: qm_interp_mg
+real(8), intent(in), dimension(ns_gr_conv+1,numnp) :: qmx_interp_mg
 real(8), intent(in), dimension(numnp)              :: phi_total
 real(8), intent(in)                                :: part_func
 real(8), intent(out)                               :: free_energy
@@ -27,9 +27,9 @@ term4_norm = 0.d0
 dterm1     = 0.d0
 dterm2     = 0.d0
 
-do k1 = 1, numnp
-   dterm1(k1) = eos_ff(phi_total(k1)) - eos_ff(1.d0)
-   dterm2(k1) = -phi_total(k1) * eos_df_drho(phi_total(k1)) + 1.d0*eos_df_drho(1.d0)
+do kk = 1, numnp
+   dterm1(kk) = eos_ff(phi_total(kk)) - eos_ff(1.d0)
+   dterm2(kk) = -phi_total(kk) * eos_df_drho(phi_total(kk)) + 1.d0*eos_df_drho(1.d0)
 enddo
 
 call spat_3d(dterm1, term1, Q, vol)
@@ -37,17 +37,17 @@ call spat_3d(dterm2, term2, Q, vol)
 
 term1 = term1 * 1.0d-30
 term2 = term2 * 1.0d-30 * rho_mol_bulk * n_avog
-term3 = rho_mol_bulk * 1.0d-30 * vol * boltz_const_Joule_molK * Temp * (1.d00 - part_func) / chainlen_matrix
+term3 = rho_mol_bulk * 1.0d-30 * vol * boltz_const_Joule_molK * Temp * (1.d00 - part_func) / chainlen_mx
 
-do k1 = 1, num_gpoints
-    gnode_id = gpid(k1)
-    r_gpoint = min(abs(xc(3,gnode_id) - box_lo(3)), abs(box_hi(3) - xc(3,gnode_id)))
+do kk = 1, num_gpoints
+    gnode_id = gpid(kk)
+    r_gpoint = MIN(ABS(xc(3,gnode_id) - box_lo(3)), ABS(box_hi(3) - xc(3,gnode_id)))
 
-    term4_gpoint(k1) = - boltz_const_Joule_K * Temp * log(qm_interp_mg(ns_gr_conv+1,gnode_id))
-    term4            = term4 + term4_gpoint(k1)
+    term4_gpoint(kk) = - boltz_const_Joule_K * Temp * LOG(qmx_interp_mg(ns_gr_conv+1,gnode_id))
+    term4            = term4 + term4_gpoint(kk)
 
-    term4_norm_gpoint(k1) = - boltz_const_Joule_K * Temp * log(r_ref / r_gpoint)
-    term4_norm            = term4_norm + term4_norm_gpoint(k1)
+    term4_norm_gpoint(kk) = - boltz_const_Joule_K * Temp * LOG(r_ref / r_gpoint)
+    term4_norm            = term4_norm + term4_norm_gpoint(kk)
 enddo
 
 term1      = term1      * 1.d03 / (interf_area*1.d-20)
@@ -64,10 +64,10 @@ write(837,'(6(E19.9E2,1X))')   term1,   term2,   term3,   term4,   term4_norm,  
 
 if (num_gpoints.ne.0) then
     write(837,*)
-    write(837,'(A9,A17,A23,A22)')  "id", "qm(ns)", "term4_gpoint", "term4_norm_gpoint"
-    do k1 = 1, num_gpoints
-        gnode_id   = gpid(k1)
-        write(837,'(I10,3(1X,E19.9e2))') gnode_id, qm_interp_mg(ns_gr_conv+1,gnode_id), term4_gpoint(k1), term4_norm_gpoint(k1)
+    write(837,'(A9,A17,A23,A22)')  "id", "qmx(ns)", "term4_gpoint", "term4_norm_gpoint"
+    do kk = 1, num_gpoints
+        gnode_id   = gpid(kk)
+        write(837,'(I10,3(1X,E19.9e2))') gnode_id, qmx_interp_mg(ns_gr_conv+1,gnode_id), term4_gpoint(kk), term4_norm_gpoint(kk)
     enddo
 endif
 

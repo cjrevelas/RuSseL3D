@@ -1,11 +1,11 @@
 subroutine init_delta()
 !-----------------------------------------------------------------------------------------------------------!
-use geometry
-use parser_vars
-use arrays
+use geometry,     only: numnp
+use parser_vars,  only: gr_exist
+use arrays,       only: phia_gr_indiv
+use iofiles,      only: gp_filename
 use delta
 use error_handing
-use iofiles
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!

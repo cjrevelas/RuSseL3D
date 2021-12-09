@@ -1,7 +1,8 @@
 subroutine init_chain_contour(sym, chainlen, ns, ds_ave, ds, xs, koeff)
 !------------------------------------------------------------------------------------------------------!
-use constants
-use parser_vars
+use constants,   only: pi
+use parser_vars, only: contour_discr_scheme
+use flags,       only: uniform, nonuniform, symm, asymm, hybrid
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!

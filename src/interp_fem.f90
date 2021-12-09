@@ -1,6 +1,6 @@
 real(8) function interp_fem(nodeId, x_interp, y_interp, z_interp, uu)
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-use geometry
+use geometry, only : numnp, ndm, nel, el_node, ix, xc, n_el_node
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------------------------------------------------------------------------!
@@ -9,16 +9,13 @@ integer                                  :: jj, l, lint, nn, m1, m2, inside, mm,
 
 real(8), intent(in), dimension(numnp)    :: uu
 real(8), intent(in)                      :: x_interp, y_interp, z_interp
-
 real(8), dimension(4,11)                 :: shp
 real(8), dimension(5,11)                 :: sv
 real(8), dimension(3,4)                  :: xl
 real(8), dimension(4)                    :: ul_uu
 real(8), dimension(4)                    :: gc, lc
 real(8), dimension(4,4)                  :: transf, transf_inv
-real(8)                                  :: volel, xsj
-real(8)                                  :: u_interp
-
+real(8)                                  :: volel, xsj, u_interp
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 interface
     pure function matinv4(transf)
@@ -27,7 +24,6 @@ interface
     end function
 end interface
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-
 !set up for 11-point quadrature
 l = 3
 call gausspoints(l, lint, sv)
@@ -64,7 +60,7 @@ do mm = 1, n_el_node(nodeId)
     enddo
     !-------------------------------------------START INTERPOLATION--------------------------------------------------------!
     !check if current plotPoint lies in the specific element
-    call isInside(xl, x_interp, y_interp, z_interp, lint, sv, volel, inside, shp)
+    call is_node_inside_el(xl, x_interp, y_interp, z_interp, lint, sv, volel, inside, shp, ndm, nel)
 
     if (inside==1) then
         gc(1) = 1.d00

@@ -18,6 +18,7 @@ use write_helper
 use geometry
 use iofiles
 use delta
+use flags, only: symm, asymm, hybrid
 #ifdef USE_MPI
 use mpistuff
 #endif

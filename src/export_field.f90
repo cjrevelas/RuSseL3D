@@ -1,16 +1,19 @@
-subroutine export_field(wa, numnp, iter)
+subroutine export_field(wa, wa_new, wa_mix)
+!-----------------------------------------------------------------------------------------------------------!
+use geometry, only: numnp, xc
+use iofiles,  only: field_profile
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
-integer, intent(in)                   :: numnp, iter
+integer :: kk
 
-real(8), intent(in), dimension(numnp) :: wa
-
-character(40) :: field_filename_aux = ''
+real(8), intent(in), dimension(numnp) :: wa, wa_new, wa_mix
 !-----------------------------------------------------------------------------------------------------------!
-write(field_filename_aux,'("field",I4.4,".out.bin")') iter
-open(unit=655, file = field_filename_aux, form='unformatted')
-write(655) wa
-close(655)
+open (unit=120, file = field_profile)
+write(120,'(7(A19))') "np", "x", "y", "z", "wa", "wa_new", "wa_mix"
+do kk = 1, numnp
+   write(120,'(I19,6(E19.9E3))') kk, xc(1,kk), xc(2,kk), xc(3,kk), wa(kk), wa_new(kk), wa_mix(kk)
+enddo
+close(120)
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine export_field

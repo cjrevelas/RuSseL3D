@@ -1,16 +1,16 @@
-subroutine dirichlet(ds, mumps_matrix_type)
+subroutine dirichlet(ds, mumps_matrix_type, node_in_q0_face)
 !------------------------------------------------------------------------------------------------------!
-use kcw
-use geometry
-use constants
-use iofiles
+use kcw,       only: F_m, A_m, NNZ
+use geometry,  only: all_el, nel, numel, numnp
+use constants, only: tol
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
 integer, intent(in) :: mumps_matrix_type
-integer             :: i, f, i1
+integer             :: jj, kk, ii
 
-logical, dimension(nel*numel) :: set_diag_to_one
+logical, intent(in), dimension(numnp) :: node_in_q0_face
+logical, dimension(nel*numel)         :: set_diag_to_one
 
 real(8), intent(in) :: ds
 
@@ -25,31 +25,31 @@ set_diag_to_one=.true.
 
 !in case the matrix is symmetric remove the zero lines and rows diagonal componets with Dirichlet BC q=0.
 if (mumps_matrix_type.eq.1.or.mumps_matrix_type.eq.2) then
-    do i1 = 1, all_el
-        f = F_m%col(i1)
-        i = F_m%row(i1)
-        if (i > f) then
-            F_m%g(i1) = 0.d0
+    do ii = 1, all_el
+        kk = F_m%col(ii)
+        jj = F_m%row(ii)
+        if (jj > kk) then
+            F_m%g(ii) = 0.d0
         endif
-        if (elem_in_q0_face(i).or.elem_in_q0_face(f)) then
-            F_m%g(i1) = 0.d0
-            if (i==f.and.set_diag_to_one(i)) then
-                F_m%g(i1) = 1.d0
-                set_diag_to_one(i)=.false.
+        if (node_in_q0_face(jj).or.node_in_q0_face(kk)) then
+            F_m%g(ii) = 0.d0
+            if (jj==kk.and.set_diag_to_one(jj)) then
+                F_m%g(ii) = 1.d0
+                set_diag_to_one(jj)=.false.
             endif
         endif
     enddo
 endif
 
 if (mumps_matrix_type.eq.0) then
-    do i1 = 1, all_el
-        f = F_m%col(i1)
-        i = F_m%row(i1)
-        if (elem_in_q0_face(i)) then
-            F_m%g(i1) = 0.d0
-            if (i==f.and.set_diag_to_one(i)) then
-                F_m%g(i1) = 1.d0
-                set_diag_to_one(i)=.false.
+    do ii = 1, all_el
+        kk = F_m%col(ii)
+        jj = F_m%row(ii)
+        if (node_in_q0_face(jj)) then
+            F_m%g(ii) = 0.d0
+            if (jj==kk.and.set_diag_to_one(jj)) then
+                F_m%g(ii) = 1.d0
+                set_diag_to_one(jj)=.false.
             endif
         endif
     enddo
@@ -57,8 +57,8 @@ endif
 
 !determine non_zero entries
 NNZ = 0
-do i = 1, all_el
-    if (abs(F_m%g(i)) > tol) then
+do jj = 1, all_el
+    if (ABS(F_m%g(jj)) > tol) then
         NNZ = NNZ + 1
     endif
 enddo
@@ -68,13 +68,13 @@ allocate(A_m%col(NNZ))
 allocate(A_m%row(NNZ))
 
 NNZ = 0
-do i = 1, all_el
-    if (abs(F_m%g(i)) > tol) then
+do jj = 1, all_el
+    if (ABS(F_m%g(jj)) > tol) then
         NNZ = NNZ + 1
 
-        A_m%value(NNZ) = F_m%g(i)
-        A_m%row(NNZ)   = F_m%row(i)
-        A_m%col(NNZ)   = F_m%col(i)
+        A_m%value(NNZ) = F_m%g(jj)
+        A_m%row(NNZ)   = F_m%row(jj)
+        A_m%col(NNZ)   = F_m%col(jj)
     endif
 enddo
 
@@ -82,15 +82,15 @@ enddo
 allocate(A_full(numnp,numnp))
 A_full = 0.d0
 
-do i1 = 1, NNZ
-   f = A_m%col(i1)
-   i = A_m%row(i1)
-   A_full(i,f)=A_m%value(i1)
+do ii = 1, NNZ
+   kk = A_m%col(ii)
+   jj = A_m%row(ii)
+   A_full(jj,kk)=A_m%value(ii)
 enddo
 
 open(unit=255, file = A_matrix_full)
-do i = 1, numnp
-   write(255,*)(A_full(i,f), f = 1, numnp)
+do jj = 1, numnp
+   write(255,*)(A_full(jj,kk), kk = 1, numnp)
 enddo
 close(255)
 

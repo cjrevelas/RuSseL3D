@@ -1,11 +1,12 @@
 subroutine init_scf_params()
 !------------------------------------------------------------------------------------------------------!
-use parser_vars
-use constants
-use eos
-use flags
-use write_helper
-use error_handing
+use parser_vars,  only: chainlen_mx, iow, k_gr, k_gr_tilde, massden, mon_mass, pres, &
+&                       rho_mass_bulk, rho_mol_bulk, rho_seg_bulk, temp
+use constants,    only: boltz_const_Joule_K, boltz_const_Joule_molK, gr_cm3_to_kg_m3, N_avog
+use eos,          only: eos_type, kapa, V_star, P_star, T_star, rho_star, rho_tilde_bulk, P_tilde, T_tilde, &
+&                       rsl_N, hlf_kappa_T, eos_rho_tilde_0
+use flags,        only: eos_helfand, eos_sl
+use write_helper, only: adjl
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!

@@ -1,9 +1,6 @@
-subroutine spat_3d(u_spat, sum_out, Q, vol)
+subroutine spat_3d(u_spat, sum_out, QQ, vol)
 !--------------------------------------------------------------------!
-use parser_vars
-use geometry
-use constants
-use error_handing
+use geometry, only : numnp, ndm, nel, numel, ix, xc
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
@@ -11,7 +8,7 @@ integer :: lint
 integer :: i, j, ii, l, n
 
 real(8), intent(in), dimension(numnp) :: u_spat
-real(8), intent(out)                  :: sum_out, Q, vol
+real(8), intent(out)                  :: sum_out, QQ, vol
 real(8)                               :: xsj, uqp, sumel, volel
 real(8), dimension(nel)               :: ul
 real(8), dimension(ndm, nel)          :: xl
@@ -70,7 +67,7 @@ do n = 1, numel
 
 enddo !n
 
-Q = sum_out/vol
+QQ = sum_out/vol
 
 return
 !--------------------------------------------------------------------!

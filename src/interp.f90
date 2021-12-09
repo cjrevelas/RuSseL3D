@@ -19,7 +19,7 @@ call lagrange_value(data_num, t_data, interp_num, t_interp, l_interp)
 !Multiply P_DATA(1:M,1:DATA_NUM) * L_INTERP(1:DATA_NUM,1:INTERP_NUM)
 !to get P_INTERP(1:M,1:INTERP_NUM).
 
-p_interp(1:m,1:interp_num) = matmul (p_data(1:m,1:data_num), l_interp(1:data_num,1:interp_num))
+p_interp(1:m,1:interp_num) = MATMUL (p_data(1:m,1:data_num), l_interp(1:data_num,1:interp_num))
 
 return
 end subroutine interp_lagrange
@@ -187,7 +187,7 @@ integer ( kind = 4 ) s
 integer ( kind = 4 ) values(8)
 integer ( kind = 4 ) y
 
-call date_and_time ( values = values )
+call DATE_AND_TIME ( values = values )
 
 y = values(1)
 m = values(2)
@@ -219,7 +219,7 @@ else
 end if
 
 write ( *, '(i2,1x,a,1x,i4,2x,i2,a1,i2.2,a1,i2.2,a1,i3.3,1x,a)' ) &
-  d, trim ( month(m) ), y, h, ':', n, ':', s, '.', mm, trim ( ampm )
+  d, TRIM ( month(m) ), y, h, ':', n, ':', s, '.', mm, TRIM ( ampm )
 
 return
 end subroutine timestamp

@@ -3,22 +3,20 @@ subroutine get_part_func(numnp, ns, q_final, part_func)
 implicit none
 !-------------------------------------------------------------------------------------------!
 integer, intent(in)                        :: numnp, ns
-integer                                    :: k1
+integer                                    :: kk
 
 real(8), intent(in), dimension(ns+1,numnp) :: q_final
 real(8), intent(out)                       :: part_func
-real(8)                                    :: sum_f, Q, vol
+real(8)                                    :: sum_f, vol
 real(8), dimension(numnp)                  :: q_last
-!-------------------------------------------------------------------------------------------!
+!-------------------------------------------------------------------------------------------! 
 sum_f = 0.d0
 
-do k1 = 1, numnp
-    q_last(k1) = q_final(ns+1,k1)
+do kk = 1, numnp
+    q_last(kk) = q_final(ns+1,kk)
 enddo
 
-call spat_3d(q_last, sum_f, Q, vol)
-
-part_func = Q
+call spat_3d(q_last, sum_f, part_func, vol)
 
 return
 !-------------------------------------------------------------------------------------------!
