@@ -39,7 +39,7 @@ do bin = 1, 3
         qgr_final(1,gnode_id) = gp_init_value(ii)
     enddo
 
-    call edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final, node_in_q0_face_new)
+    call solver_edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final, node_in_q0_face_new)
 
     !integrate
     !sum_final = 0.d0

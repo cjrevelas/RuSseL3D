@@ -49,7 +49,7 @@ elseif (contour_discr.eq.contour_hybrid) then
     endif
 endif
 
-call get_interp_quad_coeff(ds, ns, coeff)
+call get_contour_coeffs(ds, ns, coeff)
 return
 !------------------------------------------------------------------------------------------------------!
 end subroutine init_chain_contour

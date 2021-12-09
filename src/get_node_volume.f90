@@ -1,4 +1,4 @@
-subroutine get_volnp(volnp, node)
+subroutine get_node_volume(volnp, node)
 !--------------------------------------------------------------------!
 use geometry,     only: ndm, nel, numnp, el_node, ix, xc, n_el_node
 use error_handing
@@ -41,13 +41,13 @@ do s = 1, n_el_node(node)
 
     !set up for gauss quadrature
     l=3
-    call gausspoints(l, lint, sv)
+    call fem_gausspoints(l, lint, sv)
 
     sumel = 0.d00
 
     !loop over all quadrature points in element
     do l = 1, lint
-        call tetshp(sv(1,l), xl, ndm, nel, xsj, shp)
+        call fem_tetshpfun(sv(1,l), xl, ndm, nel, xsj, shp)
 
         xsj = xsj*sv(5,l)
 
@@ -65,4 +65,4 @@ enddo
 
 return
 !--------------------------------------------------------------------!
-end subroutine get_volnp
+end subroutine get_node_volume

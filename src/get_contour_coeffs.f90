@@ -1,6 +1,6 @@
-subroutine get_interp_quad_coeff(ds, ns, coeff)
+subroutine get_contour_coeffs(ds, ns, coeff)
 !------------------------------------------------------------------------------!
-use iofiles, only: quad_interp
+use iofiles, only: contour_coeffs
 !------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------!
@@ -29,7 +29,7 @@ do nn = 2, ns, 2
 enddo
 
 #ifdef DEBUG_OUTPUTS
-open(unit=400, file = quad_interp, position = 'append')
+open(unit=400, file = contour_coeffs, position = 'append')
 write(400,'(5(A17))')  "n", "s", "ds", "coeff", "coeff_reduced"
 do nn = 1, ns+1
     write(400,'(I17, 4(E17.9))') nn, x(nn), ds(nn), coeff(nn), coeff(nn)/ds(nn)
@@ -44,4 +44,4 @@ close(400)
 
 return
 !------------------------------------------------------------------------------!
-end subroutine get_interp_quad_coeff
+end subroutine get_contour_coeffs

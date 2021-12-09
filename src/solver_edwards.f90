@@ -1,4 +1,4 @@
-subroutine edwards(ds, ns, mumps_matrix_type, q, q_final, node_in_q0_face)
+subroutine solver_edwards(ds, ns, mumps_matrix_type, q, q_final, node_in_q0_face)
 !----------------------------------------------------------------------------------------------------------!
 use kcw,      only: A_m, F_m, rdiag1
 use geometry, only: numnp, all_el
@@ -25,7 +25,7 @@ t_init = get_sys_time()
 
 do time_step = 2, ns+1
     !set essential BCs and form the LHS of the linear system of equations to be solved
-    call dirichlet(ds(time_step), mumps_matrix_type, node_in_q0_face)
+    call solver_dirichlet(ds(time_step), mumps_matrix_type, node_in_q0_face)
 
 #ifdef USE_MPI
     !send a continue (.true.) signal to the slaves
@@ -53,7 +53,7 @@ do time_step = 2, ns+1
     enddo
 
     !solve the linear system of equations
-    call mumps_sub(mumps_matrix_type)
+    call solver_mumps(mumps_matrix_type)
 
     !update solution/propagator
     do kk = 1,numnp
@@ -80,4 +80,4 @@ write(6,'(" :",I6)') t_final - t_init
 
 return
 !----------------------------------------------------------------------------------------------------------!
-end subroutine edwards
+end subroutine solver_edwards

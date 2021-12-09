@@ -1,4 +1,4 @@
-subroutine alloc_hist(upd_lbin, volnp)
+subroutine tools_histogram(upd_lbin, volnp)
 !-----------------------------------------------------------------------------------------------------------!
 use hist
 use geometry,    only: numnp, box_len, is_dir_face, box_lo, box_hi, xc
@@ -70,4 +70,4 @@ do mm = 1, n_nanopart_faces
     enddo
 enddo
 !-----------------------------------------------------------------------------------------------------------!
-end subroutine alloc_hist
+end subroutine tools_histogram

@@ -1,4 +1,4 @@
-real(8) function interp_fem(nodeId, x_interp, y_interp, z_interp, uu)
+real(8) function fem_interpolation(nodeId, x_interp, y_interp, z_interp, uu)
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 use geometry, only : numnp, ndm, nel, el_node, ix, xc, n_el_node
 !--------------------------------------------------------------------------------------------------------------------------------------------!
@@ -18,15 +18,15 @@ real(8), dimension(4,4)               :: transf, transf_inv
 real(8)                               :: volel, xsj, u_interp
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 interface
-    pure function matinv4(transf)
+    pure function tools_matinv4(transf)
     real(8), intent(in), dimension(4,4) :: transf
-    real(8),             dimension(4,4) :: matinv4
+    real(8),             dimension(4,4) :: tools_matinv4
     end function
 end interface
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 !set up for 11-point quadrature
 l = 3
-call gausspoints(l, lint, sv)
+call fem_gausspoints(l, lint, sv)
 
 !loop over elements
 do mm = 1, n_el_node(nodeId)
@@ -44,7 +44,6 @@ do mm = 1, n_el_node(nodeId)
 
         !copy value of solution at current node from global to local array
         ul_uu(iloc)  = uu(iglob)
-
     enddo
 
     !initialize accumulator for element volume
@@ -52,7 +51,7 @@ do mm = 1, n_el_node(nodeId)
 
     !loop over all quadrature points in the considered element
     do l = 1, lint
-        call tetshp(sv(1,l), xl, ndm, nel, xsj, shp)
+        call fem_tetshpfun(sv(1,l), xl, ndm, nel, xsj, shp)
 
         xsj = xsj*sv(5,l)
 
@@ -75,7 +74,7 @@ do mm = 1, n_el_node(nodeId)
             transf(4,m1) = xl(3,m1)
         enddo
 
-        transf_inv = matinv4(transf)
+        transf_inv = tools_matinv4(transf)
 
         do m1 = 1, 4
             lc(m1) = 0.d00
@@ -84,7 +83,7 @@ do mm = 1, n_el_node(nodeId)
             enddo
         enddo
 
-        call tetshp(lc, xl, ndm, nel, xsj, shp)
+        call fem_tetshpfun(lc, xl, ndm, nel, xsj, shp)
 
         u_interp  = 0.d00
 
@@ -92,12 +91,10 @@ do mm = 1, n_el_node(nodeId)
             u_interp  = u_interp  + shp(4,jj) * ul_uu(jj)
         enddo
 
-        interp_fem = u_interp
+        fem_interpolation = u_interp
         exit
-
     endif
-
     !end loop over elements
 enddo
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-end function interp_fem
+end function fem_interpolation

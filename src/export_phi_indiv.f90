@@ -14,7 +14,7 @@ real(8), intent(in), dimension(numnp,num_gpoints) :: phia_gr_indiv
 real(8), dimension(num_gpoints)                   :: nch_gr
 !------------------------------------------------------------------------------------------------------!
 do ii = 1, num_gpoints
-    call get_nchains(numnp, chainlen_gr, rho_mol_bulk, phia_gr_indiv(:,ii), nch_gr(ii))
+    call compute_number_of_chains(numnp, chainlen_gr, rho_mol_bulk, phia_gr_indiv(:,ii), nch_gr(ii))
 enddo
 
 open (unit=120, file = phi_profile_indiv)

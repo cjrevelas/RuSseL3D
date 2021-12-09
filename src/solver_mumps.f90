@@ -1,4 +1,4 @@
-subroutine mumps_sub(mumps_matrix_type)
+subroutine solver_mumps(mumps_matrix_type)
 !--------------------------------------------------------------------------!
 use kcw,          only: A_m, rdiag1, NNZ
 use geometry,     only: numnp
@@ -118,4 +118,4 @@ endif
 
 500 return
 !--------------------------------------------------------------------------! 
-end subroutine mumps_sub
+end subroutine solver_mumps

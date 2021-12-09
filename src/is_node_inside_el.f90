@@ -31,7 +31,7 @@ do p = 1, 4
     xl(3,p) = z_test
 
     do l = 1, lint
-        call tetshp(sv(1,l), xl, ndm, nel, xsj, shp)
+        call fem_tetshpfun(sv(1,l), xl, ndm, nel, xsj, shp)
 
         xsj = xsj*sv(5,l)
 

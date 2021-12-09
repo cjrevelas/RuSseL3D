@@ -1,4 +1,4 @@
-subroutine convolution(numnp, chainlen, ns, coeff, q1, q2, phia)
+subroutine contour_convolution(numnp, chainlen, ns, coeff, q1, q2, phia)
 !-------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------!
@@ -21,4 +21,4 @@ do kk = 1, numnp
     phia(kk) = summer / chainlen
 enddo
 !-------------------------------------------------------------------------------------------!
-end subroutine convolution
+end subroutine contour_convolution

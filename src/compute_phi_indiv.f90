@@ -22,9 +22,9 @@ real(8), dimension(2,numnp)                        :: qgr
 real(8), dimension(ns_gr_ed+1,numnp)               :: qgr_final
 real(8), dimension(ns_gr_conv+1,numnp)             :: qgr_interp
 !------------------------------------------------------------------------------------------------------!
-write(6,'(6X,A40)')adjl("*computing densities of grafted chains..",40)
+write(6,'(2X,A43)')adjl("Computing indiv profiles of grafted chains.",43)
 
-call matrix_assemble(Rg2_per_mon_gr, wa)
+call fem_matrix_assemble(Rg2_per_mon_gr, wa)
 
 do ii = 1, num_gpoints
     qgr       = 0.d0
@@ -33,14 +33,14 @@ do ii = 1, num_gpoints
     qgr(1,gpid(ii))       = gp_init_value(ii)
     qgr_final(1,gpid(ii)) = gp_init_value(ii)
 
-    write(6, '(9x,A9,I10)', advance='no') "..gp Id: ", gpid(ii)
-    call edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final, node_in_q0_face)
+    write(6, '(2x,A19,I7,A3)', advance='no') "Grafting point id: ", gpid(ii), " ->"
+    call solver_edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final, node_in_q0_face)
 
     do jj = 1, numnp
         call interp_linear(1, ns_gr_ed+1, xs_gr_ed, qgr_final(:,jj), ns_gr_conv+1, xs_gr_conv, qgr_interp(:,jj))
     enddo
 
-    call convolution(numnp, chainlen_gr, ns_gr_conv, coeff_gr_conv, qgr_interp, qmx_interp_mg, phia_gr_indiv(:,ii))
+    call contour_convolution(numnp, chainlen_gr, ns_gr_conv, coeff_gr_conv, qgr_interp, qmx_interp_mg, phia_gr_indiv(:,ii))
 enddo
 
 return

@@ -1,4 +1,4 @@
-subroutine get_nchains(numnp, chainlen, rho_mol_bulk, phia, nch_gr)
+subroutine compute_number_of_chains(numnp, chainlen, rho_mol_bulk, phia, nch_gr)
 !-------------------------------------------------------------------------------------------!
 use constants, only : n_avog, A3_to_m3
 !-------------------------------------------------------------------------------------------!
@@ -13,10 +13,10 @@ real(8)                               :: sum_f, QQ, vol
 !-------------------------------------------------------------------------------------------!
 sum_f = 0.d0
 
-call spat_3d(phia, sum_f, QQ, vol)
+call fem_integration(phia, sum_f, QQ, vol)
 
 nch_gr = sum_f * A3_to_m3 * rho_mol_bulk * n_avog / chainlen
 
 return
 !-------------------------------------------------------------------------------------------!
-end subroutine get_nchains
+end subroutine compute_number_of_chains

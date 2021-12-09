@@ -11,7 +11,7 @@ character(len=20) :: field_in_filename = "field.in.bin"
 !output files
 character(len=30) :: A_matrix_full      = "d.A_matrix_full.out.txt"
 character(len=20) :: time               = "d.time.out.txt"
-character(len=30) :: quad_interp        = "d.quad_interp_coeffs.out.txt"
+character(len=30) :: contour_coeffs     = "d.quad_interp_coeffs.out.txt"
 character(len=30) :: simpson            = "d.simpson_coeffs.out.txt"
 character(len=20) :: errorfile          = "d.error.out.txt"
 character(len=30) :: matrix_assembly    = "d.matrix_assembly_kcw.out.txt"

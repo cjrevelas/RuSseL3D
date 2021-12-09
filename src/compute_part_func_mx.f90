@@ -1,4 +1,4 @@
-subroutine get_part_func(numnp, ns, q_final, part_func)
+subroutine compute_part_func_mx(numnp, ns, q_final, part_func)
 !-------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------!
@@ -16,8 +16,8 @@ do kk = 1, numnp
     q_last(kk) = q_final(ns+1,kk)
 enddo
 
-call spat_3d(q_last, sum_f, part_func, vol)
+call fem_integration(q_last, sum_f, part_func, vol)
 
 return
 !-------------------------------------------------------------------------------------------!
-end subroutine get_part_func
+end subroutine compute_part_func_mx

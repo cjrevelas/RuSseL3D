@@ -54,7 +54,6 @@ MODULES=$(OBJDIR)/parser_vars.o\
 	$(OBJDIR)/fhash_mod.o\
 	$(OBJDIR)/mpistuff.o\
 	$(OBJDIR)/write_helper.o\
-	$(OBJDIR)/interp.o\
 	$(OBJDIR)/arrays.o\
 	$(OBJDIR)/iofiles.o\
 	$(OBJDIR)/error_handing.o\
@@ -62,33 +61,32 @@ MODULES=$(OBJDIR)/parser_vars.o\
 	$(OBJDIR)/delta.o\
 	$(OBJDIR)/hist.o\
 
-OBJECTS=$(OBJDIR)/matrix_assemble.o\
-	$(OBJDIR)/get_part_func.o\
-	$(OBJDIR)/get_nchains.o\
-	$(OBJDIR)/get_volnp.o\
-	$(OBJDIR)/get_interp_quad_coeff.o\
+OBJECTS=$(OBJDIR)/parser.o\
+	$(OBJDIR)/import_mesh.o\
+	$(OBJDIR)/tools_histogram.o\
+	$(OBJDIR)/tools_matinv4.o\
+	$(OBJDIR)/solver_mumps.o\
+	$(OBJDIR)/solver_dirichlet.o\
+	$(OBJDIR)/solver_edwards.o\
+	$(OBJDIR)/contour_convolution.o\
+        $(OBJDIR)/contour_interp.o\
+	$(OBJDIR)/is_node_inside_el.o\
+	$(OBJDIR)/get_node_volume.o\
+	$(OBJDIR)/get_contour_coeffs.o\
 	$(OBJDIR)/get_sys_time.o\
         $(OBJDIR)/get_contour_step.o\
-	$(OBJDIR)/parser.o\
+        $(OBJDIR)/get_gradient.o\
+	$(OBJDIR)/get_delta_numer.o\
 	$(OBJDIR)/init_field.o\
 	$(OBJDIR)/init_arrays.o\
 	$(OBJDIR)/init_delta.o\
 	$(OBJDIR)/init_scf_params.o\
 	$(OBJDIR)/init_chain_contour.o\
-	$(OBJDIR)/alloc_hist.o\
-	$(OBJDIR)/interp_fem.o\
-	$(OBJDIR)/matinv4.o\
-	$(OBJDIR)/is_node_inside_el.o\
-	$(OBJDIR)/spat_3d.o\
-	$(OBJDIR)/tetshp.o\
-	$(OBJDIR)/compute_delta_numer.o\
-	$(OBJDIR)/import_mesh.o\
-	$(OBJDIR)/gausspoints.o\
-	$(OBJDIR)/edwards.o\
-	$(OBJDIR)/energies.o\
-	$(OBJDIR)/mumps_sub.o\
-	$(OBJDIR)/dirichlet.o\
-	$(OBJDIR)/convolution.o\
+	$(OBJDIR)/fem_gausspoints.o\
+	$(OBJDIR)/fem_integration.o\
+        $(OBJDIR)/fem_matrix_assemble.o\
+	$(OBJDIR)/fem_interpolation.o\
+	$(OBJDIR)/fem_tetshpfun.o\
 	$(OBJDIR)/export_computes.o\
 	$(OBJDIR)/export_phi_indiv.o\
 	$(OBJDIR)/export_q.o\
@@ -101,9 +99,12 @@ OBJECTS=$(OBJDIR)/matrix_assemble.o\
 	$(OBJDIR)/export_brush99.o\
 	$(OBJDIR)/export_chains_area.o\
         $(OBJDIR)/compute_phi_indiv.o\
-        $(OBJDIR)/compute_gradient.o\
         $(OBJDIR)/compute_phi_end_middle_nodal.o\
-	$(OBJDIR)/main.o\
+	$(OBJDIR)/compute_part_func_mx.o\
+	$(OBJDIR)/compute_number_of_chains.o\
+	$(OBJDIR)/compute_energies.o\
+        $(OBJDIR)/compute_stretching_energy.o\
+	$(OBJDIR)/main.o
 
 EXEC=$(RUNDIR)/RuSseL
 #-----------------------------------------------------------------COMPILE AND LINK----------------------------------------------------------------#
@@ -119,8 +120,8 @@ $(OBJDIR)/%.o : $(SRCDIR)/%.f90
 $(EXEC):$(LIBDMUMPS) $(MODULES) $(OBJECTS)
 	$(FL) -o $(EXEC) $(OPTL) $(MODULES) $(OBJECTS)  $(LIBDMUMPS) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS)
 
-$(OBJDIR)/mumps_sub.o:
-	$(FC) $(OPTF) $(INCS) -I. -I$(topdir)/include -I$(topdir)/$(SCRDIR) -I$(OBJDIR) -cpp $(CPPFLAGS) -c $(SRCDIR)/mumps_sub.f90 $(OUTF)$*.o
+$(OBJDIR)/solver_mumps.o:
+	$(FC) $(OPTF) $(INCS) -I. -I$(topdir)/include -I$(topdir)/$(SCRDIR) -I$(OBJDIR) -cpp $(CPPFLAGS) -c $(SRCDIR)/solver_mumps.f90 $(OUTF)$*.o
 
 .SUFFIXES: (.SUFFIXES) .F .f90 .h .p
 #-------------------------------------------------------------CLEAN WORKING DIRECTORY-------------------------------------------------------------#
@@ -128,12 +129,12 @@ clean:
 	$(RM) $(OBJDIR)/*.o $(OBJDIR)/*.mod
 
 cleaner:
-	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/*.exe $(RUNDIR)/*.out.txt $(RUNDIR)/*out.bin $(RUNDIR)/fort.*
+	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/RuSseL* $(RUNDIR)/*.out.txt $(RUNDIR)/*out.bin $(RUNDIR)/fort.*
 
 #-----------------------------------------------------------RUN TESTS TO VERIFY CHANGES-----------------------------------------------------------#
 test:
 	./test_integrity/test_integrity.sh
 
 cleantest:
-	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/*.exe $(RUNDIR)/*.out.txt $(RUNDIR)/*out.bin $(RUNDIR)/fort.* $(RUNDIR)/field.in.bin $(RUNDIR)/LOG*
+	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/RuSseL* $(RUNDIR)/*.out.txt $(RUNDIR)/*out.bin $(RUNDIR)/fort.* $(RUNDIR)/field.in.bin $(RUNDIR)/LOG*
 ###################################################################################################################################################

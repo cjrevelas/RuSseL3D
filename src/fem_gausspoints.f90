@@ -1,4 +1,4 @@
-subroutine gausspoints(kk, lint, s)
+subroutine fem_gausspoints(kk, lint, s)
 !--------------------------------------------------------------------!
 implicit  none
 !--------------------------------------------------------------------!
@@ -128,4 +128,4 @@ enddo
 
 return
 !--------------------------------------------------------------------!
-end subroutine gausspoints
+end subroutine fem_gausspoints

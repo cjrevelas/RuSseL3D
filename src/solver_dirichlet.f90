@@ -1,4 +1,4 @@
-subroutine dirichlet(ds, mumps_matrix_type, node_in_q0_face)
+subroutine solver_dirichlet(ds, mumps_matrix_type, node_in_q0_face)
 !------------------------------------------------------------------------------------------------------!
 use kcw,       only: F_m, A_m, NNZ
 use geometry,  only: all_el, nel, numel, numnp
@@ -97,4 +97,4 @@ close(255)
 deallocate(A_full)
 #endif
 !------------------------------------------------------------------------------------------------------!
-end subroutine dirichlet
+end subroutine solver_dirichlet
