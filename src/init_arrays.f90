@@ -18,6 +18,7 @@ allocate(coeff_mx_ed(ns_mx_ed+1))
 allocate(qmx(2,numnp))
 allocate(qmx_final(ns_mx_ed+1,numnp))
 allocate(qmx_interp_mg(ns_gr_conv+1,numnp))
+allocate(qgr_interp(ns_gr_conv+1,numnp))
 
 if (mx_exist.eq.1) then
     allocate(qmx_interp_mm(ns_mx_conv+1,numnp))
@@ -54,7 +55,6 @@ if (gr_exist.eq.1) then
     allocate(coeff_gr_ed(ns_gr_ed+1),coeff_gr_conv(ns_gr_conv+1))
     allocate(qgr(2,numnp))
     allocate(qgr_final(ns_gr_ed+1,numnp))
-    allocate(qgr_interp(ns_gr_conv+1,numnp))
 
     ds_gr_ed      = 0.d0
     ds_gr_conv    = 0.d0
