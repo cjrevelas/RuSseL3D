@@ -13,6 +13,8 @@ real(8) :: xs_crit_mx, xs_crit_gr
 integer :: iow, ioe, iterations, field_init_scheme, init_iter
 integer :: mx_exist, gr_exist, calc_delta_every, grafted_ic_from_delta
 integer :: print_ev, output_every
+integer :: export_phi_gen, export_phi_indiv, export_field, export_propagators
+integer :: export_brush_thickness, export_chains_per_area, export_ads_free
 logical :: square_gradient
 
 !domain

@@ -46,6 +46,13 @@ logical :: log_influence_param             = .false.
 logical :: log_output_every                = .false.
 logical :: log_profile_dimension           = .false.
 logical :: log_mumps_matrix_type           = .false.
+logical :: log_export_phi_gen              = .false.
+logical :: log_export_phi_indiv            = .false.
+logical :: log_export_field                = .false.
+logical :: log_export_propagators          = .false.
+logical :: log_export_brush_thickness      = .false.
+logical :: log_export_chains_per_area      = .false.
+logical :: log_export_ads_free             = .false.
 !--------------------------------------------------------------------------------!
 !parse input file to retrieve simulation parameters
 inquire(file=input_filename, exist=file_exists)
@@ -119,7 +126,28 @@ do
         elseif (INDEX(line,"# output freq") > 0) then
             read(line,*) output_every
             log_output_every = .true.
-        elseif (INDEX(line,"# profile dimension") > 0) then
+        elseif (INDEX(line,"# export dens profs") > 0) then
+            read(line,*) export_phi_gen
+            log_export_phi_gen = .true.
+        elseif (INDEX(line,"# export indiv dens profs") > 0) then
+            read(line,*) export_phi_indiv
+            log_export_phi_indiv = .true.
+        elseif (INDEX(line,"# export field") > 0) then
+            read(line,*) export_field
+            log_export_field = .true.
+        elseif (INDEX(line,"# export propagators") > 0) then
+            read(line,*) export_propagators
+            log_export_propagators = .true.
+        elseif (INDEX(line,"# export brush thickness") > 0) then
+            read(line,*) export_brush_thickness
+            log_export_brush_thickness = .true.
+        elseif (INDEX(line,"# export chains per area profs") > 0) then
+            read(line,*) export_chains_per_area
+            log_export_chains_per_area = .true.
+        elseif (INDEX(line,"# export ads vs free profs") > 0) then
+            read(line,*) export_ads_free
+            log_export_ads_free = .true.
+        elseif (INDEX(line,"# prof dim") > 0) then
             read(line,*) prof_dim
             log_profile_dimension = .true.
         elseif (INDEX(line,"# use matrix") > 0) then
@@ -567,23 +595,115 @@ else
 endif
 
 
-if (log_contour_discr_scheme) then
-    if (contour_discr_scheme.eq.1) then
-        write(iow,'(3X,A40,I9)')adjl("Time integr with uniform spacing:",40),contour_discr_scheme
-        write(6  ,'(3X,A40,I9)')adjl("Time integr with uniform spacing:",40),contour_discr_scheme
-    elseif ( contour_discr_scheme.eq.2) then
-        write(iow,'(3X,A40,I9)')adjl("Time integr with non-uniform spacing:",40),contour_discr_scheme
-        write(6  ,'(3X,A40,I9)')adjl("Time integr with non-uniform spacing:",40),contour_discr_scheme
+if (log_export_phi_gen) then
+    if (export_phi_gen.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
+        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
     else
-        write(ERROR_MESSAGE,'(''Time discr scheme does not exist:'',I16)') contour_discr_scheme
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
+        export_phi_gen = 0
+        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
+        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
     endif
 else
-    contour_discr_scheme = 1
-    write(iow,'(3X,A40)')adjl("Time discr scheme not found.",40)
-    write(iow,'(3X,A40,I8)')adjl("Integration with Simpson Rule:",40),contour_discr_scheme
-    write(6  ,'(3X,A40)')adjl("Time discr scheme not found.",40)
-    write(6  ,'(3X,A40,I8)')adjl("Integration with Simpson Rule:",40),contour_discr_scheme
+    export_phi_gen = 1
+    write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
+    write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
+endif
+
+
+if (log_export_phi_indiv) then
+    if (export_phi_indiv.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
+        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
+    else
+        export_phi_indiv = 0
+        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
+        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
+    endif
+else
+    export_phi_indiv = 0
+    write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
+    write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
+endif
+
+
+if (log_export_field) then
+    if (export_field.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field
+        write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field
+    else
+        export_field = 0
+        write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field
+        write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field
+    endif
+else
+    export_field = 1
+    write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field
+    write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field
+endif
+
+
+if (log_export_propagators) then
+    if (export_propagators.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
+        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
+    else
+        export_propagators = 0
+        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
+        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
+    endif
+else
+    export_propagators = 0
+    write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
+    write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
+endif
+
+
+if (log_export_brush_thickness) then
+    if (export_brush_thickness.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
+        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
+    else
+        export_brush_thickness = 0
+        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
+        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
+    endif
+else
+    export_brush_thickness = 1
+    write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
+    write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
+endif
+
+
+if (log_export_chains_per_area) then
+    if (export_chains_per_area.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
+        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
+    else
+        export_chains_per_area = 0
+        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
+        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
+    endif
+else
+    export_chains_per_area = 0
+    write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
+    write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
+endif
+
+
+if (log_export_ads_free) then
+    if (export_ads_free.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
+        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
+    else
+        export_ads_free = 0
+        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
+        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
+    endif
+else
+    export_ads_free = 0
+    write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
+    write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
 endif
 
 
