@@ -12,9 +12,9 @@ real(8) :: xs_crit_mx, xs_crit_gr
 !indices and flags
 integer :: iow, ioe, iterations, field_init_scheme, init_iter
 integer :: mx_exist, gr_exist, calc_delta_every, grafted_ic_from_delta
-integer :: print_ev, output_every
-integer :: export_phi_gen, export_phi_indiv, export_field, export_propagators
-integer :: export_brush_thickness, export_chains_per_area, export_ads_free
+integer :: print_ev
+integer :: export_phi_gen_freq, export_phi_indiv_freq, export_field_freq, export_propagators_freq
+integer :: export_field_bin_freq, export_brush_thickness_freq, export_chains_per_area_freq, export_ads_free_freq
 logical :: square_gradient
 
 !domain
@@ -38,6 +38,6 @@ real(8) :: A_pol, sigma_pol, wall_distance
 !convergence scheme
 integer :: scheme_type
 integer :: mumps_matrix_type
-real(8) :: max_error_tol, frac
+real(8) :: max_error_tol, frac, num_gr_chains_tol, free_energy_error_tol
 !-------------------------------------------------------------------------------!
 end module parser_vars

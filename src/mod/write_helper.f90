@@ -34,5 +34,14 @@ function adjl(string,length) result(r)
    character(len=length) :: r
    r = ADJUSTL(string)
 end function adjl
+
+logical function export(export_freq, iter, convergence)
+    integer, intent(in) :: export_freq, iter
+    logical, intent(in) :: convergence
+    export=.false.
+    if (export_freq>0) then
+        if ((MOD(iter,export_freq).eq.0).or.convergence) export=.true.
+    endif
+end function export
 !--------------------------------------------------------------------!
 end module write_helper

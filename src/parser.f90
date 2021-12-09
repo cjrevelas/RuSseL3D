@@ -20,6 +20,7 @@ logical :: log_monomer_mass                = .false.
 logical :: log_number_of_iterations        = .false.
 logical :: log_set_initial_iteration       = .false.
 logical :: log_maximum_error               = .false.
+logical :: log_maximum_energy_error_tol    = .false.
 logical :: log_field_init_scheme           = .false.
 logical :: log_fraction_of_new_field       = .false.
 logical :: log_mx_exist                    = .false.
@@ -33,6 +34,7 @@ logical :: log_chainlen_gr                 = .false.
 logical :: log_ds_ave_gr                   = .false.
 logical :: log_contour_discr_gr            = .false.
 logical :: log_grafted_ic_from_delta       = .false.
+logical :: log_num_gr_chains_tol           = .false.
 logical :: log_calc_delta_every            = .false.
 logical :: log_n_dirichlet_faces           = .false.
 logical :: log_n_nanopart_faces            = .false.
@@ -43,16 +45,16 @@ logical :: log_wall_distance               = .false.
 logical :: log_eos_type                    = .false.
 logical :: log_eos_coeffs                  = .false.
 logical :: log_influence_param             = .false.
-logical :: log_output_every                = .false.
 logical :: log_profile_dimension           = .false.
 logical :: log_mumps_matrix_type           = .false.
-logical :: log_export_phi_gen              = .false.
-logical :: log_export_phi_indiv            = .false.
-logical :: log_export_field                = .false.
-logical :: log_export_propagators          = .false.
-logical :: log_export_brush_thickness      = .false.
-logical :: log_export_chains_per_area      = .false.
-logical :: log_export_ads_free             = .false.
+logical :: log_export_phi_gen_freq         = .false.
+logical :: log_export_phi_indiv_freq       = .false.
+logical :: log_export_field_freq           = .false. 
+logical :: log_export_field_bin_freq       = .false. 
+logical :: log_export_propagators_freq     = .false.
+logical :: log_export_brush_thickness_freq = .false.
+logical :: log_export_chains_per_area_freq = .false.
+logical :: log_export_ads_free_freq        = .false.
 !--------------------------------------------------------------------------------!
 !parse input file to retrieve simulation parameters
 inquire(file=input_filename, exist=file_exists)
@@ -96,6 +98,9 @@ do
         elseif (INDEX(line,"# chain length grafted") > 0) then
             read(line,*) chainlen_gr
             log_chainlen_gr = .true.
+        elseif (INDEX(line,"# num gr chains tol") > 0) then
+            read(line,*) num_gr_chains_tol
+            log_num_gr_chains_tol = .true.
         elseif (INDEX(line,"# area") > 0) then
             read(line,*) interf_area
             log_interf_area = .true.
@@ -114,6 +119,9 @@ do
         elseif (INDEX(line,"# max error") > 0) then
             read(line,*) max_error_tol
             log_maximum_error = .true.
+        elseif (INDEX(line,"# max energy error") > 0) then
+            read(line,*) free_energy_error_tol
+            log_maximum_energy_error_tol = .true.
         elseif (INDEX(line,"# init iter") > 0) then
             read(line,*) init_iter
             log_set_initial_iteration= .true.
@@ -123,30 +131,30 @@ do
         elseif (INDEX(line,"# init field") > 0) then
             read(line,*) field_init_scheme
             log_field_init_scheme= .true.
-        elseif (INDEX(line,"# output freq") > 0) then
-            read(line,*) output_every
-            log_output_every = .true.
         elseif (INDEX(line,"# export dens profs") > 0) then
-            read(line,*) export_phi_gen
-            log_export_phi_gen = .true.
+            read(line,*) export_phi_gen_freq
+            log_export_phi_gen_freq = .true.
         elseif (INDEX(line,"# export indiv dens profs") > 0) then
-            read(line,*) export_phi_indiv
-            log_export_phi_indiv = .true.
+            read(line,*) export_phi_indiv_freq
+            log_export_phi_indiv_freq = .true.
         elseif (INDEX(line,"# export field") > 0) then
-            read(line,*) export_field
-            log_export_field = .true.
+            read(line,*) export_field_freq
+            log_export_field_freq = .true.
+        elseif (INDEX(line,"# export binary field") > 0) then
+            read(line,*) export_field_bin_freq
+            log_export_field_bin_freq = .true.
         elseif (INDEX(line,"# export propagators") > 0) then
-            read(line,*) export_propagators
-            log_export_propagators = .true.
+            read(line,*) export_propagators_freq
+            log_export_propagators_freq = .true.
         elseif (INDEX(line,"# export brush thickness") > 0) then
-            read(line,*) export_brush_thickness
-            log_export_brush_thickness = .true.
+            read(line,*) export_brush_thickness_freq
+            log_export_brush_thickness_freq = .true.
         elseif (INDEX(line,"# export chains per area profs") > 0) then
-            read(line,*) export_chains_per_area
-            log_export_chains_per_area = .true.
+            read(line,*) export_chains_per_area_freq
+            log_export_chains_per_area_freq = .true.
         elseif (INDEX(line,"# export ads vs free profs") > 0) then
-            read(line,*) export_ads_free
-            log_export_ads_free = .true.
+            read(line,*) export_ads_free_freq
+            log_export_ads_free_freq = .true.
         elseif (INDEX(line,"# prof dim") > 0) then
             read(line,*) prof_dim
             log_profile_dimension = .true.
@@ -177,9 +185,9 @@ do
             read(line,*) eos_type
             log_eos_type = .true.
         elseif (INDEX(line,"# eos coeffs") > 0) then
-            if (eos_type.eq.eos_helfand) then
+            if (eos_type.eq.eos_helfand) then 
                 read(line,*) hlf_kappa_T
-            elseif (eos_type.eq.eos_sl)  then
+            elseif (eos_type.eq.eos_sl)  then 
                 read(line,*) rho_star, T_star, P_star
             endif
             log_eos_coeffs = .true.
@@ -300,7 +308,7 @@ endif
 if (mx_exist.eq.1) then
     if (log_chainlen_mx) then
         if (chainlen_mx>0) then
-
+            
             chainlen_mx_max = chainlen_mx
         else
             write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') chainlen_mx
@@ -437,7 +445,7 @@ if (mx_exist.eq.1) then
     else
         ERROR_MESSAGE="Rg2 per matrix monomer was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
+    endif 
 
     write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40),chainlen_mx,"[monomers]"
     write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40),&
@@ -448,13 +456,13 @@ if (mx_exist.eq.1) then
     if (log_ds_ave_mx) then
         if (ds_ave_mx_ed>0 .and. ds_ave_mx_conv>0) then
             ns_mx_ed   = 2 * NINT(0.5d0 * chainlen_mx_max / ds_ave_mx_ed)
-            ns_mx_conv = 2 * NINT(0.5d0 * chainlen_mx     / ds_ave_mx_conv)
+            ns_mx_conv = 2 * NINT(0.5d0 * chainlen_mx     / ds_ave_mx_conv) 
 
             write(iow,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_mx_ed, ns_mx_conv
             write(6  ,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_mx_ed, ns_mx_conv
 
             if (MOD(ns_mx_ed,2).ne.0 .or. MOD(ns_mx_conv,2).ne.0) then
-                write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') ns_mx_ed, ns_mx_conv
+                write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') ns_mx_ed, ns_mx_conv 
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
         else
@@ -525,14 +533,35 @@ if (log_gr_exist.and.gr_exist.ge.1) then
     if (log_grafted_ic_from_delta) then
         write(iow,'(3X,A40,I9)')adjl("Grafted ic from delta:",40),grafted_ic_from_delta
         write(6  ,'(3X,A40,I9)')adjl("Grafted ic from delta:",40),grafted_ic_from_delta
-        if (log_calc_delta_every) then
-            if (calc_delta_every.gt.0) then
-                write(iow,'(3X,A40,I9)')adjl("Delta is calculated every:",40),calc_delta_every
-                write(6  ,'(3X,A40,I9)')adjl("Delta is calculated every:",40),calc_delta_every
-            else
-                write(iow,'(3X,A40)')adjl("Delta is read from file",40)
-                write(6  ,'(3X,A40)')adjl("Delta is read from file",40)
+        if (grafted_ic_from_delta.ge.1) then
+            if (log_calc_delta_every) then
+                if (calc_delta_every.gt.0) then
+                    write(iow,'(3X,A40,I9)')adjl("Delta is calculated every:",40),calc_delta_every
+                    write(6  ,'(3X,A40,I9)')adjl("Delta is calculated every:",40),calc_delta_every
+                else
+                    write(iow,'(3X,A40)')adjl("Delta is read from file",40)
+                    write(6  ,'(3X,A40)')adjl("Delta is read from file",40)
+                endif
             endif
+            if (log_num_gr_chains_tol) then
+                if (num_gr_chains_tol.ge.0.d0) then
+                    write(iow,'(3X,A40,E16.9)')adjl("Number of grafted chains tolerance:",40),num_gr_chains_tol
+                    write(6  ,'(3X,A40,E16.9)')adjl("Number of grafted chains tolerance:",40),num_gr_chains_tol
+                else
+                    write(ERROR_MESSAGE,'("Number of grafted chains tolerance is negative:",E16.9)') num_gr_chains_tol
+                    call exit_with_error(1,1,1,ERROR_MESSAGE)
+                endif
+            else
+                num_gr_chains_tol = 0.005d0
+                write(iow,'(3X,A40)')adjl("Num grafted chains tolerance not found",40)
+                write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),num_gr_chains_tol
+                write(6  ,'(3X,A40)')adjl("Num grafted chains tolerance not found",40)
+                write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),num_gr_chains_tol
+            endif
+        endif
+        if (grafted_ic_from_delta.lt.1) then
+            write(iow,'(3X,A40)')adjl("The initial conditions are read from file.",40)
+            write(6  ,'(3X,A40)')adjl("The initial conditions are read from file.",40)
         endif
     else
         write(iow,'(3X,A40)')adjl("The initial conditions are read from file.",40)
@@ -581,129 +610,131 @@ else
 endif
 
 
-if (log_output_every) then
-    if (output_every.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Data is dumped every (steps):",40),output_every
-        write(6  ,'(3X,A40,I9)')adjl("Data is dumped every (steps):",40),output_every
+if (log_export_phi_gen_freq) then
+    if (export_phi_gen_freq.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
     else
-        output_every = 1
-        write(iow,'(3X,A40,I9)')adjl("Data is dumped every (steps):",40),output_every
-        write(6  ,'(3X,A40,I9)')adjl("Data is dumped every (steps):",40),output_every
+        export_phi_gen_freq = 0
+        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
     endif
 else
-    output_every = 1
+    export_phi_gen_freq = 1
+    write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
 endif
 
 
-if (log_export_phi_gen) then
-    if (export_phi_gen.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
-        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
+if (log_export_phi_indiv_freq) then
+    if (export_phi_indiv_freq.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
     else
-        export_phi_gen = 0
-        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
-        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
+        export_phi_indiv_freq = 0
+        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
     endif
 else
-    export_phi_gen = 1
-    write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
-    write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen
+    export_phi_indiv_freq = 0
+    write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
 endif
 
 
-if (log_export_phi_indiv) then
-    if (export_phi_indiv.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
-        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
+if (log_export_field_freq) then
+    if (export_field_freq.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
     else
-        export_phi_indiv = 0
-        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
-        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
+        export_field_freq = 0
+        write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
     endif
 else
-    export_phi_indiv = 0
-    write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
-    write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv
+    export_field_freq = 1
+    write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
 endif
 
 
-if (log_export_field) then
-    if (export_field.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field
-        write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field
+if (log_export_field_bin_freq) then
+    if (export_field_bin_freq.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
     else
-        export_field = 0
-        write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field
-        write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field
+        export_field_bin_freq = 0
+        write(iow,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
     endif
 else
-    export_field = 1
-    write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field
-    write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field
+    export_field_bin_freq = 1
+    write(iow,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
 endif
 
 
-if (log_export_propagators) then
-    if (export_propagators.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
-        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
+if (log_export_propagators_freq) then
+    if (export_propagators_freq.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
     else
-        export_propagators = 0
-        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
-        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
+        export_propagators_freq = 0
+        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
     endif
 else
-    export_propagators = 0
-    write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
-    write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators
+    export_propagators_freq = 0
+    write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
 endif
 
 
-if (log_export_brush_thickness) then
-    if (export_brush_thickness.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
-        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
+if (log_export_brush_thickness_freq) then
+    if (export_brush_thickness_freq.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
     else
-        export_brush_thickness = 0
-        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
-        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
+        export_brush_thickness_freq = 0
+        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
     endif
 else
-    export_brush_thickness = 1
-    write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
-    write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness
+    export_brush_thickness_freq = 1
+    write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
 endif
 
 
-if (log_export_chains_per_area) then
-    if (export_chains_per_area.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
-        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
+if (log_export_chains_per_area_freq) then
+    if (export_chains_per_area_freq.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
     else
-        export_chains_per_area = 0
-        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
-        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
+        export_chains_per_area_freq = 0
+        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
     endif
 else
-    export_chains_per_area = 0
-    write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
-    write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area
+    export_chains_per_area_freq = 0
+    write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
 endif
 
 
-if (log_export_ads_free) then
-    if (export_ads_free.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
-        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
+if (log_export_ads_free_freq) then
+    if (export_ads_free_freq.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
     else
-        export_ads_free = 0
-        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
-        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
+        export_ads_free_freq = 0
+        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
     endif
 else
-    export_ads_free = 0
-    write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
-    write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free
+    export_ads_free_freq = 0
+    write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
 endif
 
 
@@ -787,20 +818,35 @@ endif
 
 if (log_maximum_error) then
     if (max_error_tol.ge.0.d0) then
-        write(iow,'(3X,A40,E16.9)')adjl("Maximum tolerance error:",40),max_error_tol
-        write(6  ,'(3X,A40,E16.9)')adjl("Maximum tolerance error:",40),max_error_tol
+        write(iow,'(3X,A40,E16.9)')adjl("Maximum tolerance error on field:",40),max_error_tol
+        write(6  ,'(3X,A40,E16.9)')adjl("Maximum tolerance error on field:",40),max_error_tol
     else
-        write(ERROR_MESSAGE,'("Maximum tolerance error is negative:",E16.9)') max_error_tol
+        write(ERROR_MESSAGE,'("Maximum tolerance error on field is negative:",E16.9)') max_error_tol
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
     max_error_tol = 0.d0
-    write(iow,'(3X,A40)')adjl("Max error not found",40)
+    write(iow,'(3X,A40)')adjl("Max field error not found",40)
     write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),max_error_tol
-    write(6  ,'(3X,A40)')adjl("Max error not found.",40)
+    write(6  ,'(3X,A40)')adjl("Max field error not found.",40)
     write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),max_error_tol
 endif
 
+if (log_maximum_energy_error_tol) then
+    if (free_energy_error_tol.ge.0.d0) then
+        write(iow,'(3X,A40,E16.9)')adjl("Maximum tolerance error on energy:",40),free_energy_error_tol
+        write(6  ,'(3X,A40,E16.9)')adjl("Maximum tolerance error on energy:",40),free_energy_error_tol
+    else
+        write(ERROR_MESSAGE,'("Maximum tolerance error is negative:",E16.9)')free_energy_error_tol
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    free_energy_error_tol = 1.d-6
+    write(iow,'(3X,A40)')adjl("Max energy error tol not found",40)
+    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol
+    write(6  ,'(3X,A40)')adjl("Max energy error tol not found.",40)
+    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol
+endif
 
 write(iow,*)
 write(*,*)
@@ -933,8 +979,8 @@ endif
 
 if (log_eos_coeffs) then
     if (eos_type.eq.eos_helfand) then
-        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
-        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
+        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
     elseif (eos_type.eq.eos_sl) then
         write(iow,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
         write(*  ,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
