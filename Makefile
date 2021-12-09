@@ -89,6 +89,7 @@ OBJECTS=$(OBJDIR)/parser.o\
 	$(OBJDIR)/fem_tetshpfun.o\
 	$(OBJDIR)/export_computes.o\
 	$(OBJDIR)/export_phi_indiv.o\
+        $(OBJDIR)/export_ads_free.o\
 	$(OBJDIR)/export_q.o\
 	$(OBJDIR)/export_delta.o\
 	$(OBJDIR)/export_field_bin.o\

@@ -28,6 +28,7 @@ logical :: log_Rg2_per_mon_mx              = .false.
 logical :: log_ds_ave_mx                   = .false.
 logical :: log_chainlen_mx                 = .false.
 logical :: log_contour_discr_mx            = .false.
+logical :: log_ads_distance                = .false.
 logical :: log_gr_exist                    = .false.
 logical :: log_Rg2_per_mon_gr              = .false.
 logical :: log_chainlen_gr                 = .false.
@@ -171,6 +172,9 @@ do
             read(line,*) contour_discr_mx
             if (contour_discr_mx.eq.contour_hybrid) read(256,*) xs_crit_mx
             log_contour_discr_mx = .true.
+        elseif (INDEX(line,"# ads distance") > 0) then
+            read(line,*) ads_distance
+            log_ads_distance = .true.
         elseif (INDEX(line,"# contour step grafted") > 0) then
             read(line,*) ds_ave_gr_ed, ds_ave_gr_conv
             log_ds_ave_gr = .true.
@@ -185,9 +189,9 @@ do
             read(line,*) eos_type
             log_eos_type = .true.
         elseif (INDEX(line,"# eos coeffs") > 0) then
-            if (eos_type.eq.eos_helfand) then 
+            if (eos_type.eq.eos_helfand) then
                 read(line,*) hlf_kappa_T
-            elseif (eos_type.eq.eos_sl)  then 
+            elseif (eos_type.eq.eos_sl)  then
                 read(line,*) rho_star, T_star, P_star
             endif
             log_eos_coeffs = .true.
@@ -308,7 +312,7 @@ endif
 if (mx_exist.eq.1) then
     if (log_chainlen_mx) then
         if (chainlen_mx>0) then
-            
+
             chainlen_mx_max = chainlen_mx
         else
             write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') chainlen_mx
@@ -445,7 +449,7 @@ if (mx_exist.eq.1) then
     else
         ERROR_MESSAGE="Rg2 per matrix monomer was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif 
+    endif
 
     write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40),chainlen_mx,"[monomers]"
     write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40),&
@@ -456,13 +460,13 @@ if (mx_exist.eq.1) then
     if (log_ds_ave_mx) then
         if (ds_ave_mx_ed>0 .and. ds_ave_mx_conv>0) then
             ns_mx_ed   = 2 * NINT(0.5d0 * chainlen_mx_max / ds_ave_mx_ed)
-            ns_mx_conv = 2 * NINT(0.5d0 * chainlen_mx     / ds_ave_mx_conv) 
+            ns_mx_conv = 2 * NINT(0.5d0 * chainlen_mx     / ds_ave_mx_conv)
 
             write(iow,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_mx_ed, ns_mx_conv
             write(6  ,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_mx_ed, ns_mx_conv
 
             if (MOD(ns_mx_ed,2).ne.0 .or. MOD(ns_mx_conv,2).ne.0) then
-                write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') ns_mx_ed, ns_mx_conv 
+                write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') ns_mx_ed, ns_mx_conv
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
         else
@@ -504,6 +508,22 @@ if (mx_exist.eq.1) then
     else
         ERROR_MESSAGE="Edwards contour scheme for matrix chains was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+
+    if (log_ads_distance) then
+        if (ads_distance.ge.0.d0) then
+            write(iow,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40),ads_distance,"[Angstrom]"
+            write(6  ,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40),ads_distance,"[Angstrom]"
+        else
+            write(ERROR_MESSAGE,'("Adsorption distance for chain segments is negative:",E16.9)')ads_distance
+            call exit_with_error(1,1,1,ERROR_MESSAGE)
+        endif
+    else
+        ads_distance = 1.2d1
+        write(iow,'(3X,A40)')adjl("Adsorption distance not found.",40)
+        write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40),ads_distance,"[Angstrom]"
+        write(6  ,'(3X,A40)')adjl("Adsorption distance not found.",40)
+        write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40),ads_distance,"[Angstrom]"
     endif
 endif
 
@@ -979,8 +999,8 @@ endif
 
 if (log_eos_coeffs) then
     if (eos_type.eq.eos_helfand) then
-        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
-        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
+        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
     elseif (eos_type.eq.eos_sl) then
         write(iow,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
         write(*  ,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
