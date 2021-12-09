@@ -7,7 +7,7 @@
 !                         AUTHORS: CONSTANTINOS J. REVELAS, ARISTOTELIS P. SGOUROS, APOSTOLIS T. LAKKAS                            !
 !----------------------------------------------------------------------------------------------------------------------------------!
 !----------------------------------------------------------------------------------------------------------------------------------!
-program FEM_3D
+program RuSseL
 !----------------------------------------------------------------------------------------------------------------------------------!
 use parser_vars
 use arrays
@@ -18,7 +18,7 @@ use write_helper
 use geometry
 use iofiles
 use delta
-use flags, only: symm, asymm, hybrid
+use flags, only: contour_symm, contour_asymm, contour_hybrid
 #ifdef USE_MPI
 use mpistuff
 #endif
@@ -93,12 +93,8 @@ close(ioe)
 !**************************************************************************************************************!
 call parser
 call init_scf_params
-if ((mx_exist.eq.1).and.(discr_mx.eq.hybrid)) then
-   call get_contour_step(ds_ave_mx_ed, xs_crit_mx, chainlen_mx_max, ns_mx_ed)
-endif
-if ((gr_exist.eq.1).and.(discr_gr.eq.hybrid)) then
-   call get_contour_step(ds_ave_gr_ed, xs_crit_gr, chainlen_gr, ns_gr_ed)
-endif
+if ((mx_exist.eq.1).and.(contour_discr_mx.eq.contour_hybrid)) call get_contour_step(ds_ave_mx_ed, xs_crit_mx, chainlen_mx_max, ns_mx_ed)
+if ((gr_exist.eq.1).and.(contour_discr_gr.eq.contour_hybrid)) call get_contour_step(ds_ave_gr_ed, xs_crit_gr, chainlen_gr, ns_gr_ed)
 call import_mesh
 call init_arrays
 
@@ -110,20 +106,28 @@ allocate(dphi2_dr2(numnp))
 dphi2_dr2=0.d0
 
 call init_delta
-call alloc_hist(0.1d0, volnp)
+call alloc_hist(0.5d0, volnp)
 
 #ifdef USE_MPI
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 #endif
 
 if (mx_exist.eq.1) then
-    call init_chain_contour(discr_mx, chainlen_mx_max, ns_mx_ed, ds_ave_mx_ed, ds_mx_ed, xs_mx_ed, coeff_mx_ed)
-    call init_chain_contour(symm, chainlen_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+    call init_chain_contour(contour_discr_mx, chainlen_mx_max, xs_crit_mx, ns_mx_ed, ds_ave_mx_ed, ds_mx_ed, xs_mx_ed, coeff_mx_ed)
+    if (contour_discr_mx.ne.contour_uniform) then
+        call init_chain_contour(contour_symm, chainlen_mx, xs_crit_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+    else
+        call init_chain_contour(contour_discr_mx, chainlen_mx, xs_crit_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+    endif
 endif
 
 if (gr_exist.eq.1) then
-    call init_chain_contour(discr_gr, chainlen_gr, ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, coeff_gr_ed)
-    call init_chain_contour(symm, chainlen_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
+    call init_chain_contour(contour_discr_gr, chainlen_gr, xs_crit_gr, ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, coeff_gr_ed)
+    if (contour_discr_gr.ne.contour_uniform) then
+        call init_chain_contour(contour_symm, chainlen_gr, xs_crit_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
+    else
+        call init_chain_contour(contour_discr_gr, chainlen_gr, xs_crit_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
+    endif
 endif
 
 call init_field(Ufield, wa)
@@ -285,7 +289,7 @@ do iter = init_iter, iterations-1
 
     convergence = (max_error<=max_error_tol).or.(free_energy_error<=free_energy_error_tol)
 
-    if (MOD(iter,1).eq.0.or.convergence) call energies(qmx_interp_mg, phi_total, part_func, num_gpoints, gpid, free_energy)
+    if (MOD(iter,1).eq.0.or.convergence) call energies(qmx_interp_mg, phi_total, wa_mix, Ufield, part_func, num_gpoints, gpid, free_energy)
     if (output_every.gt.0)then
         if (MOD(iter,output_every).eq.0.or.convergence) call export_computes()
     endif
@@ -331,4 +335,4 @@ end if
 1000 call MPI_FINALIZE(ierr)
 #endif
 !------------------------------------------------------------------------------------------------------------------!
-end program FEM_3D
+end program RuSseL

@@ -4,8 +4,7 @@ implicit none
 !-------------------------------------------------------------------------------!
 !chain contour discretization
 integer :: ns_mx_ed, ns_mx_conv, ns_gr_ed, ns_gr_conv
-integer :: discr_mx, discr_gr
-integer :: contour_discr_scheme
+integer :: contour_discr_mx, contour_discr_gr
 real(8) :: chainlen_mx, chainlen_mx_max, chainlen_gr
 real(8) :: ds_ave_mx_ed, ds_ave_gr_ed, ds_ave_mx_conv, ds_ave_gr_conv
 real(8) :: xs_crit_mx, xs_crit_gr

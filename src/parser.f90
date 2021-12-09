@@ -26,12 +26,12 @@ logical :: log_mx_exist                    = .false.
 logical :: log_Rg2_per_mon_mx              = .false.
 logical :: log_ds_ave_mx                   = .false.
 logical :: log_chainlen_mx                 = .false.
-logical :: log_discr_mx                    = .false.
+logical :: log_contour_discr_mx            = .false.
 logical :: log_gr_exist                    = .false.
 logical :: log_Rg2_per_mon_gr              = .false.
 logical :: log_chainlen_gr                 = .false.
 logical :: log_ds_ave_gr                   = .false.
-logical :: log_discr_gr                    = .false.
+logical :: log_contour_discr_gr            = .false.
 logical :: log_grafted_ic_from_delta       = .false.
 logical :: log_calc_delta_every            = .false.
 logical :: log_n_dirichlet_faces           = .false.
@@ -46,7 +46,6 @@ logical :: log_influence_param             = .false.
 logical :: log_output_every                = .false.
 logical :: log_profile_dimension           = .false.
 logical :: log_mumps_matrix_type           = .false.
-logical :: log_contour_discr_scheme        = .false.
 !--------------------------------------------------------------------------------!
 !parse input file to retrieve simulation parameters
 inquire(file=input_filename, exist=file_exists)
@@ -66,58 +65,58 @@ do
     elseif (Reason < 0) then
         exit
     else
-        if (INDEX(line,"# temperature") > 0) then
+        if (INDEX(line,"# temp") > 0) then
             read(line,*) temp
             log_temperature = .true.
-        elseif (INDEX(line," pressure") > 0) then
+        elseif (INDEX(line," pres") > 0) then
             read(line,*) pres
             log_pressure = .true.
-        elseif (INDEX(line,"# mass density") > 0) then
+        elseif (INDEX(line,"# mass den") > 0) then
             read(line,*) massden
             log_mass_density = .true.
-        elseif (INDEX(line,"# monomer mass") > 0) then
+        elseif (INDEX(line,"# mon mass") > 0) then
             read(line,*) mon_mass
             log_monomer_mass = .true.
-        elseif (INDEX(line,"# Rg2 per monomer for matrix chains") > 0) then
+        elseif (INDEX(line,"# Rg2/mon matrix") > 0) then
             read(line,*) Rg2_per_mon_mx
             log_Rg2_per_mon_mx = .true.
-        elseif (INDEX(line,"# Rg2 per monomer for grafted chains") > 0) then
+        elseif (INDEX(line,"# Rg2/mon grafted") > 0) then
             read(line,*) Rg2_per_mon_gr
             log_Rg2_per_mon_gr = .true.
-        elseif (INDEX(line,"# chain length of matrix chains") > 0) then
+        elseif (INDEX(line,"# chain length matrix") > 0) then
             read(line,*) chainlen_mx
             log_chainlen_mx = .true.
-        elseif (INDEX(line,"# chain length of grafted chains ") > 0) then
+        elseif (INDEX(line,"# chain length grafted") > 0) then
             read(line,*) chainlen_gr
             log_chainlen_gr = .true.
-        elseif (INDEX(line,"# interfacial area") > 0) then
+        elseif (INDEX(line,"# area") > 0) then
             read(line,*) interf_area
             log_interf_area = .true.
-        elseif (INDEX(line,"# sigma polymer") > 0) then
+        elseif (INDEX(line,"# pol sigma") > 0) then
             read(line,*) sigma_pol
             log_sigma_polymer = .true.
-        elseif (INDEX(line,"# Hamaker constant of polymer") > 0) then
+        elseif (INDEX(line,"# pol ham") > 0) then
             read(line,*) A_pol
             log_Hamaker_constant_of_polymer = .true.
-        elseif (INDEX(line,"# wall distance") > 0) then
+        elseif (INDEX(line,"# wall dist") > 0) then
             read(line,*) wall_distance
             log_wall_distance = .true.
-        elseif (INDEX(line,"# fraction of new field") > 0) then
+        elseif (INDEX(line,"# fraction") > 0) then
             read(line,*) frac
             log_fraction_of_new_field = .true.
-        elseif (INDEX(line,"# maximum error") > 0) then
+        elseif (INDEX(line,"# max error") > 0) then
             read(line,*) max_error_tol
             log_maximum_error = .true.
-        elseif (INDEX(line,"# set initial iteration") > 0) then
+        elseif (INDEX(line,"# init iter") > 0) then
             read(line,*) init_iter
             log_set_initial_iteration= .true.
-        elseif (INDEX(line,"# number of iterations") > 0) then
+        elseif (INDEX(line,"# num iter") > 0) then
             read(line,*) iterations
             log_number_of_iterations = .true.
-        elseif (INDEX(line,"# initialize field") > 0) then
+        elseif (INDEX(line,"# init field") > 0) then
             read(line,*) field_init_scheme
             log_field_init_scheme= .true.
-        elseif (INDEX(line,"# output every") > 0) then
+        elseif (INDEX(line,"# output freq") > 0) then
             read(line,*) output_every
             log_output_every = .true.
         elseif (INDEX(line,"# profile dimension") > 0) then
@@ -129,46 +128,43 @@ do
         elseif (INDEX(line,"# use grafted") > 0) then
             read(line,*) gr_exist
             log_gr_exist = .true.
-        elseif (INDEX(line,"# contour step of matrix chains") > 0) then
+        elseif (INDEX(line,"# contour step matrix") > 0) then
             read(line,*) ds_ave_mx_ed, ds_ave_mx_conv
             log_ds_ave_mx = .true.
-        elseif (INDEX(line,"# discretization scheme of matrix chains") > 0) then
-            read(line,*) discr_mx
-            if (discr_mx.eq.hybrid) read(256,*) xs_crit_mx
-            log_discr_mx = .true.
-        elseif (INDEX(line,"# contour step of grafted chains") > 0) then
+        elseif (INDEX(line,"# discr scheme matrix") > 0) then
+            read(line,*) contour_discr_mx
+            if (contour_discr_mx.eq.contour_hybrid) read(256,*) xs_crit_mx
+            log_contour_discr_mx = .true.
+        elseif (INDEX(line,"# contour step grafted") > 0) then
             read(line,*) ds_ave_gr_ed, ds_ave_gr_conv
             log_ds_ave_gr = .true.
-        elseif (INDEX(line,"# discretization scheme of grafted chains") > 0) then
-            read(line,*) discr_gr
-            if (discr_gr.eq.hybrid) read(256,*) xs_crit_gr
-            log_discr_gr = .true.
-        elseif (INDEX(line,"# mumps matrix type") > 0) then
+        elseif (INDEX(line,"# discr scheme grafted") > 0) then
+            read(line,*) contour_discr_gr
+            if (contour_discr_gr.eq.contour_hybrid) read(256,*) xs_crit_gr
+            log_contour_discr_gr = .true.
+        elseif (INDEX(line,"# mumps matrix") > 0) then
             read(line,*) mumps_matrix_type
             log_mumps_matrix_type = .true.
-        elseif (INDEX(line,"# contour integration scheme") > 0) then
-            read(line,*) contour_discr_scheme
-            log_contour_discr_scheme = .true.
-        elseif (INDEX(line,"# EOS type") > 0) then
+        elseif (INDEX(line,"# eos type") > 0) then
             read(line,*) eos_type
             log_eos_type = .true.
-        elseif (INDEX(line,"# EOS coeffs") > 0) then
-            if (eos_type.eq.eos_helfand) then 
+        elseif (INDEX(line,"# eos coeffs") > 0) then
+            if (eos_type.eq.eos_helfand) then
                 read(line,*) hlf_kappa_T
-            elseif (eos_type.eq.eos_sl)  then 
+            elseif (eos_type.eq.eos_sl)  then
                 read(line,*) rho_star, T_star, P_star
             endif
             log_eos_coeffs = .true.
-        elseif (INDEX(line, "# EOS influence parameter") > 0) then
+        elseif (INDEX(line, "# eos infl param") > 0) then
             read(line,*) k_gr_tilde
             log_influence_param = .true.
-        elseif (INDEX(line,"# calculate grafted initial condition using delta function") > 0) then
+        elseif (INDEX(line,"# calc delta") > 0) then
             read(line,*) grafted_ic_from_delta
             log_grafted_ic_from_delta = .true.
-        elseif (INDEX(line,"# calculate delta every so many steps using delta function") > 0) then
+        elseif (INDEX(line,"# freq delta") > 0) then
             read(line,*) calc_delta_every
             log_calc_delta_every = .true.
-        elseif (INDEX(line,"# n dirichlet faces") > 0) then
+        elseif (INDEX(line,"# num faces") > 0) then
             read(line,*) n_dirichlet_faces
             if (n_dirichlet_faces > 0) then
                 allocate(ids_dirichlet_faces(n_dirichlet_faces))
@@ -181,7 +177,7 @@ do
                 A_plate = A_plate * 1e-20
                 log_n_dirichlet_faces = .true.
             endif
-        elseif (INDEX(line,"# n nanoparticle faces") > 0) then
+        elseif (INDEX(line,"# num nanop") > 0) then
             read(line,*) n_nanopart_faces
             if (n_nanopart_faces > 0) then
                 allocate(ids_nanopart_faces(n_nanopart_faces))
@@ -209,9 +205,10 @@ write(*  ,'(A85)')adjl('-----------------------------------SYSTEM PARAMETERS----
 
 
 if (log_temperature) then
-    if (temp>0) then
-        write(iow,'(3X,A40,E16.9,A4)')adjl("Temperature:",40),temp," [K]"
-        write(6  ,'(3X,A40,E16.9,A4)')adjl("Temperature:",40),temp," [K]"
+    if (Temp>0) then
+        write(iow,'(3X,A40,E16.9,A4)')adjl("Temperature:",40),Temp," [K]"
+        write(6  ,'(3X,A40,E16.9,A4)')adjl("Temperature:",40),Temp," [K]"
+        beta = 1.d0 / (boltz_const_Joule_K * Temp)
     else
         write(ERROR_MESSAGE,'("Temperature is negative: ",E16.9," K")') temp
         call exit_with_error(1,1,1,ERROR_MESSAGE)
@@ -275,7 +272,7 @@ endif
 if (mx_exist.eq.1) then
     if (log_chainlen_mx) then
         if (chainlen_mx>0) then
-            
+
             chainlen_mx_max = chainlen_mx
         else
             write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') chainlen_mx
@@ -353,29 +350,31 @@ if (gr_exist.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
-    if (log_discr_gr) then
-        if (discr_gr.eq.symm) then
+    if (log_contour_discr_gr) then
+        if (contour_discr_gr.eq.contour_uniform) then
+            write(iow,'(A44,A15)') "Edwards contour scheme for grafted chains:", "uniform"
+            write(6  ,'(A44,A15)') "Edwards contour scheme for grafted chains:", "uniform"
+        elseif (contour_discr_gr.eq.contour_symm) then
             write(iow,'(A44,A15)') "Edwards contour scheme for grafted chains:", "symm"
             write(6  ,'(A44,A15)') "Edwards contour scheme for grafted chains:", "symm"
-        elseif (discr_gr.eq.hybrid) then
+        elseif (contour_discr_gr.eq.contour_hybrid) then
             write(iow,'(A44,A15)') "Edwards contour scheme for grafted chains:", "hybrid"
             write(6  ,'(A44,A15)') "Edwards contour scheme for grafted chains:", "hybrid"
-            if (xs_crit_gr > chainlen_gr) then
-                write(ERROR_MESSAGE,'("Critical contour point of grafted chains is larger than chainlength: ",E16.9)') xs_crit_gr
-            elseif (xs_crit_gr < 0) then
+            if (xs_crit_gr < 0) then
                 write(ERROR_MESSAGE,'("Critical contour point of grafted chains is negative: ",E16.9)') xs_crit_gr
-            elseif (xs_crit_gr>0.and.xs_crit_gr<=chainlen_gr) then
+                call exit_with_error(1,1,1,ERROR_MESSAGE)
+            elseif (xs_crit_gr>0) then
                 write(iow,'(3X,A41,F16.9)')adjl("Critical contour point of grafted chains:",40), xs_crit_gr
                 write(6  ,'(3X,A41,F16.9)')adjl("Critical contour point of grafted chains:",40), xs_crit_gr
             else
                 ERROR_MESSAGE="Critical contour point of grafted chains was not detected."
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
-        elseif (discr_gr.eq.asymm) then
+        elseif (contour_discr_gr.eq.contour_asymm) then
             write(iow,'(A44,A15)') "Edwards contour scheme for grafted chains:", "asymm"
             write(6  ,'(A44,A15)') "Edwards contour scheme for grafted chains:", "asymm"
         else
-            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme for grafted chains: ",I5)') discr_gr
+            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme for grafted chains: ",I5)') contour_discr_gr
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -410,7 +409,7 @@ if (mx_exist.eq.1) then
     else
         ERROR_MESSAGE="Rg2 per matrix monomer was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif 
+    endif
 
     write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40),chainlen_mx,"[monomers]"
     write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40),&
@@ -421,13 +420,13 @@ if (mx_exist.eq.1) then
     if (log_ds_ave_mx) then
         if (ds_ave_mx_ed>0 .and. ds_ave_mx_conv>0) then
             ns_mx_ed   = 2 * NINT(0.5d0 * chainlen_mx_max / ds_ave_mx_ed)
-            ns_mx_conv = 2 * NINT(0.5d0 * chainlen_mx     / ds_ave_mx_conv) 
+            ns_mx_conv = 2 * NINT(0.5d0 * chainlen_mx     / ds_ave_mx_conv)
 
             write(iow,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_mx_ed, ns_mx_conv
             write(6  ,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_mx_ed, ns_mx_conv
 
             if (MOD(ns_mx_ed,2).ne.0 .or. MOD(ns_mx_conv,2).ne.0) then
-                write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') ns_mx_ed, ns_mx_conv 
+                write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') ns_mx_ed, ns_mx_conv
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
         else
@@ -439,29 +438,31 @@ if (mx_exist.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
-    if (log_discr_mx) then
-        if (discr_mx.eq.symm) then
+    if (log_contour_discr_mx) then
+        if (contour_discr_mx.eq.contour_uniform) then
+            write(iow,'(A44,A15)') "Edwards contour scheme for matrix chains:", "uniform"
+            write(6  ,'(A44,A15)') "Edwards contour scheme for matrix chains:", "uniform"
+        elseif (contour_discr_mx.eq.contour_symm) then
             write(iow,'(A44,A15)') "Edwards contour scheme for matrix chains:", "symm"
             write(6  ,'(A44,A15)') "Edwards contour scheme for matrix chains:", "symm"
-        elseif (discr_mx.eq.hybrid) then
+        elseif (contour_discr_mx.eq.contour_hybrid) then
             write(iow,'(A44,A15)') "Edwards contour scheme for matrix chains:", "hybrid"
             write(6  ,'(A44,A15)') "Edwards contour scheme for matrix chains:", "hybrid"
-            if (xs_crit_mx > chainlen_mx) then
-                write(ERROR_MESSAGE,'("Critical contour point of matrix chains is larger than chainlength: ",E16.9)') xs_crit_mx
-            elseif (xs_crit_mx < 0) then
+            if (xs_crit_mx < 0) then
                 write(ERROR_MESSAGE,'("Critical contour point of matrix chains is negative: ",E16.9)') xs_crit_mx
-            elseif (xs_crit_mx>0.and.xs_crit_mx.le.chainlen_mx) then
+                call exit_with_error(1,1,1,ERROR_MESSAGE)
+            elseif (xs_crit_mx > 0) then
                 write(iow,'(3X,A41,F16.9)')adjl("Critical contour point of matrix chains:",40), xs_crit_mx
                 write(6  ,'(3X,A41,F16.9)')adjl("Critical contour point of matrix chains:",40), xs_crit_mx
             else
                 ERROR_MESSAGE="Critical contour point of matrix chains was not detected."
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
-        elseif (discr_mx.eq.asymm) then
+        elseif (contour_discr_mx.eq.contour_asymm) then
             write(iow,'(A44,A15)') "Edwards contour scheme for matrix chains:", "asymm"
             write(6  ,'(A44,A15)') "Edwards contour scheme for matrix chains:", "asymm"
         else
-            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme for matrix chains: ",I5)') discr_mx
+            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme for matrix chains: ",I5)') contour_discr_mx
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -812,8 +813,8 @@ endif
 
 if (log_eos_coeffs) then
     if (eos_type.eq.eos_helfand) then
-        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
-        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"   
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
+        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
     elseif (eos_type.eq.eos_sl) then
         write(iow,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
         write(*  ,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
@@ -834,7 +835,6 @@ else
     write(iow,'(3X,A40,E16.9,A14)')adjl("Influence parameter not found. Auto:",45), k_gr_tilde, " [J*m^5/mol^2]"
     write(*  ,'(3X,A40,E16.9,A14)')adjl("Influence parameter not found. Auto:",45), k_gr_tilde, " [J*m^5/mol^2]"
 endif
-
 
 return
 !--------------------------------------------------------------------------------!
