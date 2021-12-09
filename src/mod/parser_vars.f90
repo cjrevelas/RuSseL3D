@@ -12,14 +12,13 @@ real(8) :: xs_crit_mx, xs_crit_gr
 !indices and flags
 integer :: iow, ioe, iterations, field_init_scheme, init_iter
 integer :: mx_exist, gr_exist, calc_delta_every, grafted_ic_from_delta
-integer :: print_ev
 integer :: export_phi_gen_freq, export_phi_indiv_freq, export_field_freq, export_propagators_freq
 integer :: export_field_bin_freq, export_brush_thickness_freq, export_chains_per_area_freq, export_ads_free_freq
 logical :: square_gradient
 
 !domain
 integer :: prof_dim
-real(8) :: interf_area
+real(8) :: interf_area, bin_thickness
 
 !dirichlet boundaries
 integer                              :: n_dirichlet_faces, n_nanopart_faces

@@ -102,7 +102,7 @@ allocate(dphi2_dr2(numnp))
 dphi2_dr2=0.d0
 
 call init_delta
-call tools_histogram(0.5d0, volnp)
+call tools_histogram(bin_thickness, volnp)
 
 #ifdef USE_MPI
 call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)

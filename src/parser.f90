@@ -48,10 +48,11 @@ logical :: log_eos_coeffs                  = .false.
 logical :: log_influence_param             = .false.
 logical :: log_profile_dimension           = .false.
 logical :: log_mumps_matrix_type           = .false.
+logical :: log_bin_thickness               = .false.
 logical :: log_export_phi_gen_freq         = .false.
 logical :: log_export_phi_indiv_freq       = .false.
-logical :: log_export_field_freq           = .false. 
-logical :: log_export_field_bin_freq       = .false. 
+logical :: log_export_field_freq           = .false.
+logical :: log_export_field_bin_freq       = .false.
 logical :: log_export_propagators_freq     = .false.
 logical :: log_export_brush_thickness_freq = .false.
 logical :: log_export_chains_per_area_freq = .false.
@@ -131,7 +132,10 @@ do
             log_number_of_iterations = .true.
         elseif (INDEX(line,"# init field") > 0) then
             read(line,*) field_init_scheme
-            log_field_init_scheme= .true.
+            log_field_init_scheme = .true.
+        elseif (INDEX(line,"# bin thickness") > 0) then
+            read(line,*) bin_thickness
+            log_bin_thickness = .true.
         elseif (INDEX(line,"# export dens profs") > 0) then
             read(line,*) export_phi_gen_freq
             log_export_phi_gen_freq = .true.
@@ -627,6 +631,23 @@ else
     write(iow,'(3X,A40,I9)')adjl("It was set to the default value:",40),iterations
     write(6  ,'(3X,A40)')adjl("Max number of iter not found.",40)
     write(6  ,'(3X,A40,I9)')adjl("It was set to the default value:",40),iterations
+endif
+
+
+if (log_bin_thickness) then
+    if (bin_thickness.ge.0.d0) then
+        write(iow,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40),bin_thickness,"[Angstrom]"
+        write(6  ,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40),bin_thickness,"[Angstrom]"
+    else
+        write(ERROR_MESSAGE,'("Bin thickness is negative:",E16.9)')bin_thickness
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    bin_thickness = 0.5d0
+    write(iow,'(3X,A40)')adjl("Bin thickness not found.",40)
+    write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40),bin_thickness,"[Angstrom]"
+    write(6  ,'(3X,A40)')adjl("Bin thickness not found.",40)
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40),bin_thickness,"[Angstrom]"
 endif
 
 
