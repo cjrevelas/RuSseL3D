@@ -25,7 +25,7 @@ elseif (eos_type.eq.eos_sl) then
     T_tilde        = Temp / T_star
     P_tilde        = Pres / P_star
     rsl_N          = (mon_mass * P_star) / (rho_star * 1.d03 * boltz_const_Joule_molK * T_star)
-    rho_tilde_bulk = eos_rho_tilde_0(T_tilde, P_tilde, rsl_N*chainlen_matrix)
+    rho_tilde_bulk = eos_rho_tilde_0(T_tilde, P_tilde, rsl_N*chainlen_mx)
     rho_mass_bulk  = rho_tilde_bulk * rho_star
     rho_mol_bulk   = rho_mass_bulk / mon_mass * gr_cm3_to_kg_m3
     rho_seg_bulk   = rho_mol_bulk * N_avog

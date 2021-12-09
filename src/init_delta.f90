@@ -10,8 +10,8 @@ use error_handing
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
 integer :: i1, iog
-
-if (grafted_exist.eq.1) then
+!-----------------------------------------------------------------------------------------------------------!
+if (gr_exist.eq.1) then
     iog = 19 
 
     inquire(file = gp_filename, exist = file_exists)
@@ -55,5 +55,7 @@ else
     num_gpoints   = 0
     allocate(gpid(num_gpoints))
 endif
+
+allocate(phia_gr_indiv(numnp,num_gpoints))
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine init_delta
