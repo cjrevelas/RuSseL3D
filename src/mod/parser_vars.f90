@@ -22,7 +22,7 @@ logical :: square_gradient
 
 !domain
 integer :: prof_dim
-real(8) :: interf_area, bin_thickness
+real(8) :: r_gpoint, bin_thickness!, interf_area
 
 !dirichlet boundaries
 integer                              :: n_dirichlet_faces, n_nanopart_faces

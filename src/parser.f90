@@ -40,6 +40,7 @@ logical :: log_ds_ave_gr                   = .false.
 logical :: log_contour_discr_gr            = .false.
 logical :: log_grafted_ic_from_delta       = .false.
 logical :: log_num_gr_chains_tol           = .false.
+logical :: log_r_gpoint                    = .false.
 logical :: log_calc_delta_every            = .false.
 logical :: log_n_dirichlet_faces           = .false.
 logical :: log_n_nanopart_faces            = .false.
@@ -186,6 +187,9 @@ do
         elseif (INDEX(line,"# contour step grafted") > 0) then
             read(line,*) ds_ave_gr_ed, ds_ave_gr_conv
             log_ds_ave_gr = .true.
+        elseif (INDEX(line,"# gp dist from solid") > 0) then
+            read(line,*) r_gpoint
+            log_r_gpoint = .true.
         elseif (INDEX(line,"# discr scheme grafted") > 0) then
             read(line,*) contour_discr_gr
             if (contour_discr_gr.eq.contour_hybrid) read(256,*) xs_crit_gr
@@ -320,7 +324,6 @@ endif
 if (mx_exist.eq.1) then
     if (log_chainlen_mx) then
         if (chainlen_mx>0) then
-
             chainlen_mx_max = chainlen_mx
         else
             write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') chainlen_mx
@@ -418,6 +421,9 @@ if (gr_exist.eq.1) then
                 ERROR_MESSAGE="Critical contour point of grafted chains was not detected."
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
+
+            call get_contour_step(ds_ave_gr_ed, xs_crit_gr, chainlen_gr, ns_gr_ed)
+
         elseif (contour_discr_gr.eq.contour_asymm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "asymm"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "asymm"
@@ -430,6 +436,7 @@ if (gr_exist.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 endif
+
 
 if (log_mx_exist) then
     if (mx_exist.eq.1) then
@@ -506,6 +513,9 @@ if (mx_exist.eq.1) then
                 ERROR_MESSAGE="Critical contour point of matrix chains was not detected."
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
+
+            call get_contour_step(ds_ave_mx_ed, xs_crit_mx, chainlen_mx_max, ns_mx_ed)
+
         elseif (contour_discr_mx.eq.contour_asymm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
@@ -588,12 +598,28 @@ if (log_gr_exist.and.gr_exist.ge.1) then
             endif
         endif
         if (grafted_ic_from_delta.lt.1) then
-            write(iow,'(3X,A40)')adjl("The initial conditions are read from file.",40)
-            write(6  ,'(3X,A40)')adjl("The initial conditions are read from file.",40)
+            write(iow,'(3X,A40)')adjl("Initial conditions are read from file.",40)
+            write(6  ,'(3X,A40)')adjl("Initial conditions are read from file.",40)
         endif
     else
-        write(iow,'(3X,A40)')adjl("The initial conditions are read from file.",40)
-        write(6  ,'(3X,A40)')adjl("The initial conditions are read from file.",40)
+        write(iow,'(3X,A40)')adjl("Initial conditions are read from file.",40)
+        write(6  ,'(3X,A40)')adjl("Initial conditions are read from file.",40)
+    endif
+
+    if (log_r_gpoint) then
+        if (r_gpoint.gt.0.d0) then
+            write(iow,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40),r_gpoint
+            write(6  ,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40),r_gpoint
+        else
+            write(ERROR_MESSAGE,'("Distance of grafting points from solid must have a positive value:",E16.9)') r_gpoint
+            call exit_with_error(1,1,1,ERROR_MESSAGE)
+        endif
+    else
+        r_gpoint = 0.4d0
+        write(iow,'(3X,A40)')adjl("Distance of grafting points not found.",40)
+        write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),r_gpoint
+        write(6  ,'(3X,A40)')adjl("Distance of grafting points not found.",40)
+        write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),r_gpoint
     endif
 else
     gr_exist = 0
@@ -1015,6 +1041,7 @@ if (log_eos_type) then
         write(*  ,'(A45,I11)') 'EOS flag different than 0 (HF) or 1 (SL)',eos_type
         STOP
     endif
+    call init_scf_params()
 else
     write(iow,'(A45)') 'EOS flag not set'
     write(*  ,'(A45)') 'EOS flag not set'

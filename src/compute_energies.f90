@@ -5,8 +5,8 @@
 subroutine compute_energies(qmx_interp_mg, qgr_interp, phi_total, wa, Ufield, part_func, num_gpoints, gpid, free_energy)
 !-------------------------------------------------------------------------------------------------!
 use eos,         only: eos_ff, eos_df_drho
-use parser_vars, only: ns_gr_conv, chainlen_mx, interf_area, rho_mol_bulk, temp, beta
-use geometry,    only: numnp, box_lo, box_hi, xc
+use parser_vars, only: ns_gr_conv, chainlen_mx, rho_mol_bulk, temp, beta, r_gpoint
+use geometry,    only: numnp, interf_area
 use constants,   only: n_avog, boltz_const_Joule_molK, N_to_mN, A2_to_m2, A3_to_m3
 use iofiles,     only: energy_terms
 !-------------------------------------------------------------------------------------------------!
@@ -26,7 +26,7 @@ real(8)                                            :: E_eos_f=0.d0, E_eos_dfdrho
 real(8)                                            :: E_field=0.d0, E_solid=0.d0
 real(8)                                            :: E_entropy_mx=0.d0, E_entropy_gr=0.d0
 real(8)                                            :: E_entropy_gr_normlz=0.d0, E_stretching = 0.d0
-real(8)                                            :: r_ref=0.4d0, r_gpoint=0.d0
+real(8)                                            :: r_ref=0.4d0
 real(8), dimension(num_gpoints)                    :: term4_norm_gpoint, term4_gpoint
 real(8), dimension(numnp)                          :: prof_eos_f, prof_eos_dfdrho
 real(8), dimension(numnp)                          :: prof_field, prof_solid
@@ -60,7 +60,6 @@ E_entropy_mx = rho_mol_bulk * A3_to_m3 * vol * boltz_const_Joule_molK * Temp * (
 
 do kk = 1, num_gpoints
     gnode_id              =  gpid(kk)
-    r_gpoint              =  MIN(ABS(xc(3,gnode_id)-box_lo(3)), ABS(box_hi(3)-xc(3,gnode_id)))
     term4_gpoint(kk)      = -LOG(qmx_interp_mg(ns_gr_conv+1,gnode_id)) / beta
     term4_norm_gpoint(kk) = -LOG(r_ref/r_gpoint) / beta
     E_entropy_gr          =  E_entropy_gr        + term4_gpoint(kk)
