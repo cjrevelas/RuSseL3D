@@ -1,13 +1,17 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine init_field(Ufield, wa)
 !------------------------------------------------------------------------------------------------------!
-use parser_vars,  only: a_pol, field_init_scheme, iow, kapa, n_nanopart_faces,  &
+use parser_vars,  only: a_pol, field_init_scheme, kapa, n_nanopart_faces,  &
 &                       rho_mol_bulk, sigma_pol, beta, wall_distance, center_np, &
 &                       sigma_plate, radius_np_eff, sigma_np, A_np, A_plate
 use geometry,     only: numnp, is_dir_face, box_lo, box_hi, xc, node_in_q0_face
 use error_handing
 use write_helper, only: adjl
 use force_fields, only: hamaker_sphere_plate, hamaker_sphere_sphere
-use iofiles,      only: usolid
+use iofiles,      only: usolid, field_in_filename
 use constants,    only: n_avog, pi, m_to_A
 !------------------------------------------------------------------------------------------------------!
 implicit none
@@ -21,48 +25,48 @@ real(8)                                :: radius_np_actual=0.d0, radius_pol=0.d0
 real(8)                                :: Urep=0.d0, Uatt=0.d0
 !------------------------------------------------------------------------------------------------------!
 open(unit=211, file = usolid)
-write(211,'(3A16,2A19)') "r_center_surf", "r_surf", "Uatt", "Urep", "Utot"
+write(211,'(5(2X,A16))') "r_center_surf", "r_surf", "Uatt", "Urep", "Utot"
 
 Ufield = 0.d0
 
 do kk = 1, numnp
     !loop over all dirichlet faces
     do mm = 1, 3
-    do nn = 1, 2
-    if (is_dir_face(mm,nn)) then
+        do nn = 1, 2
+            if (is_dir_face(mm,nn)) then
 
-        number_density = rho_mol_bulk * n_avog
-        radius_pol     = (3./4./pi/number_density)**(1./3.) * m_to_A
+                number_density = rho_mol_bulk * n_avog
+                radius_pol     = (3./4./pi/number_density)**(1./3.) * m_to_A
 
-        if (nn.eq.1) then
-            r_center_surf = xc(mm,kk) - box_lo(mm) + wall_distance
-        elseif (nn.eq.2) then
-            r_center_surf = box_hi(mm) - xc(mm,kk) + wall_distance
-        endif
+                if (nn.eq.1) then
+                    r_center_surf = xc(mm,kk) - box_lo(mm) + wall_distance
+                elseif (nn.eq.2) then
+                    r_center_surf = box_hi(mm) - xc(mm,kk) + wall_distance
+                endif
 
-        r_surf = r_center_surf - radius_pol
+                r_surf = r_center_surf - radius_pol
 
-        call hamaker_sphere_plate(r_surf, radius_pol, sigma_pol, sigma_plate(1), A_pol, A_plate(1), Urep, Uatt)
+                call hamaker_sphere_plate(r_surf, radius_pol, sigma_pol, sigma_plate(1), A_pol, A_plate(1), Urep, Uatt)
 
-        Urep = Urep*beta
-        Uatt = Uatt*beta
+                Urep = Urep*beta
+                Uatt = Uatt*beta
 
-        Ufield(kk) = Ufield(kk) + Urep + Uatt
+                Ufield(kk) = Ufield(kk) + Urep + Uatt
 
-        if ((Ufield(kk)-Ufield(kk)).gt.1.0d-8) then
-            write(ERROR_MESSAGE,'("Hamaker assumed a NaN value for x = ",E16.9,". &
-                                & NaN was changed to ",E16.9)') r_surf, Ufield(kk)
-            call exit_with_error(1,2,1,ERROR_MESSAGE)
-        endif
+                if ((Ufield(kk)-Ufield(kk)).gt.1.0d-8) then
+                    write(ERROR_MESSAGE,'("Hamaker assumed a NaN value for x = ",E16.9,". &
+                                        & NaN was changed to ",E16.9)') r_surf, Ufield(kk)
+                    call exit_with_error(1,2,1,ERROR_MESSAGE)
+                endif
 
-        if (r_surf.lt.0.d0) then
-            write(ERROR_MESSAGE,'("Hamaker distance smaller than zero! (",E16.9,").")') r_surf
-            call exit_with_error(1,2,1,ERROR_MESSAGE)
-        endif
+                if (r_surf.lt.0.d0) then
+                    write(ERROR_MESSAGE,'("Hamaker distance smaller than zero! (",E16.9,").")') r_surf
+                    call exit_with_error(1,2,1,ERROR_MESSAGE)
+                endif
 
-        write(211,'(E17.9E3,2X,E17.9E3,2X,E17.9E3,2X,E17.9E3,2X,E17.9E3)') r_center_surf, r_surf, Uatt, Urep, Urep+Uatt
-    endif
-    enddo
+                write(211,'(5(2X,E16.9E2))') r_center_surf, r_surf, Uatt, Urep, Urep+Uatt
+            endif
+        enddo
     enddo
 
    !loop over all nanoparticle faces
@@ -87,7 +91,7 @@ do kk = 1, numnp
            call exit_with_error(1,2,1,ERROR_MESSAGE)
        endif
 
-       write(211,'(E17.9E3,2X,E17.9E3,2X,E17.9E3,2X,E17.9E3,2X,E17.9E3)')  r_centers, r_surf, Uatt, Urep, Urep + Uatt
+       write(211,'(5(2X,E16.9E2))') r_centers, r_surf, Uatt, Urep, Urep+Uatt
    enddo
 enddo
 
@@ -95,23 +99,10 @@ close(211)
 
 if (field_init_scheme.eq.0) then
     wa = 0.d0
-
 elseif (field_init_scheme.eq.1) then
-    write(iow,'(A40,5X,A12)')adjl("Reading field from file:",40),field_in_filename
-    write(6  ,'(A40,5X,A12)')adjl("Reading field from file:",40),field_in_filename
-
-    inquire(file = field_in_filename, exist = file_exists)
-
-    if (file_exists) then
-        open(unit=655, file = field_in_filename, Form='unformatted')
-    else
-        write(ERROR_MESSAGE,'("File ",A15," does not exist!")')field_in_filename
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-
+    open(unit=655, file = field_in_filename, Form='unformatted')
     read(655) wa
     close(655)
-
 elseif (field_init_scheme.eq.2) then
     do kk = 1, numnp
         if (node_in_q0_face(kk)) then

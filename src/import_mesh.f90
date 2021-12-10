@@ -37,14 +37,7 @@ integer                       :: n_keys
 integer                       :: key_value
 logical                       :: success
 !--------------------------------------------------------------------!
-inquire(file=mesh_filename, exist=file_exists)
-
-if (file_exists) then
-    open(unit=12, file=mesh_filename)
-else
-    write(ERROR_MESSAGE,'("File ",A15," does not exist!")') mesh_filename
-    call exit_with_error(1,1,1,ERROR_MESSAGE)
-endif
+open(unit=12, file=mesh_filename)
 
 do
     read(12,'(A100)',IOSTAT=reason) line
@@ -76,11 +69,11 @@ do
 
             write(iow,*)
             write(*,*)
-            write(iow,'(A85)')adjl('-------------------------------------BOX DIMENSIONS----------------------------------',85)
-            write(*  ,'(A85)')adjl('-------------------------------------BOX DIMENSIONS----------------------------------',85)
+!            write(iow,'(A85)')adjl('-------------------------------------BOX DIMENSIONS----------------------------------',85)
+!            write(*  ,'(A85)')adjl('-------------------------------------BOX DIMENSIONS----------------------------------',85)
 
-            write(iow,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
-            write(6  ,'(A6,A13,A17,A18)') "dim", "length", "min", "max"
+            write(iow,'(A6,A13,A17,A18)') "dim", "box_length", "box_min", "box_max"
+            write(6  ,'(A6,A13,A17,A18)') "dim", "box_length", "box_min", "box_max"
             do j = 1, ndm
                 box_len(j) = box_hi(j) - box_lo(j)
                 write(iow,'(I5,2X,3(E16.9,2X))')j, box_len(j), box_lo(j), box_hi(j)
@@ -105,8 +98,8 @@ do
 
             write(iow,*)
             write(*,*)
-            write(iow,'(A85)')adjl('--------------------------------------SPATIAL MESH-----------------------------------',85)
-            write(*  ,'(A85)')adjl('--------------------------------------SPATIAL MESH-----------------------------------',85)
+!            write(iow,'(A85)')adjl('--------------------------------------SPATIAL MESH-----------------------------------',85)
+!            write(*  ,'(A85)')adjl('--------------------------------------SPATIAL MESH-----------------------------------',85)
 
             write(iow,'(3X,"Number of mesh points (numnp):         ",I16)') numnp
             write(iow,'(3X,"Number of elements (numel):            ",I16)') numel
@@ -338,20 +331,20 @@ close(13)
 
 open(unit=77, file = com_12)
 do i1 = 1, all_el
-     write(77,'(4I8,L8)') i1, F_m%row(i1), F_m%col(i1), con_l2(i1), con_l2(i1)/=i1
+     write(77,'(4(2X,I9),2X,L9)') i1, F_m%row(i1), F_m%col(i1), con_l2(i1), con_l2(i1)/=i1
 enddo
 close(77)
 
 open (unit=77, file = inter)
 do i = 1, numel
-    write(77,'(I9,10(2X,I9))') (ix(j,i), j = 1, nel)
+    write(77,'(11(2X,I9))') (ix(j,i), j = 1, nel)
 enddo
 close(77)
 
 open(77, file = mesh_out)
-write(77,'(A13,2A22)') 'x', 'y', 'z'
+write(77,'(3(2X,A16))') 'x', 'y', 'z'
 do i = 1, numnp
-    write(77,'(F21.15,1X,F21.15,1X,F21.15)') (xc(j,i), j = 1, ndm)
+    write(77,'(3(2X,F16.9))') (xc(j,i), j = 1, ndm)
 enddo
 close(77)
 !-------------------------------------------------------------------!

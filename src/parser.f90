@@ -17,6 +17,9 @@ character(100) :: line
 
 integer :: Reason, ii, id
 
+logical :: log_mesh_filename               = .false.
+logical :: log_gp_filename                 = .false.
+logical :: log_field_in_filename           = .false.
 logical :: log_temperature                 = .false.
 logical :: log_pressure                    = .false.
 logical :: log_mass_density                = .false.
@@ -64,6 +67,9 @@ logical :: log_export_chains_per_area_freq = .false.
 logical :: log_export_ads_free_freq        = .false.
 !--------------------------------------------------------------------------------!
 !parse input file to retrieve simulation parameters
+call GET_COMMAND_ARGUMENT(1,input_filename)
+
+if (input_filename == '') input_filename = "./in.input"
 inquire(file=input_filename, exist=file_exists)
 
 if (file_exists) then
@@ -81,7 +87,16 @@ do
     elseif (Reason < 0) then
         exit
     else
-        if (INDEX(line,"# temp") > 0) then
+        if (INDEX(line,"# mesh input file") > 0) then
+            read(line,'(A40)') mesh_filename
+            log_mesh_filename = .true.
+        elseif (INDEX(line,"# gpoints input file") > 0) then
+            read(line,'(A40)') gp_filename
+            log_gp_filename = .true.
+        elseif (INDEX(line,"# field input file") > 0) then
+            read(line,*) field_in_filename
+            log_field_in_filename = .true.
+        elseif (INDEX(line,"# temp") > 0) then
             read(line,*) temp
             log_temperature = .true.
         elseif (INDEX(line," pres") > 0) then
@@ -349,7 +364,32 @@ else
     continue
 endif
 
+
 if (gr_exist.eq.1) then
+    if (log_gp_filename) then
+        inquire(file=gp_filename, exist=file_exists)
+        if (.not.file_exists) then
+            write(ERROR_MESSAGE,'("Grafting points file ",A16," does not exist!")')gp_filename
+            call exit_with_error(1,1,1,ERROR_MESSAGE)
+            STOP
+        endif
+        write(iow,'(3X,A40,A16)')adjl("Reading grafting points from file:",40),gp_filename
+        write(6  ,'(3X,A40,A16)')adjl("Reading grafting points from file:",40),gp_filename
+    else
+        gp_filename = "./in.gnodes"
+        write(iow,'(3X,A40)')adjl("Grafting points input file not specified.",40)
+        write(iow,'(3X,A40,A16)')adjl("Reading default grafting points file:",40),gp_filename
+        write(6  ,'(3X,A40)')adjl("Grafting points input file not specified.",40)
+        write(6  ,'(3X,A40,A16)')adjl("Reading default grafting points file:",40),gp_filename
+
+        inquire(file=gp_filename, exist=file_exists)
+        if (.not.file_exists) then
+            write(ERROR_MESSAGE,'("Default grafting points file ",A16," does not exist!")')gp_filename
+            call exit_with_error(1,1,1,ERROR_MESSAGE)
+            STOP
+        endif
+    endif
+
     if (log_Rg2_per_mon_gr) then
         if (Rg2_per_mon_gr>0) then
             write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per grafted monomer:",40),Rg2_per_mon_gr,"[Angstrom^2]"
@@ -681,6 +721,144 @@ else
 endif
 
 
+if (log_profile_dimension) then
+    if ( (prof_dim.ge.1).and.(prof_dim.le.3) ) then
+        write(iow,'(3X,A40,I9)')adjl("Profile dimension:",40),prof_dim
+        write(6  ,'(3X,A40,I9)')adjl("Profile dimension:",40),prof_dim
+    else
+        write(ERROR_MESSAGE,'("Profile dimension is not between 1 and 3:",I16)') prof_dim
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    prof_dim = 3
+    write(iow,'(3X,A40)')adjl("Profile dimension not found.",40)
+    write(iow,'(3X,A40,I8)')adjl("It was set to the default value:",40),prof_dim
+    write(6  ,'(3X,A40)')adjl("Profile dimension not found.",40)
+    write(6  ,'(3X,A40,I8)')adjl("It was set to the default value:",40),prof_dim
+endif
+
+
+if (log_field_init_scheme) then
+    if (field_init_scheme==0) then
+        write(iow,'(3X,A34)')adjl("Field will be initialized to zero.",40)
+        write(6  ,'(3X,A34)')adjl("Field will be initialized to zero.",40)
+    elseif (field_init_scheme==1) then
+        if (log_gp_filename) then
+            inquire(file=field_in_filename, exist=file_exists)
+            if (.not.file_exists) then
+                write(ERROR_MESSAGE,'("Field input file ",A16," does not exist!")')field_in_filename
+                call exit_with_error(1,1,1,ERROR_MESSAGE)
+                STOP
+            endif
+            write(iow,'(A43,A16)')adjl("Field will be read from file:",40),field_in_filename
+            write(6  ,'(A43,A16)')adjl("Field will be read from file:",40),field_in_filename
+        else
+            field_in_filename = "./in.field.bin"
+            write(iow,'(3X,A40)')adjl("Field input file not specified.",40)
+            write(iow,'(3X,A40,A16)')adjl("Reading default field input file:",40),field_in_filename
+            write(6  ,'(3X,A40)')adjl("Field input file not specified.",40)
+            write(6  ,'(3X,A40,A16)')adjl("Reading default field input file:",40),field_in_filename
+
+            inquire(file=field_in_filename, exist=file_exists)
+            if (.not.file_exists) then
+                write(ERROR_MESSAGE,'("Default field input file ",A16," does not exist!")')field_in_filename
+                call exit_with_error(1,1,1,ERROR_MESSAGE)
+                STOP
+            endif
+        endif
+    elseif (field_init_scheme==2) then
+        write(iow,'(3X,A40)')adjl("Field: -kapa at Dir. and 0 elsewhere.",40)
+        write(6  ,'(3X,A40)')adjl("Field: -kapa at Dir. and 0 elsewhere.",40)
+    else
+        write(ERROR_MESSAGE,'("Incorrect field initialization value. Choose between 1-3.",I16)') init_iter
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+endif
+if (.not.log_field_init_scheme) then
+    write(iow,'(A40)')adjl("Field will be initialized to zero.",40)
+    write(6  ,'(A40)')adjl("Field will be initialized to zero.",40)
+endif
+
+
+if (log_mumps_matrix_type) then
+    if (mumps_matrix_type == 0) then
+        write(iow,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40),"nonsymmetric (", mumps_matrix_type,")"
+        write(6  ,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40),"nonsymmetric (", mumps_matrix_type,")"
+    elseif (mumps_matrix_type == 1) then
+        write(iow,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40),"symmetric pos. def. (", mumps_matrix_type,")"
+        write(6  ,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40),"symmetric pos. def. (", mumps_matrix_type,")"
+    elseif (mumps_matrix_type == 2) then
+        write(iow,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40),"general symmetric(", mumps_matrix_type,")"
+        write(6  ,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40),"general symmetric(", mumps_matrix_type,")"
+    else
+        write(ERROR_MESSAGE,'("Incorrect MUMPS matrix type.",I16)') mumps_matrix_type
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    mumps_matrix_type = 0
+    write(iow,'(3X,A40)')adjl("MUMPS matrix type not detected.",40)
+    write(iow,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40),mumps_matrix_type
+    write(6  ,'(3X,A40)')adjl("MUMPS matrix type not detected.",40)
+    write(6  ,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40),mumps_matrix_type
+endif
+
+
+if (log_fraction_of_new_field) then
+    if (frac.ge.0 .and. frac.le.1) then
+        write(iow,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40),frac
+        write(6  ,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40),frac
+    else
+        write(ERROR_MESSAGE,'("Initial fraction of new field is negative or larger than unity:",E16.9)') frac
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    frac = 1.d0
+    write(iow,'(3X,A40)')adjl("No initial fraction of new field.",40)
+    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),frac
+    write(6  ,'(3X,A40)')adjl("No initial fraction of new field.",40)
+    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),frac
+endif
+
+
+if (log_maximum_error) then
+    if (max_error_tol.ge.0.d0) then
+        write(iow,'(3X,A40,E16.9)')adjl("Maximum tolerance error on field:",40),max_error_tol
+        write(6  ,'(3X,A40,E16.9)')adjl("Maximum tolerance error on field:",40),max_error_tol
+    else
+        write(ERROR_MESSAGE,'("Maximum tolerance error on field is negative:",E16.9)') max_error_tol
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    max_error_tol = 0.d0
+    write(iow,'(3X,A40)')adjl("Max field error not found",40)
+    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),max_error_tol
+    write(6  ,'(3X,A40)')adjl("Max field error not found.",40)
+    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),max_error_tol
+endif
+
+if (log_maximum_energy_error_tol) then
+    if (free_energy_error_tol.ge.0.d0) then
+        write(iow,'(3X,A40,E16.9)')adjl("Maximum tolerance error on energy:",40),free_energy_error_tol
+        write(6  ,'(3X,A40,E16.9)')adjl("Maximum tolerance error on energy:",40),free_energy_error_tol
+    else
+        write(ERROR_MESSAGE,'("Maximum tolerance error is negative:",E16.9)')free_energy_error_tol
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    free_energy_error_tol = 1.d-6
+    write(iow,'(3X,A40)')adjl("Max energy error tol not found",40)
+    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol
+    write(6  ,'(3X,A40)')adjl("Max energy error tol not found.",40)
+    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol
+endif
+
+
+write(iow,*)
+write(*,*)
+write(iow,'(A85)')adjl('-----------------------------------OUTPUT FREQUENCY-----------------------------------',85)
+write(*  ,'(A85)')adjl('-----------------------------------OUTPUT FREQUENCY-----------------------------------',85)
+
+
 if (log_export_phi_gen_freq) then
     if (export_phi_gen_freq.ge.1) then
         write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
@@ -808,116 +986,6 @@ else
     write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
 endif
 
-
-if (log_profile_dimension) then
-    if ( (prof_dim.ge.1).and.(prof_dim.le.3) ) then
-        write(iow,'(3X,A40,I9)')adjl("Profile dimension:",40),prof_dim
-        write(6  ,'(3X,A40,I9)')adjl("Profile dimension:",40),prof_dim
-    else
-        write(ERROR_MESSAGE,'("Profile dimension is not between 1 and 3:",I16)') prof_dim
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-else
-    prof_dim = 3
-    write(iow,'(3X,A40)')adjl("Profile dimension not found.",40)
-    write(iow,'(3X,A40,I8)')adjl("It was set to the default value:",40),prof_dim
-    write(6  ,'(3X,A40)')adjl("Profile dimension not found.",40)
-    write(6  ,'(3X,A40,I8)')adjl("It was set to the default value:",40),prof_dim
-endif
-
-
-if (log_field_init_scheme) then
-    if (field_init_scheme==0) then
-        write(iow,'(3X,A34)')adjl("Field will be initialized to zero.",40)
-        write(6  ,'(3X,A34)')adjl("Field will be initialized to zero.",40)
-    elseif (field_init_scheme==1) then
-        write(iow,'(A43,A15)')adjl("Field will be read from file:",40),field_in_filename
-        write(6  ,'(A43,A15)')adjl("Field will be read from file:",40),field_in_filename
-    elseif (field_init_scheme==2) then
-        write(iow,'(A43)')adjl("Field: -kapa at Dir. BCs and 0 elsewhere.",43)
-        write(6  ,'(A43)')adjl("Field: -kapa at Dir. BCs and 0 elsewhere.",43)
-    else
-        write(ERROR_MESSAGE,'("Incorrect field initialization value. Choose between 1-3.",I16)') init_iter
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-endif
-if (.not.log_field_init_scheme) then
-    write(iow,'(A40)')adjl("Field will be initialized to zero.",40)
-    write(6  ,'(A40)')adjl("Field will be initialized to zero.",40)
-endif
-
-
-if (log_mumps_matrix_type) then
-    if (mumps_matrix_type == 0) then
-        write(iow,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40),"nonsymmetric (", mumps_matrix_type,")"
-        write(6  ,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40),"nonsymmetric (", mumps_matrix_type,")"
-    elseif (mumps_matrix_type == 1) then
-        write(iow,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40),"symmetric pos. def. (", mumps_matrix_type,")"
-        write(6  ,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40),"symmetric pos. def. (", mumps_matrix_type,")"
-    elseif (mumps_matrix_type == 2) then
-        write(iow,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40),"general symmetric(", mumps_matrix_type,")"
-        write(6  ,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40),"general symmetric(", mumps_matrix_type,")"
-    else
-        write(ERROR_MESSAGE,'("Incorrect MUMPS matrix type.",I16)') mumps_matrix_type
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-else
-    mumps_matrix_type = 0
-    write(iow,'(3X,A40)')adjl("MUMPS matrix type not detected.",40)
-    write(iow,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40),mumps_matrix_type
-    write(6  ,'(3X,A40)')adjl("MUMPS matrix type not detected.",40)
-    write(6  ,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40),mumps_matrix_type
-endif
-
-
-if (log_fraction_of_new_field) then
-    if (frac.ge.0 .and. frac.le.1) then
-        write(iow,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40),frac
-        write(6  ,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40),frac
-    else
-        write(ERROR_MESSAGE,'("Initial fraction of new field is negative or larger than unity:",E16.9)') frac
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-else
-    frac = 1.d0
-    write(iow,'(3X,A40)')adjl("No initial fraction of new field.",40)
-    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),frac
-    write(6  ,'(3X,A40)')adjl("No initial fraction of new field.",40)
-    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),frac
-endif
-
-
-if (log_maximum_error) then
-    if (max_error_tol.ge.0.d0) then
-        write(iow,'(3X,A40,E16.9)')adjl("Maximum tolerance error on field:",40),max_error_tol
-        write(6  ,'(3X,A40,E16.9)')adjl("Maximum tolerance error on field:",40),max_error_tol
-    else
-        write(ERROR_MESSAGE,'("Maximum tolerance error on field is negative:",E16.9)') max_error_tol
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-else
-    max_error_tol = 0.d0
-    write(iow,'(3X,A40)')adjl("Max field error not found",40)
-    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),max_error_tol
-    write(6  ,'(3X,A40)')adjl("Max field error not found.",40)
-    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),max_error_tol
-endif
-
-if (log_maximum_energy_error_tol) then
-    if (free_energy_error_tol.ge.0.d0) then
-        write(iow,'(3X,A40,E16.9)')adjl("Maximum tolerance error on energy:",40),free_energy_error_tol
-        write(6  ,'(3X,A40,E16.9)')adjl("Maximum tolerance error on energy:",40),free_energy_error_tol
-    else
-        write(ERROR_MESSAGE,'("Maximum tolerance error is negative:",E16.9)')free_energy_error_tol
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-else
-    free_energy_error_tol = 1.d-6
-    write(iow,'(3X,A40)')adjl("Max energy error tol not found",40)
-    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol
-    write(6  ,'(3X,A40)')adjl("Max energy error tol not found.",40)
-    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol
-endif
 
 write(iow,*)
 write(*,*)
@@ -1072,6 +1140,37 @@ else
     square_gradient = .false.
     write(iow,'(3X,A40,E16.9,A14)')adjl("Influence parameter not found. Auto:",45), k_gr_tilde, " [J*m^5/mol^2]"
     write(*  ,'(3X,A40,E16.9,A14)')adjl("Influence parameter not found. Auto:",45), k_gr_tilde, " [J*m^5/mol^2]"
+endif
+
+
+write(iow,*)
+write(*,*)
+write(iow,'(A85)')adjl('-------------------------------------SPATIAL MESH------------------------------------',85)
+write(*  ,'(A85)')adjl('-------------------------------------SPATIAL MESH------------------------------------',85)
+
+
+if (log_mesh_filename) then
+    inquire(file=mesh_filename, exist=file_exists)
+    if (.not.file_exists) then
+        write(ERROR_MESSAGE,'("Mesh file ",A16," does not exist!")')mesh_filename
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+        STOP
+    endif
+    write(iow,'(3X,A40,A16)')adjl("Reading mesh from file:",40),mesh_filename
+    write(6  ,'(3X,A40,A16)')adjl("Reading mesh from file:",40),mesh_filename
+else
+    mesh_filename = "./in.mesh"
+    write(iow,'(3X,A40)')adjl("Mesh input file not specified.",40)
+    write(iow,'(3X,A40,A16)')adjl("Reading default mesh file:",40),mesh_filename
+    write(6  ,'(3X,A40)')adjl("Mesh input file not specified.",40)
+    write(6  ,'(3X,A40,A16)')adjl("Reading default mesh file:",40),mesh_filename
+
+    inquire(file=mesh_filename, exist=file_exists)
+    if (.not.file_exists) then
+        write(ERROR_MESSAGE,'("Default mesh file ",A16," does not exist!")')mesh_filename
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+        STOP
+    endif
 endif
 
 return
