@@ -67,14 +67,14 @@ do kk = 1, num_gpoints
     E_stretching          =  E_stretching        + compute_stretching_energy(gnode_id, qmx_interp_mg, qgr_interp)
 enddo
 
-E_eos_f             = E_eos_f             * N_to_mN / (interf_area*A2_to_m2)
-E_eos_dfdrho        = E_eos_dfdrho        * N_to_mN / (interf_area*A2_to_m2)
-E_field             = E_field             * N_to_mN / (interf_area*A2_to_m2)
-E_solid             = E_solid             * N_to_mN / (interf_area*A2_to_m2)
-E_entropy_mx        = E_entropy_mx        * N_to_mN / (interf_area*A2_to_m2)
-E_entropy_gr        = E_entropy_gr        * N_to_mN / (interf_area*A2_to_m2)
-E_entropy_gr_normlz = E_entropy_gr_normlz * N_to_mN / (interf_area*A2_to_m2)
-E_stretching        = E_stretching        * N_to_mN / (interf_area*A2_to_m2)
+E_eos_f             = E_eos_f             * N_to_mN / (interf_area()*A2_to_m2)
+E_eos_dfdrho        = E_eos_dfdrho        * N_to_mN / (interf_area()*A2_to_m2)
+E_field             = E_field             * N_to_mN / (interf_area()*A2_to_m2)
+E_solid             = E_solid             * N_to_mN / (interf_area()*A2_to_m2)
+E_entropy_mx        = E_entropy_mx        * N_to_mN / (interf_area()*A2_to_m2)
+E_entropy_gr        = E_entropy_gr        * N_to_mN / (interf_area()*A2_to_m2)
+E_entropy_gr_normlz = E_entropy_gr_normlz * N_to_mN / (interf_area()*A2_to_m2)
+E_stretching        = E_stretching        * N_to_mN / (interf_area()*A2_to_m2)
 
 free_energy = E_eos_f + E_eos_dfdrho + E_entropy_mx + E_entropy_gr + E_entropy_gr_normlz
 

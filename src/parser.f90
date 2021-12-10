@@ -44,7 +44,7 @@ logical :: log_r_gpoint                    = .false.
 logical :: log_calc_delta_every            = .false.
 logical :: log_n_dirichlet_faces           = .false.
 logical :: log_n_nanopart_faces            = .false.
-logical :: log_interf_area                 = .false.
+!logical :: log_interf_area                 = .false.
 logical :: log_sigma_polymer               = .false.
 logical :: log_Hamaker_constant_of_polymer = .false.
 logical :: log_wall_distance               = .false.
@@ -108,9 +108,9 @@ do
         elseif (INDEX(line,"# num gr chains tol") > 0) then
             read(line,*) num_gr_chains_tol
             log_num_gr_chains_tol = .true.
-        elseif (INDEX(line,"# area") > 0) then
-            read(line,*) interf_area
-            log_interf_area = .true.
+        !elseif (INDEX(line,"# area") > 0) then
+        !    read(line,*) interf_area
+        !    log_interf_area = .true.
         elseif (INDEX(line,"# pol sigma") > 0) then
             read(line,*) sigma_pol
             log_sigma_polymer = .true.
@@ -971,18 +971,18 @@ write(iow,'(A85)')adjl('---------------------------------HAMAKER INTERACTIONS---
 write(*  ,'(A85)')adjl('---------------------------------HAMAKER INTERACTIONS---------------------------------',85)
 
 
-if (log_interf_area) then
-    if (interf_area>0) then
-        write(iow,'(3X,A40,E16.9,A13)')adjl("Interface area:",40),interf_area," [Angstrom^2]"
-        write(6  ,'(3X,A40,E16.9,A13)')adjl("Interface area:",40),interf_area," [Angstrom^2]"
-    else
-        write(ERROR_MESSAGE,'("Interface area is negative: ",E16.9," Angstrom^2")') interf_area
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
-else
-    ERROR_MESSAGE="Interface area was not detected."
-    call exit_with_error(1,1,1,ERROR_MESSAGE)
-endif
+!if (log_interf_area) then
+!    if (interf_area>0) then
+!        write(iow,'(3X,A40,E16.9,A13)')adjl("Interface area:",40),interf_area," [Angstrom^2]"
+!        write(6  ,'(3X,A40,E16.9,A13)')adjl("Interface area:",40),interf_area," [Angstrom^2]"
+!    else
+!        write(ERROR_MESSAGE,'("Interface area is negative: ",E16.9," Angstrom^2")') interf_area
+!        call exit_with_error(1,1,1,ERROR_MESSAGE)
+!    endif
+!else
+!    ERROR_MESSAGE="Interface area was not detected."
+!    call exit_with_error(1,1,1,ERROR_MESSAGE)
+!endif
 
 
 if (log_sigma_polymer) then

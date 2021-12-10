@@ -30,7 +30,7 @@ logical :: convergence = .false.
 
 real(8), allocatable, dimension(:) :: dphi2_dr2
 
-real(8) :: part_func = 0.d0, nch_gr = 0.d0
+real(8) :: part_func = 0.d0, nch_mx = 0.d0, nch_gr = 0.d0
 real(8) :: wa_max = 0.d0, wa_std_error = 0.d0, max_error = 200000.d0
 real(8) :: free_energy_prev = 1.d10, free_energy = 0.d0, free_energy_error = 1.d10
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -157,7 +157,7 @@ do iter = init_iter, iterations-1
             call interp_linear(1, ns_mx_ed+1, xs_mx_ed, qmx_final(:,ii), ns_gr_conv+1, xs_gr_conv, qmx_interp_mg(:,ii))
         enddo
 
-        !recompute the delta functions if they exceed
+        !recompute the delta functions if necessary
         if (grafted_ic_from_delta.eq.1) then
             if (calc_delta_every>0) then
                 if ((MOD(iter,calc_delta_every).eq.0 .and. (ABS(nch_gr-DBLE(num_gpoints))/DBLE(num_gpoints))>num_gr_chains_tol)) then
@@ -242,7 +242,9 @@ do iter = init_iter, iterations-1
     convergence = (max_error<=max_error_tol).or.(free_energy_error<=free_energy_error_tol)
 
     call export_field_bin(wa_mix, numnp, 0)
+
     if (export(export_field_bin_freq, iter, convergence)) call export_field_bin(wa_mix, numnp, iter)
+
     if ((MOD(iter,1).eq.0).or.convergence) call compute_energies(qmx_interp_mg, qgr_interp, phi_total, wa_new, Ufield, part_func, num_gpoints, gpid, free_energy)
 
     call export_computes(iter, convergence)
@@ -268,12 +270,16 @@ endif
 
 write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 free_energy
 write(6  ,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 free_energy
+write(iow,'(3X,A40,E16.9)')adjl("Interface area (A2):",40),                 interf_area()
+write(6  ,'(3X,A40,E16.9)')adjl("Interface area (A2):",40),                 interf_area()
 write(iow,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), part_func
 write(6  ,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), part_func
-write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             nch_gr/interf_area
-write(6  ,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             nch_gr/interf_area
+write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             nch_gr/interf_area()
+write(6  ,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             nch_gr/interf_area()
 write(iow,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            nch_gr
 write(6  ,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            nch_gr
+write(iow,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             nch_mx
+write(6  ,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             nch_mx
 
 t_final = get_sys_time()
 write(6,'(3X,A40,I16)')adjl('Run duration:',40), t_final - t_init
