@@ -10,8 +10,14 @@ use constants, only: pi
 implicit none
 !--------------------------------------------------------------------!
 integer                              :: all_el, nel, ndm, numnp, numel, max_el_node
+integer                              :: nen_type_vertex, numel_type_vertex
+integer                              :: nen_type_edge, numel_type_edge
+integer                              :: nen_type_face, numel_type_face
 integer, allocatable, dimension(:)   :: con_l2, n_el_node
-integer, allocatable, dimension(:,:) :: ix, el_node
+integer, allocatable, dimension(:,:) :: global_node_id_type_vertex
+integer, allocatable, dimension(:,:) :: global_node_id_type_edge
+integer, allocatable, dimension(:,:) :: global_node_id_type_face
+integer, allocatable, dimension(:,:) :: global_node_id_type_domain, el_node
 
 logical, dimension(3,2)              :: is_dir_face
 logical, allocatable, dimension(:)   :: node_in_q0_face
@@ -21,7 +27,6 @@ real(8), dimension(3)                :: box_lo, box_hi, box_len
 real(8), parameter                   :: dx = 1.d-01
 real(8), parameter                   :: dy = 1.d-01
 real(8), parameter                   :: dz = 1.d-01
-!real(8)                              :: interf_area
 !--------------------------------------------------------------------!
 contains
 real(8) function interf_area()
@@ -37,7 +42,6 @@ real(8) function interf_area()
    enddo
    do ii = 1, n_nanopart_faces
        interf_area = interf_area + 4.d0*pi*(radius_np_eff(ii)-wall_distance)**2
-       !OLD: interf_area = interf_area + 4.d0*pi*(radius_np_eff(ii)-4.d0)**2 * 4.d0
    enddo
 
 return

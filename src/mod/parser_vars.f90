@@ -21,6 +21,12 @@ integer :: export_field_bin_freq, export_brush_thickness_freq, export_chains_per
 logical :: square_gradient
 
 ! Domain
+integer               :: prof_dim
+integer               :: periodicity
+integer, dimension(6) :: periodic_face_id
+logical               :: domain_is_periodic
+logical, dimension(3) :: periodic_axis_id
+real(8)               :: r_gpoint, bin_thickness
 
 ! Dirichlet boundaries
 integer                              :: n_dirichlet_faces, n_nanopart_faces

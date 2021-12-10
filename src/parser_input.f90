@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine parser()
+subroutine parser_input()
 !--------------------------------------------------------------------------------!
 use parser_vars
 use write_helper
@@ -14,8 +14,9 @@ use iofiles
 implicit none
 !--------------------------------------------------------------------------------!
 character(100) :: line
+character(1)   :: axis
 
-integer :: Reason, ii, id
+integer :: Reason, ii, id, face1, face2
 
 logical :: log_mesh_filename               = .false.
 logical :: log_gp_filename                 = .false.
@@ -47,7 +48,7 @@ logical :: log_r_gpoint                    = .false.
 logical :: log_calc_delta_every            = .false.
 logical :: log_n_dirichlet_faces           = .false.
 logical :: log_n_nanopart_faces            = .false.
-!logical :: log_interf_area                 = .false.
+logical :: log_periodicity                 = .false.
 logical :: log_sigma_polymer               = .false.
 logical :: log_Hamaker_constant_of_polymer = .false.
 logical :: log_wall_distance               = .false.
@@ -66,7 +67,15 @@ logical :: log_export_brush_thickness_freq = .false.
 logical :: log_export_chains_per_area_freq = .false.
 logical :: log_export_ads_free_freq        = .false.
 !--------------------------------------------------------------------------------!
-!parse input file to retrieve simulation parameters
+! Initialize periodicity arrays
+do ii = 1, 3
+    periodic_axis_id = .false.
+enddo
+do ii = 1, 6
+    periodic_face_id = -1
+enddo
+
+! Parse input file to retrieve simulation parameters
 call GET_COMMAND_ARGUMENT(1,input_filename)
 
 if (input_filename == '') input_filename = "./in.input"
@@ -123,9 +132,6 @@ do
         elseif (INDEX(line,"# num gr chains tol") > 0) then
             read(line,*) num_gr_chains_tol
             log_num_gr_chains_tol = .true.
-        !elseif (INDEX(line,"# area") > 0) then
-        !    read(line,*) interf_area
-        !    log_interf_area = .true.
         elseif (INDEX(line,"# pol sigma") > 0) then
             read(line,*) sigma_pol
             log_sigma_polymer = .true.
@@ -260,13 +266,35 @@ do
                 A_np = A_np * 1e-20
                 log_n_nanopart_faces = .true.
             endif
+        elseif (INDEX(line,"# periodicity") > 0) then
+            read(line,*) periodicity
+            do ii = 1, periodicity
+                read(256,*) axis, face1, face2
+                if (axis=='x') then
+                    periodic_axis_id(1) = .true.
+                    periodic_face_id(1) = face1
+                    periodic_face_id(2) = face2
+                elseif (axis=='y') then
+                    periodic_axis_id(2) = .true.
+                    periodic_face_id(3) = face1
+                    periodic_face_id(4) = face2
+                elseif (axis=='z') then
+                    periodic_axis_id(3) = .true.
+                    periodic_face_id(5) = face1
+                    periodic_face_id(6) = face2
+                else
+                    write(ERROR_MESSAGE,'("Periodicity axis is not valid. Must be x, y or z.")')
+                    call exit_with_error(1,1,1,ERROR_MESSAGE)
+                endif
+            enddo
+            log_periodicity = .true.
         endif
    endif
 enddo
 
 close(256)
 
-!check input parameters
+! Check input parameters
 write(iow,'(A85)')adjl('-----------------------------------SYSTEM PARAMETERS---------------------------------',85)
 write(*  ,'(A85)')adjl('-----------------------------------SYSTEM PARAMETERS---------------------------------',85)
 
@@ -339,6 +367,7 @@ endif
 if (mx_exist.eq.1) then
     if (log_chainlen_mx) then
         if (chainlen_mx>0) then
+
             chainlen_mx_max = chainlen_mx
         else
             write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') chainlen_mx
@@ -1033,24 +1062,39 @@ else
 endif
 
 
+if (log_periodicity.and.periodicity>0) then
+    domain_is_periodic = .true.
+
+    if (periodic_axis_id(1)) then
+        write(iow,'(3X,A40)')adjl("The domain is periodic along the x-axis",40)
+        write(iow,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(1), periodic_face_id(2)
+        write(6  ,'(3X,A40)')adjl("The domain is periodic along the x-axis",40)
+        write(6  ,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(1), periodic_face_id(2)
+    endif
+    if (periodic_axis_id(2)) then
+        write(iow,'(3X,A40)')adjl("The domain is periodic along the y-axis",40)
+        write(iow,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(3), periodic_face_id(4)
+        write(6  ,'(3X,A40)')adjl("The domain is periodic along the y-axis",40)
+        write(6  ,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(3), periodic_face_id(4)
+    endif
+    if (periodic_axis_id(3)) then
+        write(iow,'(3X,A40)')adjl("The domain is periodic along the z-axis",40)
+        write(iow,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(5), periodic_face_id(6)
+        write(6  ,'(3X,A40)')adjl("The domain is periodic along the z-axis",40)
+        write(6  ,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(5), periodic_face_id(6)
+    endif
+else
+    domain_is_periodic = .false.
+    write(iow,'(3X,A38)')adjl("The domain is not periodic.",40)
+    write(6  ,'(3X,A38)')adjl("The domain is not periodic.",40)
+endif
+
+
+
 write(iow,*)
 write(*,*)
 write(iow,'(A85)')adjl('---------------------------------HAMAKER INTERACTIONS---------------------------------',85)
 write(*  ,'(A85)')adjl('---------------------------------HAMAKER INTERACTIONS---------------------------------',85)
-
-
-!if (log_interf_area) then
-!    if (interf_area>0) then
-!        write(iow,'(3X,A40,E16.9,A13)')adjl("Interface area:",40),interf_area," [Angstrom^2]"
-!        write(6  ,'(3X,A40,E16.9,A13)')adjl("Interface area:",40),interf_area," [Angstrom^2]"
-!    else
-!        write(ERROR_MESSAGE,'("Interface area is negative: ",E16.9," Angstrom^2")') interf_area
-!        call exit_with_error(1,1,1,ERROR_MESSAGE)
-!    endif
-!else
-!    ERROR_MESSAGE="Interface area was not detected."
-!    call exit_with_error(1,1,1,ERROR_MESSAGE)
-!endif
 
 
 if (log_sigma_polymer) then
@@ -1175,4 +1219,4 @@ endif
 
 return
 !--------------------------------------------------------------------------------!
-end subroutine parser
+end subroutine parser_input

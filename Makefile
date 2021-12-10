@@ -61,8 +61,8 @@ MODULES=$(OBJDIR)/parser_vars.o\
 	$(OBJDIR)/delta.o\
 	$(OBJDIR)/hist.o\
 
-OBJECTS=$(OBJDIR)/parser.o\
-	$(OBJDIR)/import_mesh.o\
+OBJECTS=$(OBJDIR)/parser_input.o\
+	$(OBJDIR)/parser_mesh.o\
 	$(OBJDIR)/tools_histogram.o\
 	$(OBJDIR)/tools_matinv4.o\
 	$(OBJDIR)/solver_mumps.o\
@@ -89,7 +89,6 @@ OBJECTS=$(OBJDIR)/parser.o\
 	$(OBJDIR)/fem_tetshpfun.o\
 	$(OBJDIR)/export_computes.o\
 	$(OBJDIR)/export_phi_indiv.o\
-        $(OBJDIR)/export_ads_free.o\
 	$(OBJDIR)/export_q.o\
 	$(OBJDIR)/export_delta.o\
 	$(OBJDIR)/export_field_bin.o\
@@ -99,6 +98,7 @@ OBJECTS=$(OBJDIR)/parser.o\
 	$(OBJDIR)/export_brush.o\
 	$(OBJDIR)/export_brush99.o\
 	$(OBJDIR)/export_chains_area.o\
+        $(OBJDIR)/export_ads_free.o\
         $(OBJDIR)/compute_phi_indiv.o\
         $(OBJDIR)/compute_phi_end_middle_nodal.o\
 	$(OBJDIR)/compute_part_func_mx.o\
@@ -130,12 +130,12 @@ clean:
 	$(RM) $(OBJDIR)/*.o $(OBJDIR)/*.mod
 
 cleaner:
-	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/RuSseL* $(RUNDIR)/*.out.txt $(RUNDIR)/*out.bin $(RUNDIR)/fort.*
+	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/RuSseL* $(RUNDIR)/o.* $(RUNDIR)/d.* $(RUNDIR)/e.* $(RUNDIR)/*out.bin $(RUNDIR)/fort.*
 
 #-----------------------------------------------------------RUN TESTS TO VERIFY CHANGES-----------------------------------------------------------#
 test:
 	./test_integrity/test_integrity.sh
 
 cleantest:
-	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/RuSseL* $(RUNDIR)/*.out.txt $(RUNDIR)/*out.bin $(RUNDIR)/fort.* $(RUNDIR)/field.in.bin $(RUNDIR)/LOG*
+	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/RuSseL* $(RUNDIR)/o.* $(RUNDIR)/d.* $(RUNDIR)/e.* $(RUNDIR)/*out.bin $(RUNDIR)/fort.* $(RUNDIR)/in.field.bin $(RUNDIR)/LOG*
 ###################################################################################################################################################
