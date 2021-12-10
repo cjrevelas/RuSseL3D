@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 real(8) function fem_interpolation(nodeId, x_interp, y_interp, z_interp, uu)
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 use geometry, only : numnp, ndm, nel, el_node, ix, xc, n_el_node

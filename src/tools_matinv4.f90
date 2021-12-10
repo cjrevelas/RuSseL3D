@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 pure function tools_matinv4(A) result(B)
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 real(8), intent(in), dimension(4,4) :: A !matrix

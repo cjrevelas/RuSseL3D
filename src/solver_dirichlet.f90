@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine solver_dirichlet(ds, mumps_matrix_type, node_in_q0_face)
 !------------------------------------------------------------------------------------------------------!
 use kcw,       only: F_m, A_m, NNZ

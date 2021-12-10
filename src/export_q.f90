@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine export_q(ns, q_final, q_type)
 !--------------------------------------------------------------------!
 use geometry,     only: numnp, xc, ndm
@@ -9,7 +13,7 @@ implicit none
 integer, intent(in) :: ns
 integer             :: time_step, ii, jj
 
-character(4)  :: q_type
+character(2)  :: q_type
 character(20) :: file_name
 
 real(8), intent(in), dimension(ns+1,numnp) :: q_final
@@ -17,7 +21,7 @@ real(8)                                    :: iq_final
 !--------------------------------------------------------------------!
 write(6,'(2X,A23,A5,A8)')"Exporting propagator of",q_type," chains."
 
-write(file_name,'("o.q",A4,".out.txt")') q_type
+write(file_name,'("o.q",A2)') q_type
 
 open(unit=363, file = file_name)
 do ii = 1, numnp

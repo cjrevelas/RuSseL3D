@@ -1,6 +1,10 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine export_delta(numnp, qmx_interp_mg, ns_gr_conv, num_gpoints, gpid, delta_numer, gp_init_value, volnp)
 !------------------------------------------------------------------------------------------------------!
-use geometry,     only: box_lo, box_hi
+use geometry,     only: box_lo, box_hi, xc, ndm
 use iofiles,      only: gp_filename
 use write_helper, only: adjl
 use constants,    only: m3_to_A3
@@ -10,7 +14,7 @@ implicit none
 !------------------------------------------------------------------------------------------------------!
 integer, intent(in)                         :: numnp, num_gpoints, ns_gr_conv
 integer, intent(in), dimension(num_gpoints) :: gpid
-integer                                     :: ii, iog
+integer                                     :: ii, iog, jj
 
 real(8), intent(in), dimension(num_gpoints)        :: gp_init_value
 real(8), intent(in), dimension(numnp)              :: volnp
@@ -31,15 +35,14 @@ enddo
 write(iog,'(A28)') "ITEM: ATOMS id type xu yu zu"
 
 do ii = 1, num_gpoints
-    !write(iog,'(I10,2(1X,E20.9),3(1X,F20.9))') gpid(ii), gp_init_value(ii), delta_numer(ii), (xc(jj,gpid(ii)),jj=1,ndm)
-    write(iog,'(I10,2(1X,E20.9))') gpid(ii), gp_init_value(ii), delta_numer(ii)!, (xc(jj,gpid(ii)),jj=1,ndm)
+    write(iog,'(I10,2(1X,E20.9),3(1X,F20.9))') gpid(ii), gp_init_value(ii), delta_numer(ii), (xc(jj,gpid(ii)),jj=1,ndm)
 enddo
 close(iog)
 
 open(unit=5, file = delta_out)
-write(5,'(A10,3A20)') "gpid", "qmx(rgi,Ng)", "Numerical delta", "Analytic delta"
+write(5,'(4(2X,A16))') "gpid", "qmx(rgi,Ng)", "Numerical delta", "Analytic delta"
 do ii = 1, num_gpoints
-    write(5,'(I10,3E20.9)') gpid(ii), qmx_interp_mg(ns_gr_conv+1,gpid(ii)), delta_numer(ii), 1.d0 / volnp(gpid(ii)) * m3_to_A3
+    write(5,'(2X,I16,3(2X,E16.9))') gpid(ii), qmx_interp_mg(ns_gr_conv+1,gpid(ii)), delta_numer(ii), 1.d0 / volnp(gpid(ii)) * m3_to_A3
 enddo
 close(5)
 !------------------------------------------------------------------------------------------------------!

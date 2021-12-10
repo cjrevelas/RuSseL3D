@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine init_delta()
 !-----------------------------------------------------------------------------------------------------------!
 use geometry,     only: numnp
@@ -14,14 +18,7 @@ integer :: i1, iog
 if (gr_exist.eq.1) then
     iog = 19 
 
-    inquire(file = gp_filename, exist = file_exists)
-
-    if (file_exists) then
-        open(unit=iog, file=gp_filename)
-    else
-        write(ERROR_MESSAGE,'("File ",A15," does not exist!")') gp_filename
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
+    open(unit=iog, file=gp_filename)
 
     read(iog,*)
     read(iog,*)
@@ -50,7 +47,6 @@ if (gr_exist.eq.1) then
     enddo
 
     close(iog)
-
 else
     num_gpoints   = 0
     allocate(gpid(num_gpoints))

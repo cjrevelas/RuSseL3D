@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 real(8) function compute_stretching_energy(gnode_id, qmx, qgr)
 !-------------------------------------------------------------------------------------------------!
 use constants,   only: A3_to_m3

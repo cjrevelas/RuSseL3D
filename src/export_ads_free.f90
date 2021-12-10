@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine export_ads_free(node_in_q0_face, adsorbed)
 !-----------------------------------------------------------------------------------------------------------------------!
 use parser_vars,  only: mumps_matrix_type, Rg2_per_mon_mx, chainlen_mx, ns_mx_ed, ns_mx_conv 
@@ -56,11 +60,13 @@ call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qfree_in
 call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qads, qads, phi_loop)
 call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qfree_interp, qads, phi_tail)
 
-write(123,'(9A19)') "kk", 'x', 'y', 'z', "phi_free", "phi_ads", "phi_loop", "phi_tail", "phi_mx"
+open(unit=125, file="o.ads_free_mx")
+write(125,'(9(2X,A16))') "kk", 'x', 'y', 'z', "phi_free", "phi_ads", "phi_loop", "phi_tail", "phi_mx"
 do kk = 1, numnp
     phi_ads(kk) = phia_mx(kk) - phi_free(kk)
-    write(123,'(I19,8(E19.9E3))') kk, xc(1,kk), xc(2,kk), xc(3,kk), phi_free(kk), phi_ads(kk), phi_loop(kk), phi_tail(kk), phia_mx(kk)
+    write(125,'(2X,I16,8(2X,E19.9E2))') kk, xc(1,kk), xc(2,kk), xc(3,kk), phi_free(kk), phi_ads(kk), phi_loop(kk), phi_tail(kk), phia_mx(kk)
 enddo
+close(125)
 
 return
 !-----------------------------------------------------------------------------------------------------------------------!

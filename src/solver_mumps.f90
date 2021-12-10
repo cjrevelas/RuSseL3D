@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine solver_mumps(mumps_matrix_type)
 !--------------------------------------------------------------------------!
 use kcw,          only: A_m, rdiag1, NNZ

@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine init_chain_contour(contour_discr, chainlen, xs_crit, ns, ds_ave, ds, xs, coeff)
 !------------------------------------------------------------------------------------------------------!
 use constants, only: pi

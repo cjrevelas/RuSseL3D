@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine is_node_inside_el(xl, x_test, y_test, z_test, lint, sv, volel, inside, shp, ndm, nel)
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 implicit none
@@ -17,7 +21,7 @@ real(8)                                 :: temp_x, temp_y, temp_z, vol_test, xsj
 inside = 0
 k      = 0
 
-!open(unit = 60, file = 'vol_debug.txt')
+!open(unit = 60, file = "d.elem_vol")
 do p = 1, 4
     vol_test = 0.d00
 

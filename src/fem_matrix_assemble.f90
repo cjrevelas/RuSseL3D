@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine fem_matrix_assemble(Rg2_per_mon, wa)
 !-----------------------------------------------------------------------------------------------------------!
 use kcw,      only: F_m
@@ -79,9 +83,9 @@ enddo
 
 #ifdef DEBUG_OUTPUTS
 open(unit=400, file = matrix_assembly)
-write(400,'(A15,2A20)') "F_m%k","F_m%c","F_m%w"
+write(400,'(3(2X,A16))') "F_m%k","F_m%c","F_m%w"
 do i = 1, all_el
-    write(400,'(3(E20.9))')F_m%k(i), F_m%c(i), F_m%w(i)
+    write(400,'(3(2X,E16.9))')F_m%k(i), F_m%c(i), F_m%w(i)
 enddo
 close(400)
 #endif

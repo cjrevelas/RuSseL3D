@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine interp_lagrange(m, data_num, t_data, p_data, interp_num, t_interp, p_interp)
 implicit none
 

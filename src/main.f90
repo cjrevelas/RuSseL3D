@@ -1,12 +1,7 @@
-!----------------------------------------------------------------------------------------------------------------------------------!
-!----------------------------------------------------------------------------------------------------------------------------------!
-!                 THIS IS THE FINITE ELEMENT CODE WHICH RUNS A SELF-CONSISTENT FIELD SIMULATION IN THREE DIMENSIONS.               !
-!          IT APPLIES AN ANDERSON MIXING RULE WITH RESPECT TO THE FIELD IN ORDER TO CONVERGE TO A SELF-CONSISTENT SOLUTION.        !
-!      IT OFFERS THE ABILITY TO WORK WITH BOTH MATRIX AND GRAFTED CHAINS IN THE PRESENCE OF PLANAR SOLID SURFACES OR NANOPARTICLES.!
-!                                                      DATE: 01/07/2019                                                            !
-!                         AUTHORS: CONSTANTINOS J. REVELAS, ARISTOTELIS P. SGOUROS, APOSTOLIS T. LAKKAS                            !
-!----------------------------------------------------------------------------------------------------------------------------------!
-!----------------------------------------------------------------------------------------------------------------------------------!
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 program RuSseL
 !----------------------------------------------------------------------------------------------------------------------------------!
 use parser_vars
@@ -88,9 +83,6 @@ close(ioe)
 !                                             INITIALIZATION SECTION                                           !
 !**************************************************************************************************************!
 call parser
-call init_scf_params
-if ((mx_exist.eq.1).and.(contour_discr_mx.eq.contour_hybrid)) call get_contour_step(ds_ave_mx_ed, xs_crit_mx, chainlen_mx_max, ns_mx_ed)
-if ((gr_exist.eq.1).and.(contour_discr_gr.eq.contour_hybrid)) call get_contour_step(ds_ave_gr_ed, xs_crit_gr, chainlen_gr, ns_gr_ed)
 call import_mesh
 call init_arrays
 
@@ -217,6 +209,7 @@ do iter = init_iter, iterations-1
     enddo
 
     if (mx_exist.eq.1) call compute_part_func_mx(numnp, ns_mx_conv, qmx_interp_mm, part_func)
+    if (mx_exist.eq.1) call compute_number_of_chains(numnp, chainlen_mx, rho_mol_bulk, phia_mx, nch_mx)
     if (gr_exist.eq.1) call compute_number_of_chains(numnp, chainlen_gr, rho_mol_bulk, phia_gr, nch_gr)
 
     do kk = 1, numnp
@@ -261,6 +254,7 @@ enddo
 !**************************************************************************************************************!
 write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
 write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
+
 
 write(iow,*)
 write(*,*)

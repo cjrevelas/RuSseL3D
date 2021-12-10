@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine export_brush(num_gpoints, numnp, phia_gr, phia_gr_indiv, volnp, file_name, dist_from_surf)
 !-----------------------------------------------------------------------------------------------------------!
 use write_helper, only : adjl
@@ -32,7 +36,7 @@ do ii = 1, num_gpoints
         denom         = denom + phia_gr_indiv(kk,ii) * volnp(kk)
     enddo
     msq_brush_of_chain(ii) = SQRT(numer / denom)
-    write(120,'(I19,F19.9)') ii, msq_brush_of_chain(ii)
+    write(120,'(I8,2X,E16.9E3)') ii, msq_brush_of_chain(ii)
 enddo
 
 !compute average
@@ -56,9 +60,9 @@ do kk = 1, numnp
     denom         = denom + phia_gr(kk) * volnp(kk)
 enddo
 msq_brush_all = SQRT(numer / denom)
-write(120,'(A19,F19.9)') "mean",  msq_brush_of_chain_ave
-write(120,'(A19,F19.9)') "stdev", msq_brush_of_chain_std
-write(120,'(A19,F19.9)') "all",   msq_brush_all
+write(120,'(A8,2X,E16.9E3)') "mean",  msq_brush_of_chain_ave
+write(120,'(A8,2X,E16.9E3)') "stdev", msq_brush_of_chain_std
+write(120,'(A8,2X,E16.9E3)') "all",   msq_brush_all
 close(120)
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine export_brush

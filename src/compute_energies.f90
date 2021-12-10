@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine compute_energies(qmx_interp_mg, qgr_interp, phi_total, wa, Ufield, part_func, num_gpoints, gpid, free_energy)
 !-------------------------------------------------------------------------------------------------!
 use eos,         only: eos_ff, eos_df_drho
@@ -76,15 +80,15 @@ E_stretching        = E_stretching        * N_to_mN / (interf_area*A2_to_m2)
 free_energy = E_eos_f + E_eos_dfdrho + E_entropy_mx + E_entropy_gr + E_entropy_gr_normlz
 
 open(unit=837, file = energy_terms)
-write(837,'(9A20)')     "E_ff", "E_dfdrho", "E_entropy_mx", "E_entropy_gr", "E_entropy_gr_norm", "E_total", "E_stretch", "E_w", "E_Us"
-write(837,'(9(E20.9E2))')E_eos_f, E_eos_dfdrho, E_entropy_mx, E_entropy_gr, E_entropy_gr_normlz, free_energy, E_stretching, E_field, E_solid
+write(837,'(9(2X,A16))')     "E_ff", "E_dfdrho", "E_entropy_mx", "E_entr_gr", "E_entr_gr_norm", "E_total", "E_stretch", "E_w", "E_Us"
+write(837,'(9(2X,E16.9E2))')E_eos_f, E_eos_dfdrho, E_entropy_mx, E_entropy_gr, E_entropy_gr_normlz, free_energy, E_stretching, E_field, E_solid
 
 if (num_gpoints.ne.0) then
     write(837,*)
-    write(837,'(4A20)')  "id", "qmx(ns)", "E_entropy_gp", "E_entropy_gp_norm"
+    write(837,'(4(2X,A16))')  "id", "qmx(ns)", "E_entr_gp", "E_entr_gp_norm"
     do kk = 1, num_gpoints
         gnode_id   = gpid(kk)
-        write(837,'(I20,3(E20.9E2))') gnode_id, qmx_interp_mg(ns_gr_conv+1,gnode_id), term4_gpoint(kk), term4_norm_gpoint(kk)
+        write(837,'(2X,I16,3(2X,E16.9E2))') gnode_id, qmx_interp_mg(ns_gr_conv+1,gnode_id), term4_gpoint(kk), term4_norm_gpoint(kk)
     enddo
 endif
 

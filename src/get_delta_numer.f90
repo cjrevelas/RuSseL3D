@@ -1,5 +1,8 @@
-subroutine get_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, wa, &
-     &                num_gpoints, gpid, delta_numer, volnp)
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
+subroutine get_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, wa, num_gpoints, gpid, delta_numer, volnp)
 !------------------------------------------------------------------------------------------------------!
 use geometry,     only: node_in_q0_face
 use parser_vars,  only: ns_gr_conv, ns_gr_ed, chainlen_gr, mumps_matrix_type, rg2_per_mon_gr, rho_mol_bulk
@@ -42,13 +45,12 @@ do ii = 1, num_gpoints
     qgr       = 0.d0
     qgr_final = 0.d0
 
-    initValue = delta_anal(ii) * chainlen_gr &
-                               * 1.d0 / (qmx_interp_mg(ns_gr_conv+1,gpid(ii)) * (rho_mol_bulk * n_avog))
+    initValue = delta_anal(ii) * chainlen_gr * 1.d0 / (qmx_interp_mg(ns_gr_conv+1,gpid(ii)) * (rho_mol_bulk * n_avog))
 
     qgr(1,gpid(ii))       = initValue
     qgr_final(1,gpid(ii)) = initValue
 
-    write(6, '(2x,A19,I7,A3)', advance='no') "Grafting point id: ", gpid(ii), " ->"
+    write(6, '(2X,A19,I7,A3)', advance='no') "Grafting point id: ", gpid(ii), " ->"
     call solver_edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final, node_in_q0_face)
 
     do jj = 1, numnp

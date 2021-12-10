@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine get_node_volume(volnp, node)
 !--------------------------------------------------------------------!
 use geometry,     only: ndm, nel, numnp, el_node, ix, xc, n_el_node

@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 subroutine export_brush99(cell_of_np, num_gpoints, numnp, file_name, phia_gr, phia_gr_indiv, volnp, lbin, nbin)
 !-----------------------------------------------------------------------------------------------------------!
 use write_helper, only : adjl

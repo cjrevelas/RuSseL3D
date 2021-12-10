@@ -1,3 +1,7 @@
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
+
 #ifdef __DO_NOT_PREPROCESS_DOC__
 ! Hash table implementation imitating to GCC STL (with singly linked list).
 ! DO NOT COMPILE THIS TEMPLATE FILE DIRECTLY.
