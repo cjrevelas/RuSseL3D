@@ -39,19 +39,19 @@ do ii = 1, num_gpoints
     write(120,'(I8,2X,E16.9E3)') ii, msq_brush_of_chain(ii)
 enddo
 
-!compute average
+! Compute average
 do ii = 1, num_gpoints
     msq_brush_of_chain_ave = msq_brush_of_chain_ave + msq_brush_of_chain(ii)
 enddo
 msq_brush_of_chain_ave = msq_brush_of_chain_ave / REAL(num_gpoints)
 
-!compute stdev
+! Compute stdev
 do ii = 1, num_gpoints
     msq_brush_of_chain_std = msq_brush_of_chain_std + (msq_brush_of_chain(ii) - msq_brush_of_chain_ave)**2
 enddo
 msq_brush_of_chain_std = SQRT(msq_brush_of_chain_std / REAL(num_gpoints))
 
-!find the brush thickness from the total phi_gr
+! Find the brush thickness from the total phi_gr
 numer = 0.d0
 denom = 0.d0
 do kk = 1, numnp

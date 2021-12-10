@@ -56,9 +56,9 @@ endif
 
 flag_continue = .true.
 
-!the slaves will enter the mumps subroutine until they receive a stop signal from master proc
+! The slave processes will enter the mumps subroutine until they receive a stop signal from master proc
 if (.not.root) then
-    !receive the matrix type from root
+    ! Receive the matrix type from root
     call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
     do while (.true.)
         call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
@@ -75,15 +75,15 @@ endif
 iow = 10
 open(unit=iow, file = logfile)
 
-!initialize the error log
+! Initialize the error log
 ioe = 11
 open(unit=ioe, file = errorfile, status='replace')
 close(ioe)
 !**************************************************************************************************************!
 !                                             INITIALIZATION SECTION                                           !
 !**************************************************************************************************************!
-call parser
-call import_mesh
+call parser_input
+call parser_mesh
 call init_arrays
 
 do ii = 1, numnp
@@ -157,7 +157,7 @@ do iter = init_iter, iterations-1
             call interp_linear(1, ns_mx_ed+1, xs_mx_ed, qmx_final(:,ii), ns_gr_conv+1, xs_gr_conv, qmx_interp_mg(:,ii))
         enddo
 
-        !recompute the delta functions if necessary
+        ! Recompute the delta functions if necessary
         if (grafted_ic_from_delta.eq.1) then
             if (calc_delta_every>0) then
                 if ((MOD(iter,calc_delta_every).eq.0 .and. (ABS(nch_gr-DBLE(num_gpoints))/DBLE(num_gpoints))>num_gr_chains_tol)) then
@@ -285,7 +285,7 @@ t_final = get_sys_time()
 write(6,'(3X,A40,I16)')adjl('Run duration:',40), t_final - t_init
 
 #ifdef USE_MPI
-!root will send a stop signal to the slaves
+! Root will send a stop signal to the slave processes
 if (root) then
     flag_continue = .false.
     call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)

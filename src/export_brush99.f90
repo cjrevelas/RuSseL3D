@@ -29,7 +29,7 @@ write(6,'(2X,A40)')adjl("Exporting 99% brush thickness.",40)
 
 allocate(mass_layer(nbin))
 open (unit=120, file = file_name)
-!find the brush thickness from the total phi_gr
+! Find the brush thickness from the total phi_gr
 do jj = 1, num_gpoints
     mass_layer = 0.d0
     mass_total = 0.d0
@@ -51,19 +51,19 @@ do jj = 1, num_gpoints
     write(120,'(I8,2X,E16.9E3)') jj, brush99_of_chain(jj)
 enddo
 
-!compute average
+! Compute average
 do ii = 1, num_gpoints
     brush99_of_chain_ave = brush99_of_chain_ave + brush99_of_chain(ii)
 enddo
 brush99_of_chain_ave = brush99_of_chain_ave / REAL(num_gpoints)
 
-!compute stdev
+! Compute stdev
 do ii = 1, num_gpoints
     brush99_of_chain_std = brush99_of_chain_std + (brush99_of_chain(ii) - brush99_of_chain_ave)**2
 enddo
 brush99_of_chain_std = SQRT(brush99_of_chain_std / REAL(num_gpoints))
 
-!find the brush thickness from the total phi_gr
+! Find the brush thickness from the total phi_gr
 mass_layer = 0.d0
 mass_total = 0.d0
 do kk = 1, numnp

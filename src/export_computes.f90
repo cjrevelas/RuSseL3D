@@ -31,7 +31,7 @@ if (export(export_phi_gen_freq, iter, convergence)) call export_phi_nodal(phia_m
 if (export(export_field_freq, iter, convergence))   call export_field(wa, wa_new, wa_mix)
 
 if (export(export_phi_gen_freq, iter, convergence)) then
-    !planar surfaces
+    ! Planar surfaces
     do mm = 1, 3
         do nn = 1, 2
             if (is_dir_face(mm,nn)) then
@@ -42,7 +42,7 @@ if (export(export_phi_gen_freq, iter, convergence)) then
         enddo
     enddo
 
-    !spherical nanoparticles
+    ! Spherical nanoparticles
     do mm = 1, n_nanopart_faces
         file_name = ""
         write(file_name,'("o.phi_smear_np",I1)') mm
@@ -53,7 +53,7 @@ endif
 if (mx_exist.eq.1) then
     if (export(export_phi_gen_freq, iter, convergence))     call compute_phi_end_middle_nodal(ns_mx_ed, qmx_final, qmx_final, "mx", numnp, xc)
     if (export(export_propagators_freq, iter, convergence)) call export_q(ns_mx_ed, qmx_final, "mx")
-    !planar surfaces
+    ! Planar surfaces
     do mm = 1, 3
         do nn = 1, 2
             if (is_dir_face(mm,nn)) then
@@ -71,7 +71,7 @@ if (mx_exist.eq.1) then
         enddo
     enddo
 
-    !spherical nanoparticles
+    ! Spherical nanoparticles
     do mm = 1, n_nanopart_faces
         if (export(export_chains_per_area_freq, iter, convergence)) then
             file_name = ""
@@ -103,7 +103,7 @@ if (gr_exist.eq.1) then
         call export_phi_indiv(num_gpoints, numnp, xc, phia_gr_indiv)
     endif
 
-    !planar surfaces
+    ! Planar surfaces
     do mm = 1, 3
         do nn = 1, 2
             if (is_dir_face(mm,nn)) then
@@ -124,7 +124,7 @@ if (gr_exist.eq.1) then
         enddo
     enddo
 
-    !spherical nanoparticles
+    ! Spherical nanoparticles
     do mm = 1, n_nanopart_faces
         if (export(export_brush_thickness_freq, iter, convergence)) then
             file_name = ""

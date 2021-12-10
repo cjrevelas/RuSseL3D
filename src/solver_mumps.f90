@@ -21,13 +21,13 @@ type(DMUMPS_STRUC) :: mumps_par
 integer, intent(in) :: mumps_matrix_type
 integer             :: i, i8, i9
 !--------------------------------------------------------------------------!
-!define a communicator for the package
+! Define a communicator for the package
 mumps_par%COMM = MPI_COMM_WORLD
 
-!initialize an instance of the package for LU-factorization
+! Initialize an instance of the package for LU-factorization
 mumps_par%PAR  = 1  !working host processor
 
-!set the type of the matrix
+! Set the type of the matrix
 if (mumps_matrix_type.eq.0) then
     mumps_par%SYM  = 0
 elseif (mumps_matrix_type.eq.1) then
@@ -59,11 +59,11 @@ mumps_par%ICNTL(3) = -1
 mumps_par%ICNTL(4) = -1
 #endif
 
-!set mumps options here
+! Set mumps options here
 !mumps_par%ICNTL(28)=2 !Parallel Ordering tools
 !mumps_par%ICNTL(7)=4 !Choose ordering scheme
 
-!define problem on the host processor(id = 0)
+! Define problem on the master process (id = 0)
 if (mumps_par%MYID.eq.0) then
     mumps_par%N   = numnp
     mumps_par%NNZ = NNZ
@@ -82,7 +82,7 @@ if (mumps_par%MYID.eq.0) then
     enddo
 endif
 
-!call package for matrix factorization and solution
+! Call package for matrix factorization and solution
 mumps_par%JOB = 6
 
 call DMUMPS(mumps_par)
@@ -94,14 +94,14 @@ if (mumps_par%INFOG(1).lt.0) then
     goto 500
 endif
 
-!solution has been assembled on the host
+! Solution has been assembled on the master process
 if (mumps_par%MYID.eq.0) then
     do i = 1, mumps_par%N
         rdiag1(i) = mumps_par%RHS(i)
     enddo
 endif
 
-!deallocate user data
+! Deallocate user data
  if (mumps_par%MYID.eq.0) then
     deallocate(mumps_par%IRN)
     deallocate(mumps_par%JCN)
@@ -109,7 +109,7 @@ endif
     deallocate(mumps_par%RHS)
 endif
 
-!destruct the instance (deallocate internal data structures)
+! Destruct the instance (deallocate internal data structures)
 mumps_par%JOB = -2
 call DMUMPS(mumps_par)
 
@@ -121,5 +121,5 @@ if (mumps_par%INFOG(1).lt.0) then
 endif
 
 500 return
-!--------------------------------------------------------------------------! 
+!--------------------------------------------------------------------------!
 end subroutine solver_mumps

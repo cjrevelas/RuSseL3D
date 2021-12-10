@@ -24,7 +24,7 @@ hamaker_constant = SQRT(A1*A2)
 
 sigma = (sigma1 + sigma2)/2.d0
 
-!Ruckenstein and Prieve, 1976a; Feke et al., 1984
+! Ruckenstein and Prieve, 1976a; Feke et al., 1984
 Uatt = - (hamaker_constant/6.d0) * (1.d0/(h_12/r_pol) + 1.d0/(2.d0+h_12/r_pol) + LOG((h_12/r_pol)/(2.d0+h_12/r_pol)))
 
 Urep = (hamaker_constant/7.56d3)*(sigma/r_pol)**6.d0*((8.d0 + h_12/r_pol)/(2.d0 + h_12/r_pol)**7.d0 &
@@ -77,9 +77,12 @@ implicit none
 real(8), intent(in)  :: h_12, A1, A2
 real(8), intent(out) :: Urep, Uatt
 real(8)              :: hamaker_constant = 0.d0
+real(8)              :: temp_place_holder = 0.d0
 !------------------------------------------------------------------------------------------------------!
 Urep = 0.d0
 Uatt = 0.d0
+
+temp_place_holder = h_12
 
 hamaker_constant = SQRT(A1*A2)
 

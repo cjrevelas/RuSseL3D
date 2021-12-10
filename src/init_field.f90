@@ -30,7 +30,7 @@ write(211,'(5(2X,A16))') "r_center_surf", "r_surf", "Uatt", "Urep", "Utot"
 Ufield = 0.d0
 
 do kk = 1, numnp
-    !loop over all dirichlet faces
+    ! Loop over all dirichlet faces
     do mm = 1, 3
         do nn = 1, 2
             if (is_dir_face(mm,nn)) then
@@ -69,7 +69,7 @@ do kk = 1, numnp
         enddo
     enddo
 
-   !loop over all nanoparticle faces
+   ! Loop over all nanoparticle faces
    number_density   = rho_mol_bulk * n_avog
    radius_pol       = (3./4./pi/number_density)**(1./3.) * m_to_A
 

@@ -21,7 +21,7 @@ real(8), intent(in), dimension(numnp)              :: volnp
 real(8), intent(in), dimension(ns_gr_conv+1,numnp) :: qmx_interp_mg
 real(8), intent(out), dimension(num_gpoints)       :: delta_numer
 !------------------------------------------------------------------------------------------------------!
-!update gnodes.in.lammpstrj input file
+! Update gnodes.in.lammpstrj input file
 iog = 19
 open(unit=iog, file=gp_filename)
 write(iog,'(A14)') "ITEM: TIMESTEP"

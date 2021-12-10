@@ -14,10 +14,10 @@ real(8) :: t_data(data_num)
 real(8) :: t_interp(interp_num)
 
 !Evaluate the DATA_NUM Lagrange polynomials associated with T_DATA(1:DATA_NUM)
-!for the interpolation points T_INTERP(1:INTERP_NUM).
+!for the interpolation points T_INTERP(1:INTERP_NUM)
 call lagrange_value(data_num, t_data, interp_num, t_interp, l_interp)
 !Multiply P_DATA(1:M,1:DATA_NUM) * L_INTERP(1:DATA_NUM,1:INTERP_NUM)
-!to get P_INTERP(1:M,1:INTERP_NUM).
+!to get P_INTERP(1:M,1:INTERP_NUM)
 p_interp(1:m,1:interp_num) = MATMUL (p_data(1:m,1:data_num), l_interp(1:data_num,1:interp_num))
 return
 end subroutine interp_lagrange
@@ -47,7 +47,7 @@ endif
 do interp = 1, interp_num
     t = t_interp(interp)
     !Find the interval [ TDATA(LEFT), TDATA(RIGHT) ] that contains, or is
-    !nearest to, TVAL.
+    !nearest to, TVAL
     call r8vec_bracket(data_num, t_data, t, left, right)
 
     p_interp(1:m,interp) = ((t_data(right)-t) * p_data(1:m,left) + (t-t_data(left)) * p_data(1:m,right)) &
@@ -67,7 +67,7 @@ real(8) :: l_interp(data_num,interp_num)
 real(8) :: t_data(data_num)
 real(8) :: t_interp(interp_num)
 
-!Evaluate the polynomial.
+!Evaluate the polynomial
 l_interp(1:data_num,1:interp_num) = 1.0D+00
 
 do i = 1, data_num

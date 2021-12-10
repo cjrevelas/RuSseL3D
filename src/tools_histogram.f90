@@ -41,14 +41,14 @@ dist_from_np      = 0.d0
 cell_vol_planar   = 0.d0
 cell_vol_sph      = 0.d0
 
-! chains grafted to planar surfaces
+! Chains grafted on planar surfaces
 do mm = 1, 3
     do nn = 1, 2
         if (is_dir_face(mm,nn)) then
             do kk = 1, numnp
                 if (nn.eq.1) then
                     r_center_surf = xc(mm,kk) - box_lo(mm) + wall_distance
-                elseif (nn.eq.2) then 
+                elseif (nn.eq.2) then
                     r_center_surf = box_hi(mm) - xc(mm,kk) + wall_distance
                 endif
                 bin                         = INT(r_center_surf/lbin)+1
@@ -60,11 +60,11 @@ do mm = 1, 3
     enddo
 enddo
 
-! chains grafted to nanoparticles
+! Chains grafted on nanoparticles
 do mm = 1, n_nanopart_faces
     do kk = 1, numnp
         r_centers             = DSQRT(  (xc(1,kk)-center_np(1,mm))**2 + (xc(2,kk)-center_np(2,mm))**2 &
-&                             + (xc(3,kk)-center_np(3,mm))**2) 
+&                             + (xc(3,kk)-center_np(3,mm))**2)
         radius_np_actual      = radius_np_eff(mm) - wall_distance
         r_center_surf         = r_centers - radius_np_actual
         bin                   = INT(r_center_surf/lbin)+1

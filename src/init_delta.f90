@@ -16,7 +16,7 @@ implicit none
 integer :: i1, iog
 !-----------------------------------------------------------------------------------------------------------!
 if (gr_exist.eq.1) then
-    iog = 19 
+    iog = 19
 
     open(unit=iog, file=gp_filename)
 
@@ -36,10 +36,10 @@ if (gr_exist.eq.1) then
     delta_numer   = 0.d0
     gp_init_value = 0.d0
 
-    !specify grafting points
+    ! Specify grafting points
     do i1 = 1, num_gpoints
         read(iog,*) gpid(i1), gp_init_value(i1), delta_numer(i1)
- 
+
         if (gpid(i1) > numnp) then
             write(ERROR_MESSAGE,'("ID of grafted chain (",I10,") is larger from numnp (",I10,"    )")') gpid(i1), numnp
             call exit_with_error(1,1,1,ERROR_MESSAGE)

@@ -12,7 +12,7 @@ integer              :: i, j
 
 real(8), intent(out), dimension(5,*) :: s
 !--------------------------------------------------------------------!
-!1 pt. quadrature O(h^2)
+! 1 pt. quadrature O(h^2)
 if (kk.eq.1) then
     lint = 1
 
@@ -22,7 +22,7 @@ if (kk.eq.1) then
 
     s(5,1) = 1.0d0/6.d0
 
-!4 pt. quadrature O(h^3)
+! 4 pt. quadrature O(h^3)
 elseif (kk.eq.2) then
     lint = 4
 
@@ -36,7 +36,7 @@ elseif (kk.eq.2) then
         s(5,i) = s(5,4)
     enddo
 
-!11 pt. quadrature O(h^4)
+! 11 pt. quadrature O(h^4)
 elseif (kk.eq.3) then
     lint = 11
 
@@ -67,7 +67,7 @@ elseif (kk.eq.3) then
     s(1, 7) = 0.5d0
     s(1,10) = 0.0d0
 
-!16 pt. quadrature O(h^5)
+! 16 pt. quadrature O(h^5)
 else
     lint = 16
 
@@ -125,7 +125,7 @@ else
     s(3,16) = 0.7183164526766925d-01
 endif
 
-!compute fourth points
+! Compute fourth points
 do j = 1, lint
     s(4,j) = 1.d0 - (s(1,j) + s(2,j) + s(3,j))
 enddo

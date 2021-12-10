@@ -35,16 +35,16 @@ real(8)                                       :: sum_qshape=0.d0, sum_Q=0.d0, su
 do bin = 7, 30
     write(6,*) "bin = ",bin
 
-    !assembly
+    ! Assembly
     call fem_matrix_assemble(Rg2_per_mon, wa)
 
-    !Dirichlet boundary conditions
+    ! Dirichlet boundary conditions
     node_in_q0_face_new = node_in_q0_face
     do kk = 1, numnp
         if (cell_of_np(kk).eq.bin) node_in_q0_face_new(kk) = .true.
     enddo
 
-    !initial conditions
+    ! Initial conditions
     qshape       = 0.d0
     qshape_final = 0.d0
     if (chain_type.eq."mx") then
@@ -63,7 +63,7 @@ do bin = 7, 30
         enddo
     endif
 
-    !solution
+    ! Solution
     call solver_edwards(ds_ed, ns_ed, mumps_matrix_type, qshape, qshape_final, node_in_q0_face_new)
 
     sum_qshape = 0.d0

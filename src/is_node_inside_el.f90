@@ -17,7 +17,7 @@ real(8), intent(out), dimension(4, 11)  :: shp
 real(8), intent(out)                    :: volel
 real(8)                                 :: temp_x, temp_y, temp_z, vol_test, xsj
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-!replace each coordinate vertex with the test point and calculate the new volume each time
+! Replace each coordinate vertex with the test point and calculate the new volume each time
 inside = 0
 k      = 0
 
@@ -49,7 +49,7 @@ do p = 1, 4
          k = k+1
     endif
 
-    !give back xl nodes their original coordinates
+    ! Give back xl nodes their original coordinates
     xl(1,p) = temp_x
     xl(2,p) = temp_y
     xl(3,p) = temp_z

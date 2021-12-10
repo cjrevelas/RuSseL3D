@@ -19,7 +19,7 @@ real(8)                               :: detr
 real(8), dimension(3,3)               :: xs, xsi, a
 real(8), dimension(3)                 :: te
 !-----------------------------------------------------------------------------------!
-!linear shape functions and their derivatives
+! Linear shape functions and their derivatives
 if(ABS(nel).eq.4) then
      shp(1,1) =  1.d00
      shp(1,2) =  0.d00
@@ -43,7 +43,7 @@ if(ABS(nel).eq.4) then
 
      nnel = 4
 
-!quadratic shape functions and derivatives
+! Quadratic shape functions and derivatives
 elseif(ABS(nel).eq.10 .or. ABS(nel).eq.11  .or.&
        ABS(nel).eq.14 .or. ABS(nel).eq.15) then
 
@@ -80,7 +80,7 @@ elseif(ABS(nel).eq.10 .or. ABS(nel).eq.11  .or.&
      shp(3, 9) = -4.d0*xi(2)
      shp(3,10) =  4.d0*(xi(4) - xi(3))
 
-     !compute shape functions and store in shp(4,*)
+     ! Compute shape functions and store in shp(4,*)
      shp(4, 1) = (2.d0*xi(1) - 1.d0) * xi(1)
      shp(4, 2) = (2.d0*xi(2) - 1.d0) * xi(2)
      shp(4, 3) = (2.d0*xi(3) - 1.d0) * xi(3)
@@ -94,11 +94,10 @@ elseif(ABS(nel).eq.10 .or. ABS(nel).eq.11  .or.&
 
      nnel = nel
 else
-    !error - higher than quadratic not coded
     write(*,2000) nel
 endif
 
-!compute jacobian matrix
+! Compute jacobian matrix
 do i = 1,3
    do j = 1,3
         xs(j,i) = 0.0d0
@@ -108,7 +107,7 @@ do i = 1,3
    enddo
 enddo
 
-!compute inverse of jacobian matrix
+! Compute inverse of jacobian matrix
 xsi(1,1) = xs(2,2)*xs(3,3) - xs(3,2)*xs(2,3)
 xsi(1,2) = xs(3,2)*xs(1,3) - xs(1,2)*xs(3,3)
 xsi(1,3) = xs(1,2)*xs(2,3) - xs(2,2)*xs(1,3)
@@ -127,7 +126,7 @@ do i = 1,3
    enddo
 enddo
 
-!compute jacobian determinant
+! Compute jacobian determinant
 xsj = xs(1,1)*xsi(1,1) + xs(1,2)*xsi(2,1) + xs(1,3)*xsi(3,1)
 
 if (DABS(xsj)>tol) then
@@ -138,14 +137,14 @@ else
     detr = 1.d0
 endif
 
-!compute jacobian inverse
+! Compute jacobian inverse
 do j = 1, 3
    do i = 1, 3
         xs(i,j) = xsi(i,j)*detr
    enddo
 enddo
 
-!compute shape function derivatives wrt to real node coordinates
+! Compute shape function derivatives wrt to real node coordinates
 do k = 1, nnel
    do i = 1, 3
         te(i) = shp(1,k)*xs(1,i) + shp(2,k)*xs(2,i) + shp(3,k)*xs(3,i)

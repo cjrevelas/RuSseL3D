@@ -4,7 +4,7 @@
 
 real(8) function fem_interpolation(nodeId, x_interp, y_interp, z_interp, uu)
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-use geometry, only : numnp, ndm, nel, el_node, ix, xc, n_el_node
+use geometry, only : numnp, ndm, nel, el_node, global_node_id_type_domain, xc, n_el_node
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------------------------------------------------------------------------!
@@ -28,32 +28,32 @@ interface
     end function
 end interface
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-!set up for 11-point quadrature
+! Set up for 11-point quadrature
 l = 3
 call fem_gausspoints(l, lint, sv)
 
-!loop over elements
+! Loop over elements
 do mm = 1, n_el_node(nodeId)
    nn = el_node(nodeId, mm)
 
-    !loop over all nodes of current element
+    ! Loop over all nodes of current element
     do iloc = 1, 4
-        !find global index of node
-        iglob = ix(iloc,nn)
+        ! Find global index of node
+        iglob = global_node_id_type_domain(iloc,nn)
 
-        !copy coordinates from global array to local array concerning current element
+        ! Copy coordinates from global array to local array concerning current element
         do jj = 1, 3
             xl(jj,iloc) = xc(jj,iglob)
         enddo
 
-        !copy value of solution at current node from global to local array
+        ! Copy value of solution at current node from global to local array
         ul_uu(iloc)  = uu(iglob)
     enddo
 
-    !initialize accumulator for element volume
+    ! Initialize accumulator for element volume
     volel = 0.d00
 
-    !loop over all quadrature points in the considered element
+    ! Loop over all quadrature points in the considered element
     do l = 1, lint
         call fem_tetshpfun(sv(1,l), xl, ndm, nel, xsj, shp)
 
@@ -62,7 +62,7 @@ do mm = 1, n_el_node(nodeId)
         volel = volel + xsj
     enddo
     !-------------------------------------------START INTERPOLATION--------------------------------------------------------!
-    !check if current plotPoint lies in the specific element
+    ! Check if current plotPoint lies in the specific element
     call is_node_inside_el(xl, x_interp, y_interp, z_interp, lint, sv, volel, inside, shp, ndm, nel)
 
     if (inside==1) then
@@ -98,7 +98,7 @@ do mm = 1, n_el_node(nodeId)
         fem_interpolation = u_interp
         exit
     endif
-    !end loop over elements
+    ! End loop over elements
 enddo
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 end function fem_interpolation

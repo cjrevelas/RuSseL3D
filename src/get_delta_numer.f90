@@ -33,12 +33,12 @@ write(6,'(2X,A40)')adjl("Updating delta of grafted chains:",40)
 
 delta_anal = 0.d0
 
-!analytic delta calculation
+! Analytic delta calculation
 do ii = 1, num_gpoints
     delta_anal(ii) = 1.d0 / volnp(gpid(ii)) * m3_to_A3
 enddo
 
-!numerical delta calculation (simulation)
+! Numerical delta calculation (i.e., through solution of the Edwards equation)
 call fem_matrix_assemble(Rg2_per_mon_gr, wa)
 
 do ii = 1, num_gpoints
