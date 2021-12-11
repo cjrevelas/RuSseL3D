@@ -1,0 +1,46 @@
+--------------------------------------------------------POLYMER PARAMETERS--------------------------------------------------------
+FLAG_TEMP        # temp      [K]
+0.000000000D+00  # pres      [atm]
+0.766000000E+00  # mass den  [g/cm3]
+0.140000000E+02  # mon mass  [g/mol]
+3.000000000E+00  # pol sigma [A]
+5.000000000E+00  # pol ham   [10^-20 J]
+FLAG_AREA        # area      [A^2]
+
+----------------------------------------------------------SOLID PARAMETERS--------------------------------------------------------
+4.000000000E+00  # wall dist [A]
+1                # num faces
+7     FLAG_RADIUS     0.00     0.00     0.00     0.00     0.00
+
+---------------------------------------------------EQUATION OF STATE PARAMETERS---------------------------------------------------
+0                # eos type
+9.240000000E-09  # eos coeffs
+0.000000000D+00  # eos infl param [J m^5/mol^2]
+
+------------------------------------------------------CONVERGENCE PARAMETERS------------------------------------------------------
+1.000000000E-01  # max error
+FLAG_FRACTION    # fraction
+0                # init field    (0: zero everywhere; 1: read from file; 2: zero everywhere and -kapa at dir. BCs)
+0                # init iter
+1                # num iter
+3                # prof dim
+1                # mumps matrix  (0: nonsymmetric; 1: symmetric def. pos.; 2: general symmetric)
+1                # contour discr (1: uniform; 2: nonuniform)
+1                # output freq
+
+----------------------------------------------------MATRIX CHAIN PARAMETERS------------------------------------------------------
+FLAG_MATRIX      # use matrix
+FLAG_NM          # chain length matrix
+5.000     5.000  # contour step matrix (ds_ave_matrix_ed; ds_ave_matrix_conv)
+2                # discr scheme matrix (1: symm; 2: asymm; 3: hybrid)
+40.0             # crit contour matrix
+0.326713122E+01  # Rg2/mon matrix      (Cinf * bondlen**2 / 6)
+
+----------------------------------------------------GRAFTED CHAIN PARAMETERS-----------------------------------------------------
+FLAG_GRAFTED     # use grafted 
+0                # calc delta
+FLAG_NG          # chain length grafted
+5.000     5.000  # contour step grafted (ds_ave_gr_ed; ds_ave_gr_conv)
+2                # discr scheme grafted (1: symm; 2: asymm; 3: hybrid)
+40.0             # crit contour grafted 
+0.326713122E+01  # Rg2/mon grafted      (Cinf * bondlen**2 / 6)G

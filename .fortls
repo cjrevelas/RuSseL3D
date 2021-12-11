@@ -1,0 +1,7 @@
+{
+  "source_dirs": ["./src","./src/mod"],
+  "pp_suffixes": [".f90"],
+  "pp_defs": {"FHASH_MODULE_NAME" : "fhash_module__ints_double"},
+  "lowercase_intrinsics": false,
+  "debug_log": false
+}

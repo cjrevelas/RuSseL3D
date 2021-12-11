@@ -1,0 +1,13 @@
+11293       !number of mesh points
+60503       !number of mesh elements
+1000        !number of plot points
+
+.false.     !plot across x-axis
+.false.     !plot across y_axis
+.true.     !plot across z_axis
+.false.      !plot across r_axis
+
+0.d0  0.d0  !x_plot_min  x_plot_max
+0.d0  0.d0  !y_plot_min  y_plot_max
+0.d0  5.d1  !z_plot_min  z_plot_max
+0.d0  0.d0  !r_plot_min  r_plot_max
