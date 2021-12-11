@@ -16,10 +16,9 @@ integer, intent(in)                         :: numnp, num_gpoints, ns_gr_conv
 integer, intent(in), dimension(num_gpoints) :: gpid
 integer                                     :: ii, iog, jj
 
-real(8), intent(in), dimension(num_gpoints)        :: gp_init_value
+real(8), intent(in), dimension(num_gpoints)        :: gp_init_value, delta_numer
 real(8), intent(in), dimension(numnp)              :: volnp
 real(8), intent(in), dimension(ns_gr_conv+1,numnp) :: qmx_interp_mg
-real(8), intent(out), dimension(num_gpoints)       :: delta_numer
 !------------------------------------------------------------------------------------------------------!
 ! Update gnodes.in.lammpstrj input file
 iog = 19

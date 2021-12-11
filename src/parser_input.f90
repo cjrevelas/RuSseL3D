@@ -18,54 +18,55 @@ character(1)   :: axis
 
 integer :: Reason, ii, id, face1, face2
 
-logical :: log_mesh_filename               = .false.
-logical :: log_gp_filename                 = .false.
-logical :: log_field_in_filename           = .false.
-logical :: log_temperature                 = .false.
-logical :: log_pressure                    = .false.
-logical :: log_mass_density                = .false.
-logical :: log_monomer_mass                = .false.
-logical :: log_number_of_iterations        = .false.
-logical :: log_set_initial_iteration       = .false.
-logical :: log_maximum_error               = .false.
-logical :: log_maximum_energy_error_tol    = .false.
-logical :: log_field_init_scheme           = .false.
-logical :: log_fraction_of_new_field       = .false.
-logical :: log_mx_exist                    = .false.
-logical :: log_Rg2_per_mon_mx              = .false.
-logical :: log_ds_ave_mx                   = .false.
-logical :: log_chainlen_mx                 = .false.
-logical :: log_contour_discr_mx            = .false.
-logical :: log_ads_distance                = .false.
-logical :: log_gr_exist                    = .false.
-logical :: log_Rg2_per_mon_gr              = .false.
-logical :: log_chainlen_gr                 = .false.
-logical :: log_ds_ave_gr                   = .false.
-logical :: log_contour_discr_gr            = .false.
-logical :: log_grafted_ic_from_delta       = .false.
-logical :: log_num_gr_chains_tol           = .false.
-logical :: log_r_gpoint                    = .false.
-logical :: log_calc_delta_every            = .false.
-logical :: log_n_dirichlet_faces           = .false.
-logical :: log_n_nanopart_faces            = .false.
-logical :: log_periodicity                 = .false.
-logical :: log_sigma_polymer               = .false.
-logical :: log_Hamaker_constant_of_polymer = .false.
-logical :: log_wall_distance               = .false.
-logical :: log_eos_type                    = .false.
-logical :: log_eos_coeffs                  = .false.
-logical :: log_influence_param             = .false.
-logical :: log_profile_dimension           = .false.
-logical :: log_mumps_matrix_type           = .false.
-logical :: log_bin_thickness               = .false.
-logical :: log_export_phi_gen_freq         = .false.
-logical :: log_export_phi_indiv_freq       = .false.
-logical :: log_export_field_freq           = .false.
-logical :: log_export_field_bin_freq       = .false.
-logical :: log_export_propagators_freq     = .false.
-logical :: log_export_brush_thickness_freq = .false.
-logical :: log_export_chains_per_area_freq = .false.
-logical :: log_export_ads_free_freq        = .false.
+logical :: log_mesh_filename                   = .false.
+logical :: log_gp_filename                     = .false.
+logical :: log_field_in_filename               = .false.
+logical :: log_temperature                     = .false.
+logical :: log_pressure                        = .false.
+logical :: log_mass_density                    = .false.
+logical :: log_monomer_mass                    = .false.
+logical :: log_number_of_iterations            = .false.
+logical :: log_set_initial_iteration           = .false.
+logical :: log_field_error_tol                 = .false.
+logical :: log_free_energy_error_tol           = .false.
+logical :: log_free_energy_error_tol_for_delta = .false.
+logical :: log_field_init_scheme               = .false.
+logical :: log_fraction_of_new_field           = .false.
+logical :: log_mx_exist                        = .false.
+logical :: log_Rg2_per_mon_mx                  = .false.
+logical :: log_ds_ave_mx                       = .false.
+logical :: log_chainlen_mx                     = .false.
+logical :: log_contour_discr_mx                = .false.
+logical :: log_ads_distance                    = .false.
+logical :: log_gr_exist                        = .false.
+logical :: log_Rg2_per_mon_gr                  = .false.
+logical :: log_chainlen_gr                     = .false.
+logical :: log_ds_ave_gr                       = .false.
+logical :: log_contour_discr_gr                = .false.
+logical :: log_grafted_ic_from_delta           = .false.
+logical :: log_num_gr_chains_tol               = .false.
+logical :: log_r_gpoint                        = .false.
+logical :: log_calc_delta_every                = .false.
+logical :: log_n_dirichlet_faces               = .false.
+logical :: log_n_nanopart_faces                = .false.
+logical :: log_periodicity                     = .false.
+logical :: log_sigma_polymer                   = .false.
+logical :: log_Hamaker_constant_of_polymer     = .false.
+logical :: log_wall_distance                   = .false.
+logical :: log_eos_type                        = .false.
+logical :: log_eos_coeffs                      = .false.
+logical :: log_influence_param                 = .false.
+logical :: log_profile_dimension               = .false.
+logical :: log_mumps_matrix_type               = .false.
+logical :: log_bin_thickness                   = .false.
+logical :: log_export_phi_gen_freq             = .false.
+logical :: log_export_phi_indiv_freq           = .false.
+logical :: log_export_field_freq               = .false.
+logical :: log_export_field_bin_freq           = .false.
+logical :: log_export_propagators_freq         = .false.
+logical :: log_export_brush_thickness_freq     = .false.
+logical :: log_export_chains_per_area_freq     = .false.
+logical :: log_export_ads_free_freq            = .false.
 !--------------------------------------------------------------------------------!
 ! Initialize periodicity arrays
 do ii = 1, 3
@@ -145,11 +146,14 @@ do
             read(line,*) frac
             log_fraction_of_new_field = .true.
         elseif (INDEX(line,"# max error") > 0) then
-            read(line,*) max_error_tol
-            log_maximum_error = .true.
+            read(line,*) field_error_tol
+            log_field_error_tol = .true.
         elseif (INDEX(line,"# max energy error") > 0) then
             read(line,*) free_energy_error_tol
-            log_maximum_energy_error_tol = .true.
+            log_free_energy_error_tol = .true.
+        elseif (INDEX(line,"# energy tol for delta") > 0) then
+            read(line,*) free_energy_error_tol_for_delta
+            log_free_energy_error_tol_for_delta = .true.
         elseif (INDEX(line,"# init iter") > 0) then
             read(line,*) init_iter
             log_set_initial_iteration= .true.
@@ -367,7 +371,6 @@ endif
 if (mx_exist.eq.1) then
     if (log_chainlen_mx) then
         if (chainlen_mx>0) then
-
             chainlen_mx_max = chainlen_mx
         else
             write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') chainlen_mx
@@ -584,7 +587,6 @@ if (mx_exist.eq.1) then
             endif
 
             call get_contour_step(ds_ave_mx_ed, xs_crit_mx, chainlen_mx_max, ns_mx_ed)
-
         elseif (contour_discr_mx.eq.contour_asymm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
@@ -849,36 +851,54 @@ else
 endif
 
 
-if (log_maximum_error) then
-    if (max_error_tol.ge.0.d0) then
-        write(iow,'(3X,A40,E16.9)')adjl("Maximum tolerance error on field:",40),max_error_tol
-        write(6  ,'(3X,A40,E16.9)')adjl("Maximum tolerance error on field:",40),max_error_tol
+if (log_field_error_tol) then
+    if (field_error_tol.ge.0.d0) then
+        write(iow,'(3X,A40,E16.9)')adjl("Tolerance on field error:",40),field_error_tol
+        write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on field error:",40),field_error_tol
     else
-        write(ERROR_MESSAGE,'("Maximum tolerance error on field is negative:",E16.9)') max_error_tol
+        write(ERROR_MESSAGE,'("Tolerance on field error is negative:",E16.9)') field_error_tol
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    max_error_tol = 0.d0
-    write(iow,'(3X,A40)')adjl("Max field error not found",40)
-    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),max_error_tol
-    write(6  ,'(3X,A40)')adjl("Max field error not found.",40)
-    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),max_error_tol
+    field_error_tol = 0.d0
+    write(iow,'(3X,A40)')adjl("Tolerance on field error not found",40)
+    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),field_error_tol
+    write(6  ,'(3X,A40)')adjl("Tolerance on field error not found.",40)
+    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),field_error_tol
 endif
 
-if (log_maximum_energy_error_tol) then
+
+if (log_free_energy_error_tol) then
     if (free_energy_error_tol.ge.0.d0) then
-        write(iow,'(3X,A40,E16.9)')adjl("Maximum tolerance error on energy:",40),free_energy_error_tol
-        write(6  ,'(3X,A40,E16.9)')adjl("Maximum tolerance error on energy:",40),free_energy_error_tol
+        write(iow,'(3X,A40,E16.9)')adjl("Tolerance on free energy error:",40),free_energy_error_tol
+        write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on free energy error:",40),free_energy_error_tol
     else
-        write(ERROR_MESSAGE,'("Maximum tolerance error is negative:",E16.9)')free_energy_error_tol
+        write(ERROR_MESSAGE,'("Tolerance on free energy error is negative:",E16.9)')free_energy_error_tol
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
     free_energy_error_tol = 1.d-6
-    write(iow,'(3X,A40)')adjl("Max energy error tol not found",40)
+    write(iow,'(3X,A40)')adjl("Tolerance on free energy error not found",40)
     write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol
-    write(6  ,'(3X,A40)')adjl("Max energy error tol not found.",40)
+    write(6  ,'(3X,A40)')adjl("Tolerance on free energy error not found.",40)
     write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol
+endif
+
+
+if (log_free_energy_error_tol_for_delta) then
+    if (free_energy_error_tol_for_delta.ge.0.d0) then
+        write(iow,'(3X,A40,E16.9)')adjl("Tolerance on energy error for delta:",40),free_energy_error_tol_for_delta
+        write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on energy error for delta:",40),free_energy_error_tol_for_delta
+    else
+        write(ERROR_MESSAGE,'("Tolerance on energy error for delta is negative:",E16.9)')free_energy_error_tol_for_delta
+        call exit_with_error(1,1,1,ERROR_MESSAGE)
+    endif
+else
+    free_energy_error_tol_for_delta = 1.d-3
+    write(iow,'(3X,A40)')adjl("Tol on energy error for delta not found",40)
+    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol_for_delta
+    write(6  ,'(3X,A40)')adjl("Tol on energy error for delta not found.",40)
+    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol_for_delta
 endif
 
 
@@ -1088,7 +1108,6 @@ else
     write(iow,'(3X,A38)')adjl("The domain is not periodic.",40)
     write(6  ,'(3X,A38)')adjl("The domain is not periodic.",40)
 endif
-
 
 
 write(iow,*)

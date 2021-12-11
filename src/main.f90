@@ -26,12 +26,12 @@ include "mpif.h"
 !----------------------------------------------------------------------------------------------------------------------------------!
 integer :: ii, kk, iter, get_sys_time, t_init, t_final, gnode_id
 
-logical :: convergence = .false.
+logical :: convergence = .false., calc_delta = .false.
 
 real(8), allocatable, dimension(:) :: dphi2_dr2
 
 real(8) :: part_func = 0.d0, nch_mx = 0.d0, nch_gr = 0.d0
-real(8) :: wa_max = 0.d0, wa_std_error = 0.d0, max_error = 200000.d0
+real(8) :: wa_max = 0.d0, wa_std_error = 0.d0, field_error = 200000.d0
 real(8) :: free_energy_prev = 1.d10, free_energy = 0.d0, free_energy_error = 1.d10
 !----------------------------------------------------------------------------------------------------------------------------------!
 !**************************************************************************************************************!
@@ -129,14 +129,14 @@ write(*,*)
 write(iow,'(A85)')adjl('-----------------------------------SIMULATION STARTS-----------------------------------',85)
 write(*  ,'(A85)')adjl('-----------------------------------SIMULATION STARTS-----------------------------------',85)
 
-write(iow,'(A10,1X,6(A19,1X),A16)') "iter", "fraction", "free_energy", "n_gr_chains", "max_error", "std_error", "wa_max"
-write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "free_energy", "n_gr_chains", "max_error", "std_error", "wa_max"
+write(iow,'(A10,1X,6(A19,1X),A16)') "iter", "fraction", "free_energy", "n_gr_chains", "field_error", "std_error", "wa_max"
+write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "free_energy", "n_gr_chains", "field_error", "std_error", "wa_max"
 
 t_init = get_sys_time()
 
 do iter = init_iter, iterations-1
-    write(iow,'(I10,1X,6(E19.9E3,1X))') iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
-    write(6  ,'(I4 ,1X,6(E14.4E3,1X))') iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
+    write(iow,'(I10,1X,6(E19.9E3,1X))') iter, frac, free_energy, nch_gr, field_error, wa_std_error, wa_max
+    write(6  ,'(I4 ,1X,6(E14.4E3,1X))') iter, frac, free_energy, nch_gr, field_error, wa_std_error, wa_max
 
     close(iow)
     open(unit=iow, file = logfile, position = 'append')
@@ -159,12 +159,14 @@ do iter = init_iter, iterations-1
 
         ! Recompute the delta functions if necessary
         if (grafted_ic_from_delta.eq.1) then
-            if (calc_delta_every>0) then
-                if ((MOD(iter,calc_delta_every).eq.0 .and. (ABS(nch_gr-DBLE(num_gpoints))/DBLE(num_gpoints))>num_gr_chains_tol)) then
-                    call get_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, wa_mix, num_gpoints, gpid, delta_numer, volnp)
-                    call export_delta(numnp, qmx_interp_mg, ns_gr_conv, num_gpoints, gpid, delta_numer, gp_init_value, volnp)
-                endif
+
+            calc_delta = ((iter==0) .or. ((free_energy_error <= free_energy_error_tol_for_delta) .and. ((ABS(nch_gr-DBLE(num_gpoints))/DBLE(num_gpoints))>num_gr_chains_tol)))
+
+            if (calc_delta) then
+                call get_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, wa_mix, num_gpoints, gpid, delta_numer, volnp)
+                call export_delta(numnp, qmx_interp_mg, ns_gr_conv, num_gpoints, gpid, delta_numer, gp_init_value, volnp)
             endif
+
             do ii = 1, num_gpoints
                 gnode_id = gpid(ii)
                 gp_init_value(ii) = delta_numer(ii) * chainlen_gr * 1.d0 / (qmx_interp_mg(ns_gr_conv+1,gnode_id) * (rho_mol_bulk * n_avog))
@@ -217,19 +219,19 @@ do iter = init_iter, iterations-1
                    & k_gr * (rho_seg_bulk * dphi2_dr2(kk)) / (boltz_const_Joule_K * Temp) + Ufield(kk)
     enddo
 
-    max_error    = 0.d0
+    field_error  = 0.d0
     wa_std_error = 0.d0
     wa_max       = 0.d0
 
     do kk = 1, numnp
-        max_error    = MAX(max_error,DABS(wa_new(kk) - wa(kk)))
+        field_error  = MAX(field_error,DABS(wa_new(kk) - wa(kk)))
         wa_std_error = wa_std_error + (wa_new(kk) - wa(kk))**2
         wa_max       = MAX(wa_max, wa_new(kk))
     enddo
 
     wa_std_error = SQRT(wa_std_error / FLOAT((numnp - 1)))
     wa_max       = wa_max       * chainlen_mx
-    max_error    = max_error    * chainlen_mx
+    field_error  = field_error  * chainlen_mx
     wa_std_error = wa_std_error * chainlen_mx
 
     free_energy_error = ABS(free_energy - free_energy_prev)
@@ -239,7 +241,7 @@ do iter = init_iter, iterations-1
         wa_mix(kk) = (1.d0 - frac) * wa(kk) + frac * wa_new(kk)
     enddo
 
-    convergence = (max_error<=max_error_tol).or.(free_energy_error<=free_energy_error_tol)
+    convergence = (field_error<=field_error_tol).or.(free_energy_error<=free_energy_error_tol)
 
     call export_field_bin(wa_mix, numnp, 0)
 
@@ -254,8 +256,8 @@ enddo
 !**************************************************************************************************************!
 !                                             EXPORT SIMULATION RESULTS                                        !
 !**************************************************************************************************************!
-write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
-write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, free_energy, nch_gr, max_error, wa_std_error, wa_max
+write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, free_energy, nch_gr, field_error, wa_std_error, wa_max
+write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, free_energy, nch_gr, field_error, wa_std_error, wa_max
 
 
 write(iow,*)
@@ -263,9 +265,9 @@ write(*,*)
 write(iow,'(A85)')adjl('-----------------------------------SUMMARIZED RESULTS-----------------------------------',85)
 write(*  ,'(A85)')adjl('-----------------------------------SUMMARIZED RESULTS-----------------------------------',85)
 
-if (max_error.lt.max_error_tol) then
-    write(iow,'("Convergence of max error",F16.9)') max_error
-    write(6  ,'("Convergence of max error",F16.9)') max_error
+if (field_error.lt.field_error_tol) then
+    write(iow,'("Convergence of max error",F16.9)') field_error
+    write(6  ,'("Convergence of max error",F16.9)') field_error
 endif
 
 write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 free_energy
