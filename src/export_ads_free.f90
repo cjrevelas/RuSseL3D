@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine export_ads_free(node_in_q0_face, adsorbed)
+subroutine export_ads_free(node_belongs_to_dirichlet_face, adsorbed)
 !-----------------------------------------------------------------------------------------------------------------------!
 use parser_vars_mod,  only: mumps_matrix_type, Rg2_per_mon_mx, chainlen_mx, ns_mx_ed, ns_mx_conv
 use write_helper_mod, only: adjl
@@ -13,8 +13,8 @@ implicit none
 !-----------------------------------------------------------------------------------------------------------------------!
 integer                                :: ii, kk
 
-logical, intent(in), dimension(numnp)  :: node_in_q0_face, adsorbed
-logical, dimension(numnp)              :: node_in_q0_face_new
+logical, intent(in), dimension(numnp)  :: node_belongs_to_dirichlet_face, adsorbed
+logical, dimension(numnp)              :: node_belongs_to_dirichlet_face_new
 
 real(8), dimension(2,numnp)            :: qfree
 real(8), dimension(ns_mx_ed+1,numnp)   :: qfree_final
@@ -33,16 +33,20 @@ qfree(1,:)          = 1.d0
 qfree_final(1,:)    = 1.d0
 node_in_q0_face_new = node_in_q0_face
 
+node_belongs_to_dirichlet_face_new = node_belongs_to_dirichlet_face
+
 do kk = 1, numnp
     if (adsorbed(kk)) then
         qfree(1,kk)             = 0.d0
         qfree_final(1,kk)       = 0.d0
         node_in_q0_face_new(kk) = .true.
+
+        node_belongs_to_dirichlet_face_new(kk) = .True.
     endif
 enddo
 
 ! Solution
-call solver_edwards(ds_mx_ed, ns_mx_ed, mumps_matrix_type, qfree, qfree_final, node_in_q0_face_new)
+call solver_edwards(ds_mx_ed, ns_mx_ed, mumps_matrix_type, qfree, qfree_final, node_belongs_to_dirichlet_face_new)
 
 ! Contour interpolation
 do ii = 1, numnp
@@ -55,7 +59,7 @@ do ii = 1, ns_mx_conv+1
     enddo
 enddo
 
-! Determine profiles
+! Determine the density profiles
 call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qfree_interp, qfree_interp, phi_free)
 call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qads, qads, phi_loop)
 call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qfree_interp, qads, phi_tail)

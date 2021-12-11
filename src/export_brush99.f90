@@ -85,8 +85,8 @@ write(120,'(A8,2X,E16.9E3)') "mean" , brush99_of_chain_ave
 write(120,'(A8,2X,E16.9E3)') "stdev", brush99_of_chain_std
 write(120,'(A8,2X,E16.9E3)') "all"  , brush99_all
 
-if (n_nanopart_faces/=0) then
-    do ii = 1, n_nanopart_faces
+if (num_of_nanoparticle_faces/=0) then
+    do ii = 1, num_of_nanoparticle_faces
         boxSize = min(box_len(1), box_len(2), box_len(3))/2.d0 - radius_np_eff(ii)
     enddo
 

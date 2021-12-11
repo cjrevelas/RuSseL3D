@@ -30,9 +30,9 @@ if (ALLOCATED(cell_vol_sph))      deallocate(cell_vol_sph)
 allocate(planar_cell_of_np(numnp,3,2))
 allocate(dist_from_face(numnp,3,2))
 allocate(cell_vol_planar(nbin,3,2))
-allocate(sph_cell_of_np(n_nanopart_faces,numnp))
-allocate(dist_from_np(n_nanopart_faces,numnp))
-allocate(cell_vol_sph(n_nanopart_faces,nbin))
+allocate(sph_cell_of_np(num_of_nanoparticle_faces,numnp))
+allocate(dist_from_np(num_of_nanoparticle_faces,numnp))
+allocate(cell_vol_sph(num_of_nanoparticle_faces,nbin))
 
 planar_cell_of_np = 0
 sph_cell_of_np    = 0
@@ -44,7 +44,7 @@ cell_vol_sph      = 0.d0
 ! Chains grafted on planar surfaces
 do mm = 1, 3
     do nn = 1, 2
-        if (is_dir_face(mm,nn)) then
+        if (is_dirichlet_face(mm,nn)) then
             do kk = 1, numnp
                 if (nn.eq.1) then
                     r_center_surf = xc(mm,kk) - box_lo(mm) + wall_distance
@@ -61,7 +61,7 @@ do mm = 1, 3
 enddo
 
 ! Chains grafted on nanoparticles
-do mm = 1, n_nanopart_faces
+do mm = 1, num_of_nanoparticle_faces
     do kk = 1, numnp
         r_centers             = DSQRT(  (xc(1,kk)-center_np(1,mm))**2 + (xc(2,kk)-center_np(2,mm))**2 &
 &                             + (xc(3,kk)-center_np(3,mm))**2)

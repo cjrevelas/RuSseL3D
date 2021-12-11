@@ -150,7 +150,7 @@ do iter = init_iter, iterations-1
         qmx_final(1,ii) = 1.d0
     enddo
 
-    call solver_edwards(ds_mx_ed, ns_mx_ed, mumps_matrix_type, qmx, qmx_final, node_in_q0_face)
+    call solver_edwards(ds_mx_ed, ns_mx_ed, mumps_matrix_type, qmx, qmx_final, node_belongs_to_dirichlet_face)
 
     if (gr_exist.eq.1) then
         do ii = 1, numnp
@@ -159,7 +159,6 @@ do iter = init_iter, iterations-1
 
         ! Recompute the delta functions if necessary
         if (grafted_ic_from_delta.eq.1) then
-
             calc_delta = ((iter==0) .or. ((free_energy_error <= free_energy_error_tol_for_delta) .and. ((ABS(nch_gr-DBLE(num_gpoints))/DBLE(num_gpoints))>num_gr_chains_tol)))
 
             if (calc_delta) then
@@ -185,7 +184,7 @@ do iter = init_iter, iterations-1
             qgr_final(1,gnode_id) = gp_init_value(ii)
         enddo
 
-        call solver_edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final, node_in_q0_face)
+        call solver_edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final, node_belongs_to_dirichlet_face)
     endif
 
     if (mx_exist.eq.1) then

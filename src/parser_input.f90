@@ -48,8 +48,8 @@ logical :: log_grafted_ic_from_delta           = .false.
 logical :: log_num_gr_chains_tol               = .false.
 logical :: log_r_gpoint                        = .false.
 logical :: log_calc_delta_every                = .false.
-logical :: log_n_dirichlet_faces               = .false.
-logical :: log_n_nanopart_faces                = .false.
+logical :: log_num_of_dirichlet_faces          = .false.
+logical :: log_num_of_nanoparticle_faces       = .false.
 logical :: log_periodicity                     = .false.
 logical :: log_sigma_polymer                   = .false.
 logical :: log_Hamaker_constant_of_polymer     = .false.
@@ -243,33 +243,33 @@ do
             read(line,*) calc_delta_every
             log_calc_delta_every = .true.
         elseif (INDEX(line,"# num faces") > 0) then
-            read(line,*) n_dirichlet_faces
-            if (n_dirichlet_faces > 0) then
-                allocate(ids_dirichlet_faces(n_dirichlet_faces))
-                allocate(sigma_plate(n_dirichlet_faces))
-                allocate(A_plate(n_dirichlet_faces))
-                do ii = 1, n_dirichlet_faces
+            read(line,*) num_of_dirichlet_faces
+            if (num_of_dirichlet_faces > 0) then
+                allocate(ids_dirichlet_faces(num_of_dirichlet_faces))
+                allocate(sigma_plate(num_of_dirichlet_faces))
+                allocate(A_plate(num_of_dirichlet_faces))
+                do ii = 1, num_of_dirichlet_faces
                     read(256,*) id, sigma_plate(ii), A_plate(ii)
                     ids_dirichlet_faces(ii) = id
                 enddo
                 A_plate = A_plate * 1e-20
-                log_n_dirichlet_faces = .true.
+                log_num_of_dirichlet_faces = .true.
             endif
         elseif (INDEX(line,"# num nanop") > 0) then
-            read(line,*) n_nanopart_faces
-            if (n_nanopart_faces > 0) then
-                allocate(ids_nanopart_faces(n_nanopart_faces))
-                allocate(center_np(3,n_nanopart_faces))
-                allocate(radius_np_eff(n_nanopart_faces))
-                allocate(sigma_np(n_nanopart_faces))
-                allocate(A_np(n_nanopart_faces))
-                do ii = 1, n_nanopart_faces
+            read(line,*) num_of_nanoparticle_faces
+            if (num_of_nanoparticle_faces > 0) then
+                allocate(ids_nanopart_faces(num_of_nanoparticle_faces))
+                allocate(center_np(3,num_of_nanoparticle_faces))
+                allocate(radius_np_eff(num_of_nanoparticle_faces))
+                allocate(sigma_np(num_of_nanoparticle_faces))
+                allocate(A_np(num_of_nanoparticle_faces))
+                do ii = 1, num_of_nanoparticle_faces
                     read(256,*) id, radius_np_eff(ii), center_np(1,ii), center_np(2,ii), center_np(3,ii), &
                                                           & sigma_np(ii), A_np(ii)
                     ids_nanopart_faces(ii) = id
                 enddo
                 A_np = A_np * 1e-20
-                log_n_nanopart_faces = .true.
+                log_num_of_nanoparticle_faces = .true.
             endif
         elseif (INDEX(line,"# periodicity") > 0) then
             read(line,*) periodicity
@@ -306,23 +306,23 @@ write(*  ,'(A85)')adjl('-----------------------------------SYSTEM PARAMETERS----
 
 if (log_temperature) then
     if (Temp>0) then
-        write(iow,'(3X,A40,E16.9,A4)')adjl("Temperature:",40),Temp," [K]"
-        write(6  ,'(3X,A40,E16.9,A4)')adjl("Temperature:",40),Temp," [K]"
-        beta = 1.d0 / (boltz_const_Joule_K * Temp)
+        write(iow,'(3X,A40,E16.9,A4)')adjl("Temperature:",40), temp," [K]"
+        write(6  ,'(3X,A40,E16.9,A4)')adjl("Temperature:",40), temp," [K]"
+        beta = 1.d0 / (boltz_const_Joule_K * temp)
     else
         write(ERROR_MESSAGE,'("Temperature is negative: ",E16.9," K")') temp
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    ERROR_MESSAGE="Temperature was not detected."
+    ERROR_MESSAGE = "Temperature was not detected."
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
 
 if (log_pressure) then
     if (pres>=0) then
-        write(iow,'(3X,A40,E16.9,A6)')adjl("Pressure:",40),pres," [atm]"
-        write(*  ,'(3X,A40,E16.9,A6)')adjl("Pressure:",40),pres," [atm]"
+        write(iow,'(3X,A40,E16.9,A6)')adjl("Pressure:",40), pres, " [atm]"
+        write(*  ,'(3X,A40,E16.9,A6)')adjl("Pressure:",40), pres, " [atm]"
         pres = pres * atm_to_pa
     else
         write(ERROR_MESSAGE,'("Pressure is negative: ",E16.9, " atm")') pres
@@ -343,28 +343,28 @@ write(*  ,'(A85)')adjl('----------------------------------POLYMER PROPERTIES----
 
 if (log_mass_density) then
     if (massden>0) then
-        write(iow,'(3X,A40,E16.9,A8)')adjl("Mass density:",40),massden," [g/cm3]"
-        write(6  ,'(3X,A40,E16.9,A8)')adjl("Mass density:",40),massden," [g/cm3]"
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Mass density:",40), massden, " [g/cm3]"
+        write(6  ,'(3X,A40,E16.9,A8)')adjl("Mass density:",40), massden, " [g/cm3]"
     else
         write(ERROR_MESSAGE,'("Mass density is negative: ",E16.9," g/cm3")') massden
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    ERROR_MESSAGE="Mass density was not detected."
+    ERROR_MESSAGE = "Mass density was not detected."
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
 
 if (log_monomer_mass) then
     if (mon_mass>0) then
-        write(iow,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40),mon_mass,"[g/mol]"
-        write(6  ,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40),mon_mass,"[g/mol]"
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40), mon_mass, "[g/mol]"
+        write(6  ,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40), mon_mass, "[g/mol]"
     else
         write(ERROR_MESSAGE,'("Monomer mass is negative: ",E16.9)') mon_mass
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    ERROR_MESSAGE="Monomer mass not detected."
+    ERROR_MESSAGE = "Monomer mass not detected."
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
@@ -378,7 +378,7 @@ if (mx_exist.eq.1) then
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE="Chain length of matrix chains was not detected."
+        ERROR_MESSAGE = "Chain length of matrix chains was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 endif
@@ -432,7 +432,7 @@ if (gr_exist.eq.1) then
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE="Rg2 per matrix monomer was not detected."
+        ERROR_MESSAGE = "Rg2 per matrix monomer was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
@@ -450,7 +450,7 @@ if (gr_exist.eq.1) then
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE="Chain length of grafted chains was not detected."
+        ERROR_MESSAGE = "Chain length of grafted chains was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
@@ -470,7 +470,7 @@ if (gr_exist.eq.1) then
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE="Contour step of grafted chains was not detected."
+        ERROR_MESSAGE = "Contour step of grafted chains was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
@@ -491,7 +491,7 @@ if (gr_exist.eq.1) then
                 write(iow,'(3X,A40,F16.9)')adjl("Crit contour point of grafted chains:",40), xs_crit_gr
                 write(6  ,'(3X,A40,F16.9)')adjl("Crit contour point of grafted chains:",40), xs_crit_gr
             else
-                ERROR_MESSAGE="Critical contour point of grafted chains was not detected."
+                ERROR_MESSAGE = "Critical contour point of grafted chains was not detected."
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
 
@@ -505,7 +505,7 @@ if (gr_exist.eq.1) then
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE="Edwards contour scheme of grafted chains was not detected."
+        ERROR_MESSAGE = "Edwards contour scheme of grafted chains was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 endif
@@ -583,11 +583,12 @@ if (mx_exist.eq.1) then
                 write(iow,'(3X,A40,F16.9)')adjl("Critical contour point of matrix chains:",40), xs_crit_mx
                 write(6  ,'(3X,A40,F16.9)')adjl("Critical contour point of matrix chains:",40), xs_crit_mx
             else
-                ERROR_MESSAGE="Critical contour point of matrix chains was not detected."
+                ERROR_MESSAGE = "Critical contour point of matrix chains was not detected."
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
 
             call get_contour_step(ds_ave_mx_ed, xs_crit_mx, chainlen_mx_max, ns_mx_ed)
+
         elseif (contour_discr_mx.eq.contour_asymm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
@@ -721,8 +722,8 @@ endif
 
 if (log_number_of_iterations) then
     if (iterations.ge.0) then
-        write(iow,'(3X,A40,I9)')adjl("Maximum number of iterations:",40),iterations
-        write(6  ,'(3X,A40,I9)')adjl("Maximum number of iterations:",40),iterations
+        write(iow,'(3X,A40,I9)')adjl("Maximum number of iterations:",40), iterations
+        write(6  ,'(3X,A40,I9)')adjl("Maximum number of iterations:",40), iterations
     else
         write(ERROR_MESSAGE,'("Maximum number of iterations is negative:",I10)') iterations
         call exit_with_error(1,1,1,ERROR_MESSAGE)
@@ -730,16 +731,16 @@ if (log_number_of_iterations) then
 else
     iterations = 1
     write(iow,'(3X,A40)')adjl("Max number of iter not found.",40)
-    write(iow,'(3X,A40,I9)')adjl("It was set to the default value:",40),iterations
+    write(iow,'(3X,A40,I9)')adjl("It was set to the default value:",40), iterations
     write(6  ,'(3X,A40)')adjl("Max number of iter not found.",40)
-    write(6  ,'(3X,A40,I9)')adjl("It was set to the default value:",40),iterations
+    write(6  ,'(3X,A40,I9)')adjl("It was set to the default value:",40), iterations
 endif
 
 
 if (log_bin_thickness) then
     if (bin_thickness.ge.0.d0) then
-        write(iow,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40),bin_thickness,"[Angstrom]"
-        write(6  ,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40),bin_thickness,"[Angstrom]"
+        write(iow,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40), bin_thickness, "[Angstrom]"
+        write(6  ,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40), bin_thickness, "[Angstrom]"
     else
         write(ERROR_MESSAGE,'("Bin thickness is negative:",E16.9)')bin_thickness
         call exit_with_error(1,1,1,ERROR_MESSAGE)
@@ -755,8 +756,8 @@ endif
 
 if (log_profile_dimension) then
     if ( (prof_dim.ge.1).and.(prof_dim.le.3) ) then
-        write(iow,'(3X,A40,I9)')adjl("Profile dimension:",40),prof_dim
-        write(6  ,'(3X,A40,I9)')adjl("Profile dimension:",40),prof_dim
+        write(iow,'(3X,A40,I9)')adjl("Profile dimension:",40), prof_dim
+        write(6  ,'(3X,A40,I9)')adjl("Profile dimension:",40), prof_dim
     else
         write(ERROR_MESSAGE,'("Profile dimension is not between 1 and 3:",I16)') prof_dim
         call exit_with_error(1,1,1,ERROR_MESSAGE)
@@ -805,8 +806,7 @@ if (log_field_init_scheme) then
         write(ERROR_MESSAGE,'("Incorrect field initialization value. Choose between 1-3.",I16)') init_iter
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
-endif
-if (.not.log_field_init_scheme) then
+else
     write(iow,'(A40)')adjl("Field will be initialized to zero.",40)
     write(6  ,'(A40)')adjl("Field will be initialized to zero.",40)
 endif
@@ -1043,19 +1043,19 @@ write(iow,'(A85)')adjl('----------------------------------BOUNDARY CONDITIONS---
 write(*  ,'(A85)')adjl('----------------------------------BOUNDARY CONDITIONS---------------------------------',85)
 
 
-if (log_n_dirichlet_faces.and.n_dirichlet_faces>0) then
-    write(iow,'(3X,A40,I9)')adjl("Number of Dirichlet (q=0) faces:",40), n_dirichlet_faces
-    write(iow,'(3X,A39)',advance='no')"Face ids:                               "
-    write(6  ,'(3X,A40,I9)')adjl("Number of Dirichlet (q=0) faces:",40), n_dirichlet_faces
-    write(6  ,'(3X,A39)',advance='no')"Face ids:                               "
-    do ii = 1, n_dirichlet_faces
+if (log_num_of_dirichlet_faces.and.num_of_dirichlet_faces>0) then
+    write(iow,'(3X,A40,I9)')adjl("Number of Dirichlet (q=0) faces:",40), num_of_dirichlet_faces
+    write(iow,'(3X,A39)',advance='no') "Face ids:                               "
+    write(6  ,'(3X,A40,I9)')adjl("Number of Dirichlet (q=0) faces:",40), num_of_dirichlet_faces
+    write(6  ,'(3X,A39)',advance='no') "Face ids:                               "
+    do ii = 1, num_of_dirichlet_faces
         write(iow,'(I3)',advance='no') ids_dirichlet_faces(ii)
         write(6  ,'(I3)',advance='no') ids_dirichlet_faces(ii)
     enddo
     write(iow,*)
     write(6  ,*)
 else
-    n_dirichlet_faces = 0
+    num_of_dirichlet_faces = 0
     allocate(ids_dirichlet_faces(1))
     ids_dirichlet_faces(1)=-1
     write(iow,'(3X,A40)')adjl("There are no Dirichlet (q=0) faces.",40)
@@ -1063,19 +1063,19 @@ else
 endif
 
 
-if (log_n_nanopart_faces.and.n_nanopart_faces>0) then
-    write(iow,'(3X,A40,I9)')adjl("Number of Nanoparticle (q=0) faces:",40), n_nanopart_faces
-    write(iow,'(3X,A39)',advance='no')"Face ids:                               "
-    write(6  ,'(3X,A40,I9)')adjl("Number of Nanoparticle (q=0) faces:",40), n_nanopart_faces
-    write(6  ,'(3X,A39)',advance='no')"Face ids:                               "
-    do ii = 1, n_nanopart_faces
+if (log_num_of_nanoparticle_faces.and.num_of_nanoparticle_faces>0) then
+    write(iow,'(3X,A40,I9)')adjl("Number of Nanoparticle (q=0) faces:",40), num_of_nanoparticle_faces
+    write(iow,'(3X,A39)',advance='no') "Face ids:                               "
+    write(6  ,'(3X,A40,I9)')adjl("Number of Nanoparticle (q=0) faces:",40), num_of_nanoparticle_faces
+    write(6  ,'(3X,A39)',advance='no') "Face ids:                               "
+    do ii = 1, num_of_nanoparticle_faces
         write(iow,'(I3)',advance='no') ids_nanopart_faces(ii)
         write(6  ,'(I3)',advance='no') ids_nanopart_faces(ii)
     enddo
     write(iow,*)
     write(6  ,*)
 else
-    n_nanopart_faces = 0
+    num_of_nanoparticle_faces = 0
     allocate(ids_nanopart_faces(1))
     ids_nanopart_faces(1)=-1
     write(iow,'(3X,A38)')adjl("There are no nanoparticle (q=0) faces.",40)
@@ -1164,27 +1164,27 @@ write(*  ,'(A85)')adjl('-------------------------------NONBONDED INTERACTIONS---
 
 if (log_eos_type) then
     if (eos_type.eq.eos_helfand) then
-        write(iow,'(3X,A40,I9)')adjl("Equation of state: Helfand",40),eos_type
-        write(*  ,'(3X,A40,I9)')adjl("Equation of state: Helfand",40),eos_type
+        write(iow,'(3X,A40,I9)')adjl("Equation of state: Helfand",40), eos_type
+        write(*  ,'(3X,A40,I9)')adjl("Equation of state: Helfand",40), eos_type
     elseif (eos_type.eq.eos_sl) then
-        write(iow,'(3X,A45,I9)')adjl("Equation of state: Sanchez-Lacombe",40),eos_type
-        write(*  ,'(3X,A45,I9)')adjl("Equation of state: Sanchez-Lacombe",40),eos_type
+        write(iow,'(3X,A45,I9)')adjl("Equation of state: Sanchez-Lacombe",40), eos_type
+        write(*  ,'(3X,A45,I9)')adjl("Equation of state: Sanchez-Lacombe",40), eos_type
     else
-        write(*  ,'(A45,I11)') 'EOS flag different than 0 (HF) or 1 (SL)',eos_type
+        write(*  ,'(A45,I11)') 'EOS flag different than 0 (HF) or 1 (SL)', eos_type
         STOP
     endif
     call init_scf_params()
 else
-    write(iow,'(A45)') 'EOS flag not set'
-    write(*  ,'(A45)') 'EOS flag not set'
+    write(iow,'(A45)') "EOS flag not set"
+    write(*  ,'(A45)') "EOS flag not set"
     STOP
 endif
 
 
 if (log_eos_coeffs) then
     if (eos_type.eq.eos_helfand) then
-        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
-        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40),hlf_kappa_T," [Pa^-1]"
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40), hlf_kappa_T, " [Pa^-1]"
+        write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40), hlf_kappa_T, " [Pa^-1]"
     elseif (eos_type.eq.eos_sl) then
         write(iow,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
         write(*  ,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star

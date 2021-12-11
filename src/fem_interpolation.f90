@@ -33,7 +33,7 @@ l = 3
 call fem_gausspoints(l, lint, sv)
 
 ! Loop over elements
-do mm = 1, n_el_node(nodeId)
+do mm = 1, num_of_elems_of_node(nodeId)
    nn = el_node(nodeId, mm)
 
     ! Loop over all nodes of current element

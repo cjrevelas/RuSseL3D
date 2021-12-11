@@ -20,8 +20,8 @@ integer                               :: bin, kk, ii, gnode_id
 
 character(len=2), intent(in) :: chain_type
 
-logical, intent(in), dimension(numnp) :: node_in_q0_face
-logical, dimension(numnp)             :: node_in_q0_face_new
+logical, intent(in), dimension(numnp) :: node_belongs_to_dirichlet_face
+logical, dimension(numnp)             :: node_belongs_to_dirichlet_face_new
 
 real(8), intent(in), dimension(ns_ed+1)       :: ds_ed
 real(8), intent(in), dimension(ns_ed+1,numnp) :: q_final
@@ -39,9 +39,9 @@ do bin = 7, 30
     call fem_matrix_assemble(Rg2_per_mon, wa)
 
     ! Dirichlet boundary conditions
-    node_in_q0_face_new = node_in_q0_face
+    node_belongs_to_dirichlet_face_new = node_belongs_to_dirichlet_face
     do kk = 1, numnp
-        if (cell_of_np(kk).eq.bin) node_in_q0_face_new(kk) = .true.
+        if (cell_of_np(kk).eq.bin) node_belongs_to_dirichlet_face_new(kk) = .true.
     enddo
 
     ! Initial conditions
@@ -64,7 +64,7 @@ do bin = 7, 30
     endif
 
     ! Solution
-    call solver_edwards(ds_ed, ns_ed, mumps_matrix_type, qshape, qshape_final, node_in_q0_face_new)
+    call solver_edwards(ds_ed, ns_ed, mumps_matrix_type, qshape, qshape_final, node_belongs_to_dirichlet_face_new)
 
     sum_qshape = 0.d0
     sum_Q      = 0.d0

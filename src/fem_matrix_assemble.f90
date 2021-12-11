@@ -9,9 +9,9 @@ use geometry_mod, only: numnp, numel, ndm, nel, num_of_bulk_pairs, node_pair_id,
 use iofiles_mod,  only: matrix_assembly
 !----------------------------------------------------------------------------------------------------------------!
 implicit none
-!-----------------------------------------------------------------------------------------------------------!
-integer                 :: lint
-integer                 :: i, j, l, n, m, nn, ii, kk
+!----------------------------------------------------------------------------------------------------------------!
+integer                 :: lint, elem
+integer                 :: ii, jj, kk, ll, mm, nn, pp
 integer, dimension(nel) :: global_index
 
 real(8), intent(in)                   :: Rg2_per_mon

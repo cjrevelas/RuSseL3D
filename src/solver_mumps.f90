@@ -19,7 +19,7 @@ include "dmumps_struc.h"
 type(DMUMPS_STRUC) :: mumps_par
 
 integer, intent(in) :: mumps_matrix_type
-integer             :: i, i8, i9
+integer             :: ii, i8, i9
 !--------------------------------------------------------------------------!
 ! Define a communicator for the package
 mumps_par%COMM = MPI_COMM_WORLD
@@ -77,8 +77,8 @@ if (mumps_par%MYID.eq.0) then
     mumps_par%JCN = A_m%col
     mumps_par%A   = A_m%value
 
-    do i = 1, mumps_par%N
-        mumps_par%RHS(i) = rdiag1(i)
+    do ii = 1, mumps_par%N
+        mumps_par%RHS(ii) = rdiag1(ii)
     enddo
 endif
 
@@ -96,8 +96,8 @@ endif
 
 ! Solution has been assembled on the master process
 if (mumps_par%MYID.eq.0) then
-    do i = 1, mumps_par%N
-        rdiag1(i) = mumps_par%RHS(i)
+    do ii = 1, mumps_par%N
+        rdiag1(ii) = mumps_par%RHS(ii)
     enddo
 endif
 

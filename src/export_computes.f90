@@ -34,7 +34,7 @@ if (export(export_phi_gen_freq, iter, convergence)) then
     ! Planar surfaces
     do mm = 1, 3
         do nn = 1, 2
-            if (is_dir_face(mm,nn)) then
+            if (is_dirichlet_face(mm,nn)) then
                 file_name = ""
                 write(file_name,'("o.phi_smear_w",I1,"_",I1)') mm, nn
                 call export_phi_smear(planar_cell_of_np(:,mm,nn), cell_vol_planar(:,mm,nn), numnp, file_name, phia_mx, phia_gr, volnp, lbin, nbin)
@@ -43,7 +43,7 @@ if (export(export_phi_gen_freq, iter, convergence)) then
     enddo
 
     ! Spherical nanoparticles
-    do mm = 1, n_nanopart_faces
+    do mm = 1, num_of_nanoparticle_faces
         file_name = ""
         write(file_name,'("o.phi_smear_np",I1)') mm
         call export_phi_smear(sph_cell_of_np(mm,:), cell_vol_sph(mm,:), numnp, file_name, phia_mx, phia_gr, volnp, lbin, nbin)
@@ -56,11 +56,11 @@ if (mx_exist.eq.1) then
     ! Planar surfaces
     do mm = 1, 3
         do nn = 1, 2
-            if (is_dir_face(mm,nn)) then
+            if (is_dirichlet_face(mm,nn)) then
                 if (export(export_chains_per_area_freq, iter, convergence)) then
                     file_name = ""
                     write(file_name,'("o.chains_area_w",I1,"_",I1)') mm, nn
-                    call export_chains_area(node_in_q0_face, planar_cell_of_np(:,mm,nn), "mx", Rg2_per_mon_mx, chainlen_mx, ns_mx_ed, ds_mx_ed, qmx_final, phia_mx, wa)
+                    call export_chains_area(node_belongs_to_dirichlet_face, planar_cell_of_np(:,mm,nn), "mx", Rg2_per_mon_mx, chainlen_mx, ns_mx_ed, ds_mx_ed, qmx_final, phia_mx, wa)
                 endif
                 if (export(export_ads_free_freq, iter, convergence)) then
                     do kk = 1, numnp
@@ -72,11 +72,11 @@ if (mx_exist.eq.1) then
     enddo
 
     ! Spherical nanoparticles
-    do mm = 1, n_nanopart_faces
+    do mm = 1, num_of_nanoparticle_faces
         if (export(export_chains_per_area_freq, iter, convergence)) then
             file_name = ""
             write(file_name,'("o.chains_area_w",I1,"_",I1)') mm, nn
-            call export_chains_area(node_in_q0_face, sph_cell_of_np(mm,:), "mx", Rg2_per_mon_mx, chainlen_mx, ns_mx_ed, ds_mx_ed, qmx_final, phia_mx, wa)
+            call export_chains_area(node_belongs_to_dirichlet_face, sph_cell_of_np(mm,:), "mx", Rg2_per_mon_mx, chainlen_mx, ns_mx_ed, ds_mx_ed, qmx_final, phia_mx, wa)
         endif
         if (export(export_ads_free_freq, iter, convergence)) then
             do kk = 1, numnp
@@ -85,7 +85,7 @@ if (mx_exist.eq.1) then
         endif
     enddo
 
-    if (export(export_ads_free_freq, iter, convergence)) call export_ads_free(node_in_q0_face, adsorbed)
+    if (export(export_ads_free_freq, iter, convergence)) call export_ads_free(node_belongs_to_dirichlet_face, adsorbed)
 
 #ifdef DEBUG_OUTPUTS
     call export_q(ns_mx_conv, qmx_interp_mm, "mm")
@@ -106,7 +106,7 @@ if (gr_exist.eq.1) then
     ! Planar surfaces
     do mm = 1, 3
         do nn = 1, 2
-            if (is_dir_face(mm,nn)) then
+            if (is_dirichlet_face(mm,nn)) then
                 if (export(export_brush_thickness_freq, iter, convergence)) then
                     file_name = ""
                     write(file_name,'("o.brush_w",I1,"_",I1)') mm, nn
@@ -118,14 +118,14 @@ if (gr_exist.eq.1) then
                 if (export(export_chains_per_area_freq, iter, convergence)) then
                     file_name = ""
                     write(file_name,'("o.chains_area_w",I1,"_",I1)') mm, nn
-                    call export_chains_area(node_in_q0_face, planar_cell_of_np(:,mm,nn), "gr", Rg2_per_mon_gr, chainlen_gr, ns_gr_ed, ds_gr_ed, qgr_final, phia_gr, wa)
+                    call export_chains_area(node_belongs_to_dirichlet_face, planar_cell_of_np(:,mm,nn), "gr", Rg2_per_mon_gr, chainlen_gr, ns_gr_ed, ds_gr_ed, qgr_final, phia_gr, wa)
                 endif
             endif
         enddo
     enddo
 
     ! Spherical nanoparticles
-    do mm = 1, n_nanopart_faces
+    do mm = 1, num_of_nanoparticle_faces
         if (export(export_brush_thickness_freq, iter, convergence)) then
             file_name = ""
             write(file_name,'("o.brush_np",I1)') mm
@@ -137,7 +137,7 @@ if (gr_exist.eq.1) then
         if (export(export_chains_per_area_freq, iter, convergence)) then
             file_name = ""
             write(file_name,'("o.chains_area_w",I1,"_",I1)') mm, nn
-            call export_chains_area(node_in_q0_face, sph_cell_of_np(mm,:), "gr", Rg2_per_mon_gr, chainlen_gr, ns_gr_ed, ds_gr_ed, qgr_final, phia_gr, wa)
+            call export_chains_area(node_belongs_to_dirichlet_face, sph_cell_of_np(mm,:), "gr", Rg2_per_mon_gr, chainlen_gr, ns_gr_ed, ds_gr_ed, qgr_final, phia_gr, wa)
         endif
     enddo
 #ifdef DEBUG_OUTPUTS

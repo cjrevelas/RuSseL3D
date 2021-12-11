@@ -4,9 +4,9 @@
 
 subroutine get_node_volume(volnp, node)
 !--------------------------------------------------------------------!
-use geometry,     only: ndm, nel, numnp, el_node, global_node_id_type_domain,&
-&                       xc, n_el_node
-use error_handing
+use geometry_mod,     only: ndm, nel, numnp, el_node, global_node_id_type_domain,&
+&                       xc, num_of_elems_of_node
+use error_handing_mod
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
@@ -27,7 +27,7 @@ vol          = 0.d0
 u_spat       = 0.d0
 u_spat(node) = 1.d0
 
-do s = 1, n_el_node(node)
+do s = 1, num_of_elems_of_node(node)
     n = el_node(node, s)
 
     do i = 1, nel

@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine solver_edwards(ds, ns, mumps_matrix_type, q, q_final, node_in_q0_face)
+subroutine solver_edwards(ds, ns, mumps_matrix_type, q, q_final, node_belongs_to_dirichlet_face)
 !----------------------------------------------------------------------------------------------------------!
 use kcw_mod,      only: A_m, F_m, rdiag1
 use geometry_mod, only: numnp, total_num_of_node_pairs
@@ -17,9 +17,9 @@ include "mpif.h"
 #endif
 !----------------------------------------------------------------------------------------------------------!
 integer, intent(in) :: ns, mumps_matrix_type
-integer             :: i, j, kk, time_step, get_sys_time, t_init, t_final
+integer             :: ii, jj, kk, time_step, get_sys_time, t_init, t_final
 
-logical, intent(in), dimension(numnp) :: node_in_q0_face
+logical, intent(in), dimension(numnp) :: node_belongs_to_dirichlet_face
 
 real(8), intent(in), dimension(ns+1)          :: ds
 real(8), intent(inout), dimension(2,numnp)    :: q
@@ -28,12 +28,11 @@ real(8), intent(inout), dimension(ns+1,numnp) :: q_final
 t_init = get_sys_time()
 
 do time_step = 2, ns+1
-    ! Set essential BCs and form the LHS of the linear system of equations to be solved
-    call solver_dirichlet(ds(time_step), mumps_matrix_type, node_in_q0_face)
+    call fem_bcs_and_nonzeros(ds(time_step), mumps_matrix_type, node_belongs_to_dirichlet_face)
 
 #ifdef USE_MPI
     ! Send a continue (.true.) signal to the slaves
-    call MPI_BCAST(.true., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+    call MPI_BCAST(.True., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
 
     if (ns.ge.10.and.MOD(time_step+1,ns/10).eq.0) then
@@ -45,15 +44,19 @@ do time_step = 2, ns+1
     ! Form the RHS of the linear system of equations to be solved
     rdiag1 = 0.
 
-    do kk = 1, all_el
-        i = F_m%row(kk)
-        j = F_m%col(kk)
+    do kk = 1, total_num_of_node_pairs
+        if (F_m%is_zero(kk)) cycle
 
-        rdiag1(i) = rdiag1(i) + F_m%rh(kk)*q(1,j)
+        if (F_m%row(kk)==0) cycle ! TEMP SOLUTION
+
+        ii = F_m%row(kk)
+        jj = F_m%col(kk)
+
+        rdiag1(ii) = rdiag1(ii) + F_m%rh(kk)*q(1,jj)
     enddo
 
-    do i = 1, numnp
-        if (node_in_q0_face(i)) rdiag1(i) = 0.
+    do ii = 1, numnp
+        if (node_belongs_to_dirichlet_face(ii)) rdiag1(ii) = 0.
     enddo
 
     ! Solve the linear system of equations

@@ -33,7 +33,7 @@ do kk = 1, numnp
     ! Loop over all dirichlet faces
     do mm = 1, 3
         do nn = 1, 2
-            if (is_dir_face(mm,nn)) then
+            if (is_dirichlet_face(mm,nn)) then
 
                 number_density = rho_mol_bulk * n_avog
                 radius_pol     = (3./4./pi/number_density)**(1./3.) * m_to_A
@@ -73,7 +73,7 @@ do kk = 1, numnp
    number_density   = rho_mol_bulk * n_avog
    radius_pol       = (3./4./pi/number_density)**(1./3.) * m_to_A
 
-   do mm = 1, n_nanopart_faces
+   do mm = 1, num_of_nanoparticle_faces
        r_centers        = DSQRT((xc(1,kk)-center_np(1,mm))**2 + (xc(2,kk)-center_np(2,mm))**2 + (xc(3,kk)-center_np(3,mm))**2)
        radius_np_actual = radius_np_eff(mm) - wall_distance
        r_surf           = r_centers - radius_pol - radius_np_actual
@@ -105,7 +105,7 @@ elseif (field_init_scheme.eq.1) then
     close(655)
 elseif (field_init_scheme.eq.2) then
     do kk = 1, numnp
-        if (node_in_q0_face(kk)) then
+        if (node_belongs_to_dirichlet_face(kk)) then
             wa(kk) = -kapa
         else
             wa(kk) = 0.d0
