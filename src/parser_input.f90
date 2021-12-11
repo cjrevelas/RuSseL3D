@@ -80,13 +80,13 @@ enddo
 ! Parse input file to retrieve simulation parameters
 call GET_COMMAND_ARGUMENT(1,input_filename)
 
-if (input_filename == '') input_filename = "./in.input"
+if (input_filename == '') input_filename = default_input_filename
 inquire(file=input_filename, exist=file_exists)
 
 if (file_exists) then
     open(unit=256, file = input_filename)
 else
-    write(ERROR_MESSAGE,'("File ",A15," does not exist!")')input_filename
+    write(ERROR_MESSAGE,'("File ",A15," does not exist!")') input_filename
     call exit_with_error(1,1,1,ERROR_MESSAGE)
 endif
 
@@ -329,9 +329,9 @@ if (log_pressure) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    pres = 0.d0
-    write(iow,'(A40)') 'Pressure was set to 0 atm'
-    write(*  ,'(A40)') 'Pressure was set to 0 atm'
+    pres = default_pres
+    write(iow,'(A40)') "Pressure was set to 0 atm"
+    write(*  ,'(A40)') "Pressure was set to 0 atm"
 endif
 
 
@@ -402,18 +402,19 @@ if (gr_exist.eq.1) then
     if (log_gp_filename) then
         inquire(file=gp_filename, exist=file_exists)
         if (.not.file_exists) then
-            write(ERROR_MESSAGE,'("Grafting points file ",A16," does not exist!")')gp_filename
+            write(ERROR_MESSAGE,'("Grafting points file ",A16," does not exist!")') gp_filename
             call exit_with_error(1,1,1,ERROR_MESSAGE)
             STOP
         endif
-        write(iow,'(3X,A40,A16)')adjl("Reading grafting points from file:",40),gp_filename
-        write(6  ,'(3X,A40,A16)')adjl("Reading grafting points from file:",40),gp_filename
+        write(iow,'(3X,A40,A16)')adjl("Reading grafting points from file:",40), gp_filename
+        write(6  ,'(3X,A40,A16)')adjl("Reading grafting points from file:",40), gp_filename
     else
-        gp_filename = "./in.gnodes"
+        gp_filename = default_gp_filename
         write(iow,'(3X,A40)')adjl("Grafting points input file not specified.",40)
-        write(iow,'(3X,A40,A16)')adjl("Reading default grafting points file:",40),gp_filename
+        write(iow,'(3X,A40,A16)')adjl("Reading default grafting points file:",40), gp_filename
         write(6  ,'(3X,A40)')adjl("Grafting points input file not specified.",40)
-        write(6  ,'(3X,A40,A16)')adjl("Reading default grafting points file:",40),gp_filename
+        write(6  ,'(3X,A40,A16)')adjl("Reading default grafting points file:",40), gp_filename
+
 
         inquire(file=gp_filename, exist=file_exists)
         if (.not.file_exists) then
@@ -597,24 +598,24 @@ if (mx_exist.eq.1) then
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ERROR_MESSAGE="Edwards contour scheme of matrix chains was not detected."
+        ERROR_MESSAGE = "Edwards contour scheme of matrix chains was not detected."
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
     if (log_ads_distance) then
         if (ads_distance.ge.0.d0) then
-            write(iow,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40),ads_distance,"[Angstrom]"
-            write(6  ,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40),ads_distance,"[Angstrom]"
+            write(iow,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40), ads_distance, "[Angstrom]"
+            write(6  ,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40), ads_distance, "[Angstrom]"
         else
-            write(ERROR_MESSAGE,'("Adsorption distance for chain segments is negative:",E16.9)')ads_distance
+            write(ERROR_MESSAGE,'("Adsorption distance for chain segments is negative:",E16.9)') ads_distance
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        ads_distance = 1.2d1
+        ads_distance = default_ads_distance
         write(iow,'(3X,A40)')adjl("Adsorption distance not found.",40)
-        write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40),ads_distance,"[Angstrom]"
+        write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), ads_distance, "[Angstrom]"
         write(6  ,'(3X,A40)')adjl("Adsorption distance not found.",40)
-        write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40),ads_distance,"[Angstrom]"
+        write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), ads_distance, "[Angstrom]"
     endif
 endif
 
@@ -627,28 +628,28 @@ write(*  ,'(A85)')adjl('--------------------------------SIMULATION PARAMETERS---
 
 if (log_mx_exist.and.mx_exist.ge.1) then
     mx_exist = 1
-    write(iow,'(3X,A40,I9)')adjl("The system includes matrix chains:",40),mx_exist
-    write(6  ,'(3X,A40,I9)')adjl("The system includes matrix chains:",40),mx_exist
+    write(iow,'(3X,A40,I9)')adjl("The system includes matrix chains:",40), mx_exist
+    write(6  ,'(3X,A40,I9)')adjl("The system includes matrix chains:",40), mx_exist
 else
-    mx_exist = 0
-    write(iow,'(3X,A40,I9)')adjl("System does not include matrix chains:",40),mx_exist
-    write(6  ,'(3X,A40,I9)')adjl("System does not include matrrix chains:",40),mx_exist
+    mx_exist = default_mx_exist
+    write(iow,'(3X,A40,I9)')adjl("System does not include matrix chains:",40), mx_exist
+    write(6  ,'(3X,A40,I9)')adjl("System does not include matrix chains:",40), mx_exist
 endif
 
 
 if (log_gr_exist.and.gr_exist.ge.1) then
     gr_exist = 1
-    write(iow,'(3X,A40,I9)')adjl("The system includes grafted chains:",40),gr_exist
-    write(6  ,'(3X,A40,I9)')adjl("The system includes grafted chains:",40),gr_exist
+    write(iow,'(3X,A40,I9)')adjl("The system includes grafted chains:",40), gr_exist
+    write(6  ,'(3X,A40,I9)')adjl("The system includes grafted chains:",40), gr_exist
 
     if (log_grafted_ic_from_delta) then
-        write(iow,'(3X,A40,I9)')adjl("Grafted ic from delta:",40),grafted_ic_from_delta
-        write(6  ,'(3X,A40,I9)')adjl("Grafted ic from delta:",40),grafted_ic_from_delta
+        write(iow,'(3X,A40,I9)')adjl("Grafted ic from delta:",40), grafted_ic_from_delta
+        write(6  ,'(3X,A40,I9)')adjl("Grafted ic from delta:",40), grafted_ic_from_delta
         if (grafted_ic_from_delta.ge.1) then
             if (log_calc_delta_every) then
                 if (calc_delta_every.gt.0) then
-                    write(iow,'(3X,A40,I9)')adjl("Delta is calculated every:",40),calc_delta_every
-                    write(6  ,'(3X,A40,I9)')adjl("Delta is calculated every:",40),calc_delta_every
+                    write(iow,'(3X,A40,I9)')adjl("Delta is calculated every:",40), calc_delta_every
+                    write(6  ,'(3X,A40,I9)')adjl("Delta is calculated every:",40), calc_delta_every
                 else
                     write(iow,'(3X,A40)')adjl("Delta is read from file",40)
                     write(6  ,'(3X,A40)')adjl("Delta is read from file",40)
@@ -656,18 +657,18 @@ if (log_gr_exist.and.gr_exist.ge.1) then
             endif
             if (log_num_gr_chains_tol) then
                 if (num_gr_chains_tol.ge.0.d0) then
-                    write(iow,'(3X,A40,E16.9)')adjl("Number of grafted chains tolerance:",40),num_gr_chains_tol
-                    write(6  ,'(3X,A40,E16.9)')adjl("Number of grafted chains tolerance:",40),num_gr_chains_tol
+                    write(iow,'(3X,A40,E16.9)')adjl("Number of grafted chains tolerance:",40), num_gr_chains_tol
+                    write(6  ,'(3X,A40,E16.9)')adjl("Number of grafted chains tolerance:",40), num_gr_chains_tol
                 else
                     write(ERROR_MESSAGE,'("Number of grafted chains tolerance is negative:",E16.9)') num_gr_chains_tol
                     call exit_with_error(1,1,1,ERROR_MESSAGE)
                 endif
             else
-                num_gr_chains_tol = 0.005d0
+                num_gr_chains_tol = default_num_gr_chains_tol
                 write(iow,'(3X,A40)')adjl("Num grafted chains tolerance not found",40)
-                write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),num_gr_chains_tol
+                write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), num_gr_chains_tol
                 write(6  ,'(3X,A40)')adjl("Num grafted chains tolerance not found",40)
-                write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),num_gr_chains_tol
+                write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), num_gr_chains_tol
             endif
         endif
         if (grafted_ic_from_delta.lt.1) then
@@ -681,23 +682,23 @@ if (log_gr_exist.and.gr_exist.ge.1) then
 
     if (log_r_gpoint) then
         if (r_gpoint.gt.0.d0) then
-            write(iow,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40),r_gpoint
-            write(6  ,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40),r_gpoint
+            write(iow,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40), r_gpoint
+            write(6  ,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40), r_gpoint
         else
             write(ERROR_MESSAGE,'("Distance of grafting points from solid must have a positive value:",E16.9)') r_gpoint
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        r_gpoint = 0.4d0
+        r_gpoint = default_r_gpoint
         write(iow,'(3X,A40)')adjl("Distance of grafting points not found.",40)
-        write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),r_gpoint
+        write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), r_gpoint
         write(6  ,'(3X,A40)')adjl("Distance of grafting points not found.",40)
-        write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),r_gpoint
+        write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), r_gpoint
     endif
 else
-    gr_exist = 0
-    write(iow,'(3X,A40,1x,I15)')adjl("System does not include grafted chains:",40),gr_exist
-    write(6  ,'(3X,A40,1x,I15)')adjl("System does not include grafted chains:",40),gr_exist
+    gr_exist = default_gr_exist
+    write(iow,'(3X,A40,1x,I15)')adjl("System does not include grafted chains:",40), gr_exist
+    write(6  ,'(3X,A40,1x,I15)')adjl("System does not include grafted chains:",40), gr_exist
 endif
 
 
@@ -707,7 +708,7 @@ if (log_set_initial_iteration) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    init_iter = 0
+    init_iter = default_init_iter
 endif
 
 
@@ -729,7 +730,7 @@ if (log_number_of_iterations) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    iterations = 1
+    iterations = default_iterations
     write(iow,'(3X,A40)')adjl("Max number of iter not found.",40)
     write(iow,'(3X,A40,I9)')adjl("It was set to the default value:",40), iterations
     write(6  ,'(3X,A40)')adjl("Max number of iter not found.",40)
@@ -746,11 +747,11 @@ if (log_bin_thickness) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    bin_thickness = 0.5d0
+    bin_thickness = default_bin_thickness
     write(iow,'(3X,A40)')adjl("Bin thickness not found.",40)
-    write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40),bin_thickness,"[Angstrom]"
+    write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), bin_thickness, "[Angstrom]"
     write(6  ,'(3X,A40)')adjl("Bin thickness not found.",40)
-    write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40),bin_thickness,"[Angstrom]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), bin_thickness, "[Angstrom]"
 endif
 
 
@@ -763,11 +764,11 @@ if (log_profile_dimension) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    prof_dim = 3
+    prof_dim = default_prof_dim
     write(iow,'(3X,A40)')adjl("Profile dimension not found.",40)
-    write(iow,'(3X,A40,I8)')adjl("It was set to the default value:",40),prof_dim
+    write(iow,'(3X,A40,I8)')adjl("It was set to the default value:",40), prof_dim
     write(6  ,'(3X,A40)')adjl("Profile dimension not found.",40)
-    write(6  ,'(3X,A40,I8)')adjl("It was set to the default value:",40),prof_dim
+    write(6  ,'(3X,A40,I8)')adjl("It was set to the default value:",40), prof_dim
 endif
 
 
@@ -776,25 +777,25 @@ if (log_field_init_scheme) then
         write(iow,'(3X,A34)')adjl("Field will be initialized to zero.",40)
         write(6  ,'(3X,A34)')adjl("Field will be initialized to zero.",40)
     elseif (field_init_scheme==1) then
-        if (log_gp_filename) then
+        if (log_field_in_filename) then
             inquire(file=field_in_filename, exist=file_exists)
             if (.not.file_exists) then
-                write(ERROR_MESSAGE,'("Field input file ",A16," does not exist!")')field_in_filename
+                write(ERROR_MESSAGE,'("Field input file ",A16," does not exist!")') field_in_filename
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
                 STOP
             endif
-            write(iow,'(A43,A16)')adjl("Field will be read from file:",40),field_in_filename
-            write(6  ,'(A43,A16)')adjl("Field will be read from file:",40),field_in_filename
+            write(iow,'(A43,A16)')adjl("Field will be read from file:",40), field_in_filename
+            write(6  ,'(A43,A16)')adjl("Field will be read from file:",40), field_in_filename
         else
-            field_in_filename = "./in.field.bin"
+            field_in_filename = default_field_in_filename
             write(iow,'(3X,A40)')adjl("Field input file not specified.",40)
-            write(iow,'(3X,A40,A16)')adjl("Reading default field input file:",40),field_in_filename
+            write(iow,'(3X,A40,A16)')adjl("Reading default field input file:",40), field_in_filename
             write(6  ,'(3X,A40)')adjl("Field input file not specified.",40)
-            write(6  ,'(3X,A40,A16)')adjl("Reading default field input file:",40),field_in_filename
+            write(6  ,'(3X,A40,A16)')adjl("Reading default field input file:",40), field_in_filename
 
             inquire(file=field_in_filename, exist=file_exists)
             if (.not.file_exists) then
-                write(ERROR_MESSAGE,'("Default field input file ",A16," does not exist!")')field_in_filename
+                write(ERROR_MESSAGE,'("Default field input file ",A16," does not exist!")') field_in_filename
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
                 STOP
             endif
@@ -814,92 +815,92 @@ endif
 
 if (log_mumps_matrix_type) then
     if (mumps_matrix_type == 0) then
-        write(iow,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40),"nonsymmetric (", mumps_matrix_type,")"
-        write(6  ,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40),"nonsymmetric (", mumps_matrix_type,")"
+        write(iow,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40), "nonsymmetric (", mumps_matrix_type, ")"
+        write(6  ,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40), "nonsymmetric (", mumps_matrix_type, ")"
     elseif (mumps_matrix_type == 1) then
-        write(iow,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40),"symmetric pos. def. (", mumps_matrix_type,")"
-        write(6  ,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40),"symmetric pos. def. (", mumps_matrix_type,")"
+        write(iow,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40), "symmetric pos. def. (", mumps_matrix_type, ")"
+        write(6  ,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40), "symmetric pos. def. (", mumps_matrix_type, ")"
     elseif (mumps_matrix_type == 2) then
-        write(iow,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40),"general symmetric(", mumps_matrix_type,")"
-        write(6  ,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40),"general symmetric(", mumps_matrix_type,")"
+        write(iow,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40), "general symmetric(", mumps_matrix_type, ")"
+        write(6  ,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40), "general symmetric(", mumps_matrix_type, ")"
     else
         write(ERROR_MESSAGE,'("Incorrect MUMPS matrix type.",I16)') mumps_matrix_type
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    mumps_matrix_type = 0
+    mumps_matrix_type = default_mumps_matrix_type
     write(iow,'(3X,A40)')adjl("MUMPS matrix type not detected.",40)
-    write(iow,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40),mumps_matrix_type
+    write(iow,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40), mumps_matrix_type
     write(6  ,'(3X,A40)')adjl("MUMPS matrix type not detected.",40)
-    write(6  ,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40),mumps_matrix_type
+    write(6  ,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40), mumps_matrix_type
 endif
 
 
 if (log_fraction_of_new_field) then
     if (frac.ge.0 .and. frac.le.1) then
-        write(iow,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40),frac
-        write(6  ,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40),frac
+        write(iow,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40), frac
+        write(6  ,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40), frac
     else
         write(ERROR_MESSAGE,'("Initial fraction of new field is negative or larger than unity:",E16.9)') frac
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    frac = 1.d0
+    frac = default_frac
     write(iow,'(3X,A40)')adjl("No initial fraction of new field.",40)
-    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),frac
+    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), frac
     write(6  ,'(3X,A40)')adjl("No initial fraction of new field.",40)
-    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),frac
+    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), frac
 endif
 
 
 if (log_field_error_tol) then
     if (field_error_tol.ge.0.d0) then
-        write(iow,'(3X,A40,E16.9)')adjl("Tolerance on field error:",40),field_error_tol
-        write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on field error:",40),field_error_tol
+        write(iow,'(3X,A40,E16.9)')adjl("Tolerance on field error:",40), field_error_tol
+        write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on field error:",40), field_error_tol
     else
         write(ERROR_MESSAGE,'("Tolerance on field error is negative:",E16.9)') field_error_tol
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    field_error_tol = 0.d0
+    field_error_tol = default_field_error_tol
     write(iow,'(3X,A40)')adjl("Tolerance on field error not found",40)
-    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),field_error_tol
+    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), field_error_tol
     write(6  ,'(3X,A40)')adjl("Tolerance on field error not found.",40)
-    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),field_error_tol
+    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), field_error_tol
 endif
 
 
 if (log_free_energy_error_tol) then
     if (free_energy_error_tol.ge.0.d0) then
-        write(iow,'(3X,A40,E16.9)')adjl("Tolerance on free energy error:",40),free_energy_error_tol
-        write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on free energy error:",40),free_energy_error_tol
+        write(iow,'(3X,A40,E16.9)')adjl("Tolerance on free energy error:",40), free_energy_error_tol
+        write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on free energy error:",40), free_energy_error_tol
     else
-        write(ERROR_MESSAGE,'("Tolerance on free energy error is negative:",E16.9)')free_energy_error_tol
+        write(ERROR_MESSAGE,'("Tolerance on free energy error is negative:",E16.9)') free_energy_error_tol
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    free_energy_error_tol = 1.d-6
+    free_energy_error_tol = default_free_energy_error_tol
     write(iow,'(3X,A40)')adjl("Tolerance on free energy error not found",40)
-    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol
+    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), free_energy_error_tol
     write(6  ,'(3X,A40)')adjl("Tolerance on free energy error not found.",40)
-    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol
+    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), free_energy_error_tol
 endif
 
 
 if (log_free_energy_error_tol_for_delta) then
     if (free_energy_error_tol_for_delta.ge.0.d0) then
-        write(iow,'(3X,A40,E16.9)')adjl("Tolerance on energy error for delta:",40),free_energy_error_tol_for_delta
-        write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on energy error for delta:",40),free_energy_error_tol_for_delta
+        write(iow,'(3X,A40,E16.9)')adjl("Tolerance on energy error for delta:",40), free_energy_error_tol_for_delta
+        write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on energy error for delta:",40), free_energy_error_tol_for_delta
     else
-        write(ERROR_MESSAGE,'("Tolerance on energy error for delta is negative:",E16.9)')free_energy_error_tol_for_delta
+        write(ERROR_MESSAGE,'("Tolerance on energy error for delta is negative:",E16.9)') free_energy_error_tol_for_delta
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    free_energy_error_tol_for_delta = 1.d-3
+    free_energy_error_tol_for_delta = default_free_energy_error_tol_for_delta
     write(iow,'(3X,A40)')adjl("Tol on energy error for delta not found",40)
-    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol_for_delta
+    write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), free_energy_error_tol_for_delta
     write(6  ,'(3X,A40)')adjl("Tol on energy error for delta not found.",40)
-    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40),free_energy_error_tol_for_delta
+    write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), free_energy_error_tol_for_delta
 endif
 
 
@@ -911,129 +912,129 @@ write(*  ,'(A85)')adjl('-----------------------------------OUTPUT FREQUENCY-----
 
 if (log_export_phi_gen_freq) then
     if (export_phi_gen_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
+        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
     else
         export_phi_gen_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
+        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
     endif
 else
-    export_phi_gen_freq = 1
-    write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40),export_phi_gen_freq
+    export_phi_gen_freq = default_export_phi_gen_freq
+    write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
 endif
 
 
 if (log_export_phi_indiv_freq) then
     if (export_phi_indiv_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
+        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
     else
         export_phi_indiv_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
+        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
     endif
 else
-    export_phi_indiv_freq = 0
-    write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40),export_phi_indiv_freq
+    export_phi_indiv_freq = default_export_phi_indiv_freq
+    write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
 endif
 
 
 if (log_export_field_freq) then
     if (export_field_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
+        write(iow,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
     else
         export_field_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
+        write(iow,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
     endif
 else
-    export_field_freq = 1
-    write(iow,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export field:",40),export_field_freq
+    export_field_freq = default_export_field_freq
+    write(iow,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
 endif
 
 
 if (log_export_field_bin_freq) then
     if (export_field_bin_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
+        write(iow,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
     else
         export_field_bin_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
+        write(iow,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
     endif
 else
-    export_field_bin_freq = 1
-    write(iow,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40),export_field_bin_freq
+    export_field_bin_freq = default_export_field_bin_freq
+    write(iow,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
 endif
 
 
 if (log_export_propagators_freq) then
     if (export_propagators_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
+        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
     else
         export_propagators_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
+        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
     endif
 else
-    export_propagators_freq = 0
-    write(iow,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40),export_propagators_freq
+    export_propagators_freq = default_export_propagators_freq
+    write(iow,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
 endif
 
 
 if (log_export_brush_thickness_freq) then
     if (export_brush_thickness_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
+        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
     else
         export_brush_thickness_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
+        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
     endif
 else
-    export_brush_thickness_freq = 1
-    write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40),export_brush_thickness_freq
+    export_brush_thickness_freq = default_export_brush_thickness_freq
+    write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
 endif
 
 
 if (log_export_chains_per_area_freq) then
     if (export_chains_per_area_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
+        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
     else
         export_chains_per_area_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
+        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
     endif
 else
-    export_chains_per_area_freq = 0
-    write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40),export_chains_per_area_freq
+    export_chains_per_area_freq = default_export_chains_per_area_freq
+    write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
 endif
 
 
 if (log_export_ads_free_freq) then
     if (export_ads_free_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
+        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
     else
         export_ads_free_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
+        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
+        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
     endif
 else
-    export_ads_free_freq = 0
-    write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40),export_ads_free_freq
+    export_ads_free_freq = default_export_ads_free_freq
+    write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
+    write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
 endif
 
 
@@ -1105,10 +1106,11 @@ if (log_periodicity.and.periodicity>0) then
         write(6  ,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(5), periodic_face_id(6)
     endif
 else
-    domain_is_periodic = .false.
+    domain_is_periodic = default_domain_is_periodic
     write(iow,'(3X,A38)')adjl("The domain is not periodic.",40)
     write(6  ,'(3X,A38)')adjl("The domain is not periodic.",40)
 endif
+
 
 
 write(iow,*)
@@ -1132,27 +1134,27 @@ endif
 
 
 if (log_Hamaker_constant_of_polymer) then
-    write(iow,'(3X,A40,E16.9,A10)')adjl("Hamaker constant of polymer:",40),A_pol," [10-20 J]"
-    write(6  ,'(3X,A40,E16.9,A10)')adjl("Hamaker constant of polymer:",40),A_pol," [10-20 J]"
+    write(iow,'(3X,A40,E16.9,A10)')adjl("Hamaker constant of polymer:",40), A_pol, " [10-20 J]"
+    write(6  ,'(3X,A40,E16.9,A10)')adjl("Hamaker constant of polymer:",40), A_pol, " [10-20 J]"
     A_pol = A_pol * 1e-20
 else
-    A_pol = 0.d0
+    A_pol = default_polymer_hamaker_constant
     write(iow,'(3X,A40)')adjl("Hamaker constant for pol not found.",40)
-    write(iow,'(3X,A40,E16.9,A10)')adjl("It was set to the default value: ",40),A_pol," [10-20 J]"
+    write(iow,'(3X,A40,E16.9,A10)')adjl("It was set to the default value: ",40), A_pol, " [10-20 J]"
     write(6  ,'(3X,A40)')adjl("Hamaker constant for pol not found.",40)
-    write(6  ,'(3X,A40,E16.9,A10)')adjl("It was set to the default value: ",40),A_pol," [10-20 J]"
+    write(6  ,'(3X,A40,E16.9,A10)')adjl("It was set to the default value: ",40), A_pol, " [10-20 J]"
 endif
 
 
 if (log_wall_distance) then
-    write(iow,'(3X,A40,E16.9,A11)')adjl("Wall distance for Hamaker:",40),wall_distance," [Angstrom]"
-    write(6  ,'(3X,A40,E16.9,A11)')adjl("Wall distance for Hamaker:",40),wall_distance," [Angstrom]"
+    write(iow,'(3X,A40,E16.9,A11)')adjl("Wall distance for Hamaker:",40), wall_distance, " [Angstrom]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("Wall distance for Hamaker:",40), wall_distance, " [Angstrom]"
 else
-    wall_distance = 5.d0
+    wall_distance = default_wall_distance
     write(iow,'(3X,A24)')adjl("Wall distance not found.",40)
-    write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value: ",40),wall_distance," [Angstrom]"
+    write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value: ",40), wall_distance, " [Angstrom]"
     write(6  ,'(3X,A24)')adjl("Wall distance not found.",40)
-    write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value: ",40),wall_distance," [Angstrom]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value: ",40), wall_distance, " [Angstrom]"
 endif
 
 
@@ -1200,8 +1202,8 @@ if  (log_influence_param) then
     write(iow,'(3X,A40,E16.9,A14)')adjl("Influence parameter:",45), k_gr_tilde, " [J*m^5/mol^2]"
     write(*  ,'(3X,A40,E16.9,A14)')adjl("Influence parameter:",45), k_gr_tilde, " [J*m^5/mol^2]"
 else
-    k_gr_tilde = 0.d0
-    square_gradient = .false.
+    k_gr_tilde      = 0.0d0
+    square_gradient = default_square_gradient
     write(iow,'(3X,A40,E16.9,A14)')adjl("Influence parameter not found. Auto:",45), k_gr_tilde, " [J*m^5/mol^2]"
     write(*  ,'(3X,A40,E16.9,A14)')adjl("Influence parameter not found. Auto:",45), k_gr_tilde, " [J*m^5/mol^2]"
 endif
@@ -1216,22 +1218,22 @@ write(*  ,'(A85)')adjl('-------------------------------------SPATIAL MESH-------
 if (log_mesh_filename) then
     inquire(file=mesh_filename, exist=file_exists)
     if (.not.file_exists) then
-        write(ERROR_MESSAGE,'("Mesh file ",A16," does not exist!")')mesh_filename
+        write(ERROR_MESSAGE,'("Mesh file ",A16," does not exist!")') mesh_filename
         call exit_with_error(1,1,1,ERROR_MESSAGE)
         STOP
     endif
-    write(iow,'(3X,A40,A16)')adjl("Reading mesh from file:",40),mesh_filename
-    write(6  ,'(3X,A40,A16)')adjl("Reading mesh from file:",40),mesh_filename
+    write(iow,'(3X,A40,A16)')adjl("Reading mesh from file:",40), mesh_filename
+    write(6  ,'(3X,A40,A16)')adjl("Reading mesh from file:",40), mesh_filename
 else
-    mesh_filename = "./in.mesh"
+    mesh_filename = default_mesh_filename
     write(iow,'(3X,A40)')adjl("Mesh input file not specified.",40)
-    write(iow,'(3X,A40,A16)')adjl("Reading default mesh file:",40),mesh_filename
+    write(iow,'(3X,A40,A16)')adjl("Reading default mesh file:",40), mesh_filename
     write(6  ,'(3X,A40)')adjl("Mesh input file not specified.",40)
-    write(6  ,'(3X,A40,A16)')adjl("Reading default mesh file:",40),mesh_filename
+    write(6  ,'(3X,A40,A16)')adjl("Reading default mesh file:",40), mesh_filename
 
     inquire(file=mesh_filename, exist=file_exists)
     if (.not.file_exists) then
-        write(ERROR_MESSAGE,'("Default mesh file ",A16," does not exist!")')mesh_filename
+        write(ERROR_MESSAGE,'("Default mesh file ",A16," does not exist!")') mesh_filename
         call exit_with_error(1,1,1,ERROR_MESSAGE)
         STOP
     endif
