@@ -23,7 +23,7 @@ k      = 0
 
 !open(unit = 60, file = "d.elem_vol")
 do p = 1, 4
-    vol_test = 0.d00
+    vol_test = 0.0d0
 
     temp_x  = xl(1,p)
     xl(1,p) = x_test

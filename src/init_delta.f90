@@ -33,8 +33,8 @@ if (gr_exist.eq.1) then
     allocate(gpid(num_gpoints), delta_numer(num_gpoints), gp_init_value(num_gpoints))
 
     gpid          = 0
-    delta_numer   = 0.d0
-    gp_init_value = 0.d0
+    delta_numer   = 0.0d0
+    gp_init_value = 0.0d0
 
     ! Specify grafting points
     do i1 = 1, num_gpoints

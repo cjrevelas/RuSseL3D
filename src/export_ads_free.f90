@@ -27,19 +27,17 @@ write(6,'(2X,A40)')adjl("Exporting ads vs free density profiles.",40)
 call fem_matrix_assemble(Rg2_per_mon_mx, wa)
 
 ! Initial and boundary conditions
-qfree               = 0.d0
-qfree_final         = 0.d0
-qfree(1,:)          = 1.d0
-qfree_final(1,:)    = 1.d0
-node_in_q0_face_new = node_in_q0_face
+qfree            = 0.d0
+qfree_final      = 0.d0
+qfree(1,:)       = 1.d0
+qfree_final(1,:) = 1.d0
 
 node_belongs_to_dirichlet_face_new = node_belongs_to_dirichlet_face
 
 do kk = 1, numnp
     if (adsorbed(kk)) then
-        qfree(1,kk)             = 0.d0
-        qfree_final(1,kk)       = 0.d0
-        node_in_q0_face_new(kk) = .true.
+        qfree(1,kk)       = 0.d0
+        qfree_final(1,kk) = 0.d0
 
         node_belongs_to_dirichlet_face_new(kk) = .True.
     endif

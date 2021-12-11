@@ -19,8 +19,8 @@ real(8), dimension(ndm, nel)          :: xl
 real(8), dimension(4,11)              :: shp
 real(8), dimension(5,11)              :: sv
 !--------------------------------------------------------------------!
-sum_out = 0.d00
-vol     = 0.d00
+sum_out = 0.0d0
+vol     = 0.0d0
 
 do n = 1, numel
 

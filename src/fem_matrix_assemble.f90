@@ -20,76 +20,77 @@ real(8)                               :: xsj
 real(8), dimension(ndm,nel)           :: xl
 real(8), dimension(4,11)              :: shp
 real(8), dimension(5,11)              :: sv
-!-----------------------------------------------------------------------------------------------------------!
-ii = 0
+!----------------------------------------------------------------------------------------------------------------!
+kk = 0
 
-F_m%c = 0.d0
-F_m%k = 0.d0
-F_m%g = 0.d0
-F_m%w = 0.d0
+F_m%c = 0.0d0
+F_m%k = 0.0d0
+F_m%g = 0.0d0
+F_m%w = 0.0d0
 
 ! Assembly element matrices
-do nn = 1, numel
+do elem = 1, numel
     ! 1. Loop over all nodes of current element
     ! 2. Find global index of node
     ! 3. Copy coordinates from global array to local array concerning current element
 
-    do i = 1, nel
-        global_index(i) = global_node_id_type_domain(i,nn)
-        do j = 1, ndm
-            xl(j,i) = xc(j, global_index(i))
+    do ii = 1, nel
+        global_index(ii) = global_node_id_type_domain(ii,elem)
+        do jj = 1, ndm
+            xl(jj,ii) = xc(jj, global_index(ii))
         enddo
     enddo
 
     ! Set up for gauss quadrature
-    l=3
-    call fem_gausspoints(l, lint, sv)
+    ll = 3
+    call fem_gausspoints(ll, lint, sv)
 
-    do l = 1, lint
+    do ll = 1, lint
 
-        ii = nel*nel*(nn-1)     ! This index goes from zero to all_el=nel*nel*numel
+        kk = nel * nel * (elem-1)     ! This index goes from zero to num_of_bulk_pairs = nel * nel * numel
 
-        call fem_tetshpfun(sv(1,l), xl, ndm, nel, xsj, shp)
+        call fem_tetshpfun(sv(1,ll), xl, ndm, nel, xsj, shp)
 
-        do m = 1, nel
-            do n = 1, nel
-                kk = global_index(n)
+        do mm = 1, nel
+            do nn = 1, nel
+                pp = global_index(nn)
 
-                ii = ii + 1
+                kk = kk + 1
 
-                F_m%c(ii) = F_m%c(ii) + shp(4,n)*shp(4,m)*xsj*sv(5,l)
+                F_m%c(kk) = F_m%c(kk) + shp(4,nn)*shp(4,mm)*xsj*sv(5,ll)
 
-                F_m%k(ii) = F_m%k(ii) + Rg2_per_mon &
-                                      * (shp(1,n)*shp(1,m)+shp(2,n)*shp(2,m)+shp(3,n)*shp(3,m))*xsj*sv(5,l)
+                F_m%k(kk) = F_m%k(kk) + Rg2_per_mon &
+                                      * (shp(1,nn)*shp(1,mm)+shp(2,nn)*shp(2,mm)+shp(3,nn)*shp(3,mm))*xsj*sv(5,ll)
 
-                F_m%w(ii) = F_m%w(ii) + wa(kk)*shp(4,n)*shp(4,m)*xsj*sv(5,l)
-            enddo !n
-        enddo !m
-    enddo !l
-enddo !nn
+                F_m%w(kk) = F_m%w(kk) + wa(pp)*shp(4,nn)*shp(4,mm)*xsj*sv(5,ll)
+            enddo !nn
+        enddo !mm
+    enddo !ll
+enddo !elem
 
-! Assembly global matrix using element matrices and con_12 hash matrix created in parser_mesh.f90
-do i = 1, all_el
-    if (con_l2(i)/=i) then
+! Assembly global matrix using element matrices and node_pair_id hash matrix created in parser_mesh.f90
+! TODO: Lots of nonzero entries are created with the following process -> consider removal
+do kk = 1, num_of_bulk_pairs
+    if (F_m%is_zero(kk)) then
         ! Add up contributions of same pairs met multiple times
-        F_m%k(con_l2(i)) = F_m%k(con_l2(i)) + F_m%k(i)
-        F_m%k(i)=0.
-        F_m%c(con_l2(i)) = F_m%c(con_l2(i)) + F_m%c(i)
-        F_m%c(i)=0.
-        F_m%w(con_l2(i)) = F_m%w(con_l2(i)) + F_m%w(i)
-        F_m%w(i)=0.
+        F_m%k(node_pair_id(kk)) = F_m%k(node_pair_id(kk)) + F_m%k(kk)
+        F_m%k(kk)               = 0.0d0
+        F_m%c(node_pair_id(kk)) = F_m%c(node_pair_id(kk)) + F_m%c(kk)
+        F_m%c(kk)               = 0.0d0
+        F_m%w(node_pair_id(kk)) = F_m%w(node_pair_id(kk)) + F_m%w(kk)
+        F_m%w(kk)               = 0.0d0
     endif
 enddo
 
 #ifdef DEBUG_OUTPUTS
 open(unit=400, file = matrix_assembly)
 write(400,'(3(2X,A16))') "F_m%k","F_m%c","F_m%w"
-do i = 1, all_el
-    write(400,'(3(2X,E16.9))')F_m%k(i), F_m%c(i), F_m%w(i)
+do kk = 1, num_of_bulk_pairs
+    write(400,'(3(2X,E16.9))')F_m%k(kk), F_m%c(kk), F_m%w(kk)
 enddo
 close(400)
 #endif
 
 return
-!-----------------------------------------------------------------------------------------------------------!
+!----------------------------------------------------------------------------------------------------------------!
 end subroutine fem_matrix_assemble
