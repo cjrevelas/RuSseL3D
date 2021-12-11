@@ -4,8 +4,8 @@
 
 subroutine solver_edwards(ds, ns, mumps_matrix_type, q, q_final, node_in_q0_face)
 !----------------------------------------------------------------------------------------------------------!
-use kcw,      only: A_m, F_m, rdiag1
-use geometry, only: numnp, all_el
+use kcw_mod,      only: A_m, F_m, rdiag1
+use geometry_mod, only: numnp, total_num_of_node_pairs
 #ifdef USE_MPI
 use mpistuff
 #endif

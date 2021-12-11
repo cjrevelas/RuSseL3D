@@ -7,22 +7,26 @@ subroutine parser_mesh()
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
-use error_handing
-use write_helper, only: adjl
-use parser_vars,  only: iow, n_dirichlet_faces, n_nanopart_faces, prof_dim,        &
-&                       ids_dirichlet_faces, ids_nanopart_faces, periodic_face_id, &
-&                       periodic_axis_id, domain_is_periodic
-use geometry,     only: global_node_id_type_vertex, global_node_id_type_edge,      &
-&                       global_node_id_type_face, global_node_id_type_domain,      &
-&                       xc, numnp, numel, el_node, is_dir_face, max_el_node,       &
-&                       node_in_q0_face, nel, n_el_node, ndm, con_l2, all_el,      &
-&                       box_lo, box_hi, box_len,                                   &
-&                       nen_type_vertex, nen_type_edge, nen_type_face,             &
-&                       numel_type_vertex, numel_type_edge, numel_type_face
-use kcw,          only: F_m
-use iofiles,      only: mesh_filename, dir_faces, com_12, inter, mesh_out,         &
-&                       mesh_prof, xface1_elements, xface2_elements,               &
-&                       yface1_elements, yface2_elements, zface1_elements,         &
+use error_handing_mod
+use write_helper_mod, only: adjl
+use parser_vars_mod,  only: iow, num_of_dirichlet_faces, num_of_nanoparticle_faces,    &
+&                       ids_dirichlet_faces, ids_nanopart_faces, periodic_face_id,     &
+&                       periodic_axis_id, domain_is_periodic, prof_dim
+use geometry_mod,     only: nel, num_of_elems_of_node, box_lo, box_hi, box_len,        &
+&                       xc, numnp, numel, el_node, global_node_id_type_domain,         &
+&                       is_dirichlet_face, node_belongs_to_dirichlet_face,             &
+&                       ndm, node_pair_id, num_of_bulk_pairs, total_num_of_node_pairs, &
+&                       node_pairing_xx_hash, node_pairing_yy_hash,                    &
+&                       node_pairing_zz_hash, node_pairing_xx_it,                      &
+&                       node_pairing_yy_it, node_pairing_zz_it,                        &
+&                       node_pairing_xx_key, node_pairing_yy_key,                      &
+&                       node_pairing_zz_key, node_pairing_xx_value,                    &
+&                       node_pairing_yy_value, node_pairing_zz_value,                  &
+&                       num_dest_xx_neighbors
+use kcw_mod,          only: F_m
+use iofiles_mod,      only: mesh_filename, dir_faces, com_12, inter, mesh_out,         &
+&                       mesh_prof, xface1_elements, xface2_elements,                   &
+&                       yface1_elements, yface2_elements, zface1_elements,             &
 &                       zface2_elements
 !----------------------------------------------------------------------------------------------------------------------------!
 implicit none

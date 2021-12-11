@@ -45,28 +45,28 @@ SRCDIR=src
 MODDIR=$(SRCDIR)/mod
 RUNDIR=run
 
-MODULES=$(OBJDIR)/parser_vars.o\
-	$(OBJDIR)/constants.o\
-        $(OBJDIR)/flags.o\
-        $(OBJDIR)/eos.o\
-	$(OBJDIR)/kcw.o\
-	$(OBJDIR)/geometry.o\
+MODULES=$(OBJDIR)/parser_vars_mod.o\
+	$(OBJDIR)/constants_mod.o\
+	$(OBJDIR)/defaults_mod.o\
+        $(OBJDIR)/flags_mod.o\
+        $(OBJDIR)/eos_mod.o\
+	$(OBJDIR)/kcw_mod.o\
 	$(OBJDIR)/fhash_mod.o\
-	$(OBJDIR)/mpistuff.o\
-	$(OBJDIR)/write_helper.o\
-	$(OBJDIR)/arrays.o\
-	$(OBJDIR)/iofiles.o\
-	$(OBJDIR)/error_handing.o\
-	$(OBJDIR)/force_fields.o\
-	$(OBJDIR)/delta.o\
-	$(OBJDIR)/hist.o\
+	$(OBJDIR)/geometry_mod.o\
+	$(OBJDIR)/mpistuff_mod.o\
+	$(OBJDIR)/write_helper_mod.o\
+	$(OBJDIR)/arrays_mod.o\
+	$(OBJDIR)/iofiles_mod.o\
+	$(OBJDIR)/error_handing_mod.o\
+	$(OBJDIR)/force_fields_mod.o\
+	$(OBJDIR)/delta_mod.o\
+	$(OBJDIR)/hist_mod.o\
 
 OBJECTS=$(OBJDIR)/parser_input.o\
 	$(OBJDIR)/parser_mesh.o\
 	$(OBJDIR)/tools_histogram.o\
 	$(OBJDIR)/tools_matinv4.o\
 	$(OBJDIR)/solver_mumps.o\
-	$(OBJDIR)/solver_dirichlet.o\
 	$(OBJDIR)/solver_edwards.o\
 	$(OBJDIR)/contour_convolution.o\
         $(OBJDIR)/contour_interp.o\
@@ -85,6 +85,7 @@ OBJECTS=$(OBJDIR)/parser_input.o\
 	$(OBJDIR)/fem_gausspoints.o\
 	$(OBJDIR)/fem_integration.o\
         $(OBJDIR)/fem_matrix_assemble.o\
+	$(OBJDIR)/fem_bcs_and_nonzeros.o\
 	$(OBJDIR)/fem_interpolation.o\
 	$(OBJDIR)/fem_tetshpfun.o\
 	$(OBJDIR)/export_computes.o\

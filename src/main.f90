@@ -4,18 +4,18 @@
 
 program RuSseL
 !----------------------------------------------------------------------------------------------------------------------------------!
-use parser_vars
-use arrays
-use eos
-use constants
-use error_handing
-use write_helper
-use geometry
-use iofiles
-use delta
-use flags, only: contour_symm, contour_asymm, contour_hybrid
+use parser_vars_mod
+use arrays_mod
+use eos_mod
+use constants_mod
+use error_handing_mod
+use write_helper_mod
+use geometry_mod
+use iofiles_mod
+use delta_mod
+use flags_mod, only: contour_symm, contour_asymm, contour_hybrid
 #ifdef USE_MPI
-use mpistuff
+use mpistuff_mod
 #endif
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none

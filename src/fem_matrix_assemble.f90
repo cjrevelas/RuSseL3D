@@ -3,11 +3,11 @@
 !See the LICENSE file in the root directory for license information.
 
 subroutine fem_matrix_assemble(Rg2_per_mon, wa)
-!-----------------------------------------------------------------------------------------------------------!
-use kcw,      only: F_m
-use geometry, only: numnp, numel, ndm, nel, all_el, con_l2, global_node_id_type_domain, xc
-use iofiles,  only: matrix_assembly
-!-----------------------------------------------------------------------------------------------------------!
+!----------------------------------------------------------------------------------------------------------------!
+use kcw_mod,      only: F_m
+use geometry_mod, only: numnp, numel, ndm, nel, num_of_bulk_pairs, node_pair_id, global_node_id_type_domain, xc
+use iofiles_mod,  only: matrix_assembly
+!----------------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
 integer                 :: lint

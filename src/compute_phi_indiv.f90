@@ -5,10 +5,10 @@
 subroutine compute_phi_indiv(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, wa, &
      &                num_gpoints, gpid, gp_init_value, phia_gr_indiv)
 !------------------------------------------------------------------------------------------------------!
-use geometry,     only: node_in_q0_face
-use write_helper, only: adjl
-use parser_vars,  only: ns_gr_conv, ns_gr_ed, chainlen_gr, mumps_matrix_type, rg2_per_mon_gr
-use error_handing
+use geometry_mod,     only: node_belongs_to_dirichlet_face
+use write_helper_mod, only: adjl
+use parser_vars_mod,  only: ns_gr_conv, ns_gr_ed, chainlen_gr, mumps_matrix_type, rg2_per_mon_gr
+use error_handing_mod
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!

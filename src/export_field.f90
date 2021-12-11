@@ -4,9 +4,9 @@
 
 subroutine export_field(wa, wa_new, wa_mix)
 !-----------------------------------------------------------------------------------------------------------!
-use geometry,     only: numnp, xc
-use iofiles,      only: field_profile
-use write_helper, only: adjl
+use geometry_mod,     only: numnp, xc
+use iofiles_mod,      only: field_profile
+use write_helper_mod, only: adjl
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!

@@ -4,10 +4,10 @@
 
 subroutine init_arrays()
 !-----------------------------------------------------------------------------------------------------------!
-use geometry,    only: numnp
-use kcw,         only: rdiag1
-use parser_vars, only: ns_mx_ed, ns_mx_conv, mx_exist, gr_exist, ns_gr_ed, ns_gr_conv
-use arrays
+use geometry_mod,    only: numnp
+use kcw_mod,         only: rdiag1
+use parser_vars_mod, only: ns_mx_ed, ns_mx_conv, mx_exist, gr_exist, ns_gr_ed, ns_gr_conv
+use arrays_mod
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!

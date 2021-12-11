@@ -4,8 +4,8 @@
 
 subroutine init_chain_contour(contour_discr, chainlen, xs_crit, ns, ds_ave, ds, xs, coeff)
 !------------------------------------------------------------------------------------------------------!
-use constants, only: pi
-use flags,     only: contour_uniform, contour_symm, contour_asymm, contour_hybrid
+use constants_mod, only: pi
+use flags_mod,     only: contour_uniform, contour_symm, contour_asymm, contour_hybrid
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!

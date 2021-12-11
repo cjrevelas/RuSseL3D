@@ -2,15 +2,15 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine export_chains_area(node_in_q0_face, cell_of_np, chain_type, Rg2_per_mon, chainlen, ns_ed, ds_ed, q_final, phia, wa)
+subroutine export_chains_area(node_belongs_to_dirichlet_face, cell_of_np, chain_type, Rg2_per_mon, chainlen, ns_ed, ds_ed, q_final, phia, wa)
 !-----------------------------------------------------------------------------------------------------------------------!
-use parser_vars,  only: mumps_matrix_type, rho_seg_bulk
-use hist,         only: nbin
-use write_helper, only: adjl
-use constants,    only: A3_to_m3
-use arrays,       only: volnp
-use geometry,     only: numnp
-use delta,        only: num_gpoints, gp_init_value, gpid
+use parser_vars_mod,  only: mumps_matrix_type, rho_seg_bulk
+use hist_mod,         only: nbin
+use write_helper_mod, only: adjl
+use constants_mod,    only: A3_to_m3
+use arrays_mod,       only: volnp
+use geometry_mod,     only: numnp
+use delta_mod,        only: num_gpoints, gp_init_value, gpid
 !-----------------------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------------------!

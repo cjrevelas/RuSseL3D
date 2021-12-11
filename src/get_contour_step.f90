@@ -4,9 +4,9 @@
 
 subroutine get_contour_step(ds_ave, xs_crit, chainlen, ns_ed)
 !------------------------------------------------------------------------------------------------------!
-use constants,    only: pi
-use parser_vars,  only: iow
-use write_helper, only: adjl
+use constants_mod,    only: pi
+use parser_vars_mod,  only: iow
+use write_helper_mod, only: adjl
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!

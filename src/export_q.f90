@@ -4,9 +4,9 @@
 
 subroutine export_q(ns, q_final, q_type)
 !--------------------------------------------------------------------!
-use geometry,     only: numnp, xc, ndm
-use write_helper, only: adjl
-use constants,    only: tol
+use geometry_mod,     only: numnp, xc, ndm
+use write_helper_mod, only: adjl
+use constants_mod,    only: tol
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!

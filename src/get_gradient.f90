@@ -4,12 +4,12 @@
 
 real(8) function get_gradient(node_id, phi)
 !----------------------------------------------------------------------------------------------------------!
-use geometry
-use constants, only: A_to_m
+use geometry_mod
+use constants_mod, only: A_to_m
 !----------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------!
-integer, intent(in) :: node_id 
+integer, intent(in) :: node_id
 
 real(8), intent(in), dimension(numnp) :: phi
 real(8)                               :: fem_interpolation

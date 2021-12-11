@@ -4,9 +4,9 @@
 
 subroutine export_phi_indiv(num_gpoints, numnp, xc, phia_gr_indiv)
 !------------------------------------------------------------------------------------------------------!
-use error_handing
-use iofiles,      only: phi_profile_indiv 
-use parser_vars,  only: chainlen_gr, rho_mol_bulk
+use error_handing_mod
+use iofiles_mod,      only: phi_profile_indiv
+use parser_vars_mod,  only: chainlen_gr, rho_mol_bulk
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!

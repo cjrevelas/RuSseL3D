@@ -4,12 +4,13 @@
 
 subroutine parser_input()
 !--------------------------------------------------------------------------------!
-use parser_vars
-use write_helper
-use error_handing
-use flags
-use eos
-use iofiles
+use parser_vars_mod
+use write_helper_mod
+use error_handing_mod
+use flags_mod
+use eos_mod
+use iofiles_mod
+use defaults_mod
 !--------------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------------!

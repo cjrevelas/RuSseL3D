@@ -4,9 +4,9 @@
 
 real(8) function compute_stretching_energy(gnode_id, qmx, qgr)
 !-------------------------------------------------------------------------------------------------!
-use constants,   only: A3_to_m3
-use parser_vars, only: beta, ns_gr_conv, chainlen_gr, Rg2_per_mon_gr, rho_seg_bulk
-use geometry,    only: numnp, xc
+use constants_mod,   only: A3_to_m3
+use parser_vars_mod, only: beta, ns_gr_conv, chainlen_gr, Rg2_per_mon_gr, rho_seg_bulk
+use geometry_mod,    only: numnp, xc
 !-------------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------------!

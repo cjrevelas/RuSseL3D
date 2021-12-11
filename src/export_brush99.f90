@@ -4,9 +4,9 @@
 
 subroutine export_brush99(cell_of_np, num_gpoints, numnp, file_name, phia_gr, phia_gr_indiv, volnp, lbin, nbin)
 !-----------------------------------------------------------------------------------------------------------!
-use write_helper, only: adjl
-use parser_vars,  only: iow, n_nanopart_faces, radius_np_eff
-use geometry,     only: box_len
+use write_helper_mod, only: adjl
+use parser_vars_mod,  only: iow, num_of_nanoparticle_faces, radius_np_eff
+use geometry_mod,     only: box_len
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!

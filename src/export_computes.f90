@@ -4,16 +4,16 @@
 
 subroutine export_computes(iter, convergence)
 !-----------------------------------------------------------------------------------------------------------!
-use arrays,       only: phia_mx, phia_gr, wa, wa_new, wa_mix, qmx_final, qmx_interp_mm, qmx_interp_mg, qgr_interp, ds_gr_ed, &
+use arrays_mod,       only: phia_mx, phia_gr, wa, wa_new, wa_mix, qmx_final, qmx_interp_mm, qmx_interp_mg, qgr_interp, ds_gr_ed, &
                      &  ds_mx_ed, xs_gr_ed, xs_gr_conv, phia_gr_indiv, coeff_gr_conv, qgr_final, volnp
-use hist,         only: planar_cell_of_np, sph_cell_of_np, nbin, lbin, dist_from_face, dist_from_np, cell_vol_planar, cell_vol_sph
-use delta,        only: gp_init_value, gpid, num_gpoints
-use geometry,     only: numnp, xc, is_dir_face, node_in_q0_face
-use parser_vars,  only: gr_exist, mx_exist, n_nanopart_faces, ns_gr_conv, ns_gr_ed, ns_mx_conv, ns_mx_ed,       &
-                     &  export_phi_gen_freq, export_field_freq, export_propagators_freq, export_phi_indiv_freq, &
-                     &  export_brush_thickness_freq, export_chains_per_area_freq, export_ads_free_freq,         &
+use hist_mod,         only: planar_cell_of_np, sph_cell_of_np, nbin, lbin, dist_from_face, dist_from_np, cell_vol_planar, cell_vol_sph
+use delta_mod,        only: gp_init_value, gpid, num_gpoints
+use geometry_mod,     only: numnp, xc, is_dirichlet_face, node_belongs_to_dirichlet_face
+use parser_vars_mod,  only: gr_exist, mx_exist, num_of_nanoparticle_faces, ns_gr_conv, ns_gr_ed, ns_mx_conv, ns_mx_ed, &
+                     &  export_phi_gen_freq, export_field_freq, export_propagators_freq, export_phi_indiv_freq,    &
+                     &  export_brush_thickness_freq, export_chains_per_area_freq, export_ads_free_freq,            &
                      &  Rg2_per_mon_mx, chainlen_mx, Rg2_per_mon_gr, chainlen_gr, ads_distance
-use write_helper, only: adjl, export
+use write_helper_mod, only: adjl, export
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
@@ -21,7 +21,7 @@ logical, intent(in)       :: convergence
 logical, dimension(numnp) :: adsorbed
 
 integer, intent(in) :: iter
-integer :: kk, mm, nn
+integer             :: kk, mm, nn
 
 character(40) :: file_name
 !-----------------------------------------------------------------------------------------------------------!

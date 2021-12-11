@@ -2,75 +2,72 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-! Define the module for the key type.
-! Override the hash_value and == operator interface.
+! Define the module for the key type
+! Override the hash_value and == operator interface
 module ints_module
-
   implicit none
 
-  type ints_type
-    integer, allocatable :: ints(:)
-  end type
+    type ints_type
+        integer, allocatable :: ints(:)
+    end type ints_type
 
-  interface hash_value
-    module procedure hash_value_ints
-  end interface
+    interface hash_value
+        module procedure hash_value_ints
+    end interface hash_value
 
-  interface operator (==)
-    module procedure ints_equal
-  end interface
+    interface operator (==)
+        module procedure ints_equal
+    end interface
 
 #ifdef __GFORTRAN__
-  interface assignment (=)
-    module procedure ints_ptr_assign
-  end interface
+    interface assignment (=)
+        module procedure ints_ptr_assign
+    end interface
 #endif
 
-  contains
+  contains ! Module procedures are defined here
 
     function hash_value_ints(ints) result(hash)
-      type(ints_type), intent(in) :: ints
-      integer :: hash
-      integer :: i
+        type(ints_type), intent(in) :: ints
+        integer :: hash
+        integer :: ii
 
-      hash = 0
-      do i = 1, SIZE(ints%ints)
-        hash = xor(hash, ints%ints(i) + 1640531527 + ISHFT(hash, 6) + ISHFT(hash, -2))
-      enddo
-    end function
+        hash = 0
+        do ii = 1, SIZE(ints%ints)
+            hash = xor(hash, ints%ints(ii) + 1640531527 + ISHFT(hash, 6) + ISHFT(hash, -2))
+        enddo
+    end function hash_value_ints
 
     function ints_equal(lhs, rhs)
-      type(ints_type), intent(in) :: lhs, rhs
-      logical :: ints_equal
-      integer :: i
+        type(ints_type), intent(in) :: lhs, rhs
+        logical :: ints_equal
+        integer :: ii
 
-      if (SIZE(lhs%ints) /= SIZE(rhs%ints)) then
-        ints_equal = .false.
-        return
-      endif
-
-      do i = 1, SIZE(lhs%ints)
-        if (lhs%ints(i) /= rhs%ints(i)) then
-          ints_equal = .false.
-          return
+        if (SIZE(lhs%ints) /= SIZE(rhs%ints)) then
+            ints_equal = .false.
+            return
         endif
-      enddo
 
-      ints_equal = .true.
+        do ii = 1, SIZE(lhs%ints)
+            if (lhs%ints(ii) /= rhs%ints(ii)) then
+                ints_equal = .false.
+                return
+            endif
+        enddo
 
-    end function
+        ints_equal = .true.
+    end function ints_equal
 
 #ifdef __GFORTRAN__
     subroutine ints_ptr_assign(lhs, rhs)
-      type(ints_type), pointer, intent(inout) :: lhs
-      type(ints_type), pointer, intent(in) :: rhs
-      lhs => rhs
-    end subroutine
+        type(ints_type), pointer, intent(inout) :: lhs
+        type(ints_type), pointer, intent(in)    :: rhs
+        lhs => rhs
+    end subroutine ints_ptr_assign
 #endif
-
 end module ints_module
 
-! Define the macros needed by fhash and include fhash.f90
+! Define the macros needed by fhash.f90 and include it
 #define KEY_USE use ints_module
 #define KEY_TYPE type(ints_type)
 #define VALUE_USE use, intrinsic :: iso_fortran_env
@@ -79,26 +76,27 @@ end module ints_module
 #define VALUE_TYPE_INIT 0.0
 #define SHORTNAME ints_double
 !#define SHORTNAME integer
+
 #include "fhash.f90"
 
 module int_module
   implicit none
 
-  interface hash_value
-    module procedure hash_value_int
-  end interface
+    interface hash_value
+        module procedure hash_value_int
+    end interface hash_value
 
   contains
 
     function hash_value_int(INT) result(hash)
-      integer, intent(in) :: INT
-      integer :: hash
+        integer, intent(in) :: INT
+        integer :: hash
 
-      hash = INT
-    end function
-end module
+        hash = INT
+    end function hash_value_int
+end module int_module
 
-! Define the macros needed by fhash and include fhash.f90
+! Define the macros needed by fhash and include it
 #define KEY_USE use int_module
 #define KEY_TYPE integer
 #define VALUE_USE use ints_module

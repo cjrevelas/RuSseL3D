@@ -4,9 +4,9 @@
 
 subroutine tools_histogram(upd_lbin, volnp)
 !-----------------------------------------------------------------------------------------------------------!
-use hist
-use geometry,    only: numnp, box_len, is_dir_face, box_lo, box_hi, xc
-use parser_vars, only: n_nanopart_faces, wall_distance, center_np, radius_np_eff
+use hist_mod
+use geometry_mod,    only: numnp, box_len, is_dirichlet_face, box_lo, box_hi, xc
+use parser_vars_mod, only: num_of_nanoparticle_faces, wall_distance, center_np, radius_np_eff
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!

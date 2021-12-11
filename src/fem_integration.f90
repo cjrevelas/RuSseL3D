@@ -4,7 +4,7 @@
 
 subroutine fem_integration(u_spat, sum_out, QQ, vol)
 !--------------------------------------------------------------------!
-use geometry, only : numnp, ndm, nel, numel, global_node_id_type_domain, xc
+use geometry_mod, only : numnp, ndm, nel, numel, global_node_id_type_domain, xc
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!

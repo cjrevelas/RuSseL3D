@@ -4,11 +4,11 @@
 
 subroutine get_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, wa, num_gpoints, gpid, delta_numer, volnp)
 !------------------------------------------------------------------------------------------------------!
-use geometry,     only: node_in_q0_face
-use parser_vars,  only: ns_gr_conv, ns_gr_ed, chainlen_gr, mumps_matrix_type, rg2_per_mon_gr, rho_mol_bulk
-use constants,    only: n_avog, m3_to_A3
-use write_helper, only: adjl
-use error_handing
+use geometry_mod,     only: node_belongs_to_dirichlet_face
+use parser_vars_mod,  only: ns_gr_conv, ns_gr_ed, chainlen_gr, mumps_matrix_type, rg2_per_mon_gr, rho_mol_bulk
+use constants_mod,    only: n_avog, m3_to_A3
+use write_helper_mod, only: adjl
+use error_handing_mod
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!

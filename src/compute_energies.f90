@@ -4,11 +4,11 @@
 
 subroutine compute_energies(qmx_interp_mg, qgr_interp, phi_total, wa, Ufield, part_func, num_gpoints, gpid, free_energy)
 !-------------------------------------------------------------------------------------------------!
-use eos,         only: eos_ff, eos_df_drho
-use parser_vars, only: ns_gr_conv, chainlen_mx, rho_mol_bulk, temp, beta, r_gpoint
-use geometry,    only: numnp, interf_area
-use constants,   only: n_avog, boltz_const_Joule_molK, N_to_mN, A2_to_m2, A3_to_m3
-use iofiles,     only: energy_terms
+use eos_mod,         only: eos_ff, eos_df_drho
+use parser_vars_mod, only: ns_gr_conv, chainlen_mx, rho_mol_bulk, temp, beta, r_gpoint
+use geometry_mod,    only: numnp, interf_area
+use constants_mod,   only: n_avog, boltz_const_Joule_molK, N_to_mN, A2_to_m2, A3_to_m3
+use iofiles_mod,     only: energy_terms
 !-------------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------------!

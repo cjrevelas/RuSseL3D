@@ -4,15 +4,15 @@
 
 subroutine init_field(Ufield, wa)
 !------------------------------------------------------------------------------------------------------!
-use parser_vars,  only: a_pol, field_init_scheme, kapa, n_nanopart_faces,  &
-&                       rho_mol_bulk, sigma_pol, beta, wall_distance, center_np, &
+use parser_vars_mod,  only: a_pol, field_init_scheme, kapa, num_of_nanoparticle_faces,  &
+&                       rho_mol_bulk, sigma_pol, beta, wall_distance, center_np,        &
 &                       sigma_plate, radius_np_eff, sigma_np, A_np, A_plate
-use geometry,     only: numnp, is_dir_face, box_lo, box_hi, xc, node_in_q0_face
-use error_handing
-use write_helper, only: adjl
-use force_fields, only: hamaker_sphere_plate, hamaker_sphere_sphere
-use iofiles,      only: usolid, field_in_filename
-use constants,    only: n_avog, pi, m_to_A
+use geometry_mod,     only: numnp, is_dirichlet_face, box_lo, box_hi, xc, node_belongs_to_dirichlet_face
+use error_handing_mod
+use write_helper_mod, only: adjl
+use force_fields_mod, only: hamaker_sphere_plate, hamaker_sphere_sphere
+use iofiles_mod,      only: usolid, field_in_filename
+use constants_mod,    only: n_avog, pi, m_to_A
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!

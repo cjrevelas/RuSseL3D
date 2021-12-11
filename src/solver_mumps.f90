@@ -4,9 +4,9 @@
 
 subroutine solver_mumps(mumps_matrix_type)
 !--------------------------------------------------------------------------!
-use kcw,          only: A_m, rdiag1, NNZ
-use geometry,     only: numnp
-use error_handing
+use kcw_mod,          only: A_m, rdiag1, NNZ
+use geometry_mod,     only: numnp
+use error_handing_mod
 #ifdef USEMPI
 use mpistuff
 #endif
