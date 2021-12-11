@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.3.0](https://github.com/mokkapps/changelog-generator-demo/compare/v3.2.0...v3.3.0) (2021-12-11)
+
+
+### Features
+
+* add calculation of adsorbed segments ([664b92f](https://github.com/mokkapps/changelog-generator-demo/commits/664b92fb6d96e9d3a2b136744ba4bd4bd033e8f0))
+* add calculation of stretching energy ([f99f8b9](https://github.com/mokkapps/changelog-generator-demo/commits/f99f8b99aae0e18caf004b86e43f77023816d2c0))
+* add module containing all default variable values ([f2f9762](https://github.com/mokkapps/changelog-generator-demo/commits/f2f9762aa1060dde246eed1eb0311bec0a6220a1))
+* add pairing hashes for nodes belonging to opposite faces ([9054b6e](https://github.com/mokkapps/changelog-generator-demo/commits/9054b6eb8302fd6d4effda525e10f756ae8d347e))
+* add periodic boundary conditions along x dimension ([0b24c7a](https://github.com/mokkapps/changelog-generator-demo/commits/0b24c7a392c158041886e5c89db21f311145f847))
+* bin thickness is now an input parameter ([13b2eb4](https://github.com/mokkapps/changelog-generator-demo/commits/13b2eb43388bdad1f516a2b1cd16b7117b32bb97))
+* calculate segmental density in the bulk ([82f2a94](https://github.com/mokkapps/changelog-generator-demo/commits/82f2a94bef91741f96cd4d7dec286cfb9e26e5c6))
+* export computes with specified frequency ([ac58eaa](https://github.com/mokkapps/changelog-generator-demo/commits/ac58eaa53cffc1934509c6d1bf11a680d885f5a3))
+* export end middle segment profiles to file ([c22753f](https://github.com/mokkapps/changelog-generator-demo/commits/c22753f069f6bbfd5d33736b2fc7cae5ee376e1d))
+* export number of contour steps with detail ([8568876](https://github.com/mokkapps/changelog-generator-demo/commits/8568876a563d571ac074bda1726e6eddfe65150c))
+* finish implementation of chain shape ([3763e8f](https://github.com/mokkapps/changelog-generator-demo/commits/3763e8f810a050739234fba50715bee32c625b77))
+* gp dist from solid can be read from input ([b3280fb](https://github.com/mokkapps/changelog-generator-demo/commits/b3280fb7f17a992b837fd9d731d8442c22fe152b))
+* interf area is calculated within the code ([96bb988](https://github.com/mokkapps/changelog-generator-demo/commits/96bb988611f17bf11dcbd9369e00e29878580809))
+* name of input files can be read from in.input ([9d83949](https://github.com/mokkapps/changelog-generator-demo/commits/9d83949839282d84e84289a4f8a0c0c1b42fd1fc))
+* print warning when h99 reaches box boundaries ([0f33e00](https://github.com/mokkapps/changelog-generator-demo/commits/0f33e00ee1f5f33e807f1716c47ca5c849d8fd13))
+
+
+### Bug Fixes
+
+* **init_arrays:** put qgr allocation out of if block ([0286c2f](https://github.com/mokkapps/changelog-generator-demo/commits/0286c2f1450a97cf8962127aa5d5401cf3d06e3d))
+
 ## [3.2.0](https://github.com/mokkapps/changelog-generator-demo/compare/v3.1.0...v3.2.0) (2021-12-09)
 
 
