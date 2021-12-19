@@ -36,5 +36,10 @@ To configure and compile, the code type the following commands inside the root d
 
 Some ideas are provided below for code extension:
  - block copolymer systems and polymer blends
- - option to run SCFT calculations with incompressible models
- - option to run SCFT calculations in absence of matrix chains
+ - incompressible models
+ - systems in absence of matrix chains
+ - non monodisperse matrix and grafted chains
+ - find faster solver for linear system of equations (maybe iterative)
+ - add an open source mesher
+ - dynamic density functional theory calculations (ddft)
+ - rewrite code in C++ for better scalability (good luck!)
