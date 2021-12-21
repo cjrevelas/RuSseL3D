@@ -25,10 +25,10 @@ def get_fraction_from_chainlen(chain_length):
 def refresh_input():
     os.system("cp " + input_template + ' ' + input_name)
 
-    return   
+    return
 
 
-def set_int_flag(flag_type, value): 
+def set_int_flag(flag_type, value):
     strval = str(value)
     for ii in range(len(flag_type)-len(strval)):
         strval += ' '
@@ -38,7 +38,7 @@ def set_int_flag(flag_type, value):
     return
 
 
-def set_txt_flag(flag_type, value): 
+def set_txt_flag(flag_type, value):
     strval = str(value)
     for ii in range(len(flag_type)-len(strval)):
         strval += ' '
@@ -48,7 +48,7 @@ def set_txt_flag(flag_type, value):
     return
 
 
-def set_float_flag(flag_type, value): 
+def set_float_flag(flag_type, value):
     strval = "{:.9e}".format(value)
     for ii in range(len(flag_type)-len(strval)):
         strval += ' '
@@ -135,7 +135,7 @@ for N_mx in [768.0]:
          frac = get_fraction_from_chainlen(N_max)
 
          use_mx = 1
-         use_gr = 1 
+         use_gr = 1
 
          generate_simulation(r_np, temp, frac, use_mx, N_mx, use_gr, N_gr, gdens)
 '''

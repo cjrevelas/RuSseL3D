@@ -122,7 +122,7 @@ for line in mesh_file:
     if ("1 # number of nodes per element" in line):
         nen_type_zero   = int(line.split()[0])
         numel_type_zero = int(mesh_file.readline().split()[0])
-        
+
         mesh_file.readline()
 
         global_node_id_type_zero = np.zeros((nen_type_zero,numel_type_zero),int)
@@ -137,7 +137,7 @@ for line in mesh_file:
         mesh_file.readline()
 
         for kk in range(0,numel_type_zero):
-            vertex_entity_hash[kk+1] = int(mesh_file.readline().split()[0]) 
+            vertex_entity_hash[kk+1] = int(mesh_file.readline().split()[0])
 
         elem_con_file_type_zero.write("type_of_element\n" + "0 -> point\n\n")
         elem_con_file_type_zero.write("type_of_entity\n" + "0 -> vertex\n\n")
@@ -146,7 +146,7 @@ for line in mesh_file:
         elem_con_file_type_zero.write("number_of_nodes_per_element\n" + str(nen_type_zero) + "\n\n")
         elem_con_file_type_zero.write("entity_id  " +  "element_id  " + "global_node_ids  " + "x_node_i  " + "y_node_i  " + "z_node_i\n")
 
-        for kk in range(0,numel_type_zero):       
+        for kk in range(0,numel_type_zero):
             elem_con_file_type_zero.write(str(vertex_entity_hash[kk+1]) + "    ")
             elem_con_file_type_zero.write(str(kk+1) + "    ")
 
@@ -162,7 +162,7 @@ for line in mesh_file:
     if ("2 # number of nodes per element" in line):
         nen_type_one   = int(line.split()[0])
         numel_type_one = int(mesh_file.readline().split()[0])
-        
+
         mesh_file.readline()
 
         global_node_id_type_one = np.zeros((nen_type_one,numel_type_one),int)
@@ -177,7 +177,7 @@ for line in mesh_file:
         mesh_file.readline()
 
         for kk in range(0,numel_type_one):
-            edge_entity_hash[kk+1] = int(mesh_file.readline().split()[0]) 
+            edge_entity_hash[kk+1] = int(mesh_file.readline().split()[0])
 
         elem_con_file_type_one.write("type_of_element\n" + "1 -> line\n\n")
         elem_con_file_type_one.write("type_of_entity\n" + "1 -> edge\n\n")
@@ -198,11 +198,11 @@ for line in mesh_file:
                     elem_con_file_type_one.write("  " + "%.5f" %(node_hash[global_node_id_type_one[pp,kk]+1][gg]))
                 elem_con_file_type_one.write("        ")
             elem_con_file_type_one.write('\n')
-        
+
     if ("3 # number of nodes per element" in line):
         nen_type_two   = int(line.split()[0])
         numel_type_two = int(mesh_file.readline().split()[0])
-        
+
         mesh_file.readline()
 
         global_node_id_type_two = np.zeros((nen_type_two,numel_type_two),int)
@@ -217,7 +217,7 @@ for line in mesh_file:
         mesh_file.readline()
 
         for kk in range(0,numel_type_two):
-            face_entity_hash[kk+1] = int(mesh_file.readline().split()[0]) 
+            face_entity_hash[kk+1] = int(mesh_file.readline().split()[0])
 
         elem_con_file_type_two.write("type_of_element\n" + "2 -> triangle\n\n")
         elem_con_file_type_two.write("type_of_entity\n" + "2 -> face\n\n")
@@ -257,7 +257,7 @@ for line in mesh_file:
         mesh_file.readline()
 
         for kk in range(0,numel_type_three):
-            domain_entity_hash[kk+1] = int(mesh_file.readline().split()[0]) 
+            domain_entity_hash[kk+1] = int(mesh_file.readline().split()[0])
 
         elem_con_file_type_three.write("type_of_element\n" + "3 -> tetrahedron\n\n")
         elem_con_file_type_three.write("type_of_entity\n" + "3 -> domain\n\n")
@@ -278,7 +278,7 @@ for line in mesh_file:
                     elem_con_file_type_three.write("  " + "%.5f" %(node_hash[global_node_id_type_three[pp,kk]+1][gg]))
                 elem_con_file_type_three.write("        ")
             elem_con_file_type_three.write('\n')
-        
+
 mesh_file.close()
 meshpoints_file.close()
 elem_con_file_type_zero.close()
@@ -337,7 +337,7 @@ for elem1 in x_face1_elements:
 for key, value in node_pair_xtox.items():
     node_pairing_xx.write(str(key) + "  " + str(value) + '\n')
 
-# Build yy pairing    
+# Build yy pairing
 for elem1 in y_face1_elements:
     for elem2 in y_face2_elements:
         for ii in range(3):

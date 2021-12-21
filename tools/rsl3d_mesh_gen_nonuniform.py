@@ -24,7 +24,7 @@ class Mesh:
             self.graftcoords = np.zeros((3,self.numgp),float)
             self.graftpoints = GraftPoints(self.planar, self.numgp, self.radius)
 
-            if (self.importing):
+            if (self.importing): 
                 self.graftcoords = self.graftpoints.importt()
             else:
                 self.graftcoords = self.graftpoints.generate(self.radius)
@@ -37,16 +37,16 @@ class Mesh:
 
             if (self.reflect):
                 (tempX, tempY, tempZ) = self.geometry.reflectX()
-
+            
                 self.graftcoords = np.zeros((3,tempX.size))
 
-                self.graftcoords[0,:] = tempX
-                self.graftcoords[1,:] = tempY
-                self.graftcoords[2,:] = tempZ
+                self.graftcoords[0,:] = tempX 
+                self.graftcoords[1,:] = tempY 
+                self.graftcoords[2,:] = tempZ 
 
                 self.numgp = tempX.size
 
-
+ 
     def read_the_mesh(self):
         try:
             mesh_file = open("mesh.in.mphtxt", 'r')
@@ -120,7 +120,7 @@ class Mesh:
         mesh_file.close()
         meshpoints_file.close()
         elem_con_file.close()
-
+ 
         return
 
 
@@ -211,7 +211,7 @@ class GraftPoints:
 
     def importt(self):
         self.coords = np.array([[],[],[]],float)
-
+        
         try:
             graftFile = open("in.gpoints", 'r')
         except:
@@ -224,7 +224,7 @@ class GraftPoints:
             z = float(line.split()[2])
             self.coords = np.append(self.coords, [[x], [y], [z]], axis=1)
             self.count += 1
-
+        
         self.numgp = self.count
 
         return self.coords
@@ -304,7 +304,7 @@ class GraftPoints:
 
 
     def insert_to_model_file(self):
-        print("Copying grafting points to matlab model file.")
+        print("Copying grafting points to matlab model file.") 
 
         try:
             modelFile = open("rsl3d_mesh_gen.m", 'r+')
@@ -326,7 +326,7 @@ class GraftPoints:
         for line_2 in reversed(list(graftpointsFile)):
             if ("Point" in line_2 or "set" in line_2):
                 lines.insert(num+1, line_2)
-
+    
         modelFile.truncate(0)
         modelFile.seek(0)
         modelFile.writelines(lines)
@@ -370,7 +370,7 @@ class Geometry:
 
         return (self.x, self.y, self.z)
 #----------------------------------------------------------------------------------------------------------------------------------#
-def set_variable_value(variable, value, fileName):
+def set_variable_value(variable, value, fileName): 
     strval = "{:.2f}".format(value)
     cmd = "sed -i 's/" + variable + '/' + str(strval) + "/g' " + fileName
     os.system(cmd)
@@ -395,7 +395,7 @@ def edit_model_size_parameters(boxLx, boxLy, boxLz, r_np_eff, centers):
     set_variable_value("BOXLZ", boxLz, "rsl3d_mesh_gen.m")
     print("radius: ", r_np_eff)
     set_variable_value("RNP_EFF", r_np_eff, "rsl3d_mesh_gen.m")
-
+    
     for ii in range(0,centers.shape[1]):
         print("np:       ", ii+1)
         print("x_center: ", centers[0][ii])
@@ -409,14 +409,14 @@ def edit_model_size_parameters(boxLx, boxLy, boxLz, r_np_eff, centers):
 #----------------------------------------------------------------------------------------------------------------------------------#
 planar = False
 
-Lx = 290.0
+Lx = 384.0
 Ly = 220.0
 Lz = 220.0
 
 num_part = 2
 r_np_eff = 24.0
 r_gp     = 0.4
-h_ss_HS  = 40.0
+h_ss_HS  = 132.8
 
 use_gr  = True
 importt = True
