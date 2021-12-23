@@ -9,12 +9,9 @@ use fhash_module__ints_double
 use ints_module
 use error_handing_mod
 use write_helper_mod, only: adjl
-use parser_vars_mod,  only: iow, num_of_dirichlet_faces, num_of_nanoparticle_faces,    &
-&                       ids_dirichlet_faces, ids_nanopart_faces, periodic_face_id,     &
-&                       periodic_axis_id, domain_is_periodic, prof_dim
+use parser_vars_mod,  only: iow, periodic_face_id, periodic_axis_id, domain_is_periodic
 use geometry_mod,     only: nel, num_of_elems_of_node, box_lo, box_hi, box_len,        &
 &                       xc, numnp, numel, el_node, global_node_id_type_domain,         &
-&                       is_dirichlet_face, node_belongs_to_dirichlet_face,             &
 &                       ndm, node_pair_id, num_of_bulk_pairs, total_num_of_node_pairs, &
 &                       node_pairing_xx_hash, node_pairing_yy_hash,                    &
 &                       node_pairing_zz_hash, node_pairing_xx_it,                      &
@@ -908,6 +905,8 @@ call elemcon%clear()
 do ii = aux4 + 1, aux4 + 2*num_dest_yy_neighbors
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
+
+call mesh_dirichlet_faces(numel_type_face, nen_type_face, global_node_id_type_face, face_entity_hash)
 
 #ifdef DEBUG_OUTPUTS
 close(123)

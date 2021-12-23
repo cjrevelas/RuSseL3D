@@ -64,6 +64,7 @@ MODULES=$(OBJDIR)/parser_vars_mod.o\
 
 OBJECTS=$(OBJDIR)/parser_input.o\
 	$(OBJDIR)/parser_mesh.o\
+	$(OBJDIR)/mesh_dirichlet_faces.o\
 	$(OBJDIR)/tools_histogram.o\
 	$(OBJDIR)/tools_matinv4.o\
 	$(OBJDIR)/solver_mumps.o\
