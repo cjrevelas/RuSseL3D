@@ -32,17 +32,19 @@ implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
 character(len=200) :: line, aux_line
 
-integer                              :: node1, node2, elem1, elem2, ii, jj, kk, mm, pp, idummy, i_node, aux1, aux2
-integer                              :: nbin, ibin, reason, id_of_entity_it_belongs, max_num_of_elems_per_node
+integer                              :: node1, node2, elem1, elem2, i_node
+integer                              :: ii, jj, kk, mm, pp
+integer                              :: aux1, aux2, aux3, aux4
+integer                              :: reason, id_of_entity_it_belongs, max_num_of_elems_per_node
 integer                              :: nen_type_vertex, numel_type_vertex
 integer                              :: nen_type_edge, numel_type_edge
 integer                              :: nen_type_face, numel_type_face
 integer                              :: source_xx, dest_xx, node_pair
 integer                              :: source_yy, dest_yy
-integer, allocatable, dimension(:)   :: temp3, prof_1D_node
+integer, allocatable, dimension(:)   :: temp3
 integer, allocatable, dimension(:,:) :: global_node_id_type_vertex, global_node_id_type_edge, global_node_id_type_face
 
-real(8) :: box_volume = 0.d0, tol = 1.e-8, prof_bin
+real(8) :: box_volume = 0.d0
 
 logical :: success
 
@@ -931,23 +933,7 @@ do ii = 1, numnp
 enddo
 close(77)
 
-! TODO: This should be encapsulated into a subroutine
-prof_bin = 0.5d0
-nbin     = NINT((box_hi(prof_dim) - box_lo(prof_dim)) / prof_bin) + 1
-
-allocate(prof_1D_node(nbin))
-
-prof_1D_node=0
-do ii = 1, numnp
-    ibin               = NINT((xc(prof_dim,ii) - box_lo(prof_dim))/prof_bin) + 1
-    prof_1D_node(ibin) = prof_1D_node(ibin) + 1
-enddo
-
-open(77, file = mesh_prof)
-do ii = 1, nbin
-    write(77,*) ii, prof_1D_node(ii)
-enddo
-close(77)
+call mesh_profile()
 #endif
 
 #ifdef DEBUG_OUTPUTS
