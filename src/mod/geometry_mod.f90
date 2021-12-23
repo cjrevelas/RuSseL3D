@@ -13,7 +13,8 @@ module geometry_mod
   implicit none
 
     integer                              :: nel, ndm, numnp, numel
-    integer                              :: num_of_bulk_pairs, total_num_of_node_pairs, num_dest_xx_neighbors
+    integer                              :: num_of_bulk_pairs, total_num_of_node_pairs
+    integer                              :: num_dest_xx_neighbors, num_dest_yy_neighbors, num_dest_zz_neighbors
     integer, allocatable, dimension(:)   :: node_pair_id, num_of_elems_of_node
     integer, allocatable, dimension(:,:) :: global_node_id_type_domain, el_node
 

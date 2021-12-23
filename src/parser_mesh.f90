@@ -22,12 +22,14 @@ use geometry_mod,     only: nel, num_of_elems_of_node, box_lo, box_hi, box_len, 
 &                       node_pairing_xx_key, node_pairing_yy_key,                      &
 &                       node_pairing_zz_key, node_pairing_xx_value,                    &
 &                       node_pairing_yy_value, node_pairing_zz_value,                  &
-&                       num_dest_xx_neighbors
+&                       num_dest_xx_neighbors, num_dest_yy_neighbors,                  &
+&                       num_dest_zz_neighbors
 use kcw_mod,          only: F_m
 use iofiles_mod,      only: mesh_filename, dir_faces, com_12, inter, mesh_out,         &
 &                       mesh_prof, xface1_elements, xface2_elements,                   &
 &                       yface1_elements, yface2_elements, zface1_elements,             &
-&                       zface2_elements
+&                       zface2_elements, node_pairing_xx, node_pairing_yy,             &
+&                       node_pairing_zz
 !----------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
@@ -39,6 +41,7 @@ integer                              :: nen_type_vertex, numel_type_vertex
 integer                              :: nen_type_edge, numel_type_edge
 integer                              :: nen_type_face, numel_type_face
 integer                              :: source_xx, dest_xx, node_pair
+integer                              :: source_yy, dest_yy
 integer, allocatable, dimension(:)   :: temp3, prof_1D_node
 integer, allocatable, dimension(:,:) :: global_node_id_type_vertex, global_node_id_type_edge, global_node_id_type_face
 
@@ -524,7 +527,7 @@ if (domain_is_periodic) then
 
 #ifdef DEBUG_OUTPUTS
     if (periodic_axis_id(1)) then
-        open(unit=1111,file="d.node_pairing_xx")
+        open(unit=1111, file=node_pairing_xx)
 
         call node_pairing_xx_it%begin(node_pairing_xx_hash)
 
@@ -536,7 +539,7 @@ if (domain_is_periodic) then
         close(1111)
     endif
     if (periodic_axis_id(2)) then
-        open(unit=2222,file="d.node_pairing_yy")
+        open(unit=2222, file=node_pairing_yy)
 
         call node_pairing_yy_it%begin(node_pairing_yy_hash)
 
@@ -548,7 +551,7 @@ if (domain_is_periodic) then
         close(2222)
     endif
     if (periodic_axis_id(3)) then
-        open(unit=3333,file="d.node_pairing_zz")
+        open(unit=3333, file=node_pairing_zz)
 
         call node_pairing_zz_it%begin(node_pairing_zz_hash)
 
@@ -600,18 +603,31 @@ if (periodic_axis_id(1)) then
         call node_pairing_xx_it%next(node_pairing_xx_key, node_pairing_xx_value)
 
         source_xx = node_pairing_xx_key%ints(1)
-        dest_xx = node_pairing_xx_value
+        dest_xx   = node_pairing_xx_value
 
         num_dest_xx_neighbors = num_dest_xx_neighbors + 3 * num_of_elems_of_node(dest_xx)
     enddo
 endif
 
-! Allocate and initialize arrays for matrix assembly
-if (.NOT.domain_is_periodic) then
-    total_num_of_node_pairs = num_of_bulk_pairs
-else
-    total_num_of_node_pairs = num_of_bulk_pairs + 2 * (node_pairing_xx_hash%key_count() + num_dest_xx_neighbors)
+num_dest_yy_neighbors = 0
+if (periodic_axis_id(2)) then
+    call node_pairing_yy_it%begin(node_pairing_yy_hash)
+
+    do kk = 1, node_pairing_yy_hash%key_count()
+        call node_pairing_yy_it%next(node_pairing_yy_key, node_pairing_yy_value)
+
+        source_yy = node_pairing_yy_key%ints(1)
+        dest_yy   = node_pairing_yy_value
+
+        num_dest_yy_neighbors = num_dest_yy_neighbors + 3 * num_of_elems_of_node(dest_yy)
+    enddo
 endif
+
+total_num_of_node_pairs = num_of_bulk_pairs
+
+if (periodic_axis_id(1)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_xx_hash%key_count() + num_dest_xx_neighbors)
+if (periodic_axis_id(2)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_yy_hash%key_count() + num_dest_yy_neighbors)
+if (periodic_axis_id(3)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_zz_hash%key_count() + num_dest_zz_neighbors)
 
 allocate(F_m%row(total_num_of_node_pairs))
 allocate(F_m%col(total_num_of_node_pairs))
@@ -666,11 +682,11 @@ do mm = 1, numel
     enddo
 enddo
 
-! Append periodic pairs in F_m struct
+! Append xx periodic pairs in F_m struct
 if (periodic_axis_id(1)) then
     call node_pairing_xx_it%begin(node_pairing_xx_hash)
 
-    do kk = node_pair + 1, node_pair + node_pairing_xx_hash%key_count()
+    do kk = num_of_bulk_pairs + 1, num_of_bulk_pairs + node_pairing_xx_hash%key_count()
         call node_pairing_xx_it%next(node_pairing_xx_key, node_pairing_xx_value)
 
         source_xx = node_pairing_xx_key%ints(1)
@@ -718,7 +734,7 @@ do ii = 1, aux1
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
 
-!Append dest_xx neighbors in F_m struct
+! Append dest_xx neighbors in F_m struct
 if (periodic_axis_id(1)) then
     call node_pairing_xx_it%begin(node_pairing_xx_hash)
 
@@ -772,72 +788,125 @@ if (periodic_axis_id(1)) then
         enddo
     enddo
 endif
-call elemcon%clear()
 
-do ii = aux1 + 1, aux1 + 2 * num_dest_xx_neighbors
+do ii = aux1 + 1, aux1 + 2*num_dest_xx_neighbors
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
 
-! Determine all elements belonging to dirichlet faces
-allocate(node_belongs_to_dirichlet_face(numnp))
-node_belongs_to_dirichlet_face = .false.
+aux3 = aux1 + 2*num_dest_xx_neighbors
 
-#ifdef DEBUG_OUTPUTS
-open(unit=123, file = dir_faces)
-#endif
+! Append yy periodic pairs in F_m struct
+if (periodic_axis_id(2)) then
+    call node_pairing_yy_it%begin(node_pairing_yy_hash)
 
-is_dirichlet_face = .false.
+    do kk = aux3 + 1, aux3 + node_pairing_yy_hash%key_count()
+        call node_pairing_yy_it%next(node_pairing_yy_key, node_pairing_yy_value)
 
-do jj = 1, numel_type_face
-    face_entity_key%ints(1) = jj
-    call face_entity_hash%get(face_entity_key, face_entity_value)
-    do ii = 1, num_of_dirichlet_faces
-        if (face_entity_value==ids_dirichlet_faces(ii)) then
-            do pp = 1, nen_type_face
-                idummy = global_node_id_type_face(pp,jj)
+        source_yy = node_pairing_yy_key%ints(1)
+        dest_yy   = node_pairing_yy_value
 
-                node_belongs_to_dirichlet_face(idummy) = .True.
+        ! Append pair
+        F_m%row(kk) = source_yy
+        F_m%col(kk) = dest_yy
 
-                ! Find if a node is located at a corner
-                kk = 0
-                do mm = 1, ndm
-                    if (DABS(xc(mm, idummy) - box_lo(mm)) < tol) then
-                        kk = kk + 1
-                    endif
-                    if (DABS(xc(mm, idummy) - box_hi(mm)) < tol) then
-                        kk = kk + 1
-                    endif
-                enddo
+        elemcon_key%ints(1) = source_yy
+        elemcon_key%ints(2) = dest_yy
 
-                ! If a node is located at a corner skip the loop
-                if (kk > 1) cycle
+        call elemcon%get(elemcon_key, elemcon_value, success)
 
-                do mm = 1, ndm
-                    if (DABS(xc(mm, idummy) - box_lo(mm)) < tol) then
-                        is_dirichlet_face(mm,1) = .true.
-                    endif
-                    if (DABS(xc(mm, idummy) - box_hi(mm)) < tol) then
-                        is_dirichlet_face(mm,2) = .true.
-                    endif
-                enddo
-#ifdef DEBUG_OUTPUTS
-                write(123,'(3(E16.8),6(L3))') xc(1, idummy), xc(2, idummy), xc(3, idummy), &
-    &                                 (is_dirichlet_face(kk,1), kk = 1,3), (is_dirichlet_face(kk,2), kk = 1,3)
-#endif
-            enddo
+        if (success) then
+            node_pair_id(kk) = elemcon_value
+        else
+            call elemcon%set(elemcon_key, kk)
+            node_pair_id(kk) = kk
+        endif
+
+        ! Append inverse pair
+        pp = kk + node_pairing_yy_hash%key_count()
+
+        F_m%row(pp) = dest_yy
+        F_m%col(pp) = source_yy
+
+        elemcon_key%ints(1) = dest_yy
+        elemcon_key%ints(2) = source_yy
+
+        call elemcon%get(elemcon_key, elemcon_value, success)
+
+        if (success) then
+            node_pair_id(pp) = elemcon_value
+        else
+            call elemcon%set(elemcon_key, pp)
+            node_pair_id(pp) = pp
         endif
     enddo
+endif
 
-    ! Nanoparticles section
-    do ii = 1, num_of_nanoparticle_faces
-        if (face_entity_value==ids_nanopart_faces(ii)) then
-            do kk = 1, nen_type_face
-                idummy = global_node_id_type_face(kk,jj)
+aux4 = aux3 + 2*node_pairing_yy_hash%key_count()
 
-                node_belongs_to_dirichlet_face(idummy) = .True.
-            enddo
-        endif
+do ii = aux3+1, aux4
+     F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
+enddo
+
+aux2 = 0
+
+!Append dest_yy neighbors in F_m struct
+if (periodic_axis_id(2)) then
+    call node_pairing_yy_it%begin(node_pairing_yy_hash)
+
+    do kk = 1, node_pairing_yy_hash%key_count()
+        call node_pairing_yy_it%next(node_pairing_yy_key, node_pairing_yy_value)
+
+        source_yy = node_pairing_yy_key%ints(1)
+        dest_yy   = node_pairing_yy_value
+
+        do node_pair = 1, num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors
+            if ((F_m%col(node_pair)==dest_yy).and.(F_m%row(node_pair).ne.dest_yy)) then
+
+                if (F_m%is_zero(node_pair)) cycle
+
+                aux2 = aux2 + 1
+
+                pp = aux4 + aux2
+
+                ! Append pair
+                F_m%row(pp) = source_yy
+                F_m%col(pp) = F_m%row(node_pair)
+
+                elemcon_key%ints(1) = source_yy
+                elemcon_key%ints(2) = F_m%row(node_pair)
+
+                call elemcon%get(elemcon_key, elemcon_value, success)
+
+                if (success) then
+                    node_pair_id(pp) = elemcon_value
+                else
+                    call elemcon%set(elemcon_key, pp)
+                    node_pair_id(pp) = pp
+                endif
+
+                ! Append inverse pair
+                F_m%row(pp + num_dest_yy_neighbors) = F_m%row(node_pair)
+                F_m%col(pp + num_dest_yy_neighbors) = source_yy
+
+                elemcon_key%ints(1) = F_m%row(node_pair)
+                elemcon_key%ints(2) = source_yy
+
+                call elemcon%get(elemcon_key, elemcon_value, success)
+
+                if (success) then
+                    node_pair_id(pp + num_dest_yy_neighbors) = elemcon_value
+                else
+                    call elemcon%set(elemcon_key, pp + num_dest_yy_neighbors)
+                    node_pair_id(pp + num_dest_yy_neighbors) = pp + num_dest_yy_neighbors
+                endif
+            endif
+        enddo
     enddo
+endif
+call elemcon%clear()
+
+do ii = aux4 + 1, aux4 + 2*num_dest_yy_neighbors
+     F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
 
 #ifdef DEBUG_OUTPUTS
