@@ -66,6 +66,7 @@ OBJECTS=$(OBJDIR)/parser_input.o\
 	$(OBJDIR)/parser_mesh.o\
 	$(OBJDIR)/mesh_dirichlet_faces.o\
 	$(OBJDIR)/mesh_profile.o\
+	$(OBJDIR)/mesh_bulk_node_pairs.o\
 	$(OBJDIR)/tools_histogram.o\
 	$(OBJDIR)/tools_matinv4.o\
 	$(OBJDIR)/solver_mumps.o\
