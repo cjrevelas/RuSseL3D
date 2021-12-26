@@ -11,7 +11,7 @@ use error_handing_mod
 use write_helper_mod, only: adjl
 use parser_vars_mod,  only: iow, periodic_face_id, periodic_axis_id, domain_is_periodic
 use geometry_mod,     only: nel, num_of_elems_of_node, box_lo, box_hi, box_len,        &
-&                       xc, numnp, numel, el_node, global_node_id_type_domain,         &
+&                       xc, numnp, numel, global_node_id_type_domain,                  &
 &                       ndm, node_pair_id, num_of_bulk_pairs, total_num_of_node_pairs, &
 &                       node_pairing_xx_hash, node_pairing_yy_hash,                    &
 &                       node_pairing_zz_hash, node_pairing_xx_it,                      &
@@ -32,7 +32,7 @@ implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
 character(len=200) :: line, aux_line
 
-integer                              :: node1, node2, elem1, elem2, i_node
+integer                              :: node1, node2, elem1, elem2
 integer                              :: ii, jj, kk, mm, pp
 integer                              :: aux1, aux2, aux3, aux4
 integer                              :: reason, id_of_entity_it_belongs, max_num_of_elems_per_node
@@ -564,35 +564,8 @@ if (domain_is_periodic) then
 #endif
 endif !domain_is_periodic
 
-! Compute the maximum number of elements per node
 allocate(num_of_elems_of_node(numnp))
-num_of_elems_of_node = 0
-
-max_num_of_elems_per_node = 0
-do ii = 1, numel
-   do jj = 1, 4
-      i_node = global_node_id_type_domain(jj, ii)
-
-      num_of_elems_of_node(i_node) = num_of_elems_of_node(i_node) + 1
-      max_num_of_elems_per_node    = MAX(max_num_of_elems_per_node, num_of_elems_of_node(i_node))
-   enddo
-enddo
-
-write(iow,'(3X,"Maximum number of elements per node: ",I18)') max_num_of_elems_per_node
-write(6  ,'(3X,"Maximum number of elements per node: ",I18)') max_num_of_elems_per_node
-
-allocate(el_node(numnp, max_num_of_elems_per_node))
-el_node = 0
-
-num_of_elems_of_node = 0
-do ii = 1, numel
-   do jj = 1, 4
-      i_node = global_node_id_type_domain(jj, ii)
-
-      num_of_elems_of_node(i_node)                  = num_of_elems_of_node(i_node) + 1
-      el_node(i_node, num_of_elems_of_node(i_node)) = ii
-   enddo
-enddo
+call mesh_elements_per_node(max_num_of_elems_per_node, num_of_elems_of_node)
 
 num_dest_xx_neighbors = 0
 if (periodic_axis_id(1)) then
