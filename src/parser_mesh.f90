@@ -9,7 +9,7 @@ use fhash_module__ints_double
 use ints_module
 use error_handing_mod
 use write_helper_mod, only: adjl
-use parser_vars_mod,  only: iow, periodic_face_id, periodic_axis_id, domain_is_periodic
+use parser_vars_mod,  only: iow, periodic_axis_id, domain_is_periodic
 use geometry_mod,     only: nel, num_of_elems_of_node, box_lo, box_hi, box_len,        &
 &                       xc, numnp, numel, global_node_id_type_domain,                  &
 &                       ndm, node_pair_id, num_of_bulk_pairs, total_num_of_node_pairs, &
@@ -20,7 +20,7 @@ use geometry_mod,     only: nel, num_of_elems_of_node, box_lo, box_hi, box_len, 
 &                       node_pairing_zz_key, node_pairing_xx_value,                    &
 &                       node_pairing_yy_value, node_pairing_zz_value,                  &
 &                       num_dest_xx_neighbors, num_dest_yy_neighbors,                  &
-&                       num_dest_zz_neighbors
+&                       num_dest_zz_neighbors, nen_type_face, numel_type_face
 use kcw_mod,          only: F_m
 use iofiles_mod,      only: mesh_filename, dir_faces, com_12, inter, mesh_out,         &
 &                       mesh_prof, xface1_elements, xface2_elements,                   &
@@ -32,13 +32,11 @@ implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
 character(len=200) :: line, aux_line
 
-integer                              :: node1, node2, elem1, elem2
-integer                              :: ii, jj, kk, mm, pp
+integer                              :: ii, jj, kk, pp
 integer                              :: aux1, aux2, aux3, aux4
 integer                              :: reason, id_of_entity_it_belongs, max_num_of_elems_per_node
 integer                              :: nen_type_vertex, numel_type_vertex
 integer                              :: nen_type_edge, numel_type_edge
-integer                              :: nen_type_face, numel_type_face
 integer                              :: source_xx, dest_xx, node_pair
 integer                              :: source_yy, dest_yy
 integer, allocatable, dimension(:)   :: temp3
@@ -58,10 +56,6 @@ type(ints_type)                        :: vertex_entity_key, edge_entity_key, fa
 integer                                :: vertex_entity_value, edge_entity_value, face_entity_value, domain_entity_value
 
 type(fhash_type__ints_double)          :: xface1_hash, xface2_hash, yface1_hash, yface2_hash, zface1_hash, zface2_hash
-type(fhash_type_iterator__ints_double) :: xface1_it, xface2_it, yface1_it, yface2_it, zface1_it, zface2_it
-type(ints_type)                        :: xface1_key, xface2_key, yface1_key, yface2_key, zface1_key, zface2_key
-integer                                :: xface1_value, xface2_value, yface1_value, yface2_value, zface1_value, zface2_value
-integer                                :: xface1_size, xface2_size, yface1_size, yface2_size, zface1_size, zface2_size
 !----------------------------------------------------------------------------------------------------------------------------!
 open(unit=12, file=mesh_filename)
 
@@ -291,278 +285,30 @@ enddo
 #endif
 
 if (domain_is_periodic) then
-    ! Calculate the size of the face entity hashes
-    xface1_size = 0
-    xface2_size = 0
-    yface1_size = 0
-    yface2_size = 0
-    zface1_size = 0
-    zface2_size = 0
+    if (periodic_axis_id(1)) call mesh_face_entities('x', face_entity_hash, xface1_hash, xface2_hash)
+    if (periodic_axis_id(2)) call mesh_face_entities('y', face_entity_hash, yface1_hash, yface2_hash)
+    if (periodic_axis_id(3)) call mesh_face_entities('z', face_entity_hash, zface1_hash, zface2_hash)
 
+#ifdef DEBUG_OUTPUTS
     call face_entity_it%begin(face_entity_hash)
     do kk = 1, face_entity_hash%key_count()
         call face_entity_it%next(face_entity_key, face_entity_value)
-#ifdef DEBUG_OUTPUTS
         write(33,*) face_entity_value-1, face_entity_key%ints(1)
-#endif
-        if (periodic_axis_id(1)) then
-            if (face_entity_value==periodic_face_id(1)) xface1_size = xface1_size + 1
-            if (face_entity_value==periodic_face_id(2)) xface2_size = xface2_size + 1
-        endif
-        if (periodic_axis_id(2)) then
-            if (face_entity_value==periodic_face_id(3)) yface1_size = yface1_size + 1
-            if (face_entity_value==periodic_face_id(4)) yface2_size = yface2_size + 1
-        endif
-        if (periodic_axis_id(3)) then
-            if (face_entity_value==periodic_face_id(5)) zface1_size = zface1_size + 1
-            if (face_entity_value==periodic_face_id(6)) zface2_size = zface2_size + 1
-        endif
     enddo
-
-#ifdef DEBUG_OUTPUTS
     close(11)
     close(22)
     close(33)
     close(44)
+
+    if (periodic_axis_id(1)) call mesh_periodic_face_elements('x', xface1_hash, xface2_hash)
+    if (periodic_axis_id(2)) call mesh_periodic_face_elements('y', yface1_hash, yface2_hash)
+    if (periodic_axis_id(3)) call mesh_periodic_face_elements('z', zface1_hash, zface2_hash)
 #endif
 
-    if (periodic_axis_id(1)) then
-        allocate(xface1_key%ints(1))
-        allocate(xface2_key%ints(1))
-        call xface1_hash%reserve(xface1_size)
-        call xface2_hash%reserve(xface2_size)
-    endif
-    if (periodic_axis_id(2)) then
-        allocate(yface1_key%ints(1))
-        allocate(yface2_key%ints(1))
-        call yface1_hash%reserve(yface1_size)
-        call yface2_hash%reserve(yface2_size)
-    endif
-    if (periodic_axis_id(3)) then
-        allocate(zface1_key%ints(1))
-        allocate(zface2_key%ints(1))
-        call zface1_hash%reserve(zface1_size)
-        call zface2_hash%reserve(zface2_size)
-    endif
-
-    ! Fill the face entity hashes
-    call face_entity_it%begin(face_entity_hash)
-    do kk = 1, face_entity_hash%key_count()
-        call face_entity_it%next(face_entity_key, face_entity_value)
-        if (face_entity_value==periodic_face_id(1)) then
-            xface1_key%ints(1) = face_entity_key%ints(1)
-            call xface1_hash%set(xface1_key, face_entity_value)
-            cycle
-        endif
-        if (face_entity_value==periodic_face_id(2)) then
-            xface2_key%ints(1) = face_entity_key%ints(1)
-            call xface2_hash%set(xface2_key, face_entity_value)
-            cycle
-        endif
-        if (face_entity_value==periodic_face_id(3)) then
-            yface1_key%ints(1) = face_entity_key%ints(1)
-            call yface1_hash%set(yface1_key, face_entity_value)
-            cycle
-        endif
-        if (face_entity_value==periodic_face_id(4)) then
-            yface2_key%ints(1) = face_entity_key%ints(1)
-            call yface2_hash%set(yface2_key, face_entity_value)
-            cycle
-        endif
-        if (face_entity_value==periodic_face_id(5)) then
-            zface1_key%ints(1) = face_entity_key%ints(1)
-            call zface1_hash%set(zface1_key, face_entity_value)
-            cycle
-        endif
-        if (face_entity_value==periodic_face_id(6)) then
-            zface2_key%ints(1) = face_entity_key%ints(1)
-            call zface2_hash%set(zface2_key, face_entity_value)
-            cycle
-        endif
-    enddo
-
-#ifdef DEBUG_OUTPUTS
-    if (periodic_axis_id(1)) then
-        open(unit=111, file=xface1_elements)
-        open(unit=222, file=xface2_elements)
-
-        call xface1_it%begin(xface1_hash)
-        call xface2_it%begin(xface2_hash)
-
-        do kk = 1, xface1_hash%key_count()
-            call xface1_it%next(xface1_key, xface1_value)
-            write(111,*) xface1_value, xface1_key%ints(1)
-        enddo
-        do kk = 1, xface2_hash%key_count()
-            call xface2_it%next(xface2_key, xface2_value)
-            write(222,*) xface2_value, xface2_key%ints(1)
-        enddo
-
-        close(111)
-        close(222)
-    endif
-
-    if (periodic_axis_id(2)) then
-        open(unit=333, file=yface1_elements)
-        open(unit=444, file=yface2_elements)
-
-        call yface1_it%begin(yface1_hash)
-        call yface2_it%begin(yface2_hash)
-
-        do kk = 1, yface1_hash%key_count()
-            call yface1_it%next(yface1_key, yface1_value)
-            write(333,*) yface1_value, yface1_key%ints(1)
-        enddo
-        do kk = 1, yface2_hash%key_count()
-            call yface2_it%next(yface2_key, yface2_value)
-            write(444,*) yface2_value, yface2_key%ints(1)
-        enddo
-
-        close(333)
-        close(444)
-    endif
-
-    if (periodic_axis_id(3)) then
-        open(unit=555, file=zface1_elements)
-        open(unit=666, file=zface2_elements)
-
-        call zface1_it%begin(zface1_hash)
-        call zface2_it%begin(zface2_hash)
-
-        do kk = 1, zface1_hash%key_count()
-            call zface1_it%next(zface1_key, zface1_value)
-            write(555,*) zface1_value, zface1_key%ints(1)
-        enddo
-        do kk = 1, zface2_hash%key_count()
-            call zface2_it%next(zface2_key, zface2_value)
-            write(666,*) zface2_value, zface2_key%ints(1)
-        enddo
-
-        close(555)
-        close(666)
-    endif
-#endif
-
-    ! Build xx pairing
-    if (periodic_axis_id(1)) then
-        allocate(node_pairing_xx_key%ints(1))
-        call node_pairing_xx_hash%reserve(xface1_hash%key_count())
-        call xface1_it%begin(xface1_hash)
-        do kk = 1, xface1_hash%key_count()
-            call xface1_it%next(xface1_key, xface1_value)
-            elem1 = xface1_key%ints(1)
-
-            call xface2_it%begin(xface2_hash)
-            do mm = 1, xface2_hash%key_count()
-                call xface2_it%next(xface2_key, xface2_value)
-                elem2 = xface2_key%ints(1)
-                do ii = 1, 3
-                    node1 = global_node_id_type_face(ii,elem1)
-                    do jj = 1, 3
-                        node2 = global_node_id_type_face(jj, elem2)
-                        if ((ABS(xc(2,node1)-xc(2,node2))<1e-12).AND.(ABS(xc(3,node1)-xc(3,node2))<1e-12)) then
-                            node_pairing_xx_key%ints(1) = node1
-                            call node_pairing_xx_hash%set(node_pairing_xx_key, node2)
-                        endif
-                    enddo
-                enddo
-            enddo
-        enddo
-    endif
-
-    ! Build yy pairing
-    if (periodic_axis_id(2)) then
-        allocate(node_pairing_yy_key%ints(1))
-        call node_pairing_yy_hash%reserve(yface1_hash%key_count())
-        call yface1_it%begin(yface1_hash)
-        do kk = 1, yface1_hash%key_count()
-            call yface1_it%next(yface1_key, yface1_value)
-            elem1 = yface1_key%ints(1)
-
-            call yface2_it%begin(yface2_hash)
-            do mm = 1, yface2_hash%key_count()
-                call yface2_it%next(yface2_key, yface2_value)
-                elem2 = yface2_key%ints(1)
-                do ii = 1, 3
-                    node1 = global_node_id_type_face(ii,elem1)
-                    do jj = 1, 3
-                        node2 = global_node_id_type_face(jj, elem2)
-                        if ((ABS(xc(1,node1)-xc(1,node2))<1e-12).AND.(ABS(xc(3,node1)-xc(3,node2))<1e-12)) then
-                            node_pairing_yy_key%ints(1) = node1
-                            call node_pairing_yy_hash%set(node_pairing_yy_key, node2)
-                        endif
-                    enddo
-                enddo
-            enddo
-        enddo
-    endif
-
-    ! Build zz pairing
-    if (periodic_axis_id(3)) then
-        allocate(node_pairing_zz_key%ints(1))
-        call node_pairing_zz_hash%reserve(zface1_hash%key_count())
-        call zface1_it%begin(zface1_hash)
-        do kk = 1, zface1_hash%key_count()
-            call zface1_it%next(zface1_key, zface1_value)
-            elem1 = zface1_key%ints(1)
-
-            call zface2_it%begin(zface2_hash)
-            do mm = 1, zface2_hash%key_count()
-                call zface2_it%next(zface2_key, zface2_value)
-                elem2 = zface2_key%ints(1)
-                do ii = 1, 3
-                    node1 = global_node_id_type_face(ii,elem1)
-                    do jj = 1, 3
-                        node2 = global_node_id_type_face(jj, elem2)
-                        if ((ABS(xc(1,node1)-xc(1,node2))<1e-12).AND.(ABS(xc(2,node1)-xc(2,node2))<1e-12)) then
-                            node_pairing_zz_key%ints(1) = node1
-                            call node_pairing_zz_hash%set(node_pairing_zz_key, node2)
-                        endif
-                    enddo
-                enddo
-            enddo
-        enddo
-    endif
-
-#ifdef DEBUG_OUTPUTS
-    if (periodic_axis_id(1)) then
-        open(unit=1111, file=node_pairing_xx)
-
-        call node_pairing_xx_it%begin(node_pairing_xx_hash)
-
-        do kk = 1, node_pairing_xx_hash%key_count()
-            call node_pairing_xx_it%next(node_pairing_xx_key, node_pairing_xx_value)
-            write(1111,*) node_pairing_xx_key%ints(1), node_pairing_xx_value
-        enddo
-
-        close(1111)
-    endif
-    if (periodic_axis_id(2)) then
-        open(unit=2222, file=node_pairing_yy)
-
-        call node_pairing_yy_it%begin(node_pairing_yy_hash)
-
-        do kk = 1, node_pairing_yy_hash%key_count()
-            call node_pairing_yy_it%next(node_pairing_yy_key, node_pairing_yy_value)
-            write(2222,*) node_pairing_yy_key%ints(1), node_pairing_yy_value
-        enddo
-
-        close(2222)
-    endif
-    if (periodic_axis_id(3)) then
-        open(unit=3333, file=node_pairing_zz)
-
-        call node_pairing_zz_it%begin(node_pairing_zz_hash)
-
-        do kk = 1, node_pairing_zz_hash%key_count()
-            call node_pairing_zz_it%next(node_pairing_zz_key, node_pairing_zz_value)
-            write(3333,*) node_pairing_zz_key%ints(1), node_pairing_zz_value
-        enddo
-
-        close(3333)
-    endif
-#endif
-endif !domain_is_periodic
+    if (periodic_axis_id(1)) call mesh_build_node_pairing(global_node_id_type_face, 'x', xface1_hash, xface2_hash, node_pairing_xx_hash)
+    if (periodic_axis_id(2)) call mesh_build_node_pairing(global_node_id_type_face, 'y', yface1_hash, yface2_hash, node_pairing_yy_hash)
+    if (periodic_axis_id(3)) call mesh_build_node_pairing(global_node_id_type_face, 'z', zface1_hash, zface2_hash, node_pairing_zz_hash)
+endif
 
 allocate(num_of_elems_of_node(numnp))
 call mesh_elements_per_node(max_num_of_elems_per_node, num_of_elems_of_node)
@@ -885,27 +631,6 @@ deallocate(domain_entity_key%ints)
 call vertex_entity_hash%clear()
 call edge_entity_hash%clear()
 call domain_entity_hash%clear()
-
-if (domain_is_periodic) then
-    if (periodic_axis_id(1)) then
-        deallocate(xface1_key%ints)
-        deallocate(xface2_key%ints)
-        call xface1_hash%clear()
-        call xface2_hash%clear()
-    endif
-    if (periodic_axis_id(2)) then
-        deallocate(yface1_key%ints)
-        deallocate(yface2_key%ints)
-        call yface1_hash%clear()
-        call yface2_hash%clear()
-    endif
-    if (periodic_axis_id(3)) then
-        deallocate(zface1_key%ints)
-        deallocate(zface2_key%ints)
-        call zface1_hash%clear()
-        call zface2_hash%clear()
-    endif
-endif
 #endif
 
 deallocate(elemcon_key%ints)
