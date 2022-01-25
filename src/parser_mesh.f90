@@ -19,7 +19,7 @@ use geometry_mod,     only: nel, num_of_elems_of_node, box_lo, box_hi, box_len, 
 &                       node_pairing_xx_key, node_pairing_yy_key,                      &
 &                       node_pairing_zz_key, node_pairing_xx_value,                    &
 &                       node_pairing_yy_value, node_pairing_zz_value,                  &
-&                       num_dest_xx_neighbors, num_dest_yy_neighbors,                  &
+&                       num_dest_xx_neighbors, num_dest_yy_neighbors,                  & ! these should be removed
 &                       num_dest_zz_neighbors, nen_type_face, numel_type_face
 use kcw_mod,          only: F_m
 use iofiles_mod,      only: mesh_filename, dir_faces, com_12, inter, mesh_out,         &
@@ -39,6 +39,7 @@ integer                              :: nen_type_vertex, numel_type_vertex
 integer                              :: nen_type_edge, numel_type_edge
 integer                              :: source_xx, dest_xx, node_pair
 integer                              :: source_yy, dest_yy
+integer                              :: source_zz, dest_zz
 integer, allocatable, dimension(:)   :: temp3
 integer, allocatable, dimension(:,:) :: global_node_id_type_vertex, global_node_id_type_edge, global_node_id_type_face
 
@@ -314,32 +315,12 @@ allocate(num_of_elems_of_node(numnp))
 call mesh_elements_per_node(max_num_of_elems_per_node, num_of_elems_of_node)
 
 num_dest_xx_neighbors = 0
-if (periodic_axis_id(1)) then
-    call node_pairing_xx_it%begin(node_pairing_xx_hash)
-
-    do kk = 1, node_pairing_xx_hash%key_count()
-        call node_pairing_xx_it%next(node_pairing_xx_key, node_pairing_xx_value)
-
-        source_xx = node_pairing_xx_key%ints(1)
-        dest_xx   = node_pairing_xx_value
-
-        num_dest_xx_neighbors = num_dest_xx_neighbors + 3 * num_of_elems_of_node(dest_xx)
-    enddo
-endif
-
 num_dest_yy_neighbors = 0
-if (periodic_axis_id(2)) then
-    call node_pairing_yy_it%begin(node_pairing_yy_hash)
+num_dest_zz_neighbors = 0
 
-    do kk = 1, node_pairing_yy_hash%key_count()
-        call node_pairing_yy_it%next(node_pairing_yy_key, node_pairing_yy_value)
-
-        source_yy = node_pairing_yy_key%ints(1)
-        dest_yy   = node_pairing_yy_value
-
-        num_dest_yy_neighbors = num_dest_yy_neighbors + 3 * num_of_elems_of_node(dest_yy)
-    enddo
-endif
+if (periodic_axis_id(1)) call mesh_periodic_neighbors(node_pairing_xx_hash, num_dest_xx_neighbors)
+if (periodic_axis_id(2)) call mesh_periodic_neighbors(node_pairing_yy_hash, num_dest_yy_neighbors)
+if (periodic_axis_id(3)) call mesh_periodic_neighbors(node_pairing_zz_hash, num_dest_zz_neighbors)
 
 total_num_of_node_pairs = num_of_bulk_pairs
 
