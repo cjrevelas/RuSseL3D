@@ -32,8 +32,8 @@ implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
 character(len=200) :: line, aux_line
 
-integer                              :: ii, jj, kk, pp
-integer                              :: aux1, aux2, aux3, aux4
+integer                              :: ii, jj, kk, pp, aux
+integer                              :: starting_pair, ending_pair
 integer                              :: reason, id_of_entity_it_belongs, max_num_of_elems_per_node
 integer                              :: nen_type_vertex, numel_type_vertex
 integer                              :: nen_type_edge, numel_type_edge
@@ -347,61 +347,17 @@ F_m%is_zero = .True.
 
 call mesh_bulk_node_pairs(elemcon)
 
-allocate(elemcon_key%ints(2))
+starting_pair = num_of_bulk_pairs + 1
+ending_pair   = num_of_bulk_pairs + node_pairing_xx_hash%key_count()
 
-! Append xx periodic pairs in F_m struct
-if (periodic_axis_id(1)) then
-    call node_pairing_xx_it%begin(node_pairing_xx_hash)
+if (periodic_axis_id(1)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_xx_hash)
 
-    do kk = num_of_bulk_pairs + 1, num_of_bulk_pairs + node_pairing_xx_hash%key_count()
-        call node_pairing_xx_it%next(node_pairing_xx_key, node_pairing_xx_value)
-
-        source_xx = node_pairing_xx_key%ints(1)
-        dest_xx   = node_pairing_xx_value
-
-        ! Append pair
-        F_m%row(kk) = source_xx
-        F_m%col(kk) = dest_xx
-
-        elemcon_key%ints(1) = source_xx
-        elemcon_key%ints(2) = dest_xx
-
-        call elemcon%get(elemcon_key, elemcon_value, success)
-
-        if (success) then
-            node_pair_id(kk) = elemcon_value
-        else
-            call elemcon%set(elemcon_key, kk)
-            node_pair_id(kk) = kk
-        endif
-
-        ! Append inverse pair
-        pp = kk + node_pairing_xx_hash%key_count()
-
-        F_m%row(pp) = dest_xx
-        F_m%col(pp) = source_xx
-
-        elemcon_key%ints(1) = dest_xx
-        elemcon_key%ints(2) = source_xx
-
-        call elemcon%get(elemcon_key, elemcon_value, success)
-
-        if (success) then
-            node_pair_id(pp) = elemcon_value
-        else
-            call elemcon%set(elemcon_key, pp)
-            node_pair_id(pp) = pp
-        endif
-    enddo
-endif
-
-aux1 = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count()
-
-do ii = 1, aux1
+do ii = 1, num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count()
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
 
 ! Append dest_xx neighbors in F_m struct
+allocate(elemcon_key%ints(2))
 if (periodic_axis_id(1)) then
     call node_pairing_xx_it%begin(node_pairing_xx_hash)
 
@@ -416,9 +372,9 @@ if (periodic_axis_id(1)) then
 
                 if (F_m%is_zero(node_pair)) cycle
 
-                aux2 = aux2 + 1
+                aux = aux + 1
 
-                pp = aux1 + aux2
+                pp = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + aux
 
                 ! Append pair
                 F_m%row(pp) = source_xx
@@ -455,68 +411,25 @@ if (periodic_axis_id(1)) then
         enddo
     enddo
 endif
+deallocate(elemcon_key%ints)
 
-do ii = aux1 + 1, aux1 + 2*num_dest_xx_neighbors
+do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 1, num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
 
-aux3 = aux1 + 2*num_dest_xx_neighbors
+starting_pair = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 1
+ending_pair   = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + node_pairing_yy_hash%key_count()
 
-! Append yy periodic pairs in F_m struct
-if (periodic_axis_id(2)) then
-    call node_pairing_yy_it%begin(node_pairing_yy_hash)
+if (periodic_axis_id(2)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_yy_hash)
 
-    do kk = aux3 + 1, aux3 + node_pairing_yy_hash%key_count()
-        call node_pairing_yy_it%next(node_pairing_yy_key, node_pairing_yy_value)
-
-        source_yy = node_pairing_yy_key%ints(1)
-        dest_yy   = node_pairing_yy_value
-
-        ! Append pair
-        F_m%row(kk) = source_yy
-        F_m%col(kk) = dest_yy
-
-        elemcon_key%ints(1) = source_yy
-        elemcon_key%ints(2) = dest_yy
-
-        call elemcon%get(elemcon_key, elemcon_value, success)
-
-        if (success) then
-            node_pair_id(kk) = elemcon_value
-        else
-            call elemcon%set(elemcon_key, kk)
-            node_pair_id(kk) = kk
-        endif
-
-        ! Append inverse pair
-        pp = kk + node_pairing_yy_hash%key_count()
-
-        F_m%row(pp) = dest_yy
-        F_m%col(pp) = source_yy
-
-        elemcon_key%ints(1) = dest_yy
-        elemcon_key%ints(2) = source_yy
-
-        call elemcon%get(elemcon_key, elemcon_value, success)
-
-        if (success) then
-            node_pair_id(pp) = elemcon_value
-        else
-            call elemcon%set(elemcon_key, pp)
-            node_pair_id(pp) = pp
-        endif
-    enddo
-endif
-
-aux4 = aux3 + 2*node_pairing_yy_hash%key_count()
-
-do ii = aux3+1, aux4
+do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 1, &
+&       num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count()
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
-
-aux2 = 0
 
 !Append dest_yy neighbors in F_m struct
+aux = 0
+allocate(elemcon_key%ints(2))
 if (periodic_axis_id(2)) then
     call node_pairing_yy_it%begin(node_pairing_yy_hash)
 
@@ -531,9 +444,9 @@ if (periodic_axis_id(2)) then
 
                 if (F_m%is_zero(node_pair)) cycle
 
-                aux2 = aux2 + 1
+                aux = aux + 1
 
-                pp = aux4 + aux2
+                pp = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + aux
 
                 ! Append pair
                 F_m%row(pp) = source_yy
@@ -570,9 +483,11 @@ if (periodic_axis_id(2)) then
         enddo
     enddo
 endif
+deallocate(elemcon_key%ints)
 call elemcon%clear()
 
-do ii = aux4 + 1, aux4 + 2*num_dest_yy_neighbors
+do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + 1, &
+&       num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
 
@@ -614,7 +529,6 @@ call domain_entity_hash%clear()
 ! Deallocate memory
 if (nel > 4) deallocate(temp3)
 deallocate(global_node_id_type_vertex, global_node_id_type_edge, global_node_id_type_face)
-deallocate(elemcon_key%ints)
 
 return
 !----------------------------------------------------------------------------------------------------------------------------!
