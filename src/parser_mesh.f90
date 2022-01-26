@@ -605,16 +605,17 @@ call mesh_profile()
 #endif
 
 #ifdef DEBUG_OUTPUTS
-deallocate(vertex_entity_key%ints)
-deallocate(edge_entity_key%ints)
-deallocate(domain_entity_key%ints)
-
+deallocate(vertex_entity_key%ints, edge_entity_key%ints, domain_entity_key%ints)
 call vertex_entity_hash%clear()
 call edge_entity_hash%clear()
 call domain_entity_hash%clear()
 #endif
 
+! Deallocate memory
+if (nel > 4) deallocate(temp3)
+deallocate(global_node_id_type_vertex, global_node_id_type_edge, global_node_id_type_face)
 deallocate(elemcon_key%ints)
+
 return
 !----------------------------------------------------------------------------------------------------------------------------!
 end subroutine parser_mesh

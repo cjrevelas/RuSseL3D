@@ -79,6 +79,7 @@ enddo
 close(1111)
 #endif
 
+deallocate(node_pairing_key%ints)
 deallocate(face1_key%ints)
 deallocate(face2_key%ints)
 

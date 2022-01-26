@@ -56,6 +56,8 @@ do jj = 1, nbin
     write(120,'(F19.9,2(E19.9E3))')  (REAL(jj)-0.5d0)*lbin, phi_mx_smear(jj), phi_g_smear(jj)
 enddo
 close(120)
+
+! Deallocate memory
 deallocate(mass_layer)
 
 return

@@ -28,6 +28,7 @@ real(8), allocatable, dimension(:)                 :: mass_layer
 write(6,'(2X,A40)')adjl("Exporting 99% brush thickness.",40)
 
 allocate(mass_layer(nbin))
+
 open (unit=120, file = file_name)
 ! Find the brush thickness from the total phi_gr
 do jj = 1, num_gpoints
@@ -97,6 +98,10 @@ if (num_of_nanoparticle_faces/=0) then
 endif
 write(6,'(2X,A40)')adjl("****************************************",40)
 close(120)
+
+! Deallocate memory
 deallocate(mass_layer)
+
+return
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine export_brush99

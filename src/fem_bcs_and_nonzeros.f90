@@ -269,5 +269,7 @@ close(255)
 
 deallocate(A_full)
 #endif
+
+return
 !------------------------------------------------------------------------------------------------------!
 end subroutine fem_bcs_and_nonzeros

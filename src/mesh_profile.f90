@@ -27,5 +27,9 @@ do ii = 1, nbin
     write(77,*) ii, prof_1D_node(ii)
 enddo
 close(77)
+
+! Deallocate memory
+deallocate(prof_1D_node)
+
 return
 end subroutine mesh_profile

@@ -13,6 +13,8 @@ use write_helper_mod
 use geometry_mod
 use iofiles_mod
 use delta_mod
+use hist_mod
+use kcw_mod, only: rdiag1, F_m
 use flags_mod, only: contour_symm, contour_asymm, contour_hybrid
 #ifdef USE_MPI
 use mpistuff_mod
@@ -294,5 +296,34 @@ end if
 
 1000 call MPI_FINALIZE(ierr)
 #endif
+
+! Deallocate all remaining dynamic memory
+deallocate(xc)
+deallocate(dphi2_dr2, d2phi_dr2)
+if (num_of_dirichlet_faces > 0)    deallocate(ids_dirichlet_faces, A_plate, sigma_plate)
+if (num_of_nanoparticle_faces > 0) deallocate(ids_nanopart_faces, A_np, sigma_np, radius_np_eff, center_np)
+deallocate(num_of_elems_of_node)
+deallocate(global_node_id_type_domain)
+deallocate(ds_mx_ed, xs_mx_ed, coeff_mx_ed)
+deallocate(qmx, qmx_final, qmx_interp_mg)
+deallocate(phia_mx, phi_total)
+if (mx_exist.eq.1) then
+    deallocate(qmx_interp_mm, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+endif
+if (gr_exist.eq.1) then
+    deallocate(ds_gr_ed, ds_gr_conv, xs_gr_ed, xs_gr_conv, coeff_gr_ed, coeff_gr_conv)
+    deallocate(qgr, qgr_final, qgr_interp)
+    deallocate(gpid, delta_numer, gp_init_value)
+    deallocate(phia_gr, phia_gr_indiv)
+endif
+deallocate(wa, wa_new, wa_mix, Ufield)
+deallocate(volnp)
+deallocate(planar_cell_of_np, dist_from_face, cell_vol_planar)
+deallocate(sph_cell_of_np, dist_from_np, cell_vol_sph)
+deallocate(node_pair_id)
+deallocate(el_node)
+deallocate(node_belongs_to_dirichlet_face)
+deallocate(rdiag1)
+deallocate(F_m%row, F_m%col, F_m%g, F_m%rh, F_m%c, F_m%k, F_m%w, F_m%is_zero)
 !------------------------------------------------------------------------------------------------------------------!
 end program RuSseL
