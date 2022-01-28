@@ -73,6 +73,7 @@ OBJECTS=$(OBJDIR)/parser_input.o\
 	$(OBJDIR)/mesh_build_node_pairing.o\
 	$(OBJDIR)/mesh_periodic_neighbors.o\
 	$(OBJDIR)/mesh_append_periodic_pairs.o\
+	$(OBJDIR)/mesh_append_dest_neighbors.o\
 	$(OBJDIR)/tools_histogram.o\
 	$(OBJDIR)/tools_matinv4.o\
 	$(OBJDIR)/solver_mumps.o\
