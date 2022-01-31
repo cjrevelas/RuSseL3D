@@ -267,8 +267,13 @@ write(iow,'(A85)')adjl('-----------------------------------SUMMARIZED RESULTS---
 write(*  ,'(A85)')adjl('-----------------------------------SUMMARIZED RESULTS-----------------------------------',85)
 
 if (field_error.lt.field_error_tol) then
-    write(iow,'("Convergence of max error",F16.9)') field_error
-    write(6  ,'("Convergence of max error",F16.9)') field_error
+    write(iow,'("Field convergence of max error",F16.9)') field_error
+    write(6  ,'("Field convergence of max error",F16.9)') field_error
+endif
+
+if (free_energy_error.lt.free_energy_error_tol) then
+    write(iow,'("Energy convergence of max error",F16.9)') free_energy_error
+    write(6  ,'("Energy convergence of max error",F16.9)') free_energy_error
 endif
 
 write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 free_energy
