@@ -96,6 +96,7 @@ OBJECTS=$(OBJDIR)/parser_input.o\
 	$(OBJDIR)/fem_integration.o\
         $(OBJDIR)/fem_matrix_assemble.o\
 	$(OBJDIR)/fem_bcs_and_nonzeros.o\
+	$(OBJDIR)/fem_apply_periodic_bcs.o\
 	$(OBJDIR)/fem_interpolation.o\
 	$(OBJDIR)/fem_tetshpfun.o\
 	$(OBJDIR)/export_computes.o\
