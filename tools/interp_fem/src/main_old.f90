@@ -25,7 +25,7 @@ real(8), allocatable, dimension(:,:) :: xc
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 call cpu_time(time_1)
 
-open(unit = 22, file = "in.input.txt")
+open(unit = 22, file = "in.input")
 read(22,*) numnp
 read(22,*) numel
 read(22,*) num_plot_points
@@ -93,13 +93,13 @@ endif
 
 allocate(xc(3,numnp), ix(4,numel), phi_matrix(numnp), phi_grafted(numnp), wa(numnp))
 
-open (unit = 77, file = "in.elemcon.txt")
+open (unit = 77, file = "in.elemcon")
 read (77,*) ((ix(i,ii), i=1, 4), ii=1, numel)
 close(77)
 
 ix = ix + 1
 
-open(unit = 88, file = "in.profiles.txt")
+open(unit = 88, file = "in.profiles")
 do i = 1, numnp
     read(88,*) dummy, (xc(j,i), j=1,3), phi_matrix(i), phi_grafted(i), wa(i)
 enddo

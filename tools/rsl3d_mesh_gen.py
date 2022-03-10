@@ -409,18 +409,19 @@ def edit_model_size_parameters(boxLx, boxLy, boxLz, r_np_eff, centers):
 #----------------------------------------------------------------------------------------------------------------------------------#
 planar = False
 
-Lx = 290.0
+Lx = 380.0
 Ly = 220.0
 Lz = 220.0
 
 num_part = 2
 r_np_eff = 24.0
 r_gp     = 0.4
-h_ss_HS  = 40.0
+
+h_ss_HS  = 132.8  # if num_part=1, this number does not make a difference
 
 use_gr  = True
 importt = True
-numgp   = 30     # If importt=true, this number does not make a difference
+numgp   = 30     # If importt=true (nonuniform), this number does not make a difference
 
 if num_part==1:
     h_cc = 0
@@ -433,13 +434,13 @@ centers[1][0] = 0.0
 centers[2][0] = 0.0
 
 if num_part == 1:
-    os.system("cp rsl3d_mesh_gen_template_sph1.m rsl3d_mesh_gen.m")
+    os.system("cp ./template_input_files/rsl3d_mesh_gen_template_sph1.m rsl3d_mesh_gen.m")
 
     move       = False
     move_by_xx = 0.0
     reflect    = False
 elif num_part == 2:
-    os.system("cp rsl3d_mesh_gen_template_sph2.m rsl3d_mesh_gen.m")
+    os.system("cp ./template_input_files/rsl3d_mesh_gen_template_sph2.m rsl3d_mesh_gen.m")
 
     if (importt):
         move       = False

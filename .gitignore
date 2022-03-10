@@ -3,3 +3,4 @@ run/
 node_modules/
 tools/interp_fem/run/
 tools/interp_fem/run_old/
+tools/template_input_files/

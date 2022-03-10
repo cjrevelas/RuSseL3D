@@ -27,7 +27,7 @@ interface
     end function
 end interface
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-open(unit = 80, file = "o.interp.txt")
+open(unit = 80, file = "o.interp")
 
 !set up for 11-point quadrature
 l = 3

@@ -6,7 +6,7 @@ import math   as m
 import copy   as cp
 import random as rnd
 import subprocess
-import csv 
+import csv
 
 NULLVAL = -1
 N_MAX   = 150
@@ -33,8 +33,8 @@ def get_brush_thickness(dir, filename):
 
     if os.path.exists(path):
         brush_thickness_file = open(dir + '/' + filename, 'r')
-        while True: 
-            line = brush_thickness_file.readline() 
+        while True:
+            line = brush_thickness_file.readline()
             if not line: break
             if "mean"  in line: mean  = line.split()[1]
             if "stdev" in line: stdev = line.split()[1]
@@ -57,7 +57,7 @@ def get_params_from_dirname(dirname):
         numPoles = 1
     elif "2poles" in dirname:
         numPoles = 2
-   
+
     if "plus" in dirname:
         kind = "attractive"
     elif "minus" in dirname:
@@ -108,8 +108,8 @@ def get_input_params(dir):
 
     if os.path.exists(path):
         input_file = open(dir + '/' + filename, 'r')
-        while True: 
-            line = input_file.readline() 
+        while True:
+            line = input_file.readline()
             if not line: break
             if "# wall dist" in line: wall_dist   = cast_fort_float(line.split()[0])
             if "# num nanop" in line:
@@ -204,7 +204,7 @@ def get_phi_smear(dir):
 
     try:
         phi_smeared_file = open(dir + '/' + filename, 'r')
-        phi_smeared_file.readline() 
+        phi_smeared_file.readline()
         for ii in range(N_MAX):
             line = phi_smeared_file.readline()
             if not line: break
@@ -272,7 +272,7 @@ if export_thermo:
                             ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr,                       \
                             sphere_args, face_args])
     csvFile.close()
-                                        
+
 if export_phi_smear:
     prof_smeared = {}
     for dir in dirs:

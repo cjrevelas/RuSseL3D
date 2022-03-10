@@ -113,6 +113,7 @@ def assembly_probability_map(radius, n_the, n_phi, grid_the, grid_phi, biases, p
         for jj in range(n_the):
             prob_ref[ii][jj] /= max_prob
 
+    # Export the probability map
     prob_map_file = open("o.prob_map_" + str(prob_bgd),'w')
 
     prob_map_file.write("# ")
@@ -137,7 +138,7 @@ h_wall        = 4.0
 h_gp          = 0.4
 radius        = [r_np_actual_1+h_wall+h_gp, r_np_actual_2+h_wall+h_gp]
 radius_act    = [r_np_actual_1, r_np_actual_2]
-positions     = [[-44.00,0.0,0.0],[+44.00,0.0,0.0]]
+positions     = [[-90.40,0.0,0.0],[+90.40,0.0,0.0]]
 n_gp          = [15, 15]
 min_gp_dist   = 9.8
 n_the         = 400
@@ -146,22 +147,34 @@ nanop_array   = []
 biases        = []
 maps          = []
 
-d_the         = TWO_PI / n_the #(-pi,+pi)
-d_phi         = PI     / n_phi #(-pi/2,+pi/2)
-grid_the      = [d_the * ii - PI for ii in range(n_the)]
-grid_phi      = [d_phi * ii - HALF_PI for ii in range(n_phi)]
+d_the    = TWO_PI / n_the #(-pi,+pi)
+d_phi    = PI     / n_phi #(-pi/2,+pi/2)
+grid_the = [d_the * ii - PI for ii in range(n_the)]
+grid_phi = [d_phi * ii - HALF_PI for ii in range(n_phi)]
 
-# Vertical
 prob_bgd = 0.0
+
+# first nanoparticle  -> vertical gp configuration
+# second nanoparticle -> horizontal gp configuration
 biases.append(bias(-HALF_PI, 0.0, +1.0, 5.0))
 biases.append(bias(+HALF_PI, 0.0, +1.0, 5.0))
 prob_ref1 = assembly_probability_map(radius[0], n_the, n_phi, grid_the, grid_phi, biases, prob_bgd)
+
+biases[0] = bias(0.0, 0.0, +1.0, 5.0)
+biases[1] = bias(PI, 0.0, +1.0, 5.0)
 prob_ref2 = assembly_probability_map(radius[1], n_the, n_phi, grid_the, grid_phi, biases, prob_bgd)
 
-# Horizontal
+# Vertical (phi, theta)
+#prob_bgd = 0.0
+#biases.append(bias(-HALF_PI, 0.0, +1.0, 5.0))
+#biases.append(bias(+HALF_PI, 0.0, +1.0, 5.0))
+#prob_ref1 = assembly_probability_map(radius[0], n_the, n_phi, grid_the, grid_phi, biases, prob_bgd)
+#prob_ref2 = assembly_probability_map(radius[1], n_the, n_phi, grid_the, grid_phi, biases, prob_bgd)
+
+# Horizontal (phi, theta)
 #prob_bgd = 0.0
 #biases.append(bias(0.0, 0.0, +1.0, 5.0))
-#biases.append(bias(PI, 0.0, +1.0, 5.0))
+#biases.append(bias(PI, 0.0, +1.0, 5.0)) -> equivalent to (0, +-pi, +1.0, 5.0)
 #prob_ref1 = assembly_probability_map(radius[0], n_the, n_phi, grid_the, grid_phi, biases, prob_bgd)
 #prob_ref2 = assembly_probability_map(radius[1], n_the, n_phi, grid_the, grid_phi, biases, prob_bgd)
 
@@ -183,7 +196,7 @@ for ii in range(len(nanop_array)):
         if np.random.rand() < prob_insert:
             insert = True
             for gp in nanop_array[ii].gps:
-                dist = get_great_angle(phi, the, gp[0], gp[1]) * nanop_array[ii].rad_actual #check the arguments of the get_great_angle function
+                dist = get_great_angle(phi, the, gp[0], gp[1]) * nanop_array[ii].rad_actual
                 #print(dist, min_gp_dist)
                 if dist < min_gp_dist:
                     insert = False

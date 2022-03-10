@@ -17,7 +17,7 @@ real(8)                                 :: temp_x, temp_y, temp_z, vol_test, xsj
 inside = 0
 k      = 0
 
-!open(unit = 60, file = 'vol_debug.txt')
+!open(unit = 60, file = "d.vol_debug")
 do p = 1, 4
     vol_test = 0.d00
 
