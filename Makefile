@@ -24,11 +24,11 @@ LIBMUMPS_COMMON = $(libdir)/libmumps_common$(PLAT)$(LIBEXT)
 LIBDMUMPS       = $(libdir)/libdmumps$(PLAT)$(LIBEXT) $(LIBMUMPS_COMMON)
 
 FC_PROD  = -O3
-FC_DEBUG = -O0 -g -fcheck=all -Wall -Wextra \
-           -m64 -g -O0 -pedantic-errors -frepack-arrays -fdump-core -fbounds-check\
+FC_DEBUG = -O1 -g -fcheck=all -Wall -Wextra \
+           -m64 -g -pedantic-errors -frepack-arrays -fdump-core -fbounds-check\
            -fimplicit-none -fbacktrace -ffree-line-length-none -frange-check\
            -Wall -Waliasing -Wampersand\
-           -Wsurprising -Wunderflow -W #-Wno-unused-dummy-argument
+           -Wsurprising -Wunderflow -W -Wno-unused-dummy-argument
 
 ifeq ($(MAKE_PRODUCTION_RUN),0)
 CPPFLAGS = $(DEBUG_OPTIONS) $(BOTH_OPTIONS) $(MPI_OPTIONS)

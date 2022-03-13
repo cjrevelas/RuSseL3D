@@ -407,9 +407,6 @@ call elemcon%clear()
 call mesh_dirichlet_faces(numel_type_face, nen_type_face, global_node_id_type_face, face_entity_hash)
 
 #ifdef DEBUG_OUTPUTS
-close(123)
-close(13)
-
 open(unit=77, file = com_12)
 do ii = 1, total_num_of_node_pairs
      write(77,'(4(2X,I9),2X,L9)') ii, F_m%row(ii), F_m%col(ii), node_pair_id(ii), F_m%is_zero(ii)

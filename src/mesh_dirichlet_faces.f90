@@ -80,5 +80,10 @@ do jj = 1, numel_type_face
         endif
     enddo
 enddo
+
+#ifdef DEBUG_OUTPUTS
+close(123)
+#endif
+
 return
 end subroutine mesh_dirichlet_faces
