@@ -36,10 +36,11 @@ allocate(cell_vol_sph(num_of_nanoparticle_faces,nbin))
 
 planar_cell_of_np = 0
 sph_cell_of_np    = 0
-dist_from_face    = 0.d0
-dist_from_np      = 0.d0
-cell_vol_planar   = 0.d0
-cell_vol_sph      = 0.d0
+dist_from_face    = 0.0d0
+dist_from_np      = 0.0d0
+cell_vol_planar   = 0.0d0
+cell_vol_sph      = 0.0d0
+r_center_surf     = 0.0d0
 
 ! Chains grafted on planar surfaces
 do mm = 1, 3

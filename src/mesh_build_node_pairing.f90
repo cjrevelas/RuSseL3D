@@ -25,7 +25,7 @@ integer                                      :: face1_value, face2_value
 
 integer :: ii, jj, kk, mm
 integer :: elem1, elem2, node1, node2
-integer :: dimension1, dimension2
+integer :: dimension1=0, dimension2=0
 
 if (axis=='x') then
     dimension1 = 2 ! y

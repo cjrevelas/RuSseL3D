@@ -23,6 +23,9 @@ integer :: kk, periodic_face1, periodic_face2
 face1_size = 0
 face2_size = 0
 
+periodic_face1 = 0
+periodic_face2 = 0
+
 if (axis=='x') then
     periodic_face1 = periodic_face_id(1)
     periodic_face2 = periodic_face_id(2)

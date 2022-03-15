@@ -22,6 +22,7 @@ module eos_mod
         real(8), intent(in) :: phi
         real(8)             :: ff, rho_tilde
 
+        ff = 0.0d0
         if (eos_type.eq.eos_helfand) then
             ff = 5.0d-1 / hlf_kappa_T * (phi - 1.0d0)**2
         elseif (eos_type.eq.eos_sl) then
@@ -39,6 +40,7 @@ module eos_mod
         real(8), intent(in) :: phi
         real(8)             :: df_drho, rho_tilde
 
+        df_drho = 0.0d0
         if (eos_type.eq.eos_helfand) then
             df_drho = (phi-1.0d0)/(hlf_kappa_T*rho_mol_bulk*n_avog)
         elseif (eos_type.eq.eos_sl) then

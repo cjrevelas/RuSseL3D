@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-real(8) function fem_interpolation(nodeId, x_interp, y_interp, z_interp, uu)
+function fem_interpolation(nodeId, x_interp, y_interp, z_interp, uu) result(u_interp)
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 use geometry_mod, only : numnp, ndm, nel, el_node, global_node_id_type_domain, xc, num_of_elems_of_node
 !--------------------------------------------------------------------------------------------------------------------------------------------!
@@ -32,6 +32,7 @@ end interface
 l = 3
 call fem_gausspoints(l, lint, sv)
 
+u_interp = 0.0d0
 ! Loop over elements
 do mm = 1, num_of_elems_of_node(nodeId)
    nn = el_node(nodeId, mm)
@@ -95,7 +96,6 @@ do mm = 1, num_of_elems_of_node(nodeId)
             u_interp  = u_interp  + shp(4,jj) * ul_uu(jj)
         enddo
 
-        fem_interpolation = u_interp
         exit
     endif
     ! End loop over elements

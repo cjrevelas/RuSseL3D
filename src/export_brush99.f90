@@ -27,6 +27,9 @@ real(8), allocatable, dimension(:)                 :: mass_layer
 !-----------------------------------------------------------------------------------------------------------!
 write(6,'(2X,A40)')adjl("Exporting 99% brush thickness.",40)
 
+brush99_of_chain_ave = 0.0d0
+brush99_of_chain_std = 0.0d0
+
 allocate(mass_layer(nbin))
 
 open (unit=120, file = file_name)
