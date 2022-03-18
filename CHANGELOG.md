@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.0.0](https://github.com/mokkapps/changelog-generator-demo/compare/v3.3.0...v4.0.0) (2022-03-18)
+
+
+### Features
+
+* add periodic boundary conditions on y-axis ([bcf14ce](https://github.com/mokkapps/changelog-generator-demo/commits/bcf14cef87859c1c3db49c6363bdeb2470fde543))
+* add periodic boundary conditions on z-axis ([84039f6](https://github.com/mokkapps/changelog-generator-demo/commits/84039f6745b4dd868396dd4298a78998d16a8bf8))
+
+
+### Bug Fixes
+
+* deallocate all dynamic memory ([ee8a80b](https://github.com/mokkapps/changelog-generator-demo/commits/ee8a80bd1efbb128758dfe8c25f81f9723cef013))
+* get rid of warnings regarding variable initialization ([83f2ffa](https://github.com/mokkapps/changelog-generator-demo/commits/83f2ffa3c4f3fa91fe6e358d61f8127075259a83))
+* **get_contour_step:** ns_part1 is initialized out of if-block ([a2df4d9](https://github.com/mokkapps/changelog-generator-demo/commits/a2df4d913b4d8cdca43a8a145dcc75ea3762089b))
+* print free energy error at convergence ([67c9747](https://github.com/mokkapps/changelog-generator-demo/commits/67c9747b0252e5d65838a8a91a799c29325b6bc4))
+* **temp:** change debug compiler flag from -O0 to -O1 ([e229345](https://github.com/mokkapps/changelog-generator-demo/commits/e229345fd6bc769475897b16e76d72a275bf8a8f))
+
 ## [3.3.0](https://github.com/mokkapps/changelog-generator-demo/compare/v3.2.0...v3.3.0) (2021-12-11)
 
 
