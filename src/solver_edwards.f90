@@ -17,7 +17,7 @@ include "mpif.h"
 #endif
 !----------------------------------------------------------------------------------------------------------!
 integer, intent(in) :: ns, mumps_matrix_type
-integer             :: ii, jj, kk, time_step, get_sys_time, t_init, t_final
+integer             :: ii, jj, kk, time_step, tools_sys_time, t_init, t_final
 
 logical, intent(in), dimension(numnp) :: node_belongs_to_dirichlet_face
 
@@ -25,7 +25,7 @@ real(8), intent(in), dimension(ns+1)          :: ds
 real(8), intent(inout), dimension(2,numnp)    :: q
 real(8), intent(inout), dimension(ns+1,numnp) :: q_final
 !----------------------------------------------------------------------------------------------------------!
-t_init = get_sys_time()
+t_init = tools_sys_time()
 
 do time_step = 2, ns+1
     call fem_bcs_and_nonzeros(ds(time_step), mumps_matrix_type, node_belongs_to_dirichlet_face)
@@ -36,13 +36,13 @@ do time_step = 2, ns+1
 #endif
 
     if (ns.ge.10.and.MOD(time_step+1,ns/10).eq.0) then
-        write(6,'(I3,1X)',advance='no') NINT((time_step-2.d0)/ns*100.d0)
+        write(6,'(I3,1X)',advance='no') NINT((time_step-2.0d0)/ns*100.0d0)
     elseif (ns.lt.10.and.MOD(time_step+1,1).eq.0) then
-        write(6,'(I3,1X)',advance='no') NINT((time_step-2.d0)/ns*100.d0)
+        write(6,'(I3,1X)',advance='no') NINT((time_step-2.0d0)/ns*100.0d0)
     endif
 
     ! Form the RHS of the linear system of equations to be solved
-    rdiag1 = 0.
+    rdiag1 = 0.0d0
 
     do kk = 1, total_num_of_node_pairs
         if (F_m%is_zero(kk)) cycle
@@ -56,7 +56,7 @@ do time_step = 2, ns+1
     enddo
 
     do ii = 1, numnp
-        if (node_belongs_to_dirichlet_face(ii)) rdiag1(ii) = 0.
+        if (node_belongs_to_dirichlet_face(ii)) rdiag1(ii) = 0.0d0
     enddo
 
     ! Solve the linear system of equations
@@ -81,7 +81,7 @@ enddo
 
 write(6,'(1X,I3)',advance='no') 100
 
-t_final = get_sys_time()
+t_final = tools_sys_time()
 
 write(6,'(" :",I6)') t_final - t_init
 

@@ -6,7 +6,7 @@ subroutine init_delta()
 !-----------------------------------------------------------------------------------------------------------!
 use geometry_mod,     only: numnp
 use parser_vars_mod,  only: gr_exist
-use arrays_mod,       only: phia_gr_indiv
+use arrays_mod,       only: phi_gr_indiv
 use iofiles_mod,      only: gp_filename
 use delta_mod
 use error_handing_mod
@@ -52,6 +52,6 @@ else
     allocate(gpid(num_gpoints))
 endif
 
-allocate(phia_gr_indiv(numnp,num_gpoints))
+allocate(phi_gr_indiv(numnp,num_gpoints))
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine init_delta

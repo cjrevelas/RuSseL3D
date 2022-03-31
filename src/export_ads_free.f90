@@ -6,7 +6,7 @@ subroutine export_ads_free(node_belongs_to_dirichlet_face, adsorbed)
 !-----------------------------------------------------------------------------------------------------------------------!
 use parser_vars_mod,  only: mumps_matrix_type, Rg2_per_mon_mx, chainlen_mx, ns_mx_ed, ns_mx_conv
 use write_helper_mod, only: adjl
-use arrays_mod,       only: ds_mx_ed, xs_mx_ed, xs_mx_conv, coeff_mx_conv, qmx_interp_mm, phia_mx, wa
+use arrays_mod,       only: ds_mx_ed, xs_mx_ed, xs_mx_conv, coeff_mx_conv, qmx_interp_mm, phi_mx, ww
 use geometry_mod,     only: numnp, xc
 !-----------------------------------------------------------------------------------------------------------------------!
 implicit none
@@ -24,20 +24,20 @@ real(8), dimension(numnp)              :: phi_free, phi_ads, phi_loop, phi_tail
 write(6,'(2X,A40)')adjl("Exporting ads vs free density profiles.",40)
 
 ! Assembly
-call fem_matrix_assemble(Rg2_per_mon_mx, wa)
+call fem_matrix_assemble(Rg2_per_mon_mx, ww)
 
 ! Initial and boundary conditions
-qfree            = 0.d0
-qfree_final      = 0.d0
-qfree(1,:)       = 1.d0
-qfree_final(1,:) = 1.d0
+qfree            = 0.0d0
+qfree_final      = 0.0d0
+qfree(1,:)       = 1.0d0
+qfree_final(1,:) = 1.0d0
 
 node_belongs_to_dirichlet_face_new = node_belongs_to_dirichlet_face
 
 do kk = 1, numnp
     if (adsorbed(kk)) then
-        qfree(1,kk)       = 0.d0
-        qfree_final(1,kk) = 0.d0
+        qfree(1,kk)       = 0.0d0
+        qfree_final(1,kk) = 0.0d0
 
         node_belongs_to_dirichlet_face_new(kk) = .True.
     endif
@@ -65,8 +65,8 @@ call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qfree_in
 open(unit=125, file="o.ads_free_mx")
 write(125,'(9(2X,A16))') "kk", 'x', 'y', 'z', "phi_free", "phi_ads", "phi_loop", "phi_tail", "phi_mx"
 do kk = 1, numnp
-    phi_ads(kk) = phia_mx(kk) - phi_free(kk)
-    write(125,'(2X,I16,8(2X,E19.9E2))') kk, xc(1,kk), xc(2,kk), xc(3,kk), phi_free(kk), phi_ads(kk), phi_loop(kk), phi_tail(kk), phia_mx(kk)
+    phi_ads(kk) = phi_mx(kk) - phi_free(kk)
+    write(125,'(2X,I16,8(2X,E19.9E2))') kk, xc(1,kk), xc(2,kk), xc(3,kk), phi_free(kk), phi_ads(kk), phi_loop(kk), phi_tail(kk), phi_mx(kk)
 enddo
 close(125)
 

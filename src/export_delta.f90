@@ -41,7 +41,7 @@ close(iog)
 open(unit=5, file = delta_out)
 write(5,'(4(2X,A16))') "gpid", "qmx(rgi,Ng)", "Numerical delta", "Analytic delta"
 do ii = 1, num_gpoints
-    write(5,'(2X,I16,3(2X,E16.9))') gpid(ii), qmx_interp_mg(ns_gr_conv+1,gpid(ii)), delta_numer(ii), 1.d0 / volnp(gpid(ii)) * m3_to_A3
+    write(5,'(2X,I16,3(2X,E16.9))') gpid(ii), qmx_interp_mg(ns_gr_conv+1,gpid(ii)), delta_numer(ii), 1.0d0 / volnp(gpid(ii)) * m3_to_A3
 enddo
 close(5)
 !------------------------------------------------------------------------------------------------------!

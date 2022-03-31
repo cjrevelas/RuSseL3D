@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine compute_phi_end_middle_nodal(ns, q1_final, qmx_final, chain_type, numnp, xc)
+subroutine export_phi_end_middle_nodal(ns, q1_final, qmx_final, chain_type, numnp, xc)
 !----------------------------------------------------------------------------------------------------------!
 use write_helper_mod, only : adjl
 !----------------------------------------------------------------------------------------------------------!
@@ -20,8 +20,8 @@ character(80)            :: filename = ''
 !----------------------------------------------------------------------------------------------------------!
 write(6,'(2X,A40)')adjl("Exporting end/middle density profiles.",40)
 
-phi_middle = 0.d0
-phi_end    = 0.d0
+phi_middle = 0.0d0
+phi_end    = 0.0d0
 
 do kk = 1, numnp
     phi_end(kk) = (q1_final(ns,kk) * qmx_final(1,kk))
@@ -44,4 +44,4 @@ close(unit=122)
 
 return
 !----------------------------------------------------------------------------------------------------------!
-end subroutine compute_phi_end_middle_nodal
+end subroutine export_phi_end_middle_nodal

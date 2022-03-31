@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine export_brush99(cell_of_np, num_gpoints, numnp, file_name, phia_gr, phia_gr_indiv, volnp, lbin, nbin)
+subroutine export_brush99(cell_of_np, num_gpoints, numnp, file_name, phi_gr, phi_gr_indiv, volnp, lbin, nbin)
 !-----------------------------------------------------------------------------------------------------------!
 use write_helper_mod, only: adjl
 use parser_vars_mod,  only: iow, num_of_nanoparticle_faces, radius_np_eff
@@ -17,8 +17,8 @@ integer                               :: kk, ii, jj, bin
 character(40) :: file_name
 
 real(8), intent(in)                                :: lbin
-real(8), intent(in), dimension(numnp)              :: phia_gr, volnp
-real(8), intent(out), dimension(numnp,num_gpoints) :: phia_gr_indiv
+real(8), intent(in), dimension(numnp)              :: phi_gr, volnp
+real(8), intent(out), dimension(numnp,num_gpoints) :: phi_gr_indiv
 real(8)                                            :: mass_cumulative, np_mass
 real(8)                                            :: mass_total, brush99_all, boxSize
 real(8)                                            :: brush99_of_chain_ave, brush99_of_chain_std
@@ -33,25 +33,28 @@ brush99_of_chain_std = 0.0d0
 allocate(mass_layer(nbin))
 
 open (unit=120, file = file_name)
-! Find the brush thickness from the total phi_gr
+! Find the brush thickness from the individual phi_gr
 do jj = 1, num_gpoints
-    mass_layer = 0.d0
-    mass_total = 0.d0
+    mass_layer = 0.0d0
+    mass_total = 0.0d0
+
     do kk = 1, numnp
         bin             = cell_of_np(kk)
-        np_mass         = phia_gr_indiv(kk,jj) * volnp(kk)
+        np_mass         = phi_gr_indiv(kk,jj) * volnp(kk)
         mass_layer(bin) = mass_layer(bin) + np_mass
         mass_total      = mass_total + np_mass
     enddo
-    mass_cumulative = 0.d0
+
+    mass_cumulative = 0.0d0
     do ii = 1, nbin
         mass_cumulative = mass_cumulative + mass_layer(ii)
-        !write(*,*)jj, ii, mass_layer(ii), mass_cumulative
+
         if (mass_cumulative > mass_total*0.99d0) then
             brush99_of_chain(jj) = lbin * (REAL(ii) - 0.5d0)
             exit
         endif
     enddo
+
     write(120,'(I8,2X,E16.9E3)') jj, brush99_of_chain(jj)
 enddo
 
@@ -68,15 +71,16 @@ enddo
 brush99_of_chain_std = SQRT(brush99_of_chain_std / REAL(num_gpoints))
 
 ! Find the brush thickness from the total phi_gr
-mass_layer = 0.d0
-mass_total = 0.d0
+mass_layer = 0.0d0
+mass_total = 0.0d0
 do kk = 1, numnp
     bin             = cell_of_np(kk)
-    np_mass         = phia_gr(kk) * volnp(kk)
+    np_mass         = phi_gr(kk) * volnp(kk)
     mass_layer(bin) = mass_layer(bin) + np_mass
     mass_total      = mass_total + np_mass
 enddo
-mass_cumulative = 0.d0
+
+mass_cumulative = 0.0d0
 do ii = 1, nbin
     mass_cumulative = mass_cumulative + mass_layer(ii)
     if (mass_cumulative > mass_total*0.99d0) then

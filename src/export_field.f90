@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine export_field(wa, wa_new, wa_mix)
+subroutine export_field(ww, ww_new, ww_mix)
 !-----------------------------------------------------------------------------------------------------------!
 use geometry_mod,     only: numnp, xc
 use iofiles_mod,      only: field_profile
@@ -12,13 +12,13 @@ implicit none
 !-----------------------------------------------------------------------------------------------------------!
 integer :: kk
 
-real(8), intent(in), dimension(numnp) :: wa, wa_new, wa_mix
+real(8), intent(in), dimension(numnp) :: ww, ww_new, ww_mix
 !-----------------------------------------------------------------------------------------------------------!
 write(6,'(2X,A40)')adjl("Exporting field.",40)
 open (unit=120, file = field_profile)
-write(120,'(7(A19))') "np", "x", "y", "z", "wa", "wa_new", "wa_mix"
+write(120,'(7(A19))') "np", "x", "y", "z", "ww", "ww_new", "ww_mix"
 do kk = 1, numnp
-   write(120,'(I19,6(E19.9E3))') kk, xc(1,kk), xc(2,kk), xc(3,kk), wa(kk), wa_new(kk), wa_mix(kk)
+   write(120,'(I19,6(E19.9E3))') kk, xc(1,kk), xc(2,kk), xc(3,kk), ww(kk), ww_new(kk), ww_mix(kk)
 enddo
 close(120)
 !-----------------------------------------------------------------------------------------------------------!

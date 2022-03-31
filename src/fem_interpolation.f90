@@ -52,7 +52,7 @@ do mm = 1, num_of_elems_of_node(nodeId)
     enddo
 
     ! Initialize accumulator for element volume
-    volel = 0.d00
+    volel = 0.0d0
 
     ! Loop over all quadrature points in the considered element
     do l = 1, lint
@@ -64,16 +64,16 @@ do mm = 1, num_of_elems_of_node(nodeId)
     enddo
     !-------------------------------------------START INTERPOLATION--------------------------------------------------------!
     ! Check if current plotPoint lies in the specific element
-    call is_node_inside_el(xl, x_interp, y_interp, z_interp, lint, sv, volel, inside, shp, ndm, nel)
+    call fem_is_node_inside_el(xl, x_interp, y_interp, z_interp, lint, sv, volel, inside, shp, ndm, nel)
 
     if (inside==1) then
-        gc(1) = 1.d00
+        gc(1) = 1.0d0
         gc(2) = x_interp
         gc(3) = y_interp
         gc(4) = z_interp
 
         do m1 = 1, 4
-            transf(1,m1) = 1.d00
+            transf(1,m1) = 1.0d0
             transf(2,m1) = xl(1,m1)
             transf(3,m1) = xl(2,m1)
             transf(4,m1) = xl(3,m1)
@@ -82,7 +82,7 @@ do mm = 1, num_of_elems_of_node(nodeId)
         transf_inv = tools_matinv4(transf)
 
         do m1 = 1, 4
-            lc(m1) = 0.d00
+            lc(m1) = 0.0d0
             do m2 = 1, 4
                 lc(m1) = lc(m1) + transf_inv(m1,m2) * gc(m2)
             enddo
@@ -90,7 +90,7 @@ do mm = 1, num_of_elems_of_node(nodeId)
 
         call fem_tetshpfun(lc, xl, ndm, nel, xsj, shp)
 
-        u_interp  = 0.d00
+        u_interp  = 0.0d0
 
         do jj = 1, 4
             u_interp  = u_interp  + shp(4,jj) * ul_uu(jj)

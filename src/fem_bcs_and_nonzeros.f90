@@ -5,7 +5,7 @@
 subroutine fem_bcs_and_nonzeros(ds, mumps_matrix_type, node_belongs_to_dirichlet_face)
 !------------------------------------------------------------------------------------------------------!
 use kcw_mod,         only: F_m, A_m, NNZ
-use geometry_mod,    only: total_num_of_node_pairs, nel, numel, numnp, node_pairing_xx_hash,      &
+use geometry_mod,    only: total_num_of_node_pairs, nel, numel, numnp, node_pairing_xx_hash, &
 &                          node_pairing_yy_hash, node_pairing_zz_hash
 use constants_mod,   only: tol
 use parser_vars_mod, only: periodic_axis_id
@@ -48,12 +48,12 @@ if ((mumps_matrix_type.eq.1).or.(mumps_matrix_type.eq.2)) then
         ii = F_m%row(kk)
         jj = F_m%col(kk)
 
-        if (ii > jj) F_m%g(kk) = 0.d0
+        if (ii > jj) F_m%g(kk) = 0.0d0
 
         if (node_belongs_to_dirichlet_face(ii).or.node_belongs_to_dirichlet_face(jj)) then
-            F_m%g(kk) = 0.d0
+            F_m%g(kk) = 0.0d0
             if (ii==jj.and.set_diag_to_one(ii)) then
-                F_m%g(kk)           = 1.d0
+                F_m%g(kk)           = 1.0d0
                 set_diag_to_one(ii) = .false.
             endif
         endif
@@ -70,9 +70,9 @@ if (mumps_matrix_type.eq.0) then
         ii = F_m%row(kk)
 
         if (node_belongs_to_dirichlet_face(ii)) then
-            F_m%g(kk) = 0.d0
+            F_m%g(kk) = 0.0d0
             if (ii==jj.and.set_diag_to_one(ii)) then
-                F_m%g(kk)           =  1.d0
+                F_m%g(kk)           =  1.0d0
                 set_diag_to_one(ii) = .false.
             endif
         endif
@@ -102,7 +102,7 @@ enddo
 
 #ifdef PRINT_AFULL
 allocate(A_full(numnp,numnp))
-A_full = 0.d0
+A_full = 0.0d0
 
 do kk = 1, NNZ
    ii = A_m%row(kk)
@@ -113,7 +113,7 @@ enddo
 
 open(unit=255, file = A_matrix_full)
 do ii = 1, numnp
-   write(255,*)(A_full(ii,jj), jj = 1, numnp)
+   write(255,*) (A_full(ii,jj), jj = 1, numnp)
 enddo
 close(255)
 

@@ -20,10 +20,11 @@ real(8)                                            :: Q, vol
 do ii = 1, numnp
     phi_end(ii) = 1 / chainlen_gr * qgr(ns_gr_conv+1,ii) * qmx(1,ii)
     rho_end(ii) = phi_end(ii) * rho_seg_bulk * A3_to_m3
-    dr2(ii)      = (xc(1,ii)-xc(1,gnode_id))**2 + (xc(2,ii)-xc(2,gnode_id))**2 + (xc(3,ii)-xc(3,gnode_id))**2
+    dr2(ii)      = (xc(1,ii)-xc(1,gnode_id))**2.0d0 + (xc(2,ii)-xc(2,gnode_id))**2.0d0 + (xc(3,ii)-xc(3,gnode_id))**2.0d0
 
-    A_stretch(ii) = 3.0/(2.d0 * beta * (Rg2_per_mon_gr*chainlen_gr*6.d0)) * dr2(ii)
+    A_stretch(ii) = 3.0d0/(2.0d0 * beta * (Rg2_per_mon_gr*chainlen_gr*6.0d0)) * dr2(ii)
 enddo
+
 call fem_integration(rho_end*A_stretch, compute_stretching_energy, Q, vol)
 !-------------------------------------------------------------------------------------------------!
 end function compute_stretching_energy

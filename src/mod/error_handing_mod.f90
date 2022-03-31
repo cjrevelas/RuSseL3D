@@ -3,15 +3,15 @@
 !See the LICENSE file in the root directory for license information.
 
 module error_handing_mod
-
-  use iofiles_mod
-
-  implicit none
-
-    character(100) :: ERROR_MESSAGE
-    integer        :: ERROR_TYPE
-    logical        :: FILE_EXISTS
-
+!----------------------------------------------------------------------------------------------------------------------------!
+use iofiles_mod
+!----------------------------------------------------------------------------------------------------------------------------!
+implicit none
+!----------------------------------------------------------------------------------------------------------------------------!
+character(100) :: ERROR_MESSAGE
+integer        :: ERROR_TYPE
+logical        :: FILE_EXISTS
+!----------------------------------------------------------------------------------------------------------------------------!
   contains
 
     subroutine exit_with_error(STOP_SIGNAL, ERROR_TYPE, SCREEN, ERROR_MESSAGE)
@@ -48,4 +48,5 @@ module error_handing_mod
             STOP
         endif
     end subroutine exit_with_error
+!----------------------------------------------------------------------------------------------------------------------------!
 end module error_handing_mod

@@ -38,8 +38,8 @@ do n = 1, numel
     l=3
     call fem_gausspoints(l, lint, sv)
 
-    sumel = 0.d00
-    volel = 0.d00
+    sumel = 0.0d0
+    volel = 0.0d0
 
     ! Loop over all quadrature points in element
     do l = 1, lint

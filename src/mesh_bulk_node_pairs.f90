@@ -1,13 +1,17 @@
-subroutine mesh_bulk_node_pairs(elemcon)
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
 
+subroutine mesh_bulk_node_pairs(elemcon)
+!----------------------------------------------------------------------------------------------------------------------------------!
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use geometry_mod, only: nel, numel, total_num_of_node_pairs, node_pair_id, global_node_id_type_domain
 use kcw_mod,      only: F_m
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 logical :: success
 
 type(fhash_type__ints_double), intent(inout) :: elemcon
@@ -16,7 +20,7 @@ integer                       :: elemcon_num_of_keys, elemcon_value
 
 integer :: ii, jj, mm
 integer :: node_pair
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 allocate(node_pair_id(total_num_of_node_pairs))
 node_pair_id = 0
 
@@ -54,5 +58,7 @@ do mm = 1, numel
 enddo
 
 deallocate(elemcon_key%ints)
+
 return
+!----------------------------------------------------------------------------------------------------------------------------------!
 end subroutine mesh_bulk_node_pairs

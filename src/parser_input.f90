@@ -252,7 +252,7 @@ do
                     read(256,*) id, sigma_plate(ii), A_plate(ii)
                     ids_dirichlet_faces(ii) = id
                 enddo
-                A_plate = A_plate * 1e-20
+                A_plate = A_plate * 1.0d-20
                 log_num_of_dirichlet_faces = .true.
             endif
         elseif (INDEX(line,"# num nanop") > 0) then
@@ -268,7 +268,7 @@ do
                                                           & sigma_np(ii), A_np(ii)
                     ids_nanopart_faces(ii) = id
                 enddo
-                A_np = A_np * 1e-20
+                A_np = A_np * 1.0d-20
                 log_num_of_nanoparticle_faces = .true.
             endif
         elseif (INDEX(line,"# periodicity") > 0) then
@@ -305,10 +305,10 @@ write(*  ,'(A85)')adjl('-----------------------------------SYSTEM PARAMETERS----
 
 
 if (log_temperature) then
-    if (Temp>0) then
+    if (temp>0.0d0) then
         write(iow,'(3X,A40,E16.9,A4)')adjl("Temperature:",40), temp," [K]"
         write(6  ,'(3X,A40,E16.9,A4)')adjl("Temperature:",40), temp," [K]"
-        beta = 1.d0 / (boltz_const_Joule_K * temp)
+        beta = 1.0d0 / (boltz_const_Joule_K * temp)
     else
         write(ERROR_MESSAGE,'("Temperature is negative: ",E16.9," K")') temp
         call exit_with_error(1,1,1,ERROR_MESSAGE)
@@ -320,7 +320,7 @@ endif
 
 
 if (log_pressure) then
-    if (pres>=0) then
+    if (pres>=0.0d0) then
         write(iow,'(3X,A40,E16.9,A6)')adjl("Pressure:",40), pres, " [atm]"
         write(*  ,'(3X,A40,E16.9,A6)')adjl("Pressure:",40), pres, " [atm]"
         pres = pres * atm_to_pa
@@ -342,7 +342,7 @@ write(*  ,'(A85)')adjl('----------------------------------POLYMER PROPERTIES----
 
 
 if (log_mass_density) then
-    if (massden>0) then
+    if (massden>0.0d0) then
         write(iow,'(3X,A40,E16.9,A8)')adjl("Mass density:",40), massden, " [g/cm3]"
         write(6  ,'(3X,A40,E16.9,A8)')adjl("Mass density:",40), massden, " [g/cm3]"
     else
@@ -356,7 +356,7 @@ endif
 
 
 if (log_monomer_mass) then
-    if (mon_mass>0) then
+    if (mon_mass>0.0d0) then
         write(iow,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40), mon_mass, "[g/mol]"
         write(6  ,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40), mon_mass, "[g/mol]"
     else
@@ -371,7 +371,7 @@ endif
 
 if (mx_exist.eq.1) then
     if (log_chainlen_mx) then
-        if (chainlen_mx>0) then
+        if (chainlen_mx>0.0d0) then
             chainlen_mx_max = chainlen_mx
         else
             write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') chainlen_mx
@@ -418,16 +418,16 @@ if (gr_exist.eq.1) then
 
         inquire(file=gp_filename, exist=file_exists)
         if (.not.file_exists) then
-            write(ERROR_MESSAGE,'("Default grafting points file ",A16," does not exist!")')gp_filename
+            write(ERROR_MESSAGE,'("Default grafting points file ",A16," does not exist!")') gp_filename
             call exit_with_error(1,1,1,ERROR_MESSAGE)
             STOP
         endif
     endif
 
     if (log_Rg2_per_mon_gr) then
-        if (Rg2_per_mon_gr>0) then
-            write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per grafted monomer:",40),Rg2_per_mon_gr,"[Angstrom^2]"
-            write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per grafted monomer:",40),Rg2_per_mon_gr,"[Angstrom^2]"
+        if (Rg2_per_mon_gr>0.0d0) then
+            write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per grafted monomer:",40), Rg2_per_mon_gr, "[Angstrom^2]"
+            write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per grafted monomer:",40), Rg2_per_mon_gr, "[Angstrom^2]"
         else
             write(ERROR_MESSAGE,'("Rg2 per grafted monomer is negative: ",E16.9)') Rg2_per_mon_gr
             call exit_with_error(1,1,1,ERROR_MESSAGE)
@@ -438,13 +438,13 @@ if (gr_exist.eq.1) then
     endif
 
     if (log_chainlen_gr) then
-        if (chainlen_gr>0) then
-            write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of grafted chains:",40),chainlen_gr,"[monomers]"
-            write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of grafted chains:",40),&
-                                                              & DSQRT(Rg2_per_mon_gr*chainlen_gr),"[Angstrom]"
-            write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of grafted chains:",40),chainlen_gr,"[monomers]"
-            write(6  ,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of grafted chains:",40),&
-                                                              & DSQRT(Rg2_per_mon_gr*chainlen_gr),"[Angstrom]"
+        if (chainlen_gr>0.0d0) then
+            write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of grafted chains:",40), chainlen_gr,"[monomers]"
+            write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of grafted chains:",40), &
+                                                              & DSQRT(Rg2_per_mon_gr*chainlen_gr), "[Angstrom]"
+            write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of grafted chains:",40), chainlen_gr, "[monomers]"
+            write(6  ,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of grafted chains:",40), &
+                                                              & DSQRT(Rg2_per_mon_gr*chainlen_gr), "[Angstrom]"
             chainlen_mx_max = MAX(chainlen_mx, chainlen_gr)
         else
             write(ERROR_MESSAGE,'("Chain length of grafted chains is negative: ",E16.9)') chainlen_gr
@@ -496,7 +496,7 @@ if (gr_exist.eq.1) then
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
 
-            call get_contour_step(ds_ave_gr_ed, xs_crit_gr, chainlen_gr, ns_gr_ed)
+            call compute_contour_step(ds_ave_gr_ed, xs_crit_gr, chainlen_gr, ns_gr_ed)
 
         elseif (contour_discr_gr.eq.contour_asymm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "asymm"
@@ -528,9 +528,9 @@ endif
 
 if (mx_exist.eq.1) then
     if (log_Rg2_per_mon_mx) then
-        if (Rg2_per_mon_mx>0) then
-            write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40),Rg2_per_mon_mx,"[Angstrom^2]"
-            write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40),Rg2_per_mon_mx,"[Angstrom^2]"
+        if (Rg2_per_mon_mx>0.0d0) then
+            write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40), Rg2_per_mon_mx, "[Angstrom^2]"
+            write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40), Rg2_per_mon_mx, "[Angstrom^2]"
         else
             write(ERROR_MESSAGE,'("Rg2 per matrix monomer is negative: ",E16.9)') Rg2_per_mon_mx
             call exit_with_error(1,1,1,ERROR_MESSAGE)
@@ -540,14 +540,15 @@ if (mx_exist.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
-    write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40),chainlen_mx,"[monomers]"
-    write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40),&
-                                                             & DSQRT(Rg2_per_mon_mx*chainlen_mx),"[Angstrom]"
-    write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40),chainlen_mx,"[monomers]"
-    write(6  ,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40),&
-                                                             & DSQRT(Rg2_per_mon_mx*chainlen_mx),"[Angstrom]"
+    write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40), chainlen_mx, "[monomers]"
+    write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40), &
+                                                             & DSQRT(Rg2_per_mon_mx*chainlen_mx), "[Angstrom]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40), chainlen_mx, "[monomers]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40), &
+                                                             & DSQRT(Rg2_per_mon_mx*chainlen_mx), "[Angstrom]"
+
     if (log_ds_ave_mx) then
-        if (ds_ave_mx_ed>0 .and. ds_ave_mx_conv>0) then
+        if (ds_ave_mx_ed>0.0d0 .and. ds_ave_mx_conv>0.0d0) then
             ns_mx_ed   = 2 * NINT(0.5d0 * chainlen_mx_max / ds_ave_mx_ed)
             ns_mx_conv = 2 * NINT(0.5d0 * chainlen_mx     / ds_ave_mx_conv)
 
@@ -588,7 +589,7 @@ if (mx_exist.eq.1) then
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
 
-            call get_contour_step(ds_ave_mx_ed, xs_crit_mx, chainlen_mx_max, ns_mx_ed)
+            call compute_contour_step(ds_ave_mx_ed, xs_crit_mx, chainlen_mx_max, ns_mx_ed)
 
         elseif (contour_discr_mx.eq.contour_asymm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
@@ -603,7 +604,7 @@ if (mx_exist.eq.1) then
     endif
 
     if (log_ads_distance) then
-        if (ads_distance.ge.0.d0) then
+        if (ads_distance.ge.0.0d0) then
             write(iow,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40), ads_distance, "[Angstrom]"
             write(6  ,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40), ads_distance, "[Angstrom]"
         else
@@ -656,7 +657,7 @@ if (log_gr_exist.and.gr_exist.ge.1) then
                 endif
             endif
             if (log_num_gr_chains_tol) then
-                if (num_gr_chains_tol.ge.0.d0) then
+                if (num_gr_chains_tol.ge.0.0d0) then
                     write(iow,'(3X,A40,E16.9)')adjl("Number of grafted chains tolerance:",40), num_gr_chains_tol
                     write(6  ,'(3X,A40,E16.9)')adjl("Number of grafted chains tolerance:",40), num_gr_chains_tol
                 else
@@ -681,7 +682,7 @@ if (log_gr_exist.and.gr_exist.ge.1) then
     endif
 
     if (log_r_gpoint) then
-        if (r_gpoint.gt.0.d0) then
+        if (r_gpoint.gt.0.0d0) then
             write(iow,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40), r_gpoint
             write(6  ,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40), r_gpoint
         else
@@ -739,7 +740,7 @@ endif
 
 
 if (log_bin_thickness) then
-    if (bin_thickness.ge.0.d0) then
+    if (bin_thickness.ge.0.0d0) then
         write(iow,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40), bin_thickness, "[Angstrom]"
         write(6  ,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40), bin_thickness, "[Angstrom]"
     else
@@ -837,7 +838,7 @@ endif
 
 
 if (log_fraction_of_new_field) then
-    if (frac.ge.0 .and. frac.le.1) then
+    if (frac.ge.0.0d0 .and. frac.le.1.0d0) then
         write(iow,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40), frac
         write(6  ,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40), frac
     else
@@ -854,7 +855,7 @@ endif
 
 
 if (log_field_error_tol) then
-    if (field_error_tol.ge.0.d0) then
+    if (field_error_tol.ge.0.0d0) then
         write(iow,'(3X,A40,E16.9)')adjl("Tolerance on field error:",40), field_error_tol
         write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on field error:",40), field_error_tol
     else
@@ -871,7 +872,7 @@ endif
 
 
 if (log_free_energy_error_tol) then
-    if (free_energy_error_tol.ge.0.d0) then
+    if (free_energy_error_tol.ge.0.0d0) then
         write(iow,'(3X,A40,E16.9)')adjl("Tolerance on free energy error:",40), free_energy_error_tol
         write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on free energy error:",40), free_energy_error_tol
     else
@@ -888,7 +889,7 @@ endif
 
 
 if (log_free_energy_error_tol_for_delta) then
-    if (free_energy_error_tol_for_delta.ge.0.d0) then
+    if (free_energy_error_tol_for_delta.ge.0.0d0) then
         write(iow,'(3X,A40,E16.9)')adjl("Tolerance on energy error for delta:",40), free_energy_error_tol_for_delta
         write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on energy error for delta:",40), free_energy_error_tol_for_delta
     else
@@ -1120,9 +1121,9 @@ write(*  ,'(A85)')adjl('---------------------------------HAMAKER INTERACTIONS---
 
 
 if (log_sigma_polymer) then
-    if (sigma_pol>0) then
-        write(iow,'(3X,A40,E16.9,A11)')adjl("Sigma of polymer:",40),sigma_pol," [Angstrom]"
-        write(6  ,'(3X,A40,E16.9,A11)')adjl("Sigma of polymer:",40),sigma_pol," [Angstrom]"
+    if (sigma_pol>0.0d0) then
+        write(iow,'(3X,A40,E16.9,A11)')adjl("Sigma of polymer:",40), sigma_pol, " [Angstrom]"
+        write(6  ,'(3X,A40,E16.9,A11)')adjl("Sigma of polymer:",40), sigma_pol, " [Angstrom]"
     else
         write(ERROR_MESSAGE,'("sigma_polymer is negative: ",E16.9," Angstroms")') sigma_pol
         call exit_with_error(1,1,1,ERROR_MESSAGE)
@@ -1136,7 +1137,7 @@ endif
 if (log_Hamaker_constant_of_polymer) then
     write(iow,'(3X,A40,E16.9,A10)')adjl("Hamaker constant of polymer:",40), A_pol, " [10-20 J]"
     write(6  ,'(3X,A40,E16.9,A10)')adjl("Hamaker constant of polymer:",40), A_pol, " [10-20 J]"
-    A_pol = A_pol * 1e-20
+    A_pol = A_pol * 1.0d-20
 else
     A_pol = default_polymer_hamaker_constant
     write(iow,'(3X,A40)')adjl("Hamaker constant for pol not found.",40)

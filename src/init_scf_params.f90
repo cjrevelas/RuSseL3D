@@ -16,14 +16,14 @@ use write_helper_mod, only: adjl
 implicit none
 !------------------------------------------------------------------------------------------------------!
 if (eos_type.eq.eos_helfand) then
-    rho_mol_bulk = massden/mon_mass*m3_to_cm3
+    rho_mol_bulk = massden / mon_mass * m3_to_cm3
     rho_seg_bulk = rho_mol_bulk * N_avog
-    write(iow,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40),rho_mol_bulk," [mol/m^3]"
-    write(6  ,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40),rho_mol_bulk," [mol/m^3]"
+    write(iow,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40), rho_mol_bulk, " [mol/m^3]"
+    write(6  ,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40), rho_mol_bulk, " [mol/m^3]"
 
-    kapa = 1.d0 /(hlf_kappa_T * boltz_const_Joule_molK * Temp * rho_mol_bulk)
-    write(iow,'(3X,A40,E16.9)')adjl("kapa = 1/[k_T k_B T rho_0]:",40),kapa
-    write(6  ,'(3X,A40,E16.9)')adjl("kapa = 1/[k_T k_B T rho_0]:",40),kapa
+    kapa = 1.0d0 /(hlf_kappa_T * boltz_const_Joule_molK * Temp * rho_mol_bulk)
+    write(iow,'(3X,A40,E16.9)')adjl("kapa = 1/[k_T k_B T rho_0]:",40), kapa
+    write(6  ,'(3X,A40,E16.9)')adjl("kapa = 1/[k_T k_B T rho_0]:",40), kapa
 elseif (eos_type.eq.eos_sl) then
     write(iow,'(3X,A45)') adjl("Computation of polymer  mass density from SL EoS",45)
     write(*  ,'(3X,A45)') adjl("Computation of polymer  mass density from SL EoS",45)
@@ -39,7 +39,7 @@ elseif (eos_type.eq.eos_sl) then
     write(iow,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), rho_mass_bulk/gr_cm3_to_kg_m3
     write(*  ,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), rho_mass_bulk/gr_cm3_to_kg_m3
 
-    k_gr = 2.d0 * P_star * rsl_N**2 * V_star**(8.d0/3.d0) * k_gr_tilde
+    k_gr = 2.0d0 * P_star * rsl_N**2.0d0 * V_star**(8.0d0/3.0d0) * k_gr_tilde
 endif
 !------------------------------------------------------------------------------------------------------!
 end subroutine init_scf_params

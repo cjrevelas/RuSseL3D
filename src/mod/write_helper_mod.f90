@@ -3,14 +3,15 @@
 !See the LICENSE file in the root directory for license information.
 
 module write_helper_mod
-  implicit none
+!----------------------------------------------------------------------------------------------------------------------------!
+implicit none
+!----------------------------------------------------------------------------------------------------------------------------!
+integer, parameter :: PLOG    = 0
+integer, parameter :: PSCREEN = 1
+integer, parameter :: PBOTH   = 2
 
-    integer, parameter :: PLOG    = 0
-    integer, parameter :: PSCREEN = 1
-    integer, parameter :: PBOTH   = 2
-
-    character(len=100) :: MESSAGE
-
+character(len=100) :: MESSAGE
+!----------------------------------------------------------------------------------------------------------------------------!
   contains
 
     subroutine output(TARGET, iow, MESSAGE)
@@ -47,4 +48,5 @@ module write_helper_mod
             if ((MOD(iter,export_freq).eq.0).or.convergence) export=.true.
         endif
     end function export
+!----------------------------------------------------------------------------------------------------------------------------!
 end module write_helper_mod

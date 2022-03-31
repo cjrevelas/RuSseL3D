@@ -35,7 +35,7 @@ integer                              :: nen_type_edge, numel_type_edge
 integer, allocatable, dimension(:)   :: temp3
 integer, allocatable, dimension(:,:) :: global_node_id_type_vertex, global_node_id_type_edge, global_node_id_type_face
 
-real(8) :: box_volume = 0.d0
+real(8) :: box_volume = 0.0d0
 
 logical :: success
 
@@ -60,13 +60,13 @@ do
     else
         if (INDEX(line,"# sdim") > 0) then
             read(line,*) ndm
-        elseif (INDEX(line,"# number of mesh points") > 0) then
+        elseif (INDEX(line,"# number of mesh points")>0) then
             read(line,*) numnp
             allocate(xc(ndm,numnp))
-        elseif (INDEX(line,"# Mesh point coordinates") > 0) then
-            box_lo  = 0.d0
-            box_hi  = 0.d0
-            box_len = 0.d0
+        elseif (INDEX(line,"# Mesh point coordinates")>0) then
+            box_lo  = 0.0d0
+            box_hi  = 0.0d0
+            box_len = 0.0d0
 
             do ii = 1, numnp
                 read(12,*) (xc(jj,ii), jj = 1, ndm)
@@ -84,16 +84,16 @@ do
             write(6  ,'(A6,A13,A17,A18)') "dim", "box_length", "box_min", "box_max"
             do jj = 1, ndm
                 box_len(jj) = box_hi(jj) - box_lo(jj)
-                write(iow,'(I5,2X,3(E16.9,2X))')jj, box_len(jj), box_lo(jj), box_hi(jj)
-                write(6  ,'(I5,2X,3(E16.9,2X))')jj, box_len(jj), box_lo(jj), box_hi(jj)
+                write(iow,'(I5,2X,3(E16.9,2X))') jj, box_len(jj), box_lo(jj), box_hi(jj)
+                write(6  ,'(I5,2X,3(E16.9,2X))') jj, box_len(jj), box_lo(jj), box_hi(jj)
             enddo
 
             write(6,*)
             write(iow,*)
 
             box_volume = box_len(1) * box_len(2) * box_len(3)
-            write(iow,'(3X,A40,E16.9,A13)')adjl("Box volume:",40),box_volume," [Angstrom^3]"
-            write(6  ,'(3X,A40,E16.9,A13)')adjl("Box volume:",40),box_volume," [Angstrom^3]"
+            write(iow,'(3X,A40,E16.9,A13)')adjl("Box volume:",40), box_volume, " [Angstrom^3]"
+            write(6  ,'(3X,A40,E16.9,A13)')adjl("Box volume:",40), box_volume, " [Angstrom^3]"
         elseif (INDEX(line,"3 vtx # type name")>0) then
             read(12,*)
             read(12,*)
@@ -103,7 +103,7 @@ do
             read(12,*)
 
             do kk = 1, numel_type_vertex
-                read(12,*) (global_node_id_type_vertex(pp,kk), pp=1,nen_type_vertex)
+                read(12,*) (global_node_id_type_vertex(pp,kk), pp=1, nen_type_vertex)
             enddo
             read(12,*)
             read(12,'(A100)',IOSTAT=reason) aux_line
@@ -327,10 +327,10 @@ allocate(F_m%k(total_num_of_node_pairs))
 allocate(F_m%w(total_num_of_node_pairs))
 allocate(F_m%is_zero(total_num_of_node_pairs))
 
-F_m%g       = 0.d0
-F_m%k       = 0.d0
-F_m%c       = 0.d0
-F_m%rh      = 0.d0
+F_m%g       = 0.0d0
+F_m%k       = 0.0d0
+F_m%c       = 0.0d0
+F_m%rh      = 0.0d0
 F_m%row     = 0
 F_m%col     = 0
 F_m%is_zero = .True.

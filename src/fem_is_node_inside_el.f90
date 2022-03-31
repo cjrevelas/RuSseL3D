@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine is_node_inside_el(xl, x_test, y_test, z_test, lint, sv, volel, inside, shp, ndm, nel)
+subroutine fem_is_node_inside_el(xl, x_test, y_test, z_test, lint, sv, volel, inside, shp, ndm, nel)
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------------------------------------------------------------------------!
@@ -42,7 +42,7 @@ do p = 1, 4
         vol_test = vol_test + xsj
     enddo
 
-    if ((vol_test<0.).OR.(vol_test>volel)) then
+    if ((vol_test<0.0d0).OR.(vol_test>volel)) then
          !write(6,*) "Point lies outside the tetrahedron"
          exit
     else
@@ -60,4 +60,4 @@ if (k==4) then
     inside = 1
 endif
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-end subroutine is_node_inside_el
+end subroutine fem_is_node_inside_el

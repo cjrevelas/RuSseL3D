@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine fem_matrix_assemble(Rg2_per_mon, wa)
+subroutine fem_matrix_assemble(Rg2_per_mon, ww)
 !----------------------------------------------------------------------------------------------------------------!
 use kcw_mod,      only: F_m
 use geometry_mod, only: numnp, numel, ndm, nel, num_of_bulk_pairs, node_pair_id, global_node_id_type_domain, xc
@@ -15,7 +15,7 @@ integer                 :: ii, jj, kk, ll, mm, nn, pp
 integer, dimension(nel) :: global_index
 
 real(8), intent(in)                   :: Rg2_per_mon
-real(8), intent(in), dimension(numnp) :: wa
+real(8), intent(in), dimension(numnp) :: ww
 real(8)                               :: xsj
 real(8), dimension(ndm,nel)           :: xl
 real(8), dimension(4,11)              :: shp
@@ -62,7 +62,7 @@ do elem = 1, numel
                 F_m%k(kk) = F_m%k(kk) + Rg2_per_mon &
                                       * (shp(1,nn)*shp(1,mm)+shp(2,nn)*shp(2,mm)+shp(3,nn)*shp(3,mm))*xsj*sv(5,ll)
 
-                F_m%w(kk) = F_m%w(kk) + wa(pp)*shp(4,nn)*shp(4,mm)*xsj*sv(5,ll)
+                F_m%w(kk) = F_m%w(kk) + ww(pp)*shp(4,nn)*shp(4,mm)*xsj*sv(5,ll)
             enddo !nn
         enddo !mm
     enddo !ll

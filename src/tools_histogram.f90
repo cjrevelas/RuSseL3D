@@ -17,7 +17,7 @@ real(8), intent(in), dimension(numnp) :: volnp
 real(8)                               :: r_center_surf, r_centers, radius_np_actual, Rmax
 !-----------------------------------------------------------------------------------------------------------!
 lbin = upd_lbin
-Rmax = SQRT(box_len(1)**2 + box_len(2)**2 + box_len(3)**2)
+Rmax = SQRT(box_len(1)**2.0d0 + box_len(2)**2.0d0 + box_len(3)**2.0d0)
 nbin = INT(Rmax / lbin) + 1
 
 if (ALLOCATED(planar_cell_of_np)) deallocate(planar_cell_of_np)
@@ -42,7 +42,7 @@ cell_vol_planar   = 0.0d0
 cell_vol_sph      = 0.0d0
 r_center_surf     = 0.0d0
 
-! Chains grafted on planar surfaces
+! Binning in planar geometries
 do mm = 1, 3
     do nn = 1, 2
         if (is_dirichlet_face(mm,nn)) then
@@ -61,11 +61,11 @@ do mm = 1, 3
     enddo
 enddo
 
-! Chains grafted on nanoparticles
+! Binning in spherical geometries
 do mm = 1, num_of_nanoparticle_faces
     do kk = 1, numnp
-        r_centers             = DSQRT(  (xc(1,kk)-center_np(1,mm))**2 + (xc(2,kk)-center_np(2,mm))**2 &
-&                             + (xc(3,kk)-center_np(3,mm))**2)
+        r_centers             = DSQRT((xc(1,kk)-center_np(1,mm))**2.0d0 + (xc(2,kk)-center_np(2,mm))**2.0d0 &
+&                                                                       + (xc(3,kk)-center_np(3,mm))**2.0d0)
         radius_np_actual      = radius_np_eff(mm) - wall_distance
         r_center_surf         = r_centers - radius_np_actual
         bin                   = INT(r_center_surf/lbin)+1

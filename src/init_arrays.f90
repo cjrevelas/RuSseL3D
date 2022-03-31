@@ -13,8 +13,8 @@ implicit none
 !-----------------------------------------------------------------------------------------------------------!
 allocate(rdiag1(numnp))
 allocate(d2phi_dr2(numnp))
-allocate(wa(numnp),wa_mix(numnp),wa_new(numnp),Ufield(numnp))
-allocate(phia_mx(numnp),phia_gr(numnp),phi_total(numnp))
+allocate(ww(numnp),ww_mix(numnp),ww_new(numnp),Ufield(numnp))
+allocate(phi_mx(numnp),phi_gr(numnp),phi_total(numnp))
 allocate(volnp(numnp))
 allocate(ds_mx_ed(ns_mx_ed+1))
 allocate(xs_mx_ed(ns_mx_ed+1))
@@ -38,13 +38,13 @@ endif
 
 volnp         = 0.0d0
 d2phi_dr2     = 0.0d0
-wa            = 0.0d0
-wa_mix        = 0.0d0
-wa_new        = 0.0d0
+ww            = 0.0d0
+ww_mix        = 0.0d0
+ww_new        = 0.0d0
 Ufield        = 0.0d0
 rdiag1        = 0.0d0
-phia_mx       = 0.0d0
-phia_gr       = 0.0d0
+phi_mx        = 0.0d0
+phi_gr        = 0.0d0
 phi_total     = 0.0d0
 ds_mx_ed      = 0.0d0
 xs_mx_ed      = 0.0d0

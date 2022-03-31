@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine get_contour_coeffs(ds, ns, coeff)
+subroutine compute_contour_coeffs(ds, ns, coeff)
 !------------------------------------------------------------------------------!
 use iofiles_mod, only: contour_coeffs
 !------------------------------------------------------------------------------!
@@ -15,21 +15,21 @@ real(8), intent(in), dimension(ns+1)  :: ds
 real(8), intent(out), dimension(ns+1) :: coeff
 real(8), dimension(ns+1)              :: x
 !------------------------------------------------------------------------------!
-x(1) = 0.d0
+x(1) = 0.0d0
 do nn = 2, ns+1
    x(nn) = x(nn-1) + ds(nn)
 enddo
 
-coeff = 0.d0
+coeff = 0.0d0
 do nn = 2, ns, 2
-   coeff(nn-1) = coeff(nn-1) + ( x(nn+1)-x(nn-1) )*( 2*x(nn-1)+x(nn+1)-3*x(nn) ) &
-      &                    / ( 6.d0 * ( x(nn-1) - x(nn) ))
+   coeff(nn-1) = coeff(nn-1) + ( x(nn+1)-x(nn-1) )*( 2.0d0*x(nn-1)+x(nn+1)-3.0d0*x(nn) ) &
+      &                    / ( 6.0d0 * ( x(nn-1) - x(nn) ))
 
-   coeff(nn)   = coeff(nn)   + ( x(nn-1) - x(nn+1) )**3.d0 &
-      &                    / ( 6.d0 * ( x(nn) - x(nn-1) ) * (x(nn) - x(nn+1) ) )
+   coeff(nn)   = coeff(nn)   + ( x(nn-1) - x(nn+1) )**3.0d0 &
+      &                    / ( 6.0d0 * ( x(nn) - x(nn-1) ) * (x(nn) - x(nn+1) ) )
 
-   coeff(nn+1) = coeff(nn+1) + ( x(nn+1)-x(nn-1) )*( 2*x(nn+1)+x(nn-1)-3*x(nn) ) &
-      &                    / ( 6.d0 * ( x(nn+1) - x(nn) ))
+   coeff(nn+1) = coeff(nn+1) + ( x(nn+1)-x(nn-1) )*( 2.0d0*x(nn+1)+x(nn-1)-3.0d0*x(nn) ) &
+      &                    / ( 6.0d0 * ( x(nn+1) - x(nn) ))
 enddo
 
 #ifdef DEBUG_OUTPUTS
@@ -48,4 +48,4 @@ close(400)
 
 return
 !------------------------------------------------------------------------------!
-end subroutine get_contour_coeffs
+end subroutine compute_contour_coeffs

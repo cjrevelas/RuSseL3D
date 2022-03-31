@@ -1,14 +1,18 @@
-subroutine mesh_elements_per_node(max_num_of_elems_per_node, num_of_elems_of_node)
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
 
+subroutine mesh_elements_per_node(max_num_of_elems_per_node, num_of_elems_of_node)
+!----------------------------------------------------------------------------------------------------------------------------------!
 use parser_vars_mod, only: iow
 use geometry_mod, only: numnp, numel, el_node, global_node_id_type_domain
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 
 integer :: ii, jj, i_node
 integer, intent(out) :: max_num_of_elems_per_node
 integer, intent(out), dimension(numnp) :: num_of_elems_of_node
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 num_of_elems_of_node = 0
 
 max_num_of_elems_per_node = 0
@@ -36,5 +40,7 @@ do ii = 1, numel
       el_node(i_node, num_of_elems_of_node(i_node)) = ii
    enddo
 enddo
+
 return
+!----------------------------------------------------------------------------------------------------------------------------------!
 end subroutine mesh_elements_per_node

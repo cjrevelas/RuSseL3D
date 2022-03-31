@@ -3,18 +3,19 @@
 !See the LICENSE file in the root directory for license information.
 
 module eos_mod
-  use parser_vars_mod
-  use constants_mod
-  use flags_mod
+!----------------------------------------------------------------------------------------------------------------------------!
+use parser_vars_mod
+use constants_mod
+use flags_mod
+!----------------------------------------------------------------------------------------------------------------------------!
+implicit none
+!----------------------------------------------------------------------------------------------------------------------------!
+integer :: eos_type
 
-  implicit none
-
-    integer :: eos_type
-
-    real(8) :: hlf_kappa_T
-    real(8) :: T_star, P_star, V_star, rho_star
-    real(8) :: T_tilde, P_tilde, rho_tilde_bulk, rsl_N
-
+real(8) :: hlf_kappa_T
+real(8) :: T_star, P_star, V_star, rho_star
+real(8) :: T_tilde, P_tilde, rho_tilde_bulk, rsl_N
+!----------------------------------------------------------------------------------------------------------------------------!
   contains
 
     function eos_ff(phi) result(ff)
@@ -24,12 +25,12 @@ module eos_mod
 
         ff = 0.0d0
         if (eos_type.eq.eos_helfand) then
-            ff = 5.0d-1 / hlf_kappa_T * (phi - 1.0d0)**2
+            ff = 5.0d-1 / hlf_kappa_T * (phi - 1.0d0)**2.0d0
         elseif (eos_type.eq.eos_sl) then
             rho_tilde = rho_tilde_bulk*phi
             if (rho_tilde.gt.1.0d0) rho_tilde = 0.9999d0
 
-            ff = P_star*(T_tilde*rho_tilde - rho_tilde**2 + T_tilde*(1.0d0-rho_tilde)*LOG(1.0d0-rho_tilde))
+            ff = P_star*(T_tilde*rho_tilde - rho_tilde**2.0d0 + T_tilde*(1.0d0-rho_tilde)*LOG(1.0d0-rho_tilde))
         endif
 
         return
@@ -68,7 +69,7 @@ module eos_mod
         do while((ii.lt.max_iter).and.(err_norm.gt.tolerance))
             ii = ii + 1
 
-            func            = rho_tilde_0**2 + P_tilde + T_tilde*(LOG(1.0d0-rho_tilde_0) + (1.0d0-1.0d0/rsl)*rho_tilde_0)
+            func            = rho_tilde_0**2.0d0 + P_tilde + T_tilde*(LOG(1.0d0-rho_tilde_0) + (1.0d0-1.0d0/rsl)*rho_tilde_0)
             func_deriv      = 2.0d0*rho_tilde_0 + T_tilde*((1.0d0-1.0d0/rsl)-1.0d0/(1.0d0-rho_tilde_0))
             rho_tilde_0_new = rho_tilde_0 - func / func_deriv
             err_norm        = ABS(rho_tilde_0_new-rho_tilde_0)
@@ -85,4 +86,5 @@ module eos_mod
 
         if (ii.eq.max_iter) write(6,'(A40)') "slvle solver diverged.."
     end function eos_rho_tilde_0
+!----------------------------------------------------------------------------------------------------------------------------!
 end module eos_mod

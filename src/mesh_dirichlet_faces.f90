@@ -1,5 +1,9 @@
-subroutine mesh_dirichlet_faces(numel_type_face, nen_type_face, global_node_id_type_face, face_entity_hash)
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
 
+subroutine mesh_dirichlet_faces(numel_type_face, nen_type_face, global_node_id_type_face, face_entity_hash)
+!----------------------------------------------------------------------------------------------------------------------------------!
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
@@ -7,9 +11,9 @@ use parser_vars_mod, only: num_of_dirichlet_faces, num_of_nanoparticle_faces, id
 use geometry_mod,    only: ndm, node_belongs_to_dirichlet_face, numnp, is_dirichlet_face, box_lo, box_hi, xc
 use iofiles_mod,     only: dir_faces
 use constants_mod,   only: tol
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 integer, intent(in) :: numel_type_face, nen_type_face
 integer, dimension(nen_type_face, numel_type_face), intent(in) :: global_node_id_type_face
 integer :: ii, jj, kk, mm, pp, idummy
@@ -17,7 +21,7 @@ integer :: ii, jj, kk, mm, pp, idummy
 type(fhash_type__ints_double), intent(inout) :: face_entity_hash
 type(ints_type) :: face_entity_key
 integer :: face_entity_value
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 allocate(node_belongs_to_dirichlet_face(numnp))
 node_belongs_to_dirichlet_face = .false.
 
@@ -86,4 +90,5 @@ close(123)
 #endif
 
 return
+!----------------------------------------------------------------------------------------------------------------------------------!
 end subroutine mesh_dirichlet_faces

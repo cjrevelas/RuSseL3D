@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine get_node_volume(volnp, node)
+subroutine compute_node_volume(volnp, node)
 !--------------------------------------------------------------------!
 use geometry_mod,     only: ndm, nel, numnp, el_node, global_node_id_type_domain,&
 &                       xc, num_of_elems_of_node
@@ -21,11 +21,11 @@ real(8), dimension(ndm, nel) :: xl
 real(8), dimension(4,11)     :: shp
 real(8), dimension(5,11)     :: sv
 !--------------------------------------------------------------------!
-volnp = 0.d0
+volnp = 0.0d0
 
-vol          = 0.d0
-u_spat       = 0.d0
-u_spat(node) = 1.d0
+vol          = 0.0d0
+u_spat       = 0.0d0
+u_spat(node) = 1.0d0
 
 do s = 1, num_of_elems_of_node(node)
     n = el_node(node, s)
@@ -44,7 +44,7 @@ do s = 1, num_of_elems_of_node(node)
     l=3
     call fem_gausspoints(l, lint, sv)
 
-    sumel = 0.d00
+    sumel = 0.0d0
 
     ! Loop over all quadrature points in element
     do l = 1, lint
@@ -66,4 +66,4 @@ enddo
 
 return
 !--------------------------------------------------------------------!
-end subroutine get_node_volume
+end subroutine compute_node_volume

@@ -1,12 +1,16 @@
-subroutine mesh_face_entities(axis, face_entity_hash, face1_hash, face2_hash)
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
 
+subroutine mesh_face_entities(axis, face_entity_hash, face1_hash, face2_hash)
+!----------------------------------------------------------------------------------------------------------------------------------!
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use parser_vars_mod, only: periodic_face_id
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 character(len=1), intent(in) :: axis
 
 type(fhash_type__ints_double), intent(inout) :: face_entity_hash
@@ -19,7 +23,7 @@ type(ints_type)                            :: face1_key, face2_key
 integer                                    :: face1_size, face2_size
 
 integer :: kk, periodic_face1, periodic_face2
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 face1_size = 0
 face2_size = 0
 
@@ -69,4 +73,5 @@ do kk = 1, face_entity_hash%key_count()
 enddo
 
 return
+!----------------------------------------------------------------------------------------------------------------------------------!
 end subroutine mesh_face_entities

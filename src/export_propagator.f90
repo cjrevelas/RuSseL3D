@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine export_q(ns, q_final, q_type)
+subroutine export_propagator(ns, q_final, q_type)
 !--------------------------------------------------------------------!
 use geometry_mod,     only: numnp, xc, ndm
 use write_helper_mod, only: adjl
@@ -19,7 +19,7 @@ character(20) :: file_name
 real(8), intent(in), dimension(ns+1,numnp) :: q_final
 real(8)                                    :: iq_final
 !--------------------------------------------------------------------!
-write(6,'(2X,A23,A5,A8)')"Exporting propagator of",q_type," chains."
+write(6,'(2X,A23,A5,A8)') "Exporting propagator of", q_type, " chains."
 
 write(file_name,'("o.q",A2)') q_type
 
@@ -31,7 +31,7 @@ do ii = 1, numnp
     do time_step = 1, ns+1
         iq_final = q_final(time_step,ii)
         if (DABS(iq_final)<tol) then
-            iq_final = 0.d0
+            iq_final = 0.0d0
         endif
         write(363,'(E20.9)',advance='no') iq_final
     enddo
@@ -41,4 +41,4 @@ close(363)
 
 return
 !--------------------------------------------------------------------!
-end subroutine export_q
+end subroutine export_propagator

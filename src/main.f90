@@ -26,15 +26,15 @@ implicit none
 include "mpif.h"
 #endif
 !----------------------------------------------------------------------------------------------------------------------------------!
-integer :: ii, kk, iter, get_sys_time, t_init, t_final, gnode_id
+integer :: ii, kk, iter, tools_sys_time, t_init, t_final, gnode_id
 
 logical :: convergence = .false., calc_delta = .false.
 
 real(8), allocatable, dimension(:) :: dphi2_dr2
 
-real(8) :: part_func = 0.d0, nch_mx = 0.d0, nch_gr = 0.d0
-real(8) :: wa_max = 0.d0, wa_std_error = 0.d0, field_error = 200000.d0
-real(8) :: free_energy_prev = 1.d10, free_energy = 0.d0, free_energy_error = 1.d10
+real(8) :: part_func = 0.0d0, nch_mx = 0.0d0, nch_gr = 0.0d0
+real(8) :: ww_max = 0.0d0, ww_std_error = 0.0d0, field_error = 200000.0d0
+real(8) :: free_energy_prev = 1.0d10, free_energy = 0.0d0, free_energy_error = 1.0d10
 !----------------------------------------------------------------------------------------------------------------------------------!
 !**************************************************************************************************************!
 !                                                    MPI SECTION                                               !
@@ -89,11 +89,11 @@ call parser_mesh
 call init_arrays
 
 do ii = 1, numnp
-   call get_node_volume(volnp(ii), ii)
+   call compute_node_volume(volnp(ii), ii)
 enddo
 
 allocate(dphi2_dr2(numnp))
-dphi2_dr2=0.d0
+dphi2_dr2=0.0d0
 
 call init_delta
 call tools_histogram(bin_thickness, volnp)
@@ -120,9 +120,9 @@ if (gr_exist.eq.1) then
     endif
 endif
 
-call init_field(Ufield, wa)
+call init_field(Ufield, ww)
 
-wa_mix = wa
+ww_mix = ww
 !**************************************************************************************************************!
 !                                        LOOPS FOR FIELD CONVERGENCE                                           !
 !**************************************************************************************************************!
@@ -131,25 +131,25 @@ write(*,*)
 write(iow,'(A85)')adjl('-----------------------------------SIMULATION STARTS-----------------------------------',85)
 write(*  ,'(A85)')adjl('-----------------------------------SIMULATION STARTS-----------------------------------',85)
 
-write(iow,'(A10,1X,6(A19,1X),A16)') "iter", "fraction", "free_energy", "n_gr_chains", "field_error", "std_error", "wa_max"
-write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "free_energy", "n_gr_chains", "field_error", "std_error", "wa_max"
+write(iow,'(A10,1X,6(A19,1X),A16)') "iter", "fraction", "free_energy", "n_gr_chains", "field_error", "std_error", "ww_max"
+write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "free_energy", "n_gr_chains", "field_error", "std_error", "ww_max"
 
-t_init = get_sys_time()
+t_init = tools_sys_time()
 
 do iter = init_iter, iterations-1
-    write(iow,'(I10,1X,6(E19.9E3,1X))') iter, frac, free_energy, nch_gr, field_error, wa_std_error, wa_max
-    write(6  ,'(I4 ,1X,6(E14.4E3,1X))') iter, frac, free_energy, nch_gr, field_error, wa_std_error, wa_max
+    write(iow,'(I10,1X,6(E19.9E3,1X))') iter, frac, free_energy, nch_gr, field_error, ww_std_error, ww_max
+    write(6  ,'(I4 ,1X,6(E14.4E3,1X))') iter, frac, free_energy, nch_gr, field_error, ww_std_error, ww_max
 
     close(iow)
     open(unit=iow, file = logfile, position = 'append')
 
-    wa = wa_mix
+    ww = ww_mix
 
-    call fem_matrix_assemble(Rg2_per_mon_mx, wa)
+    call fem_matrix_assemble(Rg2_per_mon_mx, ww)
 
     do ii = 1, numnp
-        qmx(1,ii)       = 1.d0
-        qmx_final(1,ii) = 1.d0
+        qmx(1,ii)       = 1.0d0
+        qmx_final(1,ii) = 1.0d0
     enddo
 
     call solver_edwards(ds_mx_ed, ns_mx_ed, mumps_matrix_type, qmx, qmx_final, node_belongs_to_dirichlet_face)
@@ -164,20 +164,20 @@ do iter = init_iter, iterations-1
             calc_delta = ((iter==0) .or. ((free_energy_error <= free_energy_error_tol_for_delta) .and. ((ABS(nch_gr-DBLE(num_gpoints))/DBLE(num_gpoints))>num_gr_chains_tol)))
 
             if (calc_delta) then
-                call get_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, wa_mix, num_gpoints, gpid, delta_numer, volnp)
+                call compute_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww_mix, num_gpoints, gpid, delta_numer, volnp)
                 call export_delta(numnp, qmx_interp_mg, ns_gr_conv, num_gpoints, gpid, delta_numer, gp_init_value, volnp)
             endif
 
             do ii = 1, num_gpoints
                 gnode_id = gpid(ii)
-                gp_init_value(ii) = delta_numer(ii) * chainlen_gr * 1.d0 / (qmx_interp_mg(ns_gr_conv+1,gnode_id) * (rho_mol_bulk * n_avog))
+                gp_init_value(ii) = delta_numer(ii) * chainlen_gr * 1.0d0 / (qmx_interp_mg(ns_gr_conv+1,gnode_id) * (rho_mol_bulk * n_avog))
             enddo
         endif
 
-        call fem_matrix_assemble(Rg2_per_mon_gr, wa)
+        call fem_matrix_assemble(Rg2_per_mon_gr, ww)
 
-        qgr       = 0.d0
-        qgr_final = 0.d0
+        qgr       = 0.0d0
+        qgr_final = 0.0d0
 
         do ii = 1, num_gpoints
             gnode_id = gpid(ii)
@@ -194,7 +194,7 @@ do iter = init_iter, iterations-1
             call interp_linear(1, ns_mx_ed+1, xs_mx_ed, qmx_final(:,ii), ns_mx_conv+1, xs_mx_conv, qmx_interp_mm(:,ii))
         enddo
 
-        call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qmx_interp_mm, qmx_interp_mm, phia_mx)
+        call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qmx_interp_mm, qmx_interp_mm, phi_mx)
     endif
 
     if (gr_exist.eq.1) then
@@ -202,53 +202,53 @@ do iter = init_iter, iterations-1
             call interp_linear(1, ns_gr_ed+1, xs_gr_ed, qgr_final(:,ii), ns_gr_conv+1, xs_gr_conv, qgr_interp(:,ii))
         enddo
 
-        call contour_convolution(numnp, chainlen_gr, ns_gr_conv, coeff_gr_conv, qgr_interp, qmx_interp_mg, phia_gr)
+        call contour_convolution(numnp, chainlen_gr, ns_gr_conv, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr)
     endif
 
-    phi_total = 0.d0
+    phi_total = 0.0d0
     do kk = 1, numnp
-        if (mx_exist.eq.1) phi_total(kk) = phi_total(kk) + phia_mx(kk)
-        if (gr_exist.eq.1) phi_total(kk) = phi_total(kk) + phia_gr(kk)
+        if (mx_exist.eq.1) phi_total(kk) = phi_total(kk) + phi_mx(kk)
+        if (gr_exist.eq.1) phi_total(kk) = phi_total(kk) + phi_gr(kk)
     enddo
 
     if (mx_exist.eq.1) call compute_part_func_mx(numnp, ns_mx_conv, qmx_interp_mm, part_func)
-    if (mx_exist.eq.1) call compute_number_of_chains(numnp, chainlen_mx, rho_mol_bulk, phia_mx, nch_mx)
-    if (gr_exist.eq.1) call compute_number_of_chains(numnp, chainlen_gr, rho_mol_bulk, phia_gr, nch_gr)
+    if (mx_exist.eq.1) call compute_number_of_chains(numnp, chainlen_mx, rho_mol_bulk, phi_mx, nch_mx)
+    if (gr_exist.eq.1) call compute_number_of_chains(numnp, chainlen_gr, rho_mol_bulk, phi_gr, nch_gr)
 
     do kk = 1, numnp
-        wa_new(kk) = (eos_df_drho(phi_total(kk)) - eos_df_drho(1.d0)) / (boltz_const_Joule_K*Temp) - &
+        ww_new(kk) = (eos_df_drho(phi_total(kk)) - eos_df_drho(1.0d0)) / (boltz_const_Joule_K*Temp) - &
                    & k_gr * (rho_seg_bulk * dphi2_dr2(kk)) / (boltz_const_Joule_K * Temp) + Ufield(kk)
     enddo
 
-    field_error  = 0.d0
-    wa_std_error = 0.d0
-    wa_max       = 0.d0
+    field_error  = 0.0d0
+    ww_std_error = 0.0d0
+    ww_max       = 0.0d0
 
     do kk = 1, numnp
-        field_error  = MAX(field_error,DABS(wa_new(kk) - wa(kk)))
-        wa_std_error = wa_std_error + (wa_new(kk) - wa(kk))**2
-        wa_max       = MAX(wa_max, wa_new(kk))
+        field_error  = MAX(field_error,DABS(ww_new(kk) - ww(kk)))
+        ww_std_error = ww_std_error + (ww_new(kk) - ww(kk))**2.0d0
+        ww_max       = MAX(ww_max, ww_new(kk))
     enddo
 
-    wa_std_error = SQRT(wa_std_error / FLOAT((numnp - 1)))
-    wa_max       = wa_max       * chainlen_mx
+    ww_std_error = SQRT(ww_std_error / FLOAT((numnp - 1)))
+    ww_max       = ww_max       * chainlen_mx
     field_error  = field_error  * chainlen_mx
-    wa_std_error = wa_std_error * chainlen_mx
+    ww_std_error = ww_std_error * chainlen_mx
 
     free_energy_error = ABS(free_energy - free_energy_prev)
     free_energy_prev  = free_energy
 
     do kk = 1, numnp
-        wa_mix(kk) = (1.d0 - frac) * wa(kk) + frac * wa_new(kk)
+        ww_mix(kk) = (1.0d0 - frac) * ww(kk) + frac * ww_new(kk)
     enddo
 
     convergence = (field_error<=field_error_tol).or.(free_energy_error<=free_energy_error_tol)
 
-    call export_field_bin(wa_mix, numnp, 0)
+    call export_field_bin(ww_mix, numnp, 0)
 
-    if (export(export_field_bin_freq, iter, convergence)) call export_field_bin(wa_mix, numnp, iter)
+    if (export(export_field_bin_freq, iter, convergence)) call export_field_bin(ww_mix, numnp, iter)
 
-    if ((MOD(iter,1).eq.0).or.convergence) call compute_energies(qmx_interp_mg, qgr_interp, phi_total, wa_new, Ufield, part_func, num_gpoints, gpid, free_energy)
+    if ((MOD(iter,1).eq.0).or.convergence) call export_energies(qmx_interp_mg, qgr_interp, phi_total, ww_new, Ufield, part_func, num_gpoints, gpid, free_energy)
 
     call export_computes(iter, convergence)
 
@@ -257,8 +257,8 @@ enddo
 !**************************************************************************************************************!
 !                                             EXPORT SIMULATION RESULTS                                        !
 !**************************************************************************************************************!
-write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, free_energy, nch_gr, field_error, wa_std_error, wa_max
-write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, free_energy, nch_gr, field_error, wa_std_error, wa_max
+write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, free_energy, nch_gr, field_error, ww_std_error, ww_max
+write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, free_energy, nch_gr, field_error, ww_std_error, ww_max
 
 
 write(iow,*)
@@ -289,7 +289,7 @@ write(6  ,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            nch_
 write(iow,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             nch_mx
 write(6  ,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             nch_mx
 
-t_final = get_sys_time()
+t_final = tools_sys_time()
 write(6,'(3X,A40,I16)')adjl('Run duration:',40), t_final - t_init
 
 #ifdef USE_MPI
@@ -311,7 +311,7 @@ deallocate(num_of_elems_of_node)
 deallocate(global_node_id_type_domain)
 deallocate(ds_mx_ed, xs_mx_ed, coeff_mx_ed)
 deallocate(qmx, qmx_final, qmx_interp_mg)
-deallocate(phia_mx, phi_total)
+deallocate(phi_mx, phi_total)
 if (mx_exist.eq.1) then
     deallocate(qmx_interp_mm, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
 endif
@@ -319,9 +319,9 @@ if (gr_exist.eq.1) then
     deallocate(ds_gr_ed, ds_gr_conv, xs_gr_ed, xs_gr_conv, coeff_gr_ed, coeff_gr_conv)
     deallocate(qgr, qgr_final, qgr_interp)
     deallocate(gpid, delta_numer, gp_init_value)
-    deallocate(phia_gr, phia_gr_indiv)
+    deallocate(phi_gr, phi_gr_indiv)
 endif
-deallocate(wa, wa_new, wa_mix, Ufield)
+deallocate(ww, ww_new, ww_mix, Ufield)
 deallocate(volnp)
 deallocate(planar_cell_of_np, dist_from_face, cell_vol_planar)
 deallocate(sph_cell_of_np, dist_from_np, cell_vol_sph)

@@ -1,14 +1,18 @@
-subroutine mesh_build_node_pairing(global_node_id_type_face, axis, face1_hash, face2_hash, node_pairing_hash)
+!RuSseL3D - Copyright (C) 2021 C. J. Revelas, A. P. Sgouros, A. T. Lakkas
+!
+!See the LICENSE file in the root directory for license information.
 
+subroutine mesh_build_node_pairing(global_node_id_type_face, axis, face1_hash, face2_hash, node_pairing_hash)
+!----------------------------------------------------------------------------------------------------------------------------------!
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 
 use geometry_mod, only: xc, nen_type_face, numel_type_face
 use iofiles_mod,  only: node_pairing_xx, node_pairing_yy, node_pairing_zz
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 character(len=1), intent(in) :: axis
 
 integer, dimension(nen_type_face, numel_type_face), intent(in) :: global_node_id_type_face
@@ -26,7 +30,7 @@ integer                                      :: face1_value, face2_value
 integer :: ii, jj, kk, mm
 integer :: elem1, elem2, node1, node2
 integer :: dimension1=0, dimension2=0
-
+!----------------------------------------------------------------------------------------------------------------------------------!
 if (axis=='x') then
     dimension1 = 2 ! y
     dimension2 = 3 ! z
@@ -59,7 +63,7 @@ do kk = 1, face1_hash%key_count()
             node1 = global_node_id_type_face(ii,elem1)
             do jj = 1, 3
                 node2 = global_node_id_type_face(jj, elem2)
-                if ((ABS(xc(dimension1,node1)-xc(dimension1,node2))<1e-12).AND.(ABS(xc(dimension2,node1)-xc(dimension2,node2))<1e-12)) then
+                if ((ABS(xc(dimension1,node1)-xc(dimension1,node2))<1.0d-12).AND.(ABS(xc(dimension2,node1)-xc(dimension2,node2))<1.0d-12)) then
                     node_pairing_key%ints(1) = node1
                     call node_pairing_hash%set(node_pairing_key, node2)
                 endif
@@ -87,4 +91,5 @@ call face1_hash%clear()
 call face2_hash%clear()
 
 return
+!----------------------------------------------------------------------------------------------------------------------------------!
 end subroutine mesh_build_node_pairing

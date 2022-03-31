@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-real(8) function get_gradient(node_id, phi)
+real(8) function compute_gradient(node_id, phi)
 !----------------------------------------------------------------------------------------------------------!
 use geometry_mod
 use constants_mod, only: A_to_m
@@ -36,10 +36,10 @@ dphi2_dx2 = (phi_plus_dx - 2.0d0 * phi(node_id) + phi_minus_dx) / (dx*A_to_m)**2
 dphi2_dy2 = (phi_plus_dy - 2.0d0 * phi(node_id) + phi_minus_dy) / (dy*A_to_m)**2.0d0
 dphi2_dz2 = (phi_plus_dz - 2.0d0 * phi(node_id) + phi_minus_dz) / (dz*A_to_m)**2.0d0
 
-get_gradient = dphi2_dx2 + dphi2_dy2 + dphi2_dz2
+compute_gradient = dphi2_dx2 + dphi2_dy2 + dphi2_dz2
 
 !write(123,'(2(E16.5,2X))') z_node_id, phi(node_id)!, phi_plus_dx, phi_minus_dx, phi_plus_dy, phi_minus_dy, phi_plus_dz, phi_minus_dz, &
            !& dphi2_dx2, dphi2_dy2, dphi2_dz2, compute_gradient
 return
 !----------------------------------------------------------------------------------------------------------!
-end function get_gradient
+end function compute_gradient
