@@ -3,6 +3,7 @@ import os
 import sys
 import numpy as np
 
+# Initialize I/O
 try:
     mesh_file = open("in.mesh", 'r')
 except:
@@ -19,6 +20,7 @@ try:
 except:
     print("ERROR OPENING VTU FILE o.vtu")
 
+# Parse comsol mesh file
 for line in mesh_file:
     if ("sdim" in line):
         ndm = int(line.split()[0])
@@ -30,10 +32,14 @@ for line in mesh_file:
         solution      = np.zeros(numnp)
 
     if ("Mesh point coordinates" in line):
+        kk = 0
+        point_id = {}
         for jj in range(0,numnp):
             lineBuffer = mesh_file.readline()
             for ii in range(0,ndm):
                 meshpoint[ii,jj] = float(lineBuffer.split()[ii])
+            point_id[meshpoint[0,jj], meshpoint[1,jj], meshpoint[2,jj]] = kk
+            kk += 1
 
     if ("4 # number of nodes per element" in line):
         nen = int(line.split()[0])
@@ -49,16 +55,38 @@ for line in mesh_file:
             for jj in range(0,nen):
                 global_node_id[jj,ii] = lineBuffer.split()[jj]
 
-
+# Parser solution file
 for line in solution_file:
     if ("% X" in line):
+        kk = 0
+        point_id_vtu = {}
         for jj in range(0,numnp):
             lineBuffer = solution_file.readline()
             solution[jj] = float(lineBuffer.split()[3])
 
             for ii in range(0,ndm):
                 meshpoint_vtu[ii,jj] = float(lineBuffer.split()[ii])
+            point_id_vtu[meshpoint_vtu[0,jj], meshpoint_vtu[1,jj], meshpoint_vtu[2,jj]] = kk
+            kk += 1
 
+# Build comsol to vtu point-id map
+tol = 1.e-10
+vtu_hash = {}
+for ii in range(0,numnp):
+    x1 = meshpoint[0,ii]
+    y1 = meshpoint[1,ii]
+    z1 = meshpoint[2,ii]
+    for jj in range(0,numnp):
+        x2 = meshpoint_vtu[0,jj]
+        y2 = meshpoint_vtu[1,jj]
+        z2 = meshpoint_vtu[2,jj]
+
+        if ((abs(x1-x2)<tol)and(abs(y1-y2)<tol)and(abs(z1-z2)<tol)):
+            vtu_hash[point_id[x1, y1, z1]] = point_id_vtu[x2, y2, z2]
+#print(vtu_hash)
+#exit()
+
+# Export vtu file for paraview
 line_1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 line_2 = "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n"
 line_3 = "<Piece NumberOfPoints=\"" + str(numnp) + "\" NumberOfCells=\"" + str(numel) + "\">\n"
@@ -95,9 +123,9 @@ vtu_file.write('\n')
 
 vtu_file.write(beginPointData)
 vtu_file.write(line_4)
-# Insert the solution vector
+# SOLUTION
 for ii in range(0,numnp):
-    vtu_file.write(str(solution[ii]) + '\n')
+    vtu_file.write(str(solution[vtu_hash[ii]]) + '\n')
 vtu_file.write(endDataArray)
 vtu_file.write(endPointData)
 vtu_file.write('\n')
@@ -105,7 +133,7 @@ vtu_file.write('\n')
 vtu_file.write(beginCellData)
 vtu_file.write(beginPoints)
 vtu_file.write(line_5)
-# Insert the nodal point coordinates
+# COORDINATES
 for jj in range(0,numnp):
     for ii in  range(0,ndm):
         #vtu_file.write("%.10f" %(meshpoint[ii,jj]) + ' ')
@@ -118,7 +146,7 @@ vtu_file.write('\n')
 
 vtu_file.write(beginCells)
 vtu_file.write(line_6)
-# Insert element connectivity
+# CONNECTIVITY
 for ii in range(0,numel):
     for jj in range(0,nen):
         vtu_file.write(str(global_node_id[jj,ii]) + ' ')
@@ -127,7 +155,7 @@ vtu_file.write(endDataArray)
 vtu_file.write('\n')
 
 vtu_file.write(line_7)
-# Insert array of offsets
+# OFFSETS
 kk = 0
 offset = 0
 for ii in range(0,numel):
@@ -142,7 +170,7 @@ vtu_file.write(endDataArray)
 vtu_file.write('\n')
 
 vtu_file.write(line_8)
-# Insert array of types
+# TYPES
 kk = 0
 tet_type = 10
 for ii in range(0,numel):
