@@ -132,14 +132,14 @@ write(*,*)
 write(iow,'(A85)')adjl('-----------------------------------SIMULATION STARTS-----------------------------------',85)
 write(*  ,'(A85)')adjl('-----------------------------------SIMULATION STARTS-----------------------------------',85)
 
-write(iow,'(A10,1X,6(A19,1X),A16)') "iter", "fraction", "free_energy", "n_gr_chains", "field_error", "std_error", "ww_max"
-write(6  ,'(A4,1X,6(A14,1X),A12)')  "iter", "fraction", "free_energy", "n_gr_chains", "field_error", "std_error", "ww_max"
+write(iow,'(A10,1X,8(A19,1X),A16)') "iter", "fraction", "energy", "energy_error", "gr_chains", "gr_chains_error", "field_error", "field_std_error", "field_max"
+write(6  ,'(A4,1X,8(A14,1X),A12)')  "iter", "fraction", "energy", "energy_error", "gr_chains", "gr_chains_error", "field_error", "field_std_error", "field_max"
 
 t_init = tools_sys_time()
 
 do iter = init_iter, iterations-1
-    write(iow,'(I10,1X,6(E19.9E3,1X))') iter, frac, free_energy, nch_gr, field_error, ww_std_error, ww_max
-    write(6  ,'(I4 ,1X,6(E14.4E3,1X))') iter, frac, free_energy, nch_gr, field_error, ww_std_error, ww_max
+    write(iow,'(I10,1X,8(E19.9E3,1X))') iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, fieldError, fieldStdError, fieldMaximum
+    write(6  ,'(I4 ,1X,8(E14.4E3,1X))') iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, fieldError, fieldStdError, fieldMaximum
 
     close(iow)
     open(unit=iow, file = logfile, position = 'append')
@@ -264,8 +264,8 @@ enddo
 !**************************************************************************************************************!
 !                                             EXPORT SIMULATION RESULTS                                        !
 !**************************************************************************************************************!
-write(iow,'(I10,1X,6(E19.9E3,1X))')  iter, frac, free_energy, nch_gr, field_error, ww_std_error, ww_max
-write(6  ,'(I4 ,1X,6(E14.4E3,1X))')  iter, frac, free_energy, nch_gr, field_error, ww_std_error, ww_max
+write(iow,'(I10,1X,8(E19.9E3,1X))')  iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, fieldError, fieldStdError, fieldMaximum
+write(6  ,'(I4 ,1X,8(E14.4E3,1X))')  iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, fieldError, fieldStdError, fieldMaximum
 
 
 write(iow,*)
