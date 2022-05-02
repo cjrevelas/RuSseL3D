@@ -38,6 +38,7 @@ if (periodic_axis_id(2)) call fem_apply_periodic_bcs(node_pairing_yy_hash)
 if (periodic_axis_id(3)) call fem_apply_periodic_bcs(node_pairing_zz_hash)
 
 ! Apply Dirichlet boundary conditions
+! TODO: needs generalization to nonzero values
 ! In case the matrix is symmetric, remove the zero lines and rows diagonal componets with Dirichlet BC q=0.
 set_diag_to_one=.true.
 if ((mumps_matrix_type.eq.1).or.(mumps_matrix_type.eq.2)) then

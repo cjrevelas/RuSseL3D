@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine export_brush99(cell_of_np, num_gpoints, numnp, file_name, phi_gr, phi_gr_indiv, volnp, lbin, nbin)
+subroutine export_brush99(cell_of_np, targetNumGraftedChains, numnp, file_name, phi_gr, phi_gr_indiv, volnp, lbin, nbin)
 !-----------------------------------------------------------------------------------------------------------!
 use write_helper_mod, only: adjl
 use parser_vars_mod,  only: iow, num_of_nanoparticle_faces, radius_np_eff
@@ -10,7 +10,7 @@ use geometry_mod,     only: box_len
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
-integer, intent(in)                   :: num_gpoints, numnp, nbin
+integer, intent(in)                   :: targetNumGraftedChains, numnp, nbin
 integer, intent(in), dimension(numnp) :: cell_of_np
 integer                               :: kk, ii, jj, bin
 
@@ -18,11 +18,11 @@ character(40) :: file_name
 
 real(8), intent(in)                                :: lbin
 real(8), intent(in), dimension(numnp)              :: phi_gr, volnp
-real(8), intent(out), dimension(numnp,num_gpoints) :: phi_gr_indiv
+real(8), intent(out), dimension(numnp,targetNumGraftedChains) :: phi_gr_indiv
 real(8)                                            :: mass_cumulative, np_mass
 real(8)                                            :: mass_total, brush99_all, boxSize
 real(8)                                            :: brush99_of_chain_ave, brush99_of_chain_std
-real(8), dimension(num_gpoints)                    :: brush99_of_chain
+real(8), dimension(targetNumGraftedChains)                    :: brush99_of_chain
 real(8), allocatable, dimension(:)                 :: mass_layer
 !-----------------------------------------------------------------------------------------------------------!
 write(6,'(2X,A40)')adjl("Exporting 99% brush thickness.",40)
@@ -34,7 +34,7 @@ allocate(mass_layer(nbin))
 
 open (unit=120, file = file_name)
 ! Find the brush thickness from the individual phi_gr
-do jj = 1, num_gpoints
+do jj = 1, targetNumGraftedChains
     mass_layer = 0.0d0
     mass_total = 0.0d0
 
@@ -59,16 +59,16 @@ do jj = 1, num_gpoints
 enddo
 
 ! Compute average
-do ii = 1, num_gpoints
+do ii = 1, targetNumGraftedChains
     brush99_of_chain_ave = brush99_of_chain_ave + brush99_of_chain(ii)
 enddo
-brush99_of_chain_ave = brush99_of_chain_ave / REAL(num_gpoints)
+brush99_of_chain_ave = brush99_of_chain_ave / REAL(targetNumGraftedChains)
 
 ! Compute stdev
-do ii = 1, num_gpoints
+do ii = 1, targetNumGraftedChains
     brush99_of_chain_std = brush99_of_chain_std + (brush99_of_chain(ii) - brush99_of_chain_ave)**2
 enddo
-brush99_of_chain_std = SQRT(brush99_of_chain_std / REAL(num_gpoints))
+brush99_of_chain_std = SQRT(brush99_of_chain_std / REAL(targetNumGraftedChains))
 
 ! Find the brush thickness from the total phi_gr
 mass_layer = 0.0d0
@@ -93,6 +93,7 @@ write(120,'(A8,2X,E16.9E3)') "mean" , brush99_of_chain_ave
 write(120,'(A8,2X,E16.9E3)') "stdev", brush99_of_chain_std
 write(120,'(A8,2X,E16.9E3)') "all"  , brush99_all
 
+! TODO: the following warning needs revision in the case of multiple nanoparticles
 if (num_of_nanoparticle_faces/=0) then
     do ii = 1, num_of_nanoparticle_faces
         boxSize = min(box_len(1), box_len(2), box_len(3))/2.d0 - radius_np_eff(ii)

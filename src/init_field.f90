@@ -11,7 +11,7 @@ use geometry_mod,     only: numnp, is_dirichlet_face, box_lo, box_hi, xc, node_b
 use error_handing_mod
 use write_helper_mod, only: adjl
 use force_fields_mod, only: hamaker_sphere_plate, hamaker_sphere_sphere
-use iofiles_mod,      only: usolid, field_in_filename
+use iofiles_mod,      only: usolid, fieldFile
 use constants_mod,    only: n_avog, pi, m_to_A
 !------------------------------------------------------------------------------------------------------!
 implicit none
@@ -26,6 +26,8 @@ real(8)                                :: Urep=0.0d0, Uatt=0.0d0
 !------------------------------------------------------------------------------------------------------!
 open(unit=211, file = usolid)
 write(211,'(5(2X,A16))') "r_center_surf", "r_surf", "Uatt", "Urep", "Utot"
+
+! TODO: compute and add solid-solid (Hamaker) interactions
 
 Ufield = 0.0d0
 
@@ -99,7 +101,7 @@ close(211)
 if (field_init_scheme.eq.0) then
     ww = 0.0d0
 elseif (field_init_scheme.eq.1) then
-    open(unit=655, file = field_in_filename, Form='unformatted')
+    open(unit=655, file = fieldFile, Form='unformatted')
     read(655) ww
     close(655)
 elseif (field_init_scheme.eq.2) then

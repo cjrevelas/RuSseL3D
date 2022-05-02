@@ -10,7 +10,7 @@ use write_helper_mod, only: adjl
 use constants_mod,    only: A3_to_m3
 use arrays_mod,       only: volnp
 use geometry_mod,     only: numnp
-use delta_mod,        only: num_gpoints, gp_init_value, gpid
+use delta_mod,        only: targetNumGraftedChains, gp_init_value, gpid
 !-----------------------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------------------!
@@ -55,7 +55,7 @@ do bin = 7, 30
     if (chain_type.eq."gr") then
         write(6,'(6X,A40)')adjl("Exporting grafted chains per area.",40)
 
-        do ii = 1, num_gpoints
+        do ii = 1, targetNumGraftedChains
             gnode_id = gpid(ii)
 
             qshape(1,gnode_id)       = gp_init_value(ii)

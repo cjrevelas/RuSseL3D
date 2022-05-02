@@ -9,7 +9,7 @@ use arrays_mod,       only: phi_mx, phi_gr, phi_gr_indiv, ww, ww_new, ww_mix,   
                          &  ds_mx_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, volnp
 use hist_mod,         only: nbin, lbin, planar_cell_of_np, sph_cell_of_np, dist_from_face,            &
                          &  dist_from_np, cell_vol_planar, cell_vol_sph
-use delta_mod,        only: gp_init_value, gpid, num_gpoints
+use delta_mod,        only: gp_init_value, gpid, targetNumGraftedChains
 use geometry_mod,     only: numnp, xc, is_dirichlet_face, node_belongs_to_dirichlet_face
 use write_helper_mod, only: adjl, export
 use parser_vars_mod,  only: num_of_nanoparticle_faces, mx_exist, gr_exist, ads_distance,              &
@@ -109,8 +109,8 @@ if (gr_exist.eq.1) then
     if (export(export_propagators_freq, iter, convergence)) call export_propagator(ns_gr_ed, qgr_final, "gr")
 
     if (export(export_phi_indiv_freq, iter, convergence)) then
-        call compute_phi_indiv(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, num_gpoints, gpid, gp_init_value, phi_gr_indiv)
-        call export_phi_indiv(num_gpoints, numnp, xc, phi_gr_indiv)
+        call compute_phi_indiv(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, targetNumGraftedChains, gpid, gp_init_value, phi_gr_indiv)
+        call export_phi_indiv(targetNumGraftedChains, numnp, xc, phi_gr_indiv)
     endif
 
     ! Planar surfaces
@@ -120,10 +120,10 @@ if (gr_exist.eq.1) then
                 if (export(export_brush_thickness_freq, iter, convergence)) then
                     file_name = ""
                     write(file_name,'("o.brush_w",I1,"_",I1)') mm, nn
-                    call export_brush(num_gpoints, numnp, phi_gr, phi_gr_indiv, volnp, file_name, dist_from_face(:,mm,nn))
+                    call export_brush(targetNumGraftedChains, numnp, phi_gr, phi_gr_indiv, volnp, file_name, dist_from_face(:,mm,nn))
                     file_name = ""
                     write(file_name,'("o.brush99_w",I1,"_",I1)') mm, nn
-                    call export_brush99(planar_cell_of_np(:,mm,nn), num_gpoints, numnp, file_name, phi_gr, phi_gr_indiv, volnp, lbin, nbin)
+                    call export_brush99(planar_cell_of_np(:,mm,nn), targetNumGraftedChains, numnp, file_name, phi_gr, phi_gr_indiv, volnp, lbin, nbin)
                 endif
                 if (export(export_chains_per_area_freq, iter, convergence)) then
                     file_name = ""
@@ -139,10 +139,10 @@ if (gr_exist.eq.1) then
         if (export(export_brush_thickness_freq, iter, convergence)) then
             file_name = ""
             write(file_name,'("o.brush_np",I1)') mm
-            call export_brush(num_gpoints, numnp, phi_gr, phi_gr_indiv, volnp, file_name, dist_from_np(mm,:))
+            call export_brush(targetNumGraftedChains, numnp, phi_gr, phi_gr_indiv, volnp, file_name, dist_from_np(mm,:))
             file_name = ""
             write(file_name,'("o.brush99_np",I1)') mm
-            call export_brush99(sph_cell_of_np(mm,:), num_gpoints, numnp, file_name, phi_gr, phi_gr_indiv, volnp, lbin, nbin)
+            call export_brush99(sph_cell_of_np(mm,:), targetNumGraftedChains, numnp, file_name, phi_gr, phi_gr_indiv, volnp, lbin, nbin)
         endif
         if (export(export_chains_per_area_freq, iter, convergence)) then
             file_name = ""

@@ -4,7 +4,7 @@
 
 module delta_mod
 !----------------------------------------------------------------------------------------------------------------------------!
-integer                            :: num_gpoints
+integer                            :: targetNumGraftedChains
 integer, allocatable, dimension(:) :: gpid
 
 real(8), allocatable, dimension(:) :: delta_numer, gp_init_value

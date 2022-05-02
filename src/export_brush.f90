@@ -2,22 +2,22 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine export_brush(num_gpoints, numnp, phi_gr, phi_gr_indiv, volnp, file_name, dist_from_surf)
+subroutine export_brush(targetNumGraftedChains, numnp, phi_gr, phi_gr_indiv, volnp, file_name, dist_from_surf)
 !-----------------------------------------------------------------------------------------------------------!
 use write_helper_mod, only : adjl
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
-integer, intent(in) :: num_gpoints, numnp
+integer, intent(in) :: targetNumGraftedChains, numnp
 integer             :: kk, ii
 
 character(40), intent(in) :: file_name
 
 real(8), intent(in), dimension(numnp)              :: phi_gr, volnp, dist_from_surf
-real(8), intent(out), dimension(numnp,num_gpoints) :: phi_gr_indiv
+real(8), intent(out), dimension(numnp,targetNumGraftedChains) :: phi_gr_indiv
 real(8)                                            :: numer, denom, r_center_surf, msq_brush_all, &
                                                       & msq_brush_of_chain_ave, msq_brush_of_chain_std
-real(8), dimension(num_gpoints)                    :: msq_brush_of_chain
+real(8), dimension(targetNumGraftedChains)                    :: msq_brush_of_chain
 !-----------------------------------------------------------------------------------------------------------!
 write(6,'(2X,A40)')adjl("Exportin mean brush thickness.",40)
 
@@ -28,7 +28,7 @@ msq_brush_of_chain_std = 0.0d0
 
 ! Find the brush thickness from the individual phi_gr
 open (unit=120, file = file_name)
-do ii = 1, num_gpoints
+do ii = 1, targetNumGraftedChains
     numer = 0.0d0
     denom = 0.0d0
 
@@ -43,16 +43,16 @@ do ii = 1, num_gpoints
 enddo
 
 ! Compute average
-do ii = 1, num_gpoints
+do ii = 1, targetNumGraftedChains
     msq_brush_of_chain_ave = msq_brush_of_chain_ave + msq_brush_of_chain(ii)
 enddo
-msq_brush_of_chain_ave = msq_brush_of_chain_ave / REAL(num_gpoints)
+msq_brush_of_chain_ave = msq_brush_of_chain_ave / REAL(targetNumGraftedChains)
 
 ! Compute stdev
-do ii = 1, num_gpoints
+do ii = 1, targetNumGraftedChains
     msq_brush_of_chain_std = msq_brush_of_chain_std + (msq_brush_of_chain(ii) - msq_brush_of_chain_ave)**2
 enddo
-msq_brush_of_chain_std = SQRT(msq_brush_of_chain_std / REAL(num_gpoints))
+msq_brush_of_chain_std = SQRT(msq_brush_of_chain_std / REAL(targetNumGraftedChains))
 
 ! Find the brush thickness from the total phi_gr
 numer = 0.0d0

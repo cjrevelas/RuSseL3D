@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine compute_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, num_gpoints, gpid, delta_numer, volnp)
+subroutine compute_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, targetNumGraftedChains, gpid, delta_numer, volnp)
 !------------------------------------------------------------------------------------------------------!
 use geometry_mod,     only: node_belongs_to_dirichlet_face
 use parser_vars_mod,  only: ns_gr_conv, ns_gr_ed, chainlen_gr, mumps_matrix_type, rg2_per_mon_gr, rho_mol_bulk
@@ -12,16 +12,16 @@ use error_handing_mod
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-integer, intent(in)                         :: numnp, num_gpoints
-integer, intent(in), dimension(num_gpoints) :: gpid
+integer, intent(in)                         :: numnp, targetNumGraftedChains
+integer, intent(in), dimension(targetNumGraftedChains) :: gpid
 integer                                     :: ii, jj
 
 real(8), intent(in), dimension(numnp)              :: ww, volnp
 real(8), intent(in), dimension(ns_gr_conv+1,numnp) :: qmx_interp_mg
 real(8), intent(in), dimension(ns_gr_ed+1)         :: ds_gr_ed, xs_gr_ed
 real(8), intent(in), dimension(ns_gr_conv+1)       :: xs_gr_conv, coeff_gr_conv
-real(8), intent(out), dimension(num_gpoints)       :: delta_numer
-real(8), dimension(num_gpoints)                    :: delta_anal
+real(8), intent(out), dimension(targetNumGraftedChains)       :: delta_numer
+real(8), dimension(targetNumGraftedChains)                    :: delta_anal
 real(8), dimension(numnp)                          :: phi_gr
 real(8), dimension(2,numnp)                        :: qgr
 real(8), dimension(ns_gr_ed+1,numnp)               :: qgr_final
@@ -34,14 +34,14 @@ write(6,'(2X,A40)')adjl("Updating delta of grafted chains:",40)
 delta_anal = 0.0d0
 
 ! Analytic delta calculation
-do ii = 1, num_gpoints
+do ii = 1, targetNumGraftedChains
     delta_anal(ii) = 1.0d0 / volnp(gpid(ii)) * m3_to_A3
 enddo
 
 ! Numerical delta calculation (i.e., through solution of the Edwards equation)
 call fem_matrix_assemble(Rg2_per_mon_gr, ww)
 
-do ii = 1, num_gpoints
+do ii = 1, targetNumGraftedChains
     qgr       = 0.0d0
     qgr_final = 0.0d0
 
@@ -62,6 +62,8 @@ do ii = 1, num_gpoints
     call compute_number_of_chains(numnp, chainlen_gr, rho_mol_bulk, phi_gr, nch_gr)
 
     delta_numer(ii) = delta_anal(ii) / nch_gr
+
+    ! TODO: check for potential memory leak after each delta calculation
 enddo
 write(6,'(2X,A40)')adjl("****************************************",40)
 !------------------------------------------------------------------------------------------------------!

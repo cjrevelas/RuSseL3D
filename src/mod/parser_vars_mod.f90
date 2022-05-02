@@ -42,7 +42,7 @@ real(8) :: A_pol, sigma_pol, wall_distance, ads_distance
 
 ! Convergence scheme
 integer :: mumps_matrix_type
-real(8) :: field_error_tol, free_energy_error_tol, free_energy_error_tol_for_delta
-real(8) :: frac, num_gr_chains_tol
+real(8) :: fieldTol, freeEnergyTol, freeEnergyTolForDelta
+real(8) :: frac, numGraftedChainsTol
 !----------------------------------------------------------------------------------------------------------------------------!
 end module parser_vars_mod

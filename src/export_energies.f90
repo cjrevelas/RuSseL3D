@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine export_energies(qmx_interp_mg, qgr_interp, phi_total, ww, Ufield, part_func, num_gpoints, gpid, free_energy)
+subroutine export_energies(qmx_interp_mg, qgr_interp, phi_total, ww, Ufield, part_func, targetNumGraftedChains, gpid, free_energy)
 !-------------------------------------------------------------------------------------------------!
 use eos_mod,         only: eos_ff, eos_df_drho
 use parser_vars_mod, only: ns_gr_conv, chainlen_mx, rho_mol_bulk, temp, beta, r_gpoint
@@ -12,8 +12,8 @@ use iofiles_mod,     only: energy_terms
 !-------------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------------!
-integer, intent(in)                         :: num_gpoints
-integer, intent(in), dimension(num_gpoints) :: gpid
+integer, intent(in)                         :: targetNumGraftedChains
+integer, intent(in), dimension(targetNumGraftedChains) :: gpid
 integer                                     :: kk, gnode_id
 
 real(8), intent(in), dimension(ns_gr_conv+1,numnp) :: qmx_interp_mg, qgr_interp
@@ -27,7 +27,7 @@ real(8)                                            :: E_field=0.0d0, E_solid=0.0
 real(8)                                            :: E_entropy_mx=0.0d0, E_entropy_gr=0.0d0
 real(8)                                            :: E_entropy_gr_normlz=0.0d0, E_stretching = 0.0d0
 real(8)                                            :: r_ref=0.4d0
-real(8), dimension(num_gpoints)                    :: term4_norm_gpoint, term4_gpoint
+real(8), dimension(targetNumGraftedChains)                    :: term4_norm_gpoint, term4_gpoint
 real(8), dimension(numnp)                          :: prof_eos_f, prof_eos_dfdrho
 real(8), dimension(numnp)                          :: prof_field, prof_solid
 !-------------------------------------------------------------------------------------------------!
@@ -58,10 +58,10 @@ E_field      = E_field      * A3_to_m3 * rho_mol_bulk * n_avog / beta
 E_solid      = E_solid      * A3_to_m3 * rho_mol_bulk * n_avog / beta
 E_entropy_mx = rho_mol_bulk * A3_to_m3 * vol * boltz_const_Joule_molK * Temp * (1.0d0 - part_func) / chainlen_mx
 
-do kk = 1, num_gpoints
+do kk = 1, targetNumGraftedChains
     gnode_id              =  gpid(kk)
     term4_gpoint(kk)      = -LOG(qmx_interp_mg(ns_gr_conv+1,gnode_id)) / beta
-    term4_norm_gpoint(kk) = -LOG(r_ref/r_gpoint) / beta
+    term4_norm_gpoint(kk) = -LOG(r_ref/r_gpoint) / beta  ! TODO: this needs revision in the case of multiple solid surfaces
     E_entropy_gr          =  E_entropy_gr        + term4_gpoint(kk)
     E_entropy_gr_normlz   =  E_entropy_gr_normlz + term4_norm_gpoint(kk)
     E_stretching          =  E_stretching        + compute_stretching_energy(gnode_id, qmx_interp_mg, qgr_interp)
@@ -82,10 +82,10 @@ open(unit=837, file = energy_terms)
 write(837,'(9(2X,A16))')     "E_ff", "E_dfdrho", "E_entropy_mx", "E_entr_gr", "E_entr_gr_norm", "E_total", "E_stretch", "E_w", "E_Us"
 write(837,'(9(2X,E16.9E2))') E_eos_f, E_eos_dfdrho, E_entropy_mx, E_entropy_gr, E_entropy_gr_normlz, free_energy, E_stretching, E_field, E_solid
 
-if (num_gpoints.ne.0) then
+if (targetNumGraftedChains.ne.0) then
     write(837,*)
     write(837,'(4(2X,A16))')  "id", "qmx(ns)", "E_entr_gp", "E_entr_gp_norm"
-    do kk = 1, num_gpoints
+    do kk = 1, targetNumGraftedChains
         gnode_id   = gpid(kk)
         write(837,'(2X,I16,3(2X,E16.9E2))') gnode_id, qmx_interp_mg(ns_gr_conv+1,gnode_id), term4_gpoint(kk), term4_norm_gpoint(kk)
     enddo

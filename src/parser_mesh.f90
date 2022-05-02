@@ -17,7 +17,7 @@ use geometry_mod,     only: nel, num_of_elems_of_node, box_lo, box_hi, box_len, 
 &                       num_dest_xx_neighbors, num_dest_yy_neighbors,                     &
 &                       num_dest_zz_neighbors, nen_type_face, numel_type_face
 use kcw_mod,          only: F_m
-use iofiles_mod,      only: mesh_filename, dir_faces, com_12, inter, mesh_out,         &
+use iofiles_mod,      only: meshFile, dir_faces, com_12, inter, mesh_out,         &
 &                       mesh_prof, xface1_elements, xface2_elements,                   &
 &                       yface1_elements, yface2_elements, zface1_elements,             &
 &                       zface2_elements, node_pairing_xx, node_pairing_yy,             &
@@ -48,7 +48,7 @@ integer                                :: vertex_entity_value, edge_entity_value
 
 type(fhash_type__ints_double)          :: xface1_hash, xface2_hash, yface1_hash, yface2_hash, zface1_hash, zface2_hash
 !----------------------------------------------------------------------------------------------------------------------------!
-open(unit=12, file=mesh_filename)
+open(unit=12, file=meshFile)
 
 do
     read(12,'(A100)',IOSTAT=reason) line

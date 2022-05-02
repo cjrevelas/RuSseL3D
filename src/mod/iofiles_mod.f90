@@ -5,10 +5,10 @@
 module iofiles_mod
 !----------------------------------------------------------------------------------------------------------------------------!
 ! Input files
-character(len=50) :: input_filename
-character(len=50) :: mesh_filename
-character(len=50) :: gp_filename
-character(len=50) :: field_in_filename
+character(len=50) :: inputFile
+character(len=50) :: meshFile
+character(len=50) :: graftFile
+character(len=50) :: fieldFile
 
 ! Error files
 character(len=20) :: errorfile = "e.error"

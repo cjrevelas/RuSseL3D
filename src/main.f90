@@ -32,9 +32,10 @@ logical :: convergence = .false., calc_delta = .false.
 
 real(8), allocatable, dimension(:) :: dphi2_dr2
 
-real(8) :: part_func = 0.0d0, nch_mx = 0.0d0, nch_gr = 0.0d0
-real(8) :: ww_max = 0.0d0, ww_std_error = 0.0d0, field_error = 200000.0d0
-real(8) :: free_energy_prev = 1.0d10, free_energy = 0.0d0, free_energy_error = 1.0d10
+real(8) :: partitionMatrixChains = 0.0d0, numMatrixChains = 0.0d0
+real(8) :: numGraftedChains = 0.0d0, numGraftedChainsError = 1.0d2
+real(8) :: fieldMaximum = 0.0d0, fieldStdError = 0.0d0, fieldError = 2.0d5
+real(8) :: freeEnergyPrevious = 1.0d10, freeEnergy = 0.0d0, freeEnergyError = 1.0d10
 !----------------------------------------------------------------------------------------------------------------------------------!
 !**************************************************************************************************************!
 !                                                    MPI SECTION                                               !
@@ -161,14 +162,14 @@ do iter = init_iter, iterations-1
 
         ! Recompute the delta functions if necessary
         if (grafted_ic_from_delta.eq.1) then
-            calc_delta = ((iter==0) .or. ((free_energy_error <= free_energy_error_tol_for_delta) .and. ((ABS(nch_gr-DBLE(num_gpoints))/DBLE(num_gpoints))>num_gr_chains_tol)))
+            calc_delta = ((iter==0) .OR. ((freeEnergyError <= freeEnergyTolForDelta) .AND. (numGraftedChainsError > numGraftedChainsTol)))
 
             if (calc_delta) then
-                call compute_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww_mix, num_gpoints, gpid, delta_numer, volnp)
-                call export_delta(numnp, qmx_interp_mg, ns_gr_conv, num_gpoints, gpid, delta_numer, gp_init_value, volnp)
+                call compute_delta_numer(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww_mix, targetNumGraftedChains, gpid, delta_numer, volnp)
+                call export_delta(numnp, qmx_interp_mg, ns_gr_conv, targetNumGraftedChains, gpid, delta_numer, gp_init_value, volnp)
             endif
 
-            do ii = 1, num_gpoints
+            do ii = 1, targetNumGraftedChains
                 gnode_id = gpid(ii)
                 gp_init_value(ii) = delta_numer(ii) * chainlen_gr * 1.0d0 / (qmx_interp_mg(ns_gr_conv+1,gnode_id) * (rho_mol_bulk * n_avog))
             enddo
@@ -179,7 +180,7 @@ do iter = init_iter, iterations-1
         qgr       = 0.0d0
         qgr_final = 0.0d0
 
-        do ii = 1, num_gpoints
+        do ii = 1, targetNumGraftedChains
             gnode_id = gpid(ii)
 
             qgr(1,gnode_id)       = gp_init_value(ii)
@@ -211,44 +212,50 @@ do iter = init_iter, iterations-1
         if (gr_exist.eq.1) phi_total(kk) = phi_total(kk) + phi_gr(kk)
     enddo
 
-    if (mx_exist.eq.1) call compute_part_func_mx(numnp, ns_mx_conv, qmx_interp_mm, part_func)
-    if (mx_exist.eq.1) call compute_number_of_chains(numnp, chainlen_mx, rho_mol_bulk, phi_mx, nch_mx)
-    if (gr_exist.eq.1) call compute_number_of_chains(numnp, chainlen_gr, rho_mol_bulk, phi_gr, nch_gr)
+    if (mx_exist.eq.1) call compute_part_func_mx(numnp, ns_mx_conv, qmx_interp_mm, partitionMatrixChains)
+    if (mx_exist.eq.1) call compute_number_of_chains(numnp, chainlen_mx, rho_mol_bulk, phi_mx, numMatrixChains)
+    if (gr_exist.eq.1) call compute_number_of_chains(numnp, chainlen_gr, rho_mol_bulk, phi_gr, numGraftedChains)
 
     do kk = 1, numnp
         ww_new(kk) = (eos_df_drho(phi_total(kk)) - eos_df_drho(1.0d0)) / (boltz_const_Joule_K*Temp) - &
                    & k_gr * (rho_seg_bulk * dphi2_dr2(kk)) / (boltz_const_Joule_K * Temp) + Ufield(kk)
     enddo
 
-    field_error  = 0.0d0
-    ww_std_error = 0.0d0
-    ww_max       = 0.0d0
+    fieldError    = 0.0d0
+    fieldStdError = 0.0d0
+    fieldMaximum  = 0.0d0
 
     do kk = 1, numnp
-        field_error  = MAX(field_error,DABS(ww_new(kk) - ww(kk)))
-        ww_std_error = ww_std_error + (ww_new(kk) - ww(kk))**2.0d0
-        ww_max       = MAX(ww_max, ww_new(kk))
+        fieldError   = MAX(fieldError,DABS(ww_new(kk) - ww(kk)))
+        fieldStdError = fieldStdError + (ww_new(kk) - ww(kk))**2.0d0
+        fieldMaximum       = MAX(fieldMaximum, ww_new(kk))
     enddo
 
-    ww_std_error = SQRT(ww_std_error / FLOAT((numnp - 1)))
-    ww_max       = ww_max       * chainlen_mx
-    field_error  = field_error  * chainlen_mx
-    ww_std_error = ww_std_error * chainlen_mx
+    fieldStdError = SQRT(fieldStdError / FLOAT((numnp - 1)))
+    fieldMaximum       = fieldMaximum       * chainlen_mx
+    fieldError  = fieldError  * chainlen_mx
+    fieldStdError = fieldStdError * chainlen_mx
 
-    free_energy_error = ABS(free_energy - free_energy_prev)
-    free_energy_prev  = free_energy
+    freeEnergyError = ABS(freeEnergy - freeEnergyPrevious)
+    freeEnergyPrevious  = freeEnergy
+
+    if (gr_exist.eq.1) then
+        numGraftedChainsError = ABS(numGraftedChains-DBLE(targetNumGraftedChains)) / DBLE(targetNumGraftedChains)
+    else
+        numGraftedChainsError = 0.0d0
+    endif
 
     do kk = 1, numnp
         ww_mix(kk) = (1.0d0 - frac) * ww(kk) + frac * ww_new(kk)
     enddo
 
-    convergence = (field_error<=field_error_tol).or.(free_energy_error<=free_energy_error_tol)
+    convergence = (fieldError<=fieldTol).OR.(freeEnergyError<=freeEnergyTol)
 
     call export_field_bin(ww_mix, numnp, 0)
 
     if (export(export_field_bin_freq, iter, convergence)) call export_field_bin(ww_mix, numnp, iter)
 
-    if ((MOD(iter,1).eq.0).or.convergence) call export_energies(qmx_interp_mg, qgr_interp, phi_total, ww_new, Ufield, part_func, num_gpoints, gpid, free_energy)
+    if ((MOD(iter,1).eq.0).OR.convergence) call export_energies(qmx_interp_mg, qgr_interp, phi_total, ww_new, Ufield, partitionMatrixChains, targetNumGraftedChains, gpid, freeEnergy)
 
     call export_computes(iter, convergence)
 
@@ -266,28 +273,28 @@ write(*,*)
 write(iow,'(A85)')adjl('-----------------------------------SUMMARIZED RESULTS-----------------------------------',85)
 write(*  ,'(A85)')adjl('-----------------------------------SUMMARIZED RESULTS-----------------------------------',85)
 
-if (field_error.lt.field_error_tol) then
-    write(iow,'("Field convergence of max error",F16.9)') field_error
-    write(6  ,'("Field convergence of max error",F16.9)') field_error
+if (fieldError.lt.fieldTol) then
+    write(iow,'("Field convergence of max error",F16.9)') fieldError
+    write(6  ,'("Field convergence of max error",F16.9)') fieldError
 endif
 
-if (free_energy_error.lt.free_energy_error_tol) then
-    write(iow,'("Energy convergence of max error",F16.9)') free_energy_error
-    write(6  ,'("Energy convergence of max error",F16.9)') free_energy_error
+if (freeEnergyError.lt.freeEnergyTol) then
+    write(iow,'("Energy convergence of max error",F16.9)') freeEnergyError
+    write(6  ,'("Energy convergence of max error",F16.9)') freeEnergyError
 endif
 
-write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 free_energy
-write(6  ,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 free_energy
+write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 freeEnergy
+write(6  ,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 freeEnergy
 write(iow,'(3X,A40,E16.9)')adjl("Interface area (A2):",40),                 interf_area()
 write(6  ,'(3X,A40,E16.9)')adjl("Interface area (A2):",40),                 interf_area()
-write(iow,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), part_func
-write(6  ,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), part_func
-write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             nch_gr/interf_area()
-write(6  ,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             nch_gr/interf_area()
-write(iow,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            nch_gr
-write(6  ,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            nch_gr
-write(iow,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             nch_mx
-write(6  ,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             nch_mx
+write(iow,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), partitionMatrixChains
+write(6  ,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), partitionMatrixChains
+write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             numGraftedChains/interf_area()
+write(6  ,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             numGraftedChains/interf_area()
+write(iow,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            numGraftedChains
+write(6  ,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            numGraftedChains
+write(iow,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             numMatrixChains
+write(6  ,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             numMatrixChains
 
 t_final = tools_sys_time()
 write(6,'(3X,A40,I16)')adjl('Run duration:',40), t_final - t_init

@@ -3,7 +3,7 @@
 !See the LICENSE file in the root directory for license information.
 
 subroutine compute_phi_indiv(numnp, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, &
-     &                num_gpoints, gpid, gp_init_value, phi_gr_indiv)
+     &                targetNumGraftedChains, gpid, gp_init_value, phi_gr_indiv)
 !------------------------------------------------------------------------------------------------------!
 use geometry_mod,     only: node_belongs_to_dirichlet_face
 use write_helper_mod, only: adjl
@@ -12,16 +12,16 @@ use error_handing_mod
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-integer, intent(in)                         :: numnp, num_gpoints
-integer, intent(in), dimension(num_gpoints) :: gpid
+integer, intent(in)                         :: numnp, targetNumGraftedChains
+integer, intent(in), dimension(targetNumGraftedChains) :: gpid
 integer                                     :: ii, jj
 
-real(8), intent(in), dimension(num_gpoints)        :: gp_init_value
+real(8), intent(in), dimension(targetNumGraftedChains)        :: gp_init_value
 real(8), intent(in), dimension(numnp)              :: ww
 real(8), intent(in), dimension(ns_gr_conv+1,numnp) :: qmx_interp_mg
 real(8), intent(in), dimension(ns_gr_ed+1)         :: ds_gr_ed, xs_gr_ed
 real(8), intent(in), dimension(ns_gr_conv+1)       :: xs_gr_conv, coeff_gr_conv
-real(8), intent(out), dimension(numnp,num_gpoints) :: phi_gr_indiv
+real(8), intent(out), dimension(numnp,targetNumGraftedChains) :: phi_gr_indiv
 real(8), dimension(2,numnp)                        :: qgr
 real(8), dimension(ns_gr_ed+1,numnp)               :: qgr_final
 real(8), dimension(ns_gr_conv+1,numnp)             :: qgr_interp
@@ -30,7 +30,7 @@ write(6,'(2X,A43)')adjl("Computing indiv profiles of grafted chains.",43)
 
 call fem_matrix_assemble(Rg2_per_mon_gr, ww)
 
-do ii = 1, num_gpoints
+do ii = 1, targetNumGraftedChains
     qgr       = 0.0d0
     qgr_final = 0.0d0
 

@@ -7,7 +7,7 @@ subroutine init_delta()
 use geometry_mod,     only: numnp
 use parser_vars_mod,  only: gr_exist
 use arrays_mod,       only: phi_gr_indiv
-use iofiles_mod,      only: gp_filename
+use iofiles_mod,      only: graftFile
 use delta_mod
 use error_handing_mod
 !-----------------------------------------------------------------------------------------------------------!
@@ -18,26 +18,26 @@ integer :: i1, iog
 if (gr_exist.eq.1) then
     iog = 19
 
-    open(unit=iog, file=gp_filename)
+    open(unit=iog, file=graftFile)
 
     read(iog,*)
     read(iog,*)
     read(iog,*)
-    read(iog,*) num_gpoints
+    read(iog,*) targetNumGraftedChains
     read(iog,*)
     read(iog,*)
     read(iog,*)
     read(iog,*)
     read(iog,*)
 
-    allocate(gpid(num_gpoints), delta_numer(num_gpoints), gp_init_value(num_gpoints))
+    allocate(gpid(targetNumGraftedChains), delta_numer(targetNumGraftedChains), gp_init_value(targetNumGraftedChains))
 
     gpid          = 0
     delta_numer   = 0.0d0
     gp_init_value = 0.0d0
 
     ! Specify grafting points
-    do i1 = 1, num_gpoints
+    do i1 = 1, targetNumGraftedChains
         read(iog,*) gpid(i1), gp_init_value(i1), delta_numer(i1)
 
         if (gpid(i1) > numnp) then
@@ -48,10 +48,10 @@ if (gr_exist.eq.1) then
 
     close(iog)
 else
-    num_gpoints   = 0
-    allocate(gpid(num_gpoints))
+    targetNumGraftedChains = 0
+    allocate(gpid(targetNumGraftedChains))
 endif
 
-allocate(phi_gr_indiv(numnp,num_gpoints))
+allocate(phi_gr_indiv(numnp,targetNumGraftedChains))
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine init_delta
