@@ -87,6 +87,7 @@ OBJECTS=$(OBJDIR)/compute_contour_coeffs.o\
 	$(OBJDIR)/export_phi_nodal.o\
         $(OBJDIR)/export_phi_smeared.o\
 	$(OBJDIR)/export_propagator.o\
+	$(OBJDIR)/export_vtu.o\
 	$(OBJDIR)/fem_apply_periodic_bcs.o\
 	$(OBJDIR)/fem_bcs_and_nonzeros.o\
 	$(OBJDIR)/fem_gausspoints.o\

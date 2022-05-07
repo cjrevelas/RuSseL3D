@@ -46,32 +46,32 @@ call MPI_COMM_SIZE(MPI_COMM_WORLD, n_proc, ierr)
 call MPI_COMM_RANK(MPI_COMM_WORLD, my_id, ierr)
 
 if (my_id==0) then
-    root = .true.
+  root = .true.
 else
-    root = .false.
+  root = .false.
 endif
 
 if (root) then
-    write (6,*)
-    write (6,'("MPI run with ",I4," procs")') n_proc
-    write (6,*)
+  write (6,*)
+  write (6,'("MPI run with ",I4," procs")') n_proc
+  write (6,*)
 endif
 
 flag_continue = .true.
 
 ! The slave processes will enter the mumps subroutine until they receive a stop signal from master proc
 if (.not.root) then
-    ! Receive the matrix type from root
-    call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
-    do while (.true.)
-        call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-        if (flag_continue) then
-            call solver_mumps(mumps_matrix_type)
-        else
-            exit
-        endif
-    end do
-    goto 1000
+  ! Receive the matrix type from root
+  call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
+  do while (.true.)
+    call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+    if (flag_continue) then
+      call solver_mumps(mumps_matrix_type)
+    else
+      exit
+    endif
+  end do
+  goto 1000
 endif
 #endif
 
@@ -89,8 +89,9 @@ call parser_input
 call parser_mesh
 call init_arrays
 
+
 do ii = 1, numnp
-   call compute_node_volume(volnp(ii), ii)
+  call compute_node_volume(volnp(ii), ii)
 enddo
 
 allocate(dphi2_dr2(numnp))
@@ -104,21 +105,21 @@ call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 #endif
 
 if (mx_exist.eq.1) then
-    call init_chain_contour(contour_discr_mx, chainlen_mx_max, xs_crit_mx, ns_mx_ed, ds_ave_mx_ed, ds_mx_ed, xs_mx_ed, coeff_mx_ed)
-    if (contour_discr_mx.ne.contour_uniform) then
-        call init_chain_contour(contour_symm, chainlen_mx, xs_crit_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
-    else
-        call init_chain_contour(contour_discr_mx, chainlen_mx, xs_crit_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
-    endif
+  call init_chain_contour(contour_discr_mx, chainlen_mx_max, xs_crit_mx, ns_mx_ed, ds_ave_mx_ed, ds_mx_ed, xs_mx_ed, coeff_mx_ed)
+  if (contour_discr_mx.ne.contour_uniform) then
+    call init_chain_contour(contour_symm, chainlen_mx, xs_crit_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+  else
+    call init_chain_contour(contour_discr_mx, chainlen_mx, xs_crit_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+  endif
 endif
 
 if (gr_exist.eq.1) then
-    call init_chain_contour(contour_discr_gr, chainlen_gr, xs_crit_gr, ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, coeff_gr_ed)
-    if (contour_discr_gr.ne.contour_uniform) then
-        call init_chain_contour(contour_symm, chainlen_gr, xs_crit_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
-    else
-        call init_chain_contour(contour_discr_gr, chainlen_gr, xs_crit_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
-    endif
+  call init_chain_contour(contour_discr_gr, chainlen_gr, xs_crit_gr, ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, coeff_gr_ed)
+  if (contour_discr_gr.ne.contour_uniform) then
+    call init_chain_contour(contour_symm, chainlen_gr, xs_crit_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
+  else
+    call init_chain_contour(contour_discr_gr, chainlen_gr, xs_crit_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
+  endif
 endif
 
 call init_field(Ufield, ww)
@@ -171,7 +172,7 @@ do iter = init_iter, iterations-1
 
             do ii = 1, targetNumGraftedChains
                 gnode_id = gpid(ii)
-                gp_init_value(ii) = delta_numer(ii) * chainlen_gr * 1.0d0 / (qmx_interp_mg(ns_gr_conv+1,gnode_id) * (rho_mol_bulk * n_avog))
+                gp_init_value(ii) = delta_numer(ii) * chainlen_gr * 1.0d0 / (qmx_interp_mg(ns_gr_conv+1,gnode_id) * (molarBulkDensity * n_avog))
             enddo
         endif
 
@@ -213,12 +214,12 @@ do iter = init_iter, iterations-1
     enddo
 
     if (mx_exist.eq.1) call compute_part_func_mx(numnp, ns_mx_conv, qmx_interp_mm, partitionMatrixChains)
-    if (mx_exist.eq.1) call compute_number_of_chains(numnp, chainlen_mx, rho_mol_bulk, phi_mx, numMatrixChains)
-    if (gr_exist.eq.1) call compute_number_of_chains(numnp, chainlen_gr, rho_mol_bulk, phi_gr, numGraftedChains)
+    if (mx_exist.eq.1) call compute_number_of_chains(numnp, chainlen_mx, molarBulkDensity, phi_mx, numMatrixChains)
+    if (gr_exist.eq.1) call compute_number_of_chains(numnp, chainlen_gr, molarBulkDensity, phi_gr, numGraftedChains)
 
     do kk = 1, numnp
-        ww_new(kk) = (eos_df_drho(phi_total(kk)) - eos_df_drho(1.0d0)) / (boltz_const_Joule_K*Temp) - &
-                   & k_gr * (rho_seg_bulk * dphi2_dr2(kk)) / (boltz_const_Joule_K * Temp) + Ufield(kk)
+        ww_new(kk) = (eos_df_drho(phi_total(kk)) - eos_df_drho(1.0d0)) / (boltz_const_Joule_K*temperature) - &
+                   & k_gr * (segmentBulkDensity * dphi2_dr2(kk)) / (boltz_const_Joule_K * temperature) + Ufield(kk)
     enddo
 
     fieldError    = 0.0d0
@@ -226,9 +227,9 @@ do iter = init_iter, iterations-1
     fieldMaximum  = 0.0d0
 
     do kk = 1, numnp
-        fieldError   = MAX(fieldError,DABS(ww_new(kk) - ww(kk)))
+        fieldError    = MAX(fieldError,DABS(ww_new(kk) - ww(kk)))
         fieldStdError = fieldStdError + (ww_new(kk) - ww(kk))**2.0d0
-        fieldMaximum       = MAX(fieldMaximum, ww_new(kk))
+        fieldMaximum  = MAX(fieldMaximum, ww_new(kk))
     enddo
 
     fieldStdError = SQRT(fieldStdError / FLOAT((numnp - 1)))
@@ -258,6 +259,8 @@ do iter = init_iter, iterations-1
     if ((MOD(iter,1).eq.0).OR.convergence) call export_energies(qmx_interp_mg, qgr_interp, phi_total, ww_new, Ufield, partitionMatrixChains, targetNumGraftedChains, gpid, freeEnergy)
 
     call export_computes(iter, convergence)
+
+    call export_vtu(phi_mx)
 
     if (convergence) exit
 enddo
@@ -312,8 +315,8 @@ end if
 ! Deallocate all remaining dynamic memory
 deallocate(xc)
 deallocate(dphi2_dr2, d2phi_dr2)
-if (num_of_dirichlet_faces > 0)    deallocate(ids_dirichlet_faces, A_plate, sigma_plate)
-if (num_of_nanoparticle_faces > 0) deallocate(ids_nanopart_faces, A_np, sigma_np, radius_np_eff, center_np)
+if (numDirichletFaces > 0)    deallocate(ids_dirichlet_faces, A_plate, sigma_plate)
+if (numNanoparticleFaces > 0) deallocate(ids_nanopart_faces, A_np, sigma_np, radius_np_eff, center_np)
 deallocate(num_of_elems_of_node)
 deallocate(global_node_id_type_domain)
 deallocate(ds_mx_ed, xs_mx_ed, coeff_mx_ed)
