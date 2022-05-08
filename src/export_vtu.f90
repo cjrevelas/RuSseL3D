@@ -1,12 +1,14 @@
 subroutine export_vtu(uu)
 !----------------------------------------------------------------------------------------------------------------------------------!
-use geometry_mod, only: xc, numnp, numel, ndm
+use geometry_mod, only: xc, numnp, numel, ndm, nel, global_node_id_type_domain
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
 real(8), intent(in), dimension(numnp) :: uu
 
+integer, allocatable, dimension(:) :: offset
 integer :: ii, jj
+integer :: vtu_tet_type = 10
 
 character(len=38) :: line1  = '<?xml version="1.0" encoding="UTF-8"?>'
 character(len=73) :: line2  = '<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">'
@@ -37,13 +39,33 @@ write(1111,'(A11)') "<CellData/>"
 write(1111,'(A8)') "<Points>"
 write(1111,'(A64)') line5
 do ii = 1, numnp
-    write(1111,'(3(F19.15,1X))') (xc(jj,ii), jj = 1, ndm)
+  write(1111,'(3(F19.15,1X))') (xc(jj,ii), jj = 1, ndm)
 enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,'(A9)') "</Points>"
 write(1111,*)
+write(1111,'(A7)') "<Cells>"
 write(1111,'(A59)') line6
+do ii = 1, numel
+  write(1111,'(4(I5,1X))') (global_node_id_type_domain(jj,ii) - 1, jj = 1, nel)
+enddo
+write(1111,'(A12)') "</DataArray>"
+write(1111,*)
 write(1111,'(A54)') line7
+allocate(offset(numel))
+offset = 0
+jj     = 0
+do ii = 1, numel
+  jj = jj + nel
+  offset(ii) = jj
+enddo
+do ii = 0, numel-nel, nel
+  write(1111,'(4(I5,1X))') (offset(ii+jj), jj = 1, nel)
+enddo
+deallocate(offset)
+write(1111,*)
+write(1111,'(A12)') "</DataArray>"
+write(1111,*)
 write(1111,'(A52)') line8
 close(1111)
 
