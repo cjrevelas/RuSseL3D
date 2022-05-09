@@ -4,8 +4,9 @@
 
 subroutine solver_mumps(mumps_matrix_type)
 !--------------------------------------------------------------------------!
-use kcw_mod,          only: A_m, rdiag1, NNZ
-use geometry_mod,     only: numnp
+use kcw_mod,      only: A_m, rdiag1, NNZ
+use geometry_mod, only: numnp
+use flags_mod,    only: mumps_asymm, mumps_posDef, mumps_genSymm
 use error_handing_mod
 #ifdef USEMPI
 use mpistuff
@@ -28,12 +29,12 @@ mumps_par%COMM = MPI_COMM_WORLD
 mumps_par%PAR  = 1  !working host processor
 
 ! Set the type of the matrix
-if (mumps_matrix_type.eq.0) then
-    mumps_par%SYM  = 0
-elseif (mumps_matrix_type.eq.1) then
+if (mumps_matrix_type.eq.mumps_asymm) then
+    mumps_par%SYM = 0
+elseif (mumps_matrix_type.eq.mumps_posDef) then
     mumps_par%SYM       = 1
     mumps_par%ICNTL(13) = 0
-elseif (mumps_matrix_type.eq.2) then
+elseif (mumps_matrix_type.eq.mumps_genSymm) then
     mumps_par%SYM     = 2
     mumps_par%CNTL(1) = 0
 else

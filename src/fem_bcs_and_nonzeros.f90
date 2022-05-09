@@ -9,6 +9,7 @@ use geometry_mod,    only: total_num_of_node_pairs, nel, numel, numnp, node_pair
 &                          node_pairing_yy_hash, node_pairing_zz_hash
 use constants_mod,   only: tol
 use parser_vars_mod, only: periodic_axis_id
+use flags_mod,       only: mumps_asymm, mumps_posDef, mumps_genSymm
 
 !#define PRINT_AFULL
 #ifdef PRINT_AFULL
@@ -41,7 +42,7 @@ if (periodic_axis_id(3)) call fem_apply_periodic_bcs(node_pairing_zz_hash)
 ! TODO: needs generalization to nonzero values
 ! In case the matrix is symmetric, remove the zero lines and rows diagonal componets with Dirichlet BC q=0.
 set_diag_to_one=.true.
-if ((mumps_matrix_type.eq.1).or.(mumps_matrix_type.eq.2)) then
+if ((mumps_matrix_type.eq.mumps_posDef).or.(mumps_matrix_type.eq.mumps_genSymm)) then
     do kk = 1, total_num_of_node_pairs
         if (F_m%is_zero(kk)) cycle
         if (F_m%row(kk)==0)  cycle
@@ -61,7 +62,7 @@ if ((mumps_matrix_type.eq.1).or.(mumps_matrix_type.eq.2)) then
     enddo
 endif
 
-if (mumps_matrix_type.eq.0) then
+if (mumps_matrix_type.eq.mumps_asymm) then
     do kk = 1, total_num_of_node_pairs
         if (F_m%is_zero(kk)) cycle
 

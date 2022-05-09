@@ -1,5 +1,7 @@
 module defaults_mod
 !----------------------------------------------------------------------------------------------------------------------------!
+use flags_mod, only: mumps_asymm
+!----------------------------------------------------------------------------------------------------------------------------!
 character(len=15), parameter :: dflt_inputFile = "./in.input"
 character(len=15), parameter :: dflt_meshFile  = "./in.mesh"
 character(len=15), parameter :: dflt_graftFile = "./in.gnodes"
@@ -22,7 +24,7 @@ integer, parameter :: dflt_init_iter                   = 0
 integer, parameter :: dflt_mx_exist                    = 0
 integer, parameter :: dflt_gr_exist                    = 0
 integer, parameter :: dflt_prof_dim                    = 3
-integer, parameter :: dflt_mumps_matrix_type           = 0
+integer, parameter :: dflt_mumps_matrix_type           = mumps_asymm
 integer, parameter :: dflt_export_phi_gen_freq         = 1
 integer, parameter :: dflt_export_phi_indiv_freq       = 0
 integer, parameter :: dflt_export_field_freq           = 1

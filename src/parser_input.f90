@@ -815,13 +815,13 @@ endif
 
 
 if (log_mumps_matrix_type) then
-    if (mumps_matrix_type == 0) then
+    if (mumps_matrix_type == mumps_asymm) then
         write(iow,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40), "nonsymmetric (", mumps_matrix_type, ")"
         write(6  ,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40), "nonsymmetric (", mumps_matrix_type, ")"
-    elseif (mumps_matrix_type == 1) then
+    elseif (mumps_matrix_type == mumps_posDef) then
         write(iow,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40), "symmetric pos. def. (", mumps_matrix_type, ")"
         write(6  ,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40), "symmetric pos. def. (", mumps_matrix_type, ")"
-    elseif (mumps_matrix_type == 2) then
+    elseif (mumps_matrix_type == mumps_genSymm) then
         write(iow,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40), "general symmetric(", mumps_matrix_type, ")"
         write(6  ,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40), "general symmetric(", mumps_matrix_type, ")"
     else
