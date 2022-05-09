@@ -8,15 +8,15 @@ real(8), intent(in), dimension(numnp) :: uu
 
 integer, allocatable, dimension(:) :: offset
 integer :: ii, jj
-integer :: vtu_tet_type = 10
+integer :: vtuTetType = 10
 
 character(len=38) :: line1  = '<?xml version="1.0" encoding="UTF-8"?>'
-character(len=73) :: line2  = '<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">'
+character(len=74) :: line2  = '<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">'
 character(len=23) :: line3a = '<Piece NumberOfPoints="'
 character(len=17) :: line3b = '" NumberOfCells="'
 character(len=2)  :: line3c = '">'
 character(len=69) :: line4  = '<DataArray type="Float64" Name="Dependent_variable_u" Format="ascii">'
-character(len=64) :: line5  = '<DataArray type="Float64" NumberOfComponents="3" Format="ascii">'
+character(len=64) :: line5  = '<DataArray type="Float64" NumberOfComponelts="3" Format="ascii">'
 character(len=59) :: line6  = '<DataArray type="Int32" Name="connectivity" Format="ascii">'
 character(len=54) :: line7  = '<DataArray type="Int32" Name="offsets" Format="ascii">'
 character(len=52) :: line8  = '<DataArray type="UInt8" Name="types" Format="ascii">'
@@ -63,10 +63,20 @@ do ii = 0, numel-nel, nel
   write(1111,'(4(I5,1X))') (offset(ii+jj), jj = 1, nel)
 enddo
 deallocate(offset)
-write(1111,*)
 write(1111,'(A12)') "</DataArray>"
 write(1111,*)
 write(1111,'(A52)') line8
+!add tet types
+do ii = 0, numel-nel*nel, nel*nel
+  write(1111,'(16(I2,1X))') (vtuTetType, jj = 1, nel*nel)
+enddo
+write(1111,'(9(I2,1X))') (vtuTetType, jj = 1, MOD(numel,nel*nel))
+write(1111,'(A12)') "</DataArray>"
+write(1111,'(A8)') "</Cells>"
+write(1111,*)
+write(1111,'(A8)') "</Piece>"
+write(1111,'(A19)') "</UnstructuredGrid>"
+write(1111,'(A10)') "</VTKFile>"
 close(1111)
 
 return
