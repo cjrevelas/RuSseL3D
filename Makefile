@@ -47,8 +47,8 @@ RUNDIR=run
 
 MODULES=$(OBJDIR)/parser_vars_mod.o\
 	$(OBJDIR)/constants_mod.o\
-	$(OBJDIR)/defaults_mod.o\
         $(OBJDIR)/flags_mod.o\
+	$(OBJDIR)/defaults_mod.o\
         $(OBJDIR)/eos_mod.o\
 	$(OBJDIR)/kcw_mod.o\
 	$(OBJDIR)/fhash_mod.o\
