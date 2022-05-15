@@ -10,9 +10,9 @@ use ints_module
 use error_handing_mod
 use write_helper_mod, only: adjl
 use parser_vars_mod,  only: iow, periodicAxisId, domainIsPeriodic
-use geometry_mod,     only: nel, num_of_elems_of_node, box_lo, box_hi, box_len,           &
+use geometry_mod,     only: nel, num_of_elems_of_node, boxLow, boxHigh, boxLength,           &
 &                       xc, numnp, numel, global_node_id_type_domain,                     &
-&                       ndm, node_pair_id, num_of_bulk_pairs, total_num_of_node_pairs,    &
+&                       ndm, node_pair_id, numBulkNodePairs, numTotalNodePairs,    &
 &                       node_pairing_xx_hash, node_pairing_yy_hash, node_pairing_zz_hash, &
 &                       num_dest_xx_neighbors, num_dest_yy_neighbors,                     &
 &                       num_dest_zz_neighbors, nen_type_face, numel_type_face
@@ -64,16 +64,16 @@ do
             read(line,*) numnp
             allocate(xc(ndm,numnp))
         elseif (INDEX(line,"# Mesh point coordinates")>0) then
-            box_lo  = 0.0d0
-            box_hi  = 0.0d0
-            box_len = 0.0d0
+            boxLow    = 0.0d0
+            boxHigh   = 0.0d0
+            boxLength = 0.0d0
 
             do ii = 1, numnp
                 read(12,*) (xc(jj,ii), jj = 1, ndm)
 
                 do jj = 1, ndm
-                    box_hi(jj) = max(xc(jj,ii), box_hi(jj))
-                    box_lo(jj) = min(xc(jj,ii), box_lo(jj))
+                    boxHigh(jj) = max(xc(jj,ii), boxHigh(jj))
+                    boxLow(jj)  = min(xc(jj,ii), boxLow(jj))
                 enddo
             enddo
 
@@ -83,15 +83,15 @@ do
             write(iow,'(A6,A13,A17,A18)') "dim", "box_length", "box_min", "box_max"
             write(6  ,'(A6,A13,A17,A18)') "dim", "box_length", "box_min", "box_max"
             do jj = 1, ndm
-                box_len(jj) = box_hi(jj) - box_lo(jj)
-                write(iow,'(I5,2X,3(E16.9,2X))') jj, box_len(jj), box_lo(jj), box_hi(jj)
-                write(6  ,'(I5,2X,3(E16.9,2X))') jj, box_len(jj), box_lo(jj), box_hi(jj)
+                boxLength(jj) = boxHigh(jj) - boxLow(jj)
+                write(iow,'(I5,2X,3(E16.9,2X))') jj, boxLength(jj), boxLow(jj), boxHigh(jj)
+                write(6  ,'(I5,2X,3(E16.9,2X))') jj, boxLength(jj), boxLow(jj), boxHigh(jj)
             enddo
 
             write(6,*)
             write(iow,*)
 
-            box_volume = box_len(1) * box_len(2) * box_len(3)
+            box_volume = boxLength(1) * boxLength(2) * boxLength(3)
             write(iow,'(3X,A40,E16.9,A13)')adjl("Box volume:",40), box_volume, " [Angstrom^3]"
             write(6  ,'(3X,A40,E16.9,A13)')adjl("Box volume:",40), box_volume, " [Angstrom^3]"
         elseif (INDEX(line,"3 vtx # type name")>0) then
@@ -197,18 +197,18 @@ do
             read(12,*) numel
             read(12,*)
 
-            num_of_bulk_pairs = nel * nel * numel
+            numBulkNodePairs = nel * nel * numel
 
             write(iow,*)
             write(*,*)
             write(iow,'(3X,"Number of mesh points (numnp):         ",I16)') numnp
             write(iow,'(3X,"Number of elements (numel):            ",I16)') numel
             write(iow,'(3X,"Number of nodes per element (nel):     ",I16)') nel
-            write(iow,'(3X,"Number of matrix indeces:              ",I16)') num_of_bulk_pairs
+            write(iow,'(3X,"Number of matrix indeces:              ",I16)') numBulkNodePairs
             write(6,'(3X,"Number of mesh points (numnp):         ",I16)') numnp
             write(6,'(3X,"Number of elements (numel):            ",I16)') numel
             write(6,'(3X,"Number of nodes per element (nel):     ",I16)') nel
-            write(6,'(3X,"Number of matrix indeces:              ",I16)') num_of_bulk_pairs
+            write(6,'(3X,"Number of matrix indeces:              ",I16)') numBulkNodePairs
 
             allocate(global_node_id_type_domain(nel,numel))
             do ii = 1, numel
@@ -312,20 +312,20 @@ if (periodicAxisId(1)) call mesh_periodic_neighbors(node_pairing_xx_hash, num_de
 if (periodicAxisId(2)) call mesh_periodic_neighbors(node_pairing_yy_hash, num_dest_yy_neighbors)
 if (periodicAxisId(3)) call mesh_periodic_neighbors(node_pairing_zz_hash, num_dest_zz_neighbors)
 
-total_num_of_node_pairs = num_of_bulk_pairs
+numTotalNodePairs = numBulkNodePairs
 
-if (periodicAxisId(1)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_xx_hash%key_count() + num_dest_xx_neighbors)
-if (periodicAxisId(2)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_yy_hash%key_count() + num_dest_yy_neighbors)
-if (periodicAxisId(3)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_zz_hash%key_count() + num_dest_zz_neighbors)
+if (periodicAxisId(1)) numTotalNodePairs = numTotalNodePairs + 2 * (node_pairing_xx_hash%key_count() + num_dest_xx_neighbors)
+if (periodicAxisId(2)) numTotalNodePairs = numTotalNodePairs + 2 * (node_pairing_yy_hash%key_count() + num_dest_yy_neighbors)
+if (periodicAxisId(3)) numTotalNodePairs = numTotalNodePairs + 2 * (node_pairing_zz_hash%key_count() + num_dest_zz_neighbors)
 
-allocate(F_m%row(total_num_of_node_pairs))
-allocate(F_m%col(total_num_of_node_pairs))
-allocate(F_m%g(total_num_of_node_pairs))
-allocate(F_m%rh(total_num_of_node_pairs))
-allocate(F_m%c(total_num_of_node_pairs))
-allocate(F_m%k(total_num_of_node_pairs))
-allocate(F_m%w(total_num_of_node_pairs))
-allocate(F_m%is_zero(total_num_of_node_pairs))
+allocate(F_m%row(numTotalNodePairs))
+allocate(F_m%col(numTotalNodePairs))
+allocate(F_m%g(numTotalNodePairs))
+allocate(F_m%rh(numTotalNodePairs))
+allocate(F_m%c(numTotalNodePairs))
+allocate(F_m%k(numTotalNodePairs))
+allocate(F_m%w(numTotalNodePairs))
+allocate(F_m%is_zero(numTotalNodePairs))
 
 F_m%g       = 0.0d0
 F_m%k       = 0.0d0
@@ -338,12 +338,12 @@ F_m%is_zero = .True.
 call mesh_bulk_node_pairs(elemcon)
 
 ! xx pairs
-starting_pair = num_of_bulk_pairs + 1
-ending_pair   = num_of_bulk_pairs + node_pairing_xx_hash%key_count()
+starting_pair = numBulkNodePairs + 1
+ending_pair   = numBulkNodePairs + node_pairing_xx_hash%key_count()
 
 if (periodicAxisId(1)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_xx_hash)
 
-do ii = 1, num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count()
+do ii = 1, numBulkNodePairs + 2*node_pairing_xx_hash%key_count()
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
 
@@ -351,19 +351,19 @@ enddo
 forward_steps = 0
 if (periodicAxisId(1)) call mesh_append_dest_neighbors(elemcon, forward_steps, num_dest_xx_neighbors, node_pairing_xx_hash)
 
-do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 1, &
-&       num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors
+do ii = numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 1, &
+&       numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
 
 ! yy pairs
-starting_pair = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 1
-ending_pair   = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + node_pairing_yy_hash%key_count()
+starting_pair = numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 1
+ending_pair   = numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + node_pairing_yy_hash%key_count()
 
 if (periodicAxisId(2)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_yy_hash)
 
-do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 1, &
-&       num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count()
+do ii = numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 1, &
+&       numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count()
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
 
@@ -371,22 +371,22 @@ enddo
 forward_steps = 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors
 if (periodicAxisId(2)) call mesh_append_dest_neighbors(elemcon, forward_steps, num_dest_yy_neighbors, node_pairing_yy_hash)
 
-do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + 1, &
-&       num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors
+do ii = numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + 1, &
+&       numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
 
 ! zz pairs
-starting_pair = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
+starting_pair = numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
               &                     2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors + 1
-ending_pair   = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
+ending_pair   = numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
               &                     2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors + node_pairing_zz_hash%key_count()
 
 if (periodicAxisId(3)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_zz_hash)
 
-do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
+do ii = numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
       &                     2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors + 1, &
-      & num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
+      & numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
       &                     2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors + 2*node_pairing_zz_hash%key_count()
     F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
@@ -395,9 +395,9 @@ enddo
 forward_steps = 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors
 if (periodicAxisId(3)) call mesh_append_dest_neighbors(elemcon, forward_steps, num_dest_zz_neighbors, node_pairing_zz_hash)
 
-do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
+do ii = numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
       &                     2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors + 2*node_pairing_zz_hash%key_count() + 1, &
-        num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
+        numBulkNodePairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
       &                     2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors + 2*node_pairing_zz_hash%key_count() + 2*num_dest_zz_neighbors
     F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
 enddo
@@ -408,7 +408,7 @@ call mesh_dirichlet_faces(numel_type_face, nen_type_face, global_node_id_type_fa
 
 #ifdef DEBUG_OUTPUTS
 open(unit=77, file = com_12)
-do ii = 1, total_num_of_node_pairs
+do ii = 1, numTotalNodePairs
      write(77,'(4(2X,I9),2X,L9)') ii, F_m%row(ii), F_m%col(ii), node_pair_id(ii), F_m%is_zero(ii)
 enddo
 close(77)

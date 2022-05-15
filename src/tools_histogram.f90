@@ -5,7 +5,7 @@
 subroutine tools_histogram(upd_lbin, volnp)
 !-----------------------------------------------------------------------------------------------------------!
 use hist_mod
-use geometry_mod,    only: numnp, box_len, is_dirichlet_face, box_lo, box_hi, xc
+use geometry_mod,    only: numnp, boxLength, isDirichletFace, boxLow, boxHigh, xc
 use parser_vars_mod, only: numNanoparticleFaces, wall_distance, center_np, radius_np_eff
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
@@ -17,7 +17,7 @@ real(8), intent(in), dimension(numnp) :: volnp
 real(8)                               :: r_center_surf, r_centers, radius_np_actual, Rmax
 !-----------------------------------------------------------------------------------------------------------!
 lbin = upd_lbin
-Rmax = SQRT(box_len(1)**2.0d0 + box_len(2)**2.0d0 + box_len(3)**2.0d0)
+Rmax = SQRT(boxLength(1)**2.0d0 + boxLength(2)**2.0d0 + boxLength(3)**2.0d0)
 nbin = INT(Rmax / lbin) + 1
 
 if (ALLOCATED(planar_cell_of_np)) deallocate(planar_cell_of_np)
@@ -44,35 +44,35 @@ r_center_surf     = 0.0d0
 
 ! Binning in planar geometries
 do mm = 1, 3
-    do nn = 1, 2
-        if (is_dirichlet_face(mm,nn)) then
-            do kk = 1, numnp
-                if (nn.eq.1) then
-                    r_center_surf = xc(mm,kk) - box_lo(mm) + wall_distance
-                elseif (nn.eq.2) then
-                    r_center_surf = box_hi(mm) - xc(mm,kk) + wall_distance
-                endif
-                bin                         = INT(r_center_surf/lbin)+1
-                planar_cell_of_np(kk,mm,nn) = bin
-                cell_vol_planar(bin,mm,nn)  = cell_vol_planar(bin,mm,nn) + volnp(kk)
-                dist_from_face(kk,mm,nn)    = r_center_surf
-            enddo
+  do nn = 1, 2
+    if (isDirichletFace(mm,nn)) then
+      do kk = 1, numnp
+        if (nn.eq.1) then
+          r_center_surf = xc(mm,kk) - boxLow(mm) + wall_distance
+        elseif (nn.eq.2) then
+          r_center_surf = boxHigh(mm) - xc(mm,kk) + wall_distance
         endif
-    enddo
+        bin                         = INT(r_center_surf/lbin)+1
+        planar_cell_of_np(kk,mm,nn) = bin
+        cell_vol_planar(bin,mm,nn)  = cell_vol_planar(bin,mm,nn) + volnp(kk)
+        dist_from_face(kk,mm,nn)    = r_center_surf
+      enddo
+    endif
+  enddo
 enddo
 
 ! Binning in spherical geometries
 do mm = 1, numNanoparticleFaces
-    do kk = 1, numnp
-        r_centers             = DSQRT((xc(1,kk)-center_np(1,mm))**2.0d0 + (xc(2,kk)-center_np(2,mm))**2.0d0 &
-&                                                                       + (xc(3,kk)-center_np(3,mm))**2.0d0)
-        radius_np_actual      = radius_np_eff(mm) - wall_distance
-        r_center_surf         = r_centers - radius_np_actual
-        bin                   = INT(r_center_surf/lbin)+1
-        sph_cell_of_np(mm,kk) = bin
-        cell_vol_sph(mm,bin)  = cell_vol_sph(mm,bin) + volnp(kk)
-        dist_from_np(mm,kk)   = r_center_surf
-    enddo
+  do kk = 1, numnp
+    r_centers             = DSQRT((xc(1,kk)-center_np(1,mm))**2.0d0 + (xc(2,kk)-center_np(2,mm))**2.0d0 &
+&                                                                   + (xc(3,kk)-center_np(3,mm))**2.0d0)
+    radius_np_actual      = radius_np_eff(mm) - wall_distance
+    r_center_surf         = r_centers - radius_np_actual
+    bin                   = INT(r_center_surf/lbin)+1
+    sph_cell_of_np(mm,kk) = bin
+    cell_vol_sph(mm,bin)  = cell_vol_sph(mm,bin) + volnp(kk)
+    dist_from_np(mm,kk)   = r_center_surf
+  enddo
 enddo
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine tools_histogram

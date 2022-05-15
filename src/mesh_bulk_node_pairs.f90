@@ -7,7 +7,7 @@ subroutine mesh_bulk_node_pairs(elemcon)
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
-use geometry_mod, only: nel, numel, total_num_of_node_pairs, node_pair_id, global_node_id_type_domain
+use geometry_mod, only: nel, numel, numTotalNodePairs, node_pair_id, global_node_id_type_domain
 use kcw_mod,      only: F_m
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
@@ -21,7 +21,7 @@ integer                       :: elemcon_num_of_keys, elemcon_value
 integer :: ii, jj, mm
 integer :: node_pair
 !----------------------------------------------------------------------------------------------------------------------------------!
-allocate(node_pair_id(total_num_of_node_pairs))
+allocate(node_pair_id(numTotalNodePairs))
 node_pair_id = 0
 
 ! Assembly the node_pair_id (hash) matrix

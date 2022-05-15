@@ -8,7 +8,7 @@ use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use kcw_mod,      only: F_m
-use geometry_mod, only: node_pair_id, num_of_bulk_pairs
+use geometry_mod, only: node_pair_id, numBulkNodePairs
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -40,14 +40,14 @@ do kk = 1, node_pairing_hash%key_count()
     source = node_pairing_key%ints(1)
     dest   = node_pairing_value
 
-    do node_pair = 1, num_of_bulk_pairs + forward_steps
+    do node_pair = 1, numBulkNodePairs + forward_steps
         if ((F_m%col(node_pair)==dest).and.(F_m%row(node_pair).ne.dest)) then
 
             if (F_m%is_zero(node_pair)) cycle
 
             aux = aux + 1
 
-            pp = num_of_bulk_pairs + forward_steps + 2*node_pairing_hash%key_count() + aux
+            pp = numBulkNodePairs + forward_steps + 2*node_pairing_hash%key_count() + aux
 
             ! Append pair
             F_m%row(pp) = source

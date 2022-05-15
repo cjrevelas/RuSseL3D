@@ -10,7 +10,7 @@ character(len=15), parameter :: dflt_fieldFile = "./in.field.bin"
 real(8), parameter :: dflt_ads_distance             = 1.2d1
 real(8), parameter :: dflt_numGraftedChainsTol      = 5.0d-3
 real(8), parameter :: dflt_r_gpoint                 = 4.0d-1
-real(8), parameter :: dflt_binThickness            = 5.0d-1
+real(8), parameter :: dflt_binThickness             = 5.0d-1
 real(8), parameter :: dflt_fraction                 = 1.0d0
 real(8), parameter :: dflt_fieldTol                 = 5.0d-1
 real(8), parameter :: dflt_freeEnergyTol            = 1.0d-6

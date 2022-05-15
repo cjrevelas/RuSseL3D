@@ -13,13 +13,13 @@ use constants_mod,   only: pi
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
 integer                              :: nel, ndm, numnp, numel, nen_type_face, numel_type_face
-integer                              :: num_of_bulk_pairs, total_num_of_node_pairs
+integer                              :: numBulkNodePairs, numTotalNodePairs
 integer                              :: num_dest_xx_neighbors, num_dest_yy_neighbors, num_dest_zz_neighbors
 integer, allocatable, dimension(:)   :: node_pair_id, num_of_elems_of_node
 integer, allocatable, dimension(:,:) :: global_node_id_type_domain, el_node
 
-logical, dimension(3,2)            :: is_dirichlet_face
-logical, allocatable, dimension(:) :: node_belongs_to_dirichlet_face
+logical, dimension(3,2)            :: isDirichletFace
+logical, allocatable, dimension(:) :: nodeBelongsToDirichletFace
 
 type(fhash_type__ints_double)          :: node_pairing_xx_hash, node_pairing_yy_hash, node_pairing_zz_hash, node_pairing_all_hash
 type(fhash_type_iterator__ints_double) :: node_pairing_xx_it, node_pairing_yy_it, node_pairing_zz_it, node_pairing_all_it
@@ -27,7 +27,7 @@ type(ints_type)                        :: node_pairing_xx_key, node_pairing_yy_k
 integer                                :: node_pairing_xx_value, node_pairing_yy_value, node_pairing_zz_value, node_pairing_all_value
 
 real(8), allocatable, dimension(:,:) :: xc
-real(8), dimension(3)                :: box_lo, box_hi, box_len
+real(8), dimension(3)                :: boxLow, boxHigh, boxLength
 real(8), parameter                   :: dx = 1.0d-1
 real(8), parameter                   :: dy = 1.0d-1
 real(8), parameter                   :: dz = 1.0d-1
@@ -35,23 +35,23 @@ real(8), parameter                   :: dz = 1.0d-1
   contains
 
     real(8) function interf_area()
-        integer :: ii, mm, nn
+      integer :: ii, mm, nn
 
-        interf_area = 0.0d0
+      interf_area = 0.0d0
 
-        do mm = 1, 3
-            do nn = 1, 2
-                if (is_dirichlet_face(mm,nn)) then
-                    interf_area = interf_area + DABS((box_hi(1)-box_lo(1))*(box_hi(2)-box_lo(2)))
-                endif
-            enddo
+      do mm = 1, 3
+        do nn = 1, 2
+          if (isDirichletFace(mm,nn)) then
+            interf_area = interf_area + DABS((boxHigh(1)-boxLow(1))*(boxHigh(2)-boxLow(2)))
+          endif
         enddo
+      enddo
 
-        do ii = 1, numNanoparticleFaces
-            interf_area = interf_area + 4.0d0*pi*(radius_np_eff(ii)-wall_distance)**2.0d0
-        enddo
+      do ii = 1, numNanoparticleFaces
+        interf_area = interf_area + 4.0d0*pi*(radius_np_eff(ii)-wall_distance)**2.0d0
+      enddo
 
-        return
+      return
     end function interf_area
 !----------------------------------------------------------------------------------------------------------------------------!
 end module geometry_mod

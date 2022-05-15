@@ -8,7 +8,7 @@ use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use parser_vars_mod, only: numDirichletFaces, numNanoparticleFaces, dirichletFaceId, nanoparticleFaceId
-use geometry_mod,    only: ndm, node_belongs_to_dirichlet_face, numnp, is_dirichlet_face, box_lo, box_hi, xc
+use geometry_mod,    only: ndm, nodeBelongsToDirichletFace, numnp, isDirichletFace, boxLow, boxHigh, xc
 use iofiles_mod,     only: dir_faces
 use constants_mod,   only: tol
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -22,8 +22,8 @@ type(fhash_type__ints_double), intent(inout) :: face_entity_hash
 type(ints_type) :: face_entity_key
 integer :: face_entity_value
 !----------------------------------------------------------------------------------------------------------------------------------!
-allocate(node_belongs_to_dirichlet_face(numnp))
-node_belongs_to_dirichlet_face = .false.
+allocate(nodeBelongsToDirichletFace(numnp))
+nodeBelongsToDirichletFace = .False.
 
 allocate(face_entity_key%ints(1))
 
@@ -31,58 +31,49 @@ allocate(face_entity_key%ints(1))
 open(unit=123, file = dir_faces)
 #endif
 
-is_dirichlet_face = .false.
+isDirichletFace = .False.
 
 do jj = 1, numel_type_face
-    face_entity_key%ints(1) = jj
-    call face_entity_hash%get(face_entity_key, face_entity_value)
-    do ii = 1, numDirichletFaces
-        if (face_entity_value==dirichletFaceId(ii)) then
-            do pp = 1, nen_type_face
-                idummy = global_node_id_type_face(pp,jj)
+  face_entity_key%ints(1) = jj
+  call face_entity_hash%get(face_entity_key, face_entity_value)
+  do ii = 1, numDirichletFaces
+    if (face_entity_value == dirichletFaceId(ii)) then
+      do pp = 1, nen_type_face
+        idummy = global_node_id_type_face(pp,jj)
 
-                node_belongs_to_dirichlet_face(idummy) = .True.
+        nodeBelongsToDirichletFace(idummy) = .True.
 
-                ! Find if a node is located at a corner
-                kk = 0
-                do mm = 1, ndm
-                    if (DABS(xc(mm, idummy) - box_lo(mm)) < tol) then
-                        kk = kk + 1
-                    endif
-                    if (DABS(xc(mm, idummy) - box_hi(mm)) < tol) then
-                        kk = kk + 1
-                    endif
-                enddo
+        ! Find if a node is located at a corner
+        kk = 0
+        do mm = 1, ndm
+          if (DABS(xc(mm, idummy) - boxLow(mm)) < tol) kk = kk + 1
+          if (DABS(xc(mm, idummy) - boxHigh(mm)) < tol) kk = kk + 1
+        enddo
 
-                ! If a node is located at a corner skip the loop
-                if (kk > 1) cycle
+        ! If a node is located at a corner skip the loop
+        if (kk > 1) cycle
 
-                do mm = 1, ndm
-                    if (DABS(xc(mm, idummy) - box_lo(mm)) < tol) then
-                        is_dirichlet_face(mm,1) = .true.
-                    endif
-                    if (DABS(xc(mm, idummy) - box_hi(mm)) < tol) then
-                        is_dirichlet_face(mm,2) = .true.
-                    endif
-                enddo
+        do mm = 1, ndm
+          if (DABS(xc(mm, idummy) - boxLow(mm)) < tol) isDirichletFace(mm,1) = .True.
+          if (DABS(xc(mm, idummy) - boxHigh(mm)) < tol) isDirichletFace(mm,2) = .True.
+        enddo
 #ifdef DEBUG_OUTPUTS
-                write(123,'(3(E16.8),6(L3))') xc(1, idummy), xc(2, idummy), xc(3, idummy), &
-    &                                 (is_dirichlet_face(kk,1), kk = 1,3), (is_dirichlet_face(kk,2), kk = 1,3)
+        write(123,'(3(E16.8),6(L3))') xc(1, idummy), xc(2, idummy), xc(3, idummy), (isDirichletFace(kk,1), kk = 1,3), (isDirichletFace(kk,2), kk = 1,3)
 #endif
-            enddo
-        endif
-    enddo
+      enddo
+    endif
+  enddo
 
-    ! Nanoparticles section
-    do ii = 1, numNanoparticleFaces
-        if (face_entity_value==nanoparticleFaceId(ii)) then
-            do kk = 1, nen_type_face
-                idummy = global_node_id_type_face(kk,jj)
+  ! Nanoparticles section
+  do ii = 1, numNanoparticleFaces
+    if (face_entity_value==nanoparticleFaceId(ii)) then
+      do kk = 1, nen_type_face
+        idummy = global_node_id_type_face(kk,jj)
 
-                node_belongs_to_dirichlet_face(idummy) = .True.
-            enddo
-        endif
-    enddo
+        nodeBelongsToDirichletFace(idummy) = .True.
+      enddo
+    endif
+  enddo
 enddo
 
 #ifdef DEBUG_OUTPUTS

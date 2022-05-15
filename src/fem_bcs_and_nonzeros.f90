@@ -2,10 +2,10 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine fem_bcs_and_nonzeros(ds, mumpsMatrixType, node_belongs_to_dirichlet_face)
+subroutine fem_bcs_and_nonzeros(ds, mumpsMatrixType, nodeBelongsToDirichletFace)
 !------------------------------------------------------------------------------------------------------!
 use kcw_mod,         only: F_m, A_m, NNZ
-use geometry_mod,    only: total_num_of_node_pairs, nel, numel, numnp, node_pairing_xx_hash, &
+use geometry_mod,    only: numTotalNodePairs, nel, numel, numnp, node_pairing_xx_hash, &
 &                          node_pairing_yy_hash, node_pairing_zz_hash
 use constants_mod,   only: tol
 use parser_vars_mod, only: periodicAxisId
@@ -21,7 +21,7 @@ implicit none
 integer, intent(in) :: mumpsMatrixType
 integer             :: ii, jj, kk
 
-logical, intent(in), dimension(numnp) :: node_belongs_to_dirichlet_face
+logical, intent(in), dimension(numnp) :: nodeBelongsToDirichletFace
 logical, dimension(nel*numel)         :: set_diag_to_one
 
 real(8), intent(in) :: ds
@@ -43,7 +43,7 @@ if (periodicAxisId(3)) call fem_apply_periodic_bcs(node_pairing_zz_hash)
 ! In case the matrix is symmetric, remove the zero lines and rows diagonal componets with Dirichlet BC q=0.
 set_diag_to_one=.true.
 if ((mumpsMatrixType.eq.mumps_posDef).or.(mumpsMatrixType.eq.mumps_genSymm)) then
-    do kk = 1, total_num_of_node_pairs
+    do kk = 1, numTotalNodePairs
         if (F_m%is_zero(kk)) cycle
         if (F_m%row(kk)==0)  cycle
 
@@ -52,7 +52,7 @@ if ((mumpsMatrixType.eq.mumps_posDef).or.(mumpsMatrixType.eq.mumps_genSymm)) the
 
         if (ii > jj) F_m%g(kk) = 0.0d0
 
-        if (node_belongs_to_dirichlet_face(ii).or.node_belongs_to_dirichlet_face(jj)) then
+        if (nodeBelongsToDirichletFace(ii).OR.nodeBelongsToDirichletFace(jj)) then
             F_m%g(kk) = 0.0d0
             if (ii==jj.and.set_diag_to_one(ii)) then
                 F_m%g(kk)           = 1.0d0
@@ -63,7 +63,7 @@ if ((mumpsMatrixType.eq.mumps_posDef).or.(mumpsMatrixType.eq.mumps_genSymm)) the
 endif
 
 if (mumpsMatrixType.eq.mumps_asymm) then
-    do kk = 1, total_num_of_node_pairs
+    do kk = 1, numTotalNodePairs
         if (F_m%is_zero(kk)) cycle
 
         if (F_m%row(kk)==0) cycle
@@ -71,7 +71,7 @@ if (mumpsMatrixType.eq.mumps_asymm) then
         jj = F_m%col(kk)
         ii = F_m%row(kk)
 
-        if (node_belongs_to_dirichlet_face(ii)) then
+        if (nodeBelongsToDirichletFace(ii)) then
             F_m%g(kk) = 0.0d0
             if (ii==jj.and.set_diag_to_one(ii)) then
                 F_m%g(kk)           =  1.0d0
@@ -83,7 +83,7 @@ endif
 
 ! Determine non_zero entries
 NNZ = 0
-do kk = 1, total_num_of_node_pairs
+do kk = 1, numTotalNodePairs
     if (ABS(F_m%g(kk)) > tol) NNZ = NNZ + 1
 enddo
 
@@ -92,7 +92,7 @@ allocate(A_m%col(NNZ))
 allocate(A_m%row(NNZ))
 
 NNZ = 0
-do kk = 1, total_num_of_node_pairs
+do kk = 1, numTotalNodePairs
     if (ABS(F_m%g(kk)) > tol) then
         NNZ = NNZ + 1
 

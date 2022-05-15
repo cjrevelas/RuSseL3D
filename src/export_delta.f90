@@ -4,7 +4,7 @@
 
 subroutine export_delta(numnp, qmx_interp_mg, ns_gr_conv, targetNumGraftedChains, gpid, delta_numer, gp_init_value, volnp)
 !------------------------------------------------------------------------------------------------------!
-use geometry_mod,     only: box_lo, box_hi, xc, ndm
+use geometry_mod,     only: boxLow, boxHigh, xc, ndm
 use iofiles_mod,      only: graftFile
 use write_helper_mod, only: adjl
 use constants_mod,    only: m3_to_A3
@@ -29,7 +29,7 @@ write(iog,'(A21)') "ITEM: NUMBER OF ATOMS"
 write(iog,'(I10)')  targetNumGraftedChains
 write(iog,'(A25)') "ITEM: BOX BOUNDS PP PP PP"
 do ii = 1, 3
-    write(iog,'(2(F20.9))') box_lo(ii), box_hi(ii)
+    write(iog,'(2(F20.9))') boxLow(ii), boxHigh(ii)
 enddo
 write(iog,'(A28)') "ITEM: ATOMS id type xu yu zu"
 

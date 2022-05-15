@@ -154,7 +154,7 @@ do iter = init_iter, iterations-1
         qmx_final(1,ii) = 1.0d0
     enddo
 
-    call solver_edwards(ds_mx_ed, ns_mx_ed, mumpsMatrixType, qmx, qmx_final, node_belongs_to_dirichlet_face)
+    call solver_edwards(ds_mx_ed, ns_mx_ed, mumpsMatrixType, qmx, qmx_final, nodeBelongsToDirichletFace)
 
     if (gr_exist.eq.1) then
         do ii = 1, numnp
@@ -188,7 +188,7 @@ do iter = init_iter, iterations-1
             qgr_final(1,gnode_id) = gp_init_value(ii)
         enddo
 
-        call solver_edwards(ds_gr_ed, ns_gr_ed, mumpsMatrixType, qgr, qgr_final, node_belongs_to_dirichlet_face)
+        call solver_edwards(ds_gr_ed, ns_gr_ed, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace)
     endif
 
     if (mx_exist.eq.1) then
@@ -337,7 +337,7 @@ deallocate(planar_cell_of_np, dist_from_face, cell_vol_planar)
 deallocate(sph_cell_of_np, dist_from_np, cell_vol_sph)
 deallocate(node_pair_id)
 deallocate(el_node)
-deallocate(node_belongs_to_dirichlet_face)
+deallocate(nodeBelongsToDirichletFace)
 deallocate(rdiag1)
 deallocate(F_m%row, F_m%col, F_m%g, F_m%rh, F_m%c, F_m%k, F_m%w, F_m%is_zero)
 !------------------------------------------------------------------------------------------------------------------!

@@ -9,7 +9,7 @@ use fhash_module__ints_double
 use ints_module
 
 use kcw_mod, only: F_m
-use geometry_mod, only: total_num_of_node_pairs
+use geometry_mod, only: numTotalNodePairs
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -30,12 +30,12 @@ do kk = 1, node_pairing_hash%key_count()
     source = node_pairing_key%ints(1)
     dest   = node_pairing_value
 
-    do mm = 1, total_num_of_node_pairs
+    do mm = 1, numTotalNodePairs
         if (F_m%is_zero(mm)) cycle
         if (F_m%row(mm)==0)  cycle
 
         if ((F_m%col(mm).eq.source).and.(F_m%row(mm).ne.dest)) then
-            do nn = 1, total_num_of_node_pairs
+            do nn = 1, numTotalNodePairs
                 if (F_m%is_zero(nn)) cycle
                 if (F_m%row(nn)==0)  cycle
 
@@ -47,7 +47,7 @@ do kk = 1, node_pairing_hash%key_count()
         endif
 
         if ((F_m%row(mm).eq.source).and.(F_m%col(mm).ne.dest)) then
-            do nn = 1, total_num_of_node_pairs
+            do nn = 1, numTotalNodePairs
                 if (F_m%is_zero(nn)) cycle
                 if (F_m%row(nn)==0)  cycle
 
@@ -59,12 +59,12 @@ do kk = 1, node_pairing_hash%key_count()
         endif
     enddo
 
-    do mm = 1, total_num_of_node_pairs
+    do mm = 1, numTotalNodePairs
         if (F_m%is_zero(mm)) cycle
         if (F_m%row(mm)==0)  cycle
 
         if ((F_m%row(mm).eq.source).and.(F_m%col(mm).eq.source)) then
-            do nn = 1, total_num_of_node_pairs
+            do nn = 1, numTotalNodePairs
                 if (F_m%is_zero(nn)) cycle
                 if (F_m%row(nn)==0)  cycle
 
@@ -76,7 +76,7 @@ do kk = 1, node_pairing_hash%key_count()
         endif
     enddo
 
-    do mm = 1, total_num_of_node_pairs
+    do mm = 1, numTotalNodePairs
         if (F_m%is_zero(mm)) cycle
         if (F_m%row(mm)==0)  cycle
 

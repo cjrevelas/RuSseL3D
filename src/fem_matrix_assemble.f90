@@ -5,7 +5,7 @@
 subroutine fem_matrix_assemble(Rg2_per_mon, ww)
 !----------------------------------------------------------------------------------------------------------------!
 use kcw_mod,      only: F_m
-use geometry_mod, only: numnp, numel, ndm, nel, num_of_bulk_pairs, node_pair_id, global_node_id_type_domain, xc
+use geometry_mod, only: numnp, numel, ndm, nel, numBulkNodePairs, node_pair_id, global_node_id_type_domain, xc
 use iofiles_mod,  only: matrix_assembly
 !----------------------------------------------------------------------------------------------------------------!
 implicit none
@@ -47,7 +47,7 @@ do elem = 1, numel
 
     do ll = 1, lint
 
-        kk = nel * nel * (elem-1)     ! This index goes from zero to num_of_bulk_pairs = nel * nel * numel
+        kk = nel * nel * (elem-1)     ! This index goes from zero to numBulkNodePairs = nel * nel * numel
 
         call fem_tetshpfun(sv(1,ll), xl, ndm, nel, xsj, shp)
 
@@ -70,7 +70,7 @@ enddo !elem
 
 ! Assembly global matrix using element matrices and node_pair_id hash matrix created in parser_mesh.f90
 ! TODO: Lots of nonzero entries are created with the following process -> consider removal
-do kk = 1, num_of_bulk_pairs
+do kk = 1, numBulkNodePairs
     if (F_m%is_zero(kk)) then
         ! Add up contributions of same pairs met multiple times
         F_m%k(node_pair_id(kk)) = F_m%k(node_pair_id(kk)) + F_m%k(kk)
@@ -85,7 +85,7 @@ enddo
 #ifdef DEBUG_OUTPUTS
 open(unit=400, file = matrix_assembly)
 write(400,'(3(2X,A16))') "F_m%k","F_m%c","F_m%w"
-do kk = 1, num_of_bulk_pairs
+do kk = 1, numBulkNodePairs
     write(400,'(3(2X,E16.9))')F_m%k(kk), F_m%c(kk), F_m%w(kk)
 enddo
 close(400)
