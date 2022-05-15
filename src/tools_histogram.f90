@@ -6,7 +6,7 @@ subroutine tools_histogram(upd_lbin, volnp)
 !-----------------------------------------------------------------------------------------------------------!
 use hist_mod
 use geometry_mod,    only: numnp, box_len, is_dirichlet_face, box_lo, box_hi, xc
-use parser_vars_mod, only: num_of_nanoparticle_faces, wall_distance, center_np, radius_np_eff
+use parser_vars_mod, only: numNanoparticleFaces, wall_distance, center_np, radius_np_eff
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
@@ -30,9 +30,9 @@ if (ALLOCATED(cell_vol_sph))      deallocate(cell_vol_sph)
 allocate(planar_cell_of_np(numnp,3,2))
 allocate(dist_from_face(numnp,3,2))
 allocate(cell_vol_planar(nbin,3,2))
-allocate(sph_cell_of_np(num_of_nanoparticle_faces,numnp))
-allocate(dist_from_np(num_of_nanoparticle_faces,numnp))
-allocate(cell_vol_sph(num_of_nanoparticle_faces,nbin))
+allocate(sph_cell_of_np(numNanoparticleFaces,numnp))
+allocate(dist_from_np(numNanoparticleFaces,numnp))
+allocate(cell_vol_sph(numNanoparticleFaces,nbin))
 
 planar_cell_of_np = 0
 sph_cell_of_np    = 0
@@ -62,7 +62,7 @@ do mm = 1, 3
 enddo
 
 ! Binning in spherical geometries
-do mm = 1, num_of_nanoparticle_faces
+do mm = 1, numNanoparticleFaces
     do kk = 1, numnp
         r_centers             = DSQRT((xc(1,kk)-center_np(1,mm))**2.0d0 + (xc(2,kk)-center_np(2,mm))**2.0d0 &
 &                                                                       + (xc(3,kk)-center_np(3,mm))**2.0d0)

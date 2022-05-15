@@ -7,7 +7,7 @@ module geometry_mod
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
-use parser_vars_mod, only: radius_np_eff, num_of_nanoparticle_faces, wall_distance
+use parser_vars_mod, only: radius_np_eff, numNanoparticleFaces, wall_distance
 use constants_mod,   only: pi
 !----------------------------------------------------------------------------------------------------------------------------!
 implicit none
@@ -47,7 +47,7 @@ real(8), parameter                   :: dz = 1.0d-1
             enddo
         enddo
 
-        do ii = 1, num_of_nanoparticle_faces
+        do ii = 1, numNanoparticleFaces
             interf_area = interf_area + 4.0d0*pi*(radius_np_eff(ii)-wall_distance)**2.0d0
         enddo
 

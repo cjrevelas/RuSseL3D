@@ -7,7 +7,7 @@ subroutine mesh_face_entities(axis, face_entity_hash, face1_hash, face2_hash)
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
-use parser_vars_mod, only: periodic_face_id
+use parser_vars_mod, only: periodicFaceId
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -31,14 +31,14 @@ periodic_face1 = 0
 periodic_face2 = 0
 
 if (axis=='x') then
-    periodic_face1 = periodic_face_id(1)
-    periodic_face2 = periodic_face_id(2)
+    periodic_face1 = periodicFaceId(1)
+    periodic_face2 = periodicFaceId(2)
 elseif (axis=='y') then
-    periodic_face1 = periodic_face_id(3)
-    periodic_face2 = periodic_face_id(4)
+    periodic_face1 = periodicFaceId(3)
+    periodic_face2 = periodicFaceId(4)
 elseif (axis=='z') then
-    periodic_face1 = periodic_face_id(5)
-    periodic_face2 = periodic_face_id(6)
+    periodic_face1 = periodicFaceId(5)
+    periodic_face2 = periodicFaceId(6)
 endif
 
 ! Calculate the size of face entity hashes

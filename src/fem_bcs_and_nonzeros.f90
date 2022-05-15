@@ -2,13 +2,13 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine fem_bcs_and_nonzeros(ds, mumps_matrix_type, node_belongs_to_dirichlet_face)
+subroutine fem_bcs_and_nonzeros(ds, mumpsMatrixType, node_belongs_to_dirichlet_face)
 !------------------------------------------------------------------------------------------------------!
 use kcw_mod,         only: F_m, A_m, NNZ
 use geometry_mod,    only: total_num_of_node_pairs, nel, numel, numnp, node_pairing_xx_hash, &
 &                          node_pairing_yy_hash, node_pairing_zz_hash
 use constants_mod,   only: tol
-use parser_vars_mod, only: periodic_axis_id
+use parser_vars_mod, only: periodicAxisId
 use flags_mod,       only: mumps_asymm, mumps_posDef, mumps_genSymm
 
 !#define PRINT_AFULL
@@ -18,7 +18,7 @@ use iofiles_mod, only: A_matrix_full
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-integer, intent(in) :: mumps_matrix_type
+integer, intent(in) :: mumpsMatrixType
 integer             :: ii, jj, kk
 
 logical, intent(in), dimension(numnp) :: node_belongs_to_dirichlet_face
@@ -34,15 +34,15 @@ F_m%g  = F_m%c + ds * (F_m%k + F_m%w)
 F_m%rh = F_m%c
 
 ! Apply periodic boundary conditions
-if (periodic_axis_id(1)) call fem_apply_periodic_bcs(node_pairing_xx_hash)
-if (periodic_axis_id(2)) call fem_apply_periodic_bcs(node_pairing_yy_hash)
-if (periodic_axis_id(3)) call fem_apply_periodic_bcs(node_pairing_zz_hash)
+if (periodicAxisId(1)) call fem_apply_periodic_bcs(node_pairing_xx_hash)
+if (periodicAxisId(2)) call fem_apply_periodic_bcs(node_pairing_yy_hash)
+if (periodicAxisId(3)) call fem_apply_periodic_bcs(node_pairing_zz_hash)
 
 ! Apply Dirichlet boundary conditions
 ! TODO: needs generalization to nonzero values
 ! In case the matrix is symmetric, remove the zero lines and rows diagonal componets with Dirichlet BC q=0.
 set_diag_to_one=.true.
-if ((mumps_matrix_type.eq.mumps_posDef).or.(mumps_matrix_type.eq.mumps_genSymm)) then
+if ((mumpsMatrixType.eq.mumps_posDef).or.(mumpsMatrixType.eq.mumps_genSymm)) then
     do kk = 1, total_num_of_node_pairs
         if (F_m%is_zero(kk)) cycle
         if (F_m%row(kk)==0)  cycle
@@ -62,7 +62,7 @@ if ((mumps_matrix_type.eq.mumps_posDef).or.(mumps_matrix_type.eq.mumps_genSymm))
     enddo
 endif
 
-if (mumps_matrix_type.eq.mumps_asymm) then
+if (mumpsMatrixType.eq.mumps_asymm) then
     do kk = 1, total_num_of_node_pairs
         if (F_m%is_zero(kk)) cycle
 

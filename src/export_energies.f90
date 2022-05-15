@@ -5,7 +5,7 @@
 subroutine export_energies(qmx_interp_mg, qgr_interp, phi_total, ww, Ufield, part_func, targetNumGraftedChains, gpid, free_energy)
 !-------------------------------------------------------------------------------------------------!
 use eos_mod,         only: eos_ff, eos_df_drho
-use parser_vars_mod, only: ns_gr_conv, chainlen_mx, rho_mol_bulk, temp, beta, r_gpoint
+use parser_vars_mod, only: ns_gr_conv, lengthMatrix, molarBulkDensity, temperature, beta, r_gpoint
 use geometry_mod,    only: numnp, interf_area
 use constants_mod,   only: n_avog, boltz_const_Joule_molK, N_to_mN, A2_to_m2, A3_to_m3
 use iofiles_mod,     only: energy_terms
@@ -53,10 +53,10 @@ call fem_integration(prof_field, E_field, Q, vol)
 call fem_integration(prof_solid, E_solid, Q, vol)
 
 E_eos_f      = E_eos_f      * A3_to_m3
-E_eos_dfdrho = E_eos_dfdrho * A3_to_m3 * rho_mol_bulk * n_avog
-E_field      = E_field      * A3_to_m3 * rho_mol_bulk * n_avog / beta
-E_solid      = E_solid      * A3_to_m3 * rho_mol_bulk * n_avog / beta
-E_entropy_mx = rho_mol_bulk * A3_to_m3 * vol * boltz_const_Joule_molK * Temp * (1.0d0 - part_func) / chainlen_mx
+E_eos_dfdrho = E_eos_dfdrho * A3_to_m3 * molarBulkDensity * n_avog
+E_field      = E_field      * A3_to_m3 * molarBulkDensity * n_avog / beta
+E_solid      = E_solid      * A3_to_m3 * molarBulkDensity * n_avog / beta
+E_entropy_mx = molarBulkDensity * A3_to_m3 * vol * boltz_const_Joule_molK * temperature * (1.0d0 - part_func) / lengthMatrix
 
 do kk = 1, targetNumGraftedChains
     gnode_id              =  gpid(kk)

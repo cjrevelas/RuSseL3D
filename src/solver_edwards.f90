@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine solver_edwards(ds, ns, mumps_matrix_type, q, q_final, node_belongs_to_dirichlet_face)
+subroutine solver_edwards(ds, ns, mumpsMatrixType, q, q_final, node_belongs_to_dirichlet_face)
 !----------------------------------------------------------------------------------------------------------!
 use kcw_mod,      only: A_m, F_m, rdiag1
 use geometry_mod, only: numnp, total_num_of_node_pairs
@@ -16,7 +16,7 @@ implicit none
 include "mpif.h"
 #endif
 !----------------------------------------------------------------------------------------------------------!
-integer, intent(in) :: ns, mumps_matrix_type
+integer, intent(in) :: ns, mumpsMatrixType
 integer             :: ii, jj, kk, time_step, tools_sys_time, t_init, t_final
 
 logical, intent(in), dimension(numnp) :: node_belongs_to_dirichlet_face
@@ -28,7 +28,7 @@ real(8), intent(inout), dimension(ns+1,numnp) :: q_final
 t_init = tools_sys_time()
 
 do time_step = 2, ns+1
-    call fem_bcs_and_nonzeros(ds(time_step), mumps_matrix_type, node_belongs_to_dirichlet_face)
+    call fem_bcs_and_nonzeros(ds(time_step), mumpsMatrixType, node_belongs_to_dirichlet_face)
 
 #ifdef USE_MPI
     ! Send a continue (.true.) signal to the slaves
@@ -60,7 +60,7 @@ do time_step = 2, ns+1
     enddo
 
     ! Solve the linear system of equations
-    call solver_mumps(mumps_matrix_type)
+    call solver_mumps(mumpsMatrixType)
 
     ! Update solution/propagator
     do kk = 1,numnp

@@ -4,8 +4,8 @@
 
 subroutine init_scf_params()
 !------------------------------------------------------------------------------------------------------!
-use parser_vars_mod,  only: chainlen_mx, iow, k_gr, k_gr_tilde, massden, mon_mass, pres, &
-&                       rho_mass_bulk, rho_mol_bulk, rho_seg_bulk, temp
+use parser_vars_mod,  only: lengthMatrix, iow, k_gr, k_gr_tilde, massDensity, massOfMonomer, pressure, &
+&                       massBulkDensity, molarBulkDensity, segmentBulkDensity, temperature
 use constants_mod,    only: boltz_const_Joule_K, boltz_const_Joule_molK, gr_cm3_to_kg_m3, N_avog, kg_m3_to_gr_m3, &
 &                       m3_to_cm3
 use eos_mod,          only: eos_type, kapa, V_star, P_star, T_star, rho_star, rho_tilde_bulk, P_tilde, T_tilde, &
@@ -16,28 +16,28 @@ use write_helper_mod, only: adjl
 implicit none
 !------------------------------------------------------------------------------------------------------!
 if (eos_type.eq.eos_helfand) then
-    rho_mol_bulk = massden / mon_mass * m3_to_cm3
-    rho_seg_bulk = rho_mol_bulk * N_avog
-    write(iow,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40), rho_mol_bulk, " [mol/m^3]"
-    write(6  ,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40), rho_mol_bulk, " [mol/m^3]"
+    molarBulkDensity = massDensity / massOfMonomer * m3_to_cm3
+    segmentBulkDensity = molarBulkDensity * N_avog
+    write(iow,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40), molarBulkDensity, " [mol/m^3]"
+    write(6  ,'(3X,A40,E16.9,A10)')adjl("Segment density in bulk (rho):",40), molarBulkDensity, " [mol/m^3]"
 
-    kapa = 1.0d0 /(hlf_kappa_T * boltz_const_Joule_molK * Temp * rho_mol_bulk)
+    kapa = 1.0d0 /(hlf_kappa_T * boltz_const_Joule_molK * temperature * molarBulkDensity)
     write(iow,'(3X,A40,E16.9)')adjl("kapa = 1/[k_T k_B T rho_0]:",40), kapa
     write(6  ,'(3X,A40,E16.9)')adjl("kapa = 1/[k_T k_B T rho_0]:",40), kapa
 elseif (eos_type.eq.eos_sl) then
     write(iow,'(3X,A45)') adjl("Computation of polymer  mass density from SL EoS",45)
     write(*  ,'(3X,A45)') adjl("Computation of polymer  mass density from SL EoS",45)
-    V_star         = boltz_const_Joule_K * T_star / P_star
-    T_tilde        = Temp / T_star
-    P_tilde        = Pres / P_star
-    rsl_N          = (mon_mass * P_star) / (rho_star * kg_m3_to_gr_m3 * boltz_const_Joule_molK * T_star)
-    rho_tilde_bulk = eos_rho_tilde_0(T_tilde, P_tilde, rsl_N*chainlen_mx)
-    rho_mass_bulk  = rho_tilde_bulk * rho_star
-    rho_mol_bulk   = rho_mass_bulk / mon_mass * gr_cm3_to_kg_m3
-    rho_seg_bulk   = rho_mol_bulk * N_avog
+    V_star             = boltz_const_Joule_K * T_star / P_star
+    T_tilde            = temperature / T_star
+    P_tilde            = pressure / P_star
+    rsl_N              = (massOfMonomer * P_star) / (rho_star * kg_m3_to_gr_m3 * boltz_const_Joule_molK * T_star)
+    rho_tilde_bulk     = eos_rho_tilde_0(T_tilde, P_tilde, rsl_N*lengthMatrix)
+    massBulkDensity    = rho_tilde_bulk * rho_star
+    molarBulkDensity   = massBulkDensity / massOfMonomer * gr_cm3_to_kg_m3
+    segmentBulkDensity = molarBulkDensity * N_avog
 
-    write(iow,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), rho_mass_bulk/gr_cm3_to_kg_m3
-    write(*  ,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), rho_mass_bulk/gr_cm3_to_kg_m3
+    write(iow,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), massBulkDensity/gr_cm3_to_kg_m3
+    write(*  ,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), massBulkDensity/gr_cm3_to_kg_m3
 
     k_gr = 2.0d0 * P_star * rsl_N**2.0d0 * V_star**(8.0d0/3.0d0) * k_gr_tilde
 endif

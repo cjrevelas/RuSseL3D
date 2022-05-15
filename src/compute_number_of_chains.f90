@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine compute_number_of_chains(numnp, chainlen, rho_mol_bulk, phi, num_chains)
+subroutine compute_number_of_chains(numnp, chainlen, molarBulkDensity, phi, num_chains)
 !-------------------------------------------------------------------------------------------!
 use constants_mod, only : n_avog, A3_to_m3
 !-------------------------------------------------------------------------------------------!
@@ -10,7 +10,7 @@ implicit none
 !-------------------------------------------------------------------------------------------!
 integer, intent(in)                   :: numnp
 
-real(8), intent(in)                   :: chainlen, rho_mol_bulk
+real(8), intent(in)                   :: chainlen, molarBulkDensity
 real(8), intent(in), dimension(numnp) :: phi
 real(8), intent(out)                  :: num_chains
 real(8)                               :: sum_f, QQ, vol
@@ -19,7 +19,7 @@ sum_f = 0.0d0
 
 call fem_integration(phi, sum_f, QQ, vol)
 
-num_chains = sum_f * A3_to_m3 * rho_mol_bulk * n_avog / chainlen
+num_chains = sum_f * A3_to_m3 * molarBulkDensity * n_avog / chainlen
 
 return
 !-------------------------------------------------------------------------------------------!

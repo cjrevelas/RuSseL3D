@@ -4,7 +4,7 @@
 
 subroutine export_chains_area(node_belongs_to_dirichlet_face, cell_of_np, chain_type, Rg2_per_mon, chainlen, ns_ed, ds_ed, q_final, phi, ww)
 !-----------------------------------------------------------------------------------------------------------------------!
-use parser_vars_mod,  only: mumps_matrix_type, rho_seg_bulk
+use parser_vars_mod,  only: mumpsMatrixType, segmentBulkDensity
 use hist_mod,         only: nbin
 use write_helper_mod, only: adjl
 use constants_mod,    only: A3_to_m3
@@ -64,7 +64,7 @@ do bin = 7, 30
     endif
 
     ! Solution
-    call solver_edwards(ds_ed, ns_ed, mumps_matrix_type, qshape, qshape_final, node_belongs_to_dirichlet_face_new)
+    call solver_edwards(ds_ed, ns_ed, mumpsMatrixType, qshape, qshape_final, node_belongs_to_dirichlet_face_new)
 
     sum_qshape = 0.0d0
     sum_Q      = 0.0d0
@@ -77,7 +77,7 @@ do bin = 7, 30
 
     p_cross(bin) = 1.0d0 - sum_qshape / sum_Q
 
-    n_shape(bin) = p_cross(bin) * rho_seg_bulk * sum_phi * A3_to_m3 / chainlen !/layer_area
+    n_shape(bin) = p_cross(bin) * segmentBulkDensity * sum_phi * A3_to_m3 / chainlen !/layer_area
 
     write(6,*) "p_cross: ", p_cross(bin)
     write(6,*) "n_shape: ", n_shape(bin)

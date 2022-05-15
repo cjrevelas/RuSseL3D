@@ -24,7 +24,7 @@ logical :: log_graftFile                   = .false.
 logical :: log_fieldFile                   = .false.
 logical :: log_temperature                 = .false.
 logical :: log_pressure                    = .false.
-logical :: log_mass_density                = .false.
+logical :: log_massDensity                 = .false.
 logical :: log_monomer_mass                = .false.
 logical :: log_number_of_iterations        = .false.
 logical :: log_set_initial_iteration       = .false.
@@ -34,22 +34,22 @@ logical :: log_freeEnergyTolForDelta       = .false.
 logical :: log_field_init_scheme           = .false.
 logical :: log_fraction_of_new_field       = .false.
 logical :: log_mx_exist                    = .false.
-logical :: log_Rg2_per_mon_mx              = .false.
+logical :: log_rg2OfMatrixMonomer          = .false.
 logical :: log_ds_ave_mx                   = .false.
-logical :: log_chainlen_mx                 = .false.
+logical :: log_lengthMatrix                = .false.
 logical :: log_contour_discr_mx            = .false.
 logical :: log_ads_distance                = .false.
 logical :: log_gr_exist                    = .false.
-logical :: log_Rg2_per_mon_gr              = .false.
-logical :: log_chainlen_gr                 = .false.
+logical :: log_rg2OfGraftedMonomer         = .false.
+logical :: log_lengthGrafted               = .false.
 logical :: log_ds_ave_gr                   = .false.
 logical :: log_contour_discr_gr            = .false.
 logical :: log_grafted_ic_from_delta       = .false.
 logical :: log_numGraftedChainsTol         = .false.
 logical :: log_r_gpoint                    = .false.
 logical :: log_calc_delta_every            = .false.
-logical :: log_num_of_dirichlet_faces      = .false.
-logical :: log_num_of_nanoparticle_faces   = .false.
+logical :: log_numDirichletFaces           = .false.
+logical :: log_numNanoparticleFaces        = .false.
 logical :: log_periodicity                 = .false.
 logical :: log_sigma_polymer               = .false.
 logical :: log_Hamaker_constant_of_polymer = .false.
@@ -58,23 +58,23 @@ logical :: log_eos_type                    = .false.
 logical :: log_eos_coeffs                  = .false.
 logical :: log_influence_param             = .false.
 logical :: log_profile_dimension           = .false.
-logical :: log_mumps_matrix_type           = .false.
-logical :: log_bin_thickness               = .false.
-logical :: log_export_phi_gen_freq         = .false.
-logical :: log_export_phi_indiv_freq       = .false.
-logical :: log_export_field_freq           = .false.
-logical :: log_export_field_bin_freq       = .false.
-logical :: log_export_propagators_freq     = .false.
-logical :: log_export_brush_thickness_freq = .false.
-logical :: log_export_chains_per_area_freq = .false.
-logical :: log_export_ads_free_freq        = .false.
+logical :: log_mumpsMatrixType             = .false.
+logical :: log_binThickness                = .false.
+logical :: log_exportPhiGeneral            = .false.
+logical :: log_exportPhiIndividual         = .false.
+logical :: log_exportField                 = .false.
+logical :: log_exportFieldBinary           = .false.
+logical :: log_exportPropagators           = .false.
+logical :: log_exportBrushThickness        = .false.
+logical :: log_exportChainsPerArea         = .false.
+logical :: log_exportAdsorbedFree          = .false.
 !--------------------------------------------------------------------------------!
 ! Initialize periodicity arrays
 do ii = 1, 3
-    periodic_axis_id = .false.
+    periodicAxisId = .false.
 enddo
 do ii = 1, 6
-    periodic_face_id = -1
+    periodicFaceId = -1
 enddo
 
 ! Parse input file to retrieve simulation parameters
@@ -108,29 +108,29 @@ do
             read(line,*) fieldFile
             log_fieldFile = .true.
         elseif (INDEX(line,"# temp") > 0) then
-            read(line,*) temp
+            read(line,*) temperature
             log_temperature = .true.
         elseif (INDEX(line," pres") > 0) then
-            read(line,*) pres
+            read(line,*) pressure
             log_pressure = .true.
         elseif (INDEX(line,"# mass den") > 0) then
-            read(line,*) massden
-            log_mass_density = .true.
+            read(line,*) massDensity
+            log_massDensity = .true.
         elseif (INDEX(line,"# mon mass") > 0) then
-            read(line,*) mon_mass
+            read(line,*) massOfMonomer
             log_monomer_mass = .true.
         elseif (INDEX(line,"# Rg2/mon matrix") > 0) then
-            read(line,*) Rg2_per_mon_mx
-            log_Rg2_per_mon_mx = .true.
+            read(line,*) rg2OfMatrixMonomer
+            log_rg2OfMatrixMonomer = .true.
         elseif (INDEX(line,"# Rg2/mon grafted") > 0) then
-            read(line,*) Rg2_per_mon_gr
-            log_Rg2_per_mon_gr = .true.
+            read(line,*) rg2OfGraftedMonomer
+            log_rg2OfGraftedMonomer = .true.
         elseif (INDEX(line,"# chain length matrix") > 0) then
-            read(line,*) chainlen_mx
-            log_chainlen_mx = .true.
+            read(line,*) lengthMatrix
+            log_lengthMatrix = .true.
         elseif (INDEX(line,"# chain length grafted") > 0) then
-            read(line,*) chainlen_gr
-            log_chainlen_gr = .true.
+            read(line,*) lengthGrafted
+            log_lengthGrafted = .true.
         elseif (INDEX(line,"# num gr chains tol") > 0) then
             read(line,*) numGraftedChainsTol
             log_numGraftedChainsTol = .true.
@@ -165,32 +165,32 @@ do
             read(line,*) field_init_scheme
             log_field_init_scheme = .true.
         elseif (INDEX(line,"# bin thickness") > 0) then
-            read(line,*) bin_thickness
-            log_bin_thickness = .true.
+            read(line,*) binThickness
+            log_binThickness = .true.
         elseif (INDEX(line,"# export dens profs") > 0) then
-            read(line,*) export_phi_gen_freq
-            log_export_phi_gen_freq = .true.
+            read(line,*) exportPhiGeneral
+            log_exportPhiGeneral = .true.
         elseif (INDEX(line,"# export indiv dens profs") > 0) then
-            read(line,*) export_phi_indiv_freq
-            log_export_phi_indiv_freq = .true.
+            read(line,*) exportPhiIndividual
+            log_exportPhiIndividual = .true.
         elseif (INDEX(line,"# export field") > 0) then
-            read(line,*) export_field_freq
-            log_export_field_freq = .true.
+            read(line,*) exportField
+            log_exportField = .true.
         elseif (INDEX(line,"# export binary field") > 0) then
-            read(line,*) export_field_bin_freq
-            log_export_field_bin_freq = .true.
+            read(line,*) exportFieldBinary
+            log_exportFieldBinary = .true.
         elseif (INDEX(line,"# export propagators") > 0) then
-            read(line,*) export_propagators_freq
-            log_export_propagators_freq = .true.
+            read(line,*) exportPropagators
+            log_exportPropagators = .true.
         elseif (INDEX(line,"# export brush thickness") > 0) then
-            read(line,*) export_brush_thickness_freq
-            log_export_brush_thickness_freq = .true.
+            read(line,*) exportBrushThickness
+            log_exportBrushThickness = .true.
         elseif (INDEX(line,"# export chains per area profs") > 0) then
-            read(line,*) export_chains_per_area_freq
-            log_export_chains_per_area_freq = .true.
+            read(line,*) exportChainsPerArea
+            log_exportChainsPerArea = .true.
         elseif (INDEX(line,"# export ads vs free profs") > 0) then
-            read(line,*) export_ads_free_freq
-            log_export_ads_free_freq = .true.
+            read(line,*) exportAdsorbedFree
+            log_exportAdsorbedFree = .true.
         elseif (INDEX(line,"# prof dim") > 0) then
             read(line,*) prof_dim
             log_profile_dimension = .true.
@@ -221,8 +221,8 @@ do
             if (contour_discr_gr.eq.contour_hybrid) read(256,*) xs_crit_gr
             log_contour_discr_gr = .true.
         elseif (INDEX(line,"# mumps matrix") > 0) then
-            read(line,*) mumps_matrix_type
-            log_mumps_matrix_type = .true.
+            read(line,*) mumpsMatrixType
+            log_mumpsMatrixType = .true.
         elseif (INDEX(line,"# eos type") > 0) then
             read(line,*) eos_type
             log_eos_type = .true.
@@ -243,50 +243,50 @@ do
             read(line,*) calc_delta_every
             log_calc_delta_every = .true.
         elseif (INDEX(line,"# num faces") > 0) then
-            read(line,*) num_of_dirichlet_faces
-            if (num_of_dirichlet_faces > 0) then
-                allocate(ids_dirichlet_faces(num_of_dirichlet_faces))
-                allocate(sigma_plate(num_of_dirichlet_faces))
-                allocate(A_plate(num_of_dirichlet_faces))
-                do ii = 1, num_of_dirichlet_faces
+            read(line,*) numDirichletFaces
+            if (numDirichletFaces > 0) then
+                allocate(dirichletFaceId(numDirichletFaces))
+                allocate(sigma_plate(numDirichletFaces))
+                allocate(A_plate(numDirichletFaces))
+                do ii = 1, numDirichletFaces
                     read(256,*) id, sigma_plate(ii), A_plate(ii)
-                    ids_dirichlet_faces(ii) = id
+                    dirichletFaceId(ii) = id
                 enddo
                 A_plate = A_plate * 1.0d-20
-                log_num_of_dirichlet_faces = .true.
+                log_numDirichletFaces = .true.
             endif
         elseif (INDEX(line,"# num nanop") > 0) then
-            read(line,*) num_of_nanoparticle_faces
-            if (num_of_nanoparticle_faces > 0) then
-                allocate(ids_nanopart_faces(num_of_nanoparticle_faces))
-                allocate(center_np(3,num_of_nanoparticle_faces))
-                allocate(radius_np_eff(num_of_nanoparticle_faces))
-                allocate(sigma_np(num_of_nanoparticle_faces))
-                allocate(A_np(num_of_nanoparticle_faces))
-                do ii = 1, num_of_nanoparticle_faces
+            read(line,*) numNanoparticleFaces
+            if (numNanoparticleFaces > 0) then
+                allocate(nanoparticleFaceId(numNanoparticleFaces))
+                allocate(center_np(3,numNanoparticleFaces))
+                allocate(radius_np_eff(numNanoparticleFaces))
+                allocate(sigma_np(numNanoparticleFaces))
+                allocate(A_np(numNanoparticleFaces))
+                do ii = 1, numNanoparticleFaces
                     read(256,*) id, radius_np_eff(ii), center_np(1,ii), center_np(2,ii), center_np(3,ii), &
                                                           & sigma_np(ii), A_np(ii)
-                    ids_nanopart_faces(ii) = id
+                    nanoparticleFaceId(ii) = id
                 enddo
                 A_np = A_np * 1.0d-20
-                log_num_of_nanoparticle_faces = .true.
+                log_numNanoparticleFaces = .true.
             endif
         elseif (INDEX(line,"# periodicity") > 0) then
             read(line,*) periodicity
             do ii = 1, periodicity
                 read(256,*) axis, face1, face2
                 if (axis=='x') then
-                    periodic_axis_id(1) = .true.
-                    periodic_face_id(1) = face1
-                    periodic_face_id(2) = face2
+                    periodicAxisId(1) = .true.
+                    periodicFaceId(1) = face1
+                    periodicFaceId(2) = face2
                 elseif (axis=='y') then
-                    periodic_axis_id(2) = .true.
-                    periodic_face_id(3) = face1
-                    periodic_face_id(4) = face2
+                    periodicAxisId(2) = .true.
+                    periodicFaceId(3) = face1
+                    periodicFaceId(4) = face2
                 elseif (axis=='z') then
-                    periodic_axis_id(3) = .true.
-                    periodic_face_id(5) = face1
-                    periodic_face_id(6) = face2
+                    periodicAxisId(3) = .true.
+                    periodicFaceId(5) = face1
+                    periodicFaceId(6) = face2
                 else
                     write(ERROR_MESSAGE,'("Periodicity axis is not valid. Must be x, y or z.")')
                     call exit_with_error(1,1,1,ERROR_MESSAGE)
@@ -305,12 +305,12 @@ write(*  ,'(A85)')adjl('-----------------------------------SYSTEM PARAMETERS----
 
 
 if (log_temperature) then
-    if (temp>0.0d0) then
-        write(iow,'(3X,A40,E16.9,A4)')adjl("Temperature:",40), temp," [K]"
-        write(6  ,'(3X,A40,E16.9,A4)')adjl("Temperature:",40), temp," [K]"
-        beta = 1.0d0 / (boltz_const_Joule_K * temp)
+    if (temperature>0.0d0) then
+        write(iow,'(3X,A40,E16.9,A4)')adjl("Temperature:",40), temperature," [K]"
+        write(6  ,'(3X,A40,E16.9,A4)')adjl("Temperature:",40), temperature," [K]"
+        beta = 1.0d0 / (boltz_const_Joule_K * temperature)
     else
-        write(ERROR_MESSAGE,'("Temperature is negative: ",E16.9," K")') temp
+        write(ERROR_MESSAGE,'("Temperature is negative: ",E16.9," K")') temperature
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
@@ -320,16 +320,16 @@ endif
 
 
 if (log_pressure) then
-    if (pres>=0.0d0) then
-        write(iow,'(3X,A40,E16.9,A6)')adjl("Pressure:",40), pres, " [atm]"
-        write(*  ,'(3X,A40,E16.9,A6)')adjl("Pressure:",40), pres, " [atm]"
-        pres = pres * atm_to_pa
+    if (pressure>=0.0d0) then
+        write(iow,'(3X,A40,E16.9,A6)')adjl("Pressure:",40), pressure, " [atm]"
+        write(*  ,'(3X,A40,E16.9,A6)')adjl("Pressure:",40), pressure, " [atm]"
+        pressure = pressure * atm_to_pa
     else
-        write(ERROR_MESSAGE,'("Pressure is negative: ",E16.9, " atm")') pres
+        write(ERROR_MESSAGE,'("Pressure is negative: ",E16.9, " atm")') pressure
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    pres = dflt_pres
+    pressure = dflt_pressure
     write(iow,'(A40)') "Pressure was set to 0 atm"
     write(*  ,'(A40)') "Pressure was set to 0 atm"
 endif
@@ -341,12 +341,12 @@ write(iow,'(A85)')adjl('----------------------------------POLYMER PROPERTIES----
 write(*  ,'(A85)')adjl('----------------------------------POLYMER PROPERTIES---------------------------------',85)
 
 
-if (log_mass_density) then
-    if (massden>0.0d0) then
-        write(iow,'(3X,A40,E16.9,A8)')adjl("Mass density:",40), massden, " [g/cm3]"
-        write(6  ,'(3X,A40,E16.9,A8)')adjl("Mass density:",40), massden, " [g/cm3]"
+if (log_massDensity) then
+    if (massDensity>0.0d0) then
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Mass density:",40), massDensity, " [g/cm3]"
+        write(6  ,'(3X,A40,E16.9,A8)')adjl("Mass density:",40), massDensity, " [g/cm3]"
     else
-        write(ERROR_MESSAGE,'("Mass density is negative: ",E16.9," g/cm3")') massden
+        write(ERROR_MESSAGE,'("Mass density is negative: ",E16.9," g/cm3")') massDensity
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
@@ -356,11 +356,11 @@ endif
 
 
 if (log_monomer_mass) then
-    if (mon_mass>0.0d0) then
-        write(iow,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40), mon_mass, "[g/mol]"
-        write(6  ,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40), mon_mass, "[g/mol]"
+    if (massOfMonomer>0.0d0) then
+        write(iow,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40), massOfMonomer, "[g/mol]"
+        write(6  ,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40), massOfMonomer, "[g/mol]"
     else
-        write(ERROR_MESSAGE,'("Monomer mass is negative: ",E16.9)') mon_mass
+        write(ERROR_MESSAGE,'("Monomer mass is negative: ",E16.9)') massOfMonomer
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
@@ -370,11 +370,11 @@ endif
 
 
 if (mx_exist.eq.1) then
-    if (log_chainlen_mx) then
-        if (chainlen_mx>0.0d0) then
-            chainlen_mx_max = chainlen_mx
+    if (log_lengthMatrix) then
+        if (lengthMatrix>0.0d0) then
+            lengthMatrixMax = lengthMatrix
         else
-            write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') chainlen_mx
+            write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') lengthMatrix
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -424,12 +424,12 @@ if (gr_exist.eq.1) then
         endif
     endif
 
-    if (log_Rg2_per_mon_gr) then
-        if (Rg2_per_mon_gr>0.0d0) then
-            write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per grafted monomer:",40), Rg2_per_mon_gr, "[Angstrom^2]"
-            write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per grafted monomer:",40), Rg2_per_mon_gr, "[Angstrom^2]"
+    if (log_rg2OfGraftedMonomer) then
+        if (rg2OfGraftedMonomer>0.0d0) then
+            write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per grafted monomer:",40), rg2OfGraftedMonomer, "[Angstrom^2]"
+            write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per grafted monomer:",40), rg2OfGraftedMonomer, "[Angstrom^2]"
         else
-            write(ERROR_MESSAGE,'("Rg2 per grafted monomer is negative: ",E16.9)') Rg2_per_mon_gr
+            write(ERROR_MESSAGE,'("Rg2 per grafted monomer is negative: ",E16.9)') rg2OfGraftedMonomer
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -437,17 +437,17 @@ if (gr_exist.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
-    if (log_chainlen_gr) then
-        if (chainlen_gr>0.0d0) then
-            write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of grafted chains:",40), chainlen_gr,"[monomers]"
+    if (log_lengthGrafted) then
+        if (lengthGrafted>0.0d0) then
+            write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of grafted chains:",40), lengthGrafted,"[monomers]"
             write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of grafted chains:",40), &
-                                                              & DSQRT(Rg2_per_mon_gr*chainlen_gr), "[Angstrom]"
-            write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of grafted chains:",40), chainlen_gr, "[monomers]"
+                                                              & DSQRT(rg2OfGraftedMonomer*lengthGrafted), "[Angstrom]"
+            write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of grafted chains:",40), lengthGrafted, "[monomers]"
             write(6  ,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of grafted chains:",40), &
-                                                              & DSQRT(Rg2_per_mon_gr*chainlen_gr), "[Angstrom]"
-            chainlen_mx_max = MAX(chainlen_mx, chainlen_gr)
+                                                              & DSQRT(rg2OfGraftedMonomer*lengthGrafted), "[Angstrom]"
+            lengthMatrixMax = MAX(lengthMatrix, lengthGrafted)
         else
-            write(ERROR_MESSAGE,'("Chain length of grafted chains is negative: ",E16.9)') chainlen_gr
+            write(ERROR_MESSAGE,'("Chain length of grafted chains is negative: ",E16.9)') lengthGrafted
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -457,8 +457,8 @@ if (gr_exist.eq.1) then
 
     if (log_ds_ave_gr) then
         if (ds_ave_gr_ed>0 .and. ds_ave_gr_conv>0) then
-            ns_gr_ed   = 2 * NINT(0.5d0 * chainlen_gr / ds_ave_gr_ed)
-            ns_gr_conv = 2 * NINT(0.5d0 * chainlen_gr / ds_ave_gr_conv)
+            ns_gr_ed   = 2 * NINT(0.5d0 * lengthGrafted / ds_ave_gr_ed)
+            ns_gr_conv = 2 * NINT(0.5d0 * lengthGrafted / ds_ave_gr_conv)
             write(iow,'(3X,A40,I9,I7)')adjl("Number of grafted segments:",40), ns_gr_ed, ns_gr_conv
             write(6  ,'(3X,A40,I9,I7)')adjl("Number of grafted segments:",40), ns_gr_ed, ns_gr_conv
 
@@ -496,7 +496,7 @@ if (gr_exist.eq.1) then
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
 
-            call compute_contour_step(ds_ave_gr_ed, xs_crit_gr, chainlen_gr, ns_gr_ed)
+            call compute_contour_step(ds_ave_gr_ed, xs_crit_gr, lengthGrafted, ns_gr_ed)
 
         elseif (contour_discr_gr.eq.contour_asymm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "asymm"
@@ -527,12 +527,12 @@ endif
 
 
 if (mx_exist.eq.1) then
-    if (log_Rg2_per_mon_mx) then
-        if (Rg2_per_mon_mx>0.0d0) then
-            write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40), Rg2_per_mon_mx, "[Angstrom^2]"
-            write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40), Rg2_per_mon_mx, "[Angstrom^2]"
+    if (log_rg2OfMatrixMonomer) then
+        if (rg2OfMatrixMonomer>0.0d0) then
+            write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40), rg2OfMatrixMonomer, "[Angstrom^2]"
+            write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40), rg2OfMatrixMonomer, "[Angstrom^2]"
         else
-            write(ERROR_MESSAGE,'("Rg2 per matrix monomer is negative: ",E16.9)') Rg2_per_mon_mx
+            write(ERROR_MESSAGE,'("Rg2 per matrix monomer is negative: ",E16.9)') rg2OfMatrixMonomer
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -540,17 +540,17 @@ if (mx_exist.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
-    write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40), chainlen_mx, "[monomers]"
+    write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40), lengthMatrix, "[monomers]"
     write(iow,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40), &
-                                                             & DSQRT(Rg2_per_mon_mx*chainlen_mx), "[Angstrom]"
-    write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40), chainlen_mx, "[monomers]"
+                                                             & DSQRT(rg2OfMatrixMonomer*lengthMatrix), "[Angstrom]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40), lengthMatrix, "[monomers]"
     write(6  ,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40), &
-                                                             & DSQRT(Rg2_per_mon_mx*chainlen_mx), "[Angstrom]"
+                                                             & DSQRT(rg2OfMatrixMonomer*lengthMatrix), "[Angstrom]"
 
     if (log_ds_ave_mx) then
         if (ds_ave_mx_ed>0.0d0 .and. ds_ave_mx_conv>0.0d0) then
-            ns_mx_ed   = 2 * NINT(0.5d0 * chainlen_mx_max / ds_ave_mx_ed)
-            ns_mx_conv = 2 * NINT(0.5d0 * chainlen_mx     / ds_ave_mx_conv)
+            ns_mx_ed   = 2 * NINT(0.5d0 * lengthMatrixMax / ds_ave_mx_ed)
+            ns_mx_conv = 2 * NINT(0.5d0 * lengthMatrix    / ds_ave_mx_conv)
 
             write(iow,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_mx_ed, ns_mx_conv
             write(6  ,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_mx_ed, ns_mx_conv
@@ -589,7 +589,7 @@ if (mx_exist.eq.1) then
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
 
-            call compute_contour_step(ds_ave_mx_ed, xs_crit_mx, chainlen_mx_max, ns_mx_ed)
+            call compute_contour_step(ds_ave_mx_ed, xs_crit_mx, lengthMatrixMax, ns_mx_ed)
 
         elseif (contour_discr_mx.eq.contour_asymm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
@@ -739,20 +739,20 @@ else
 endif
 
 
-if (log_bin_thickness) then
-    if (bin_thickness.ge.0.0d0) then
-        write(iow,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40), bin_thickness, "[Angstrom]"
-        write(6  ,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40), bin_thickness, "[Angstrom]"
+if (log_binThickness) then
+    if (binThickness.ge.0.0d0) then
+        write(iow,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40), binThickness, "[Angstrom]"
+        write(6  ,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40), binThickness, "[Angstrom]"
     else
-        write(ERROR_MESSAGE,'("Bin thickness is negative:",E16.9)')bin_thickness
+        write(ERROR_MESSAGE,'("Bin thickness is negative:",E16.9)') binThickness
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    bin_thickness = dflt_bin_thickness
+    binThickness = dflt_binThickness
     write(iow,'(3X,A40)')adjl("Bin thickness not found.",40)
-    write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), bin_thickness, "[Angstrom]"
+    write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), binThickness, "[Angstrom]"
     write(6  ,'(3X,A40)')adjl("Bin thickness not found.",40)
-    write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), bin_thickness, "[Angstrom]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), binThickness, "[Angstrom]"
 endif
 
 
@@ -814,26 +814,26 @@ else
 endif
 
 
-if (log_mumps_matrix_type) then
-    if (mumps_matrix_type == mumps_asymm) then
-        write(iow,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40), "nonsymmetric (", mumps_matrix_type, ")"
-        write(6  ,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40), "nonsymmetric (", mumps_matrix_type, ")"
-    elseif (mumps_matrix_type == mumps_posDef) then
-        write(iow,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40), "symmetric pos. def. (", mumps_matrix_type, ")"
-        write(6  ,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40), "symmetric pos. def. (", mumps_matrix_type, ")"
-    elseif (mumps_matrix_type == mumps_genSymm) then
-        write(iow,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40), "general symmetric(", mumps_matrix_type, ")"
-        write(6  ,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40), "general symmetric(", mumps_matrix_type, ")"
+if (log_mumpsMatrixType) then
+    if (mumpsMatrixType == mumps_asymm) then
+        write(iow,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40), "nonsymmetric (", mumpsMatrixType, ")"
+        write(6  ,'(3X,A40,1X,A14,I1,A1)')adjl("MUMPS matrix type:",40), "nonsymmetric (", mumpsMatrixType, ")"
+    elseif (mumpsMatrixType == mumps_posDef) then
+        write(iow,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40), "symmetric pos. def. (", mumpsMatrixType, ")"
+        write(6  ,'(3X,A40,1X,A21,I1,A1)')adjl("MUMPS matrix type:",40), "symmetric pos. def. (", mumpsMatrixType, ")"
+    elseif (mumpsMatrixType == mumps_genSymm) then
+        write(iow,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40), "general symmetric(", mumpsMatrixType, ")"
+        write(6  ,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40), "general symmetric(", mumpsMatrixType, ")"
     else
-        write(ERROR_MESSAGE,'("Incorrect MUMPS matrix type.",I16)') mumps_matrix_type
+        write(ERROR_MESSAGE,'("Incorrect MUMPS matrix type.",I16)') mumpsMatrixType
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    mumps_matrix_type = dflt_mumps_matrix_type
+    mumpsMatrixType = dflt_mumpsMatrixType
     write(iow,'(3X,A40)')adjl("MUMPS matrix type not detected.",40)
-    write(iow,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40), mumps_matrix_type
+    write(iow,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40), mumpsMatrixType
     write(6  ,'(3X,A40)')adjl("MUMPS matrix type not detected.",40)
-    write(6  ,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40), mumps_matrix_type
+    write(6  ,'(3X,A40,I10)')adjl("It was set to the nonsymmetric:",40), mumpsMatrixType
 endif
 
 
@@ -846,7 +846,7 @@ if (log_fraction_of_new_field) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    frac = dflt_frac
+    frac = dflt_fraction
     write(iow,'(3X,A40)')adjl("No initial fraction of new field.",40)
     write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), frac
     write(6  ,'(3X,A40)')adjl("No initial fraction of new field.",40)
@@ -911,131 +911,131 @@ write(iow,'(A85)')adjl('-----------------------------------OUTPUT FREQUENCY-----
 write(*  ,'(A85)')adjl('-----------------------------------OUTPUT FREQUENCY-----------------------------------',85)
 
 
-if (log_export_phi_gen_freq) then
-    if (export_phi_gen_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
+if (log_exportPhiGeneral) then
+    if (exportPhiGeneral.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
+        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
     else
-        export_phi_gen_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
+        exportPhiGeneral = 0
+        write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
+        write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
     endif
 else
-    export_phi_gen_freq = dflt_export_phi_gen_freq
-    write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), export_phi_gen_freq
+    exportPhiGeneral = dflt_exportPhiGeneral
+    write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
+    write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
 endif
 
 
-if (log_export_phi_indiv_freq) then
-    if (export_phi_indiv_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
+if (log_exportPhiIndividual) then
+    if (exportPhiIndividual.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40), exportPhiIndividual
+        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40), exportPhiIndividual
     else
-        export_phi_indiv_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
+        exportPhiIndividual = 0
+        write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40), exportPhiIndividual
+        write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40), exportPhiIndividual
     endif
 else
-    export_phi_indiv_freq = dflt_export_phi_indiv_freq
-    write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40), export_phi_indiv_freq
+    exportPhiIndividual = dflt_exportPhiIndividual
+    write(iow,'(3X,A40,I9)')adjl("Export individual density profiles:",40), exportPhiIndividual
+    write(6  ,'(3X,A40,I9)')adjl("Export individual density profiles:",40), exportPhiIndividual
 endif
 
 
-if (log_export_field_freq) then
-    if (export_field_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
+if (log_exportField) then
+    if (exportField.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export field:",40), exportField
+        write(6  ,'(3X,A40,I9)')adjl("Export field:",40), exportField
     else
-        export_field_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
+        exportField = 0
+        write(iow,'(3X,A40,I9)')adjl("Export field:",40), exportField
+        write(6  ,'(3X,A40,I9)')adjl("Export field:",40), exportField
     endif
 else
-    export_field_freq = dflt_export_field_freq
-    write(iow,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export field:",40), export_field_freq
+    exportField = dflt_exportField
+    write(iow,'(3X,A40,I9)')adjl("Export field:",40), exportField
+    write(6  ,'(3X,A40,I9)')adjl("Export field:",40), exportField
 endif
 
 
-if (log_export_field_bin_freq) then
-    if (export_field_bin_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
+if (log_exportFieldBinary) then
+    if (exportFieldBinary.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export binary field:",40), exportFieldBinary
+        write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40), exportFieldBinary
     else
-        export_field_bin_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
+        exportFieldBinary = 0
+        write(iow,'(3X,A40,I9)')adjl("Export binary field:",40), exportFieldBinary
+        write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40), exportFieldBinary
     endif
 else
-    export_field_bin_freq = dflt_export_field_bin_freq
-    write(iow,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40), export_field_bin_freq
+    exportFieldBinary = dflt_exportFieldBinary
+    write(iow,'(3X,A40,I9)')adjl("Export binary field:",40), exportFieldBinary
+    write(6  ,'(3X,A40,I9)')adjl("Export binary field:",40), exportFieldBinary
 endif
 
 
-if (log_export_propagators_freq) then
-    if (export_propagators_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
+if (log_exportPropagators) then
+    if (exportPropagators.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40), exportPropagators
+        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40), exportPropagators
     else
-        export_propagators_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
+        exportPropagators = 0
+        write(iow,'(3X,A40,I9)')adjl("Export propagators:",40), exportPropagators
+        write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40), exportPropagators
     endif
 else
-    export_propagators_freq = dflt_export_propagators_freq
-    write(iow,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40), export_propagators_freq
+    exportPropagators = dflt_exportPropagators
+    write(iow,'(3X,A40,I9)')adjl("Export propagators:",40), exportPropagators
+    write(6  ,'(3X,A40,I9)')adjl("Export propagators:",40), exportPropagators
 endif
 
 
-if (log_export_brush_thickness_freq) then
-    if (export_brush_thickness_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
+if (log_exportBrushThickness) then
+    if (exportBrushThickness.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40), exportBrushThickness
+        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40), exportBrushThickness
     else
-        export_brush_thickness_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
+        exportBrushThickness = 0
+        write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40), exportBrushThickness
+        write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40), exportBrushThickness
     endif
 else
-    export_brush_thickness_freq = dflt_export_brush_thickness_freq
-    write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40), export_brush_thickness_freq
+    exportBrushThickness = dflt_exportBrushThickness
+    write(iow,'(3X,A40,I9)')adjl("Export brush thickness:",40), exportBrushThickness
+    write(6  ,'(3X,A40,I9)')adjl("Export brush thickness:",40), exportBrushThickness
 endif
 
 
-if (log_export_chains_per_area_freq) then
-    if (export_chains_per_area_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
+if (log_exportChainsPerArea) then
+    if (exportChainsPerArea.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), exportChainsPerArea
+        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), exportChainsPerArea
     else
-        export_chains_per_area_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
+        exportChainsPerArea = 0
+        write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), exportChainsPerArea
+        write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), exportChainsPerArea
     endif
 else
-    export_chains_per_area_freq = dflt_export_chains_per_area_freq
-    write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), export_chains_per_area_freq
+    exportChainsPerArea = dflt_exportChainsPerArea
+    write(iow,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), exportChainsPerArea
+    write(6  ,'(3X,A40,I9)')adjl("Export chains per area profiles:",40), exportChainsPerArea
 endif
 
 
-if (log_export_ads_free_freq) then
-    if (export_ads_free_freq.ge.1) then
-        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
+if (log_exportAdsorbedFree) then
+    if (exportAdsorbedFree.ge.1) then
+        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), exportAdsorbedFree
+        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), exportAdsorbedFree
     else
-        export_ads_free_freq = 0
-        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
-        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
+        exportAdsorbedFree = 0
+        write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), exportAdsorbedFree
+        write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), exportAdsorbedFree
     endif
 else
-    export_ads_free_freq = dflt_export_ads_free_freq
-    write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
-    write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), export_ads_free_freq
+    exportAdsorbedFree = dflt_exportAdsorbedFree
+    write(iow,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), exportAdsorbedFree
+    write(6  ,'(3X,A40,I9)')adjl("Export ads vs free density profiles:",40), exportAdsorbedFree
 endif
 
 
@@ -1045,69 +1045,69 @@ write(iow,'(A85)')adjl('----------------------------------BOUNDARY CONDITIONS---
 write(*  ,'(A85)')adjl('----------------------------------BOUNDARY CONDITIONS---------------------------------',85)
 
 
-if (log_num_of_dirichlet_faces.and.num_of_dirichlet_faces>0) then
-    write(iow,'(3X,A40,I9)')adjl("Number of Dirichlet (q=0) faces:",40), num_of_dirichlet_faces
+if (log_numDirichletFaces.and.numDirichletFaces>0) then
+    write(iow,'(3X,A40,I9)')adjl("Number of Dirichlet (q=0) faces:",40), numDirichletFaces
     write(iow,'(3X,A39)',advance='no') "Face ids:                               "
-    write(6  ,'(3X,A40,I9)')adjl("Number of Dirichlet (q=0) faces:",40), num_of_dirichlet_faces
+    write(6  ,'(3X,A40,I9)')adjl("Number of Dirichlet (q=0) faces:",40), numDirichletFaces
     write(6  ,'(3X,A39)',advance='no') "Face ids:                               "
-    do ii = 1, num_of_dirichlet_faces
-        write(iow,'(I3)',advance='no') ids_dirichlet_faces(ii)
-        write(6  ,'(I3)',advance='no') ids_dirichlet_faces(ii)
+    do ii = 1, numDirichletFaces
+        write(iow,'(I3)',advance='no') dirichletFaceId(ii)
+        write(6  ,'(I3)',advance='no') dirichletFaceId(ii)
     enddo
     write(iow,*)
     write(6  ,*)
 else
-    num_of_dirichlet_faces = 0
-    allocate(ids_dirichlet_faces(1))
-    ids_dirichlet_faces(1)=-1
+    numDirichletFaces = 0
+    allocate(dirichletFaceId(1))
+    dirichletFaceId(1)=-1
     write(iow,'(3X,A40)')adjl("There are no Dirichlet (q=0) faces.",40)
     write(6  ,'(3X,A40)')adjl("There are no Dirichlet (q=0) faces.",40)
 endif
 
 
-if (log_num_of_nanoparticle_faces.and.num_of_nanoparticle_faces>0) then
-    write(iow,'(3X,A40,I9)')adjl("Number of Nanoparticle (q=0) faces:",40), num_of_nanoparticle_faces
+if (log_numNanoparticleFaces.and.numNanoparticleFaces>0) then
+    write(iow,'(3X,A40,I9)')adjl("Number of Nanoparticle (q=0) faces:",40), numNanoparticleFaces
     write(iow,'(3X,A39)',advance='no') "Face ids:                               "
-    write(6  ,'(3X,A40,I9)')adjl("Number of Nanoparticle (q=0) faces:",40), num_of_nanoparticle_faces
+    write(6  ,'(3X,A40,I9)')adjl("Number of Nanoparticle (q=0) faces:",40), numNanoparticleFaces
     write(6  ,'(3X,A39)',advance='no') "Face ids:                               "
-    do ii = 1, num_of_nanoparticle_faces
-        write(iow,'(I3)',advance='no') ids_nanopart_faces(ii)
-        write(6  ,'(I3)',advance='no') ids_nanopart_faces(ii)
+    do ii = 1, numNanoparticleFaces
+        write(iow,'(I3)',advance='no') nanoparticleFaceId(ii)
+        write(6  ,'(I3)',advance='no') nanoparticleFaceId(ii)
     enddo
     write(iow,*)
     write(6  ,*)
 else
-    num_of_nanoparticle_faces = 0
-    allocate(ids_nanopart_faces(1))
-    ids_nanopart_faces(1)=-1
+    numNanoparticleFaces = 0
+    allocate(nanoparticleFaceId(1))
+    nanoparticleFaceId(1)=-1
     write(iow,'(3X,A38)')adjl("There are no nanoparticle (q=0) faces.",40)
     write(6  ,'(3X,A38)')adjl("There are no nanoparticle (q=0) faces.",40)
 endif
 
 
 if (log_periodicity.and.periodicity>0) then
-    domain_is_periodic = .true.
+    domainIsPeriodic = .true.
 
-    if (periodic_axis_id(1)) then
+    if (periodicAxisId(1)) then
         write(iow,'(3X,A40)')adjl("The domain is periodic along the x-axis",40)
-        write(iow,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(1), periodic_face_id(2)
+        write(iow,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(1), periodicFaceId(2)
         write(6  ,'(3X,A40)')adjl("The domain is periodic along the x-axis",40)
-        write(6  ,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(1), periodic_face_id(2)
+        write(6  ,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(1), periodicFaceId(2)
     endif
-    if (periodic_axis_id(2)) then
+    if (periodicAxisId(2)) then
         write(iow,'(3X,A40)')adjl("The domain is periodic along the y-axis",40)
-        write(iow,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(3), periodic_face_id(4)
+        write(iow,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(3), periodicFaceId(4)
         write(6  ,'(3X,A40)')adjl("The domain is periodic along the y-axis",40)
-        write(6  ,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(3), periodic_face_id(4)
+        write(6  ,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(3), periodicFaceId(4)
     endif
-    if (periodic_axis_id(3)) then
+    if (periodicAxisId(3)) then
         write(iow,'(3X,A40)')adjl("The domain is periodic along the z-axis",40)
-        write(iow,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(5), periodic_face_id(6)
+        write(iow,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(5), periodicFaceId(6)
         write(6  ,'(3X,A40)')adjl("The domain is periodic along the z-axis",40)
-        write(6  ,'(6X,A10,2I3)') "Face ids: ", periodic_face_id(5), periodic_face_id(6)
+        write(6  ,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(5), periodicFaceId(6)
     endif
 else
-    domain_is_periodic = dflt_domain_is_periodic
+    domainIsPeriodic = dflt_domainIsPeriodic
     write(iow,'(3X,A38)')adjl("The domain is not periodic.",40)
     write(6  ,'(3X,A38)')adjl("The domain is not periodic.",40)
 endif
@@ -1199,12 +1199,12 @@ else
 endif
 
 if  (log_influence_param) then
-    square_gradient = .true.
+    squareGradient = .true.
     write(iow,'(3X,A40,E16.9,A14)')adjl("Influence parameter:",45), k_gr_tilde, " [J*m^5/mol^2]"
     write(*  ,'(3X,A40,E16.9,A14)')adjl("Influence parameter:",45), k_gr_tilde, " [J*m^5/mol^2]"
 else
     k_gr_tilde      = 0.0d0
-    square_gradient = dflt_square_gradient
+    squareGradient = dflt_squareGradient
     write(iow,'(3X,A40,E16.9,A14)')adjl("Influence parameter not found. Auto:",45), k_gr_tilde, " [J*m^5/mol^2]"
     write(*  ,'(3X,A40,E16.9,A14)')adjl("Influence parameter not found. Auto:",45), k_gr_tilde, " [J*m^5/mol^2]"
 endif

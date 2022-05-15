@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine solver_mumps(mumps_matrix_type)
+subroutine solver_mumps(mumpsMatrixType)
 !--------------------------------------------------------------------------!
 use kcw_mod,      only: A_m, rdiag1, NNZ
 use geometry_mod, only: numnp
@@ -19,7 +19,7 @@ include "dmumps_struc.h"
 !--------------------------------------------------------------------------!
 type(DMUMPS_STRUC) :: mumps_par
 
-integer, intent(in) :: mumps_matrix_type
+integer, intent(in) :: mumpsMatrixType
 integer             :: ii, i8, i9
 !--------------------------------------------------------------------------!
 ! Define a communicator for the package
@@ -29,16 +29,16 @@ mumps_par%COMM = MPI_COMM_WORLD
 mumps_par%PAR  = 1  !working host processor
 
 ! Set the type of the matrix
-if (mumps_matrix_type.eq.mumps_asymm) then
+if (mumpsMatrixType.eq.mumps_asymm) then
     mumps_par%SYM = 0
-elseif (mumps_matrix_type.eq.mumps_posDef) then
+elseif (mumpsMatrixType.eq.mumps_posDef) then
     mumps_par%SYM       = 1
     mumps_par%ICNTL(13) = 0
-elseif (mumps_matrix_type.eq.mumps_genSymm) then
+elseif (mumpsMatrixType.eq.mumps_genSymm) then
     mumps_par%SYM     = 2
     mumps_par%CNTL(1) = 0
 else
-    ERROR_MESSAGE="MUMPS SUBROUTINE: mumps_matrix_type not between 0-2."
+    ERROR_MESSAGE="MUMPS SUBROUTINE: mumpsMatrixType not between 0-2."
     call exit_with_error(1,2,1,ERROR_MESSAGE)
 endif
 

@@ -43,7 +43,7 @@ real(8) :: T_tilde, P_tilde, rho_tilde_bulk, rsl_N
 
         df_drho = 0.0d0
         if (eos_type.eq.eos_helfand) then
-            df_drho = (phi-1.0d0)/(hlf_kappa_T*rho_mol_bulk*n_avog)
+            df_drho = (phi-1.0d0)/(hlf_kappa_T*molarBulkDensity*n_avog)
         elseif (eos_type.eq.eos_sl) then
             rho_tilde = rho_tilde_bulk*phi
             if (rho_tilde.gt.1.0d0) rho_tilde = 0.9999d0

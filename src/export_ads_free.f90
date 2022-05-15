@@ -4,7 +4,7 @@
 
 subroutine export_ads_free(node_belongs_to_dirichlet_face, adsorbed)
 !-----------------------------------------------------------------------------------------------------------------------!
-use parser_vars_mod,  only: mumps_matrix_type, Rg2_per_mon_mx, chainlen_mx, ns_mx_ed, ns_mx_conv
+use parser_vars_mod,  only: mumpsMatrixType, rg2OfMatrixMonomer, lengthMatrix, ns_mx_ed, ns_mx_conv
 use write_helper_mod, only: adjl
 use arrays_mod,       only: ds_mx_ed, xs_mx_ed, xs_mx_conv, coeff_mx_conv, qmx_interp_mm, phi_mx, ww
 use geometry_mod,     only: numnp, xc
@@ -24,7 +24,7 @@ real(8), dimension(numnp)              :: phi_free, phi_ads, phi_loop, phi_tail
 write(6,'(2X,A40)')adjl("Exporting ads vs free density profiles.",40)
 
 ! Assembly
-call fem_matrix_assemble(Rg2_per_mon_mx, ww)
+call fem_matrix_assemble(rg2OfMatrixMonomer, ww)
 
 ! Initial and boundary conditions
 qfree            = 0.0d0
@@ -44,7 +44,7 @@ do kk = 1, numnp
 enddo
 
 ! Solution
-call solver_edwards(ds_mx_ed, ns_mx_ed, mumps_matrix_type, qfree, qfree_final, node_belongs_to_dirichlet_face_new)
+call solver_edwards(ds_mx_ed, ns_mx_ed, mumpsMatrixType, qfree, qfree_final, node_belongs_to_dirichlet_face_new)
 
 ! Contour interpolation
 do ii = 1, numnp
@@ -58,9 +58,9 @@ do ii = 1, ns_mx_conv+1
 enddo
 
 ! Determine the density profiles
-call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qfree_interp, qfree_interp, phi_free)
-call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qads, qads, phi_loop)
-call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qfree_interp, qads, phi_tail)
+call contour_convolution(numnp, lengthMatrix, ns_mx_conv, coeff_mx_conv, qfree_interp, qfree_interp, phi_free)
+call contour_convolution(numnp, lengthMatrix, ns_mx_conv, coeff_mx_conv, qads, qads, phi_loop)
+call contour_convolution(numnp, lengthMatrix, ns_mx_conv, coeff_mx_conv, qfree_interp, qads, phi_tail)
 
 open(unit=125, file="o.ads_free_mx")
 write(125,'(9(2X,A16))') "kk", 'x', 'y', 'z', "phi_free", "phi_ads", "phi_loop", "phi_tail", "phi_mx"

@@ -7,7 +7,7 @@ subroutine mesh_dirichlet_faces(numel_type_face, nen_type_face, global_node_id_t
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
-use parser_vars_mod, only: num_of_dirichlet_faces, num_of_nanoparticle_faces, ids_dirichlet_faces, ids_nanopart_faces
+use parser_vars_mod, only: numDirichletFaces, numNanoparticleFaces, dirichletFaceId, nanoparticleFaceId
 use geometry_mod,    only: ndm, node_belongs_to_dirichlet_face, numnp, is_dirichlet_face, box_lo, box_hi, xc
 use iofiles_mod,     only: dir_faces
 use constants_mod,   only: tol
@@ -36,8 +36,8 @@ is_dirichlet_face = .false.
 do jj = 1, numel_type_face
     face_entity_key%ints(1) = jj
     call face_entity_hash%get(face_entity_key, face_entity_value)
-    do ii = 1, num_of_dirichlet_faces
-        if (face_entity_value==ids_dirichlet_faces(ii)) then
+    do ii = 1, numDirichletFaces
+        if (face_entity_value==dirichletFaceId(ii)) then
             do pp = 1, nen_type_face
                 idummy = global_node_id_type_face(pp,jj)
 
@@ -74,8 +74,8 @@ do jj = 1, numel_type_face
     enddo
 
     ! Nanoparticles section
-    do ii = 1, num_of_nanoparticle_faces
-        if (face_entity_value==ids_nanopart_faces(ii)) then
+    do ii = 1, numNanoparticleFaces
+        if (face_entity_value==nanoparticleFaceId(ii)) then
             do kk = 1, nen_type_face
                 idummy = global_node_id_type_face(kk,jj)
 

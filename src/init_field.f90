@@ -4,8 +4,8 @@
 
 subroutine init_field(Ufield, ww)
 !------------------------------------------------------------------------------------------------------!
-use parser_vars_mod,  only: a_pol, field_init_scheme, kapa, num_of_nanoparticle_faces,  &
-&                       rho_mol_bulk, sigma_pol, beta, wall_distance, center_np,        &
+use parser_vars_mod,  only: a_pol, field_init_scheme, kapa, numNanoparticleFaces,  &
+&                       molarBulkDensity, sigma_pol, beta, wall_distance, center_np,        &
 &                       sigma_plate, radius_np_eff, sigma_np, A_np, A_plate
 use geometry_mod,     only: numnp, is_dirichlet_face, box_lo, box_hi, xc, node_belongs_to_dirichlet_face
 use error_handing_mod
@@ -37,7 +37,7 @@ do kk = 1, numnp
         do nn = 1, 2
             if (is_dirichlet_face(mm,nn)) then
 
-                number_density = rho_mol_bulk * n_avog
+                number_density = molarBulkDensity * n_avog
                 radius_pol     = (3.0d0 / 4.0d0 / pi / number_density)**(1.0d0/3.0d0) * m_to_A
 
                 if (nn.eq.1) then
@@ -72,10 +72,10 @@ do kk = 1, numnp
     enddo
 
    ! Loop over all nanoparticle faces
-   number_density   = rho_mol_bulk * n_avog
+   number_density   = molarBulkDensity * n_avog
    radius_pol       = (3.0d0 / 4.0d0 / pi / number_density)**(1.0d0/3.0d0) * m_to_A
 
-   do mm = 1, num_of_nanoparticle_faces
+   do mm = 1, numNanoparticleFaces
        r_centers        = DSQRT((xc(1,kk)-center_np(1,mm))**2.0d0 + (xc(2,kk)-center_np(2,mm))**2.0d0 + (xc(3,kk)-center_np(3,mm))**2.0d0)
        radius_np_actual = radius_np_eff(mm) - wall_distance
        r_surf           = r_centers - radius_pol - radius_np_actual

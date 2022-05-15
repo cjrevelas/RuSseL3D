@@ -9,7 +9,7 @@ use fhash_module__ints_double
 use ints_module
 use error_handing_mod
 use write_helper_mod, only: adjl
-use parser_vars_mod,  only: iow, periodic_axis_id, domain_is_periodic
+use parser_vars_mod,  only: iow, periodicAxisId, domainIsPeriodic
 use geometry_mod,     only: nel, num_of_elems_of_node, box_lo, box_hi, box_len,           &
 &                       xc, numnp, numel, global_node_id_type_domain,                     &
 &                       ndm, node_pair_id, num_of_bulk_pairs, total_num_of_node_pairs,    &
@@ -275,10 +275,10 @@ do kk = 1, domain_entity_hash%key_count()
 enddo
 #endif
 
-if (domain_is_periodic) then
-    if (periodic_axis_id(1)) call mesh_face_entities('x', face_entity_hash, xface1_hash, xface2_hash)
-    if (periodic_axis_id(2)) call mesh_face_entities('y', face_entity_hash, yface1_hash, yface2_hash)
-    if (periodic_axis_id(3)) call mesh_face_entities('z', face_entity_hash, zface1_hash, zface2_hash)
+if (domainIsPeriodic) then
+    if (periodicAxisId(1)) call mesh_face_entities('x', face_entity_hash, xface1_hash, xface2_hash)
+    if (periodicAxisId(2)) call mesh_face_entities('y', face_entity_hash, yface1_hash, yface2_hash)
+    if (periodicAxisId(3)) call mesh_face_entities('z', face_entity_hash, zface1_hash, zface2_hash)
 
 #ifdef DEBUG_OUTPUTS
     call face_entity_it%begin(face_entity_hash)
@@ -291,14 +291,14 @@ if (domain_is_periodic) then
     close(33)
     close(44)
 
-    if (periodic_axis_id(1)) call mesh_periodic_face_elements('x', xface1_hash, xface2_hash)
-    if (periodic_axis_id(2)) call mesh_periodic_face_elements('y', yface1_hash, yface2_hash)
-    if (periodic_axis_id(3)) call mesh_periodic_face_elements('z', zface1_hash, zface2_hash)
+    if (periodicAxisId(1)) call mesh_periodic_face_elements('x', xface1_hash, xface2_hash)
+    if (periodicAxisId(2)) call mesh_periodic_face_elements('y', yface1_hash, yface2_hash)
+    if (periodicAxisId(3)) call mesh_periodic_face_elements('z', zface1_hash, zface2_hash)
 #endif
 
-    if (periodic_axis_id(1)) call mesh_build_node_pairing(global_node_id_type_face, 'x', xface1_hash, xface2_hash, node_pairing_xx_hash)
-    if (periodic_axis_id(2)) call mesh_build_node_pairing(global_node_id_type_face, 'y', yface1_hash, yface2_hash, node_pairing_yy_hash)
-    if (periodic_axis_id(3)) call mesh_build_node_pairing(global_node_id_type_face, 'z', zface1_hash, zface2_hash, node_pairing_zz_hash)
+    if (periodicAxisId(1)) call mesh_build_node_pairing(global_node_id_type_face, 'x', xface1_hash, xface2_hash, node_pairing_xx_hash)
+    if (periodicAxisId(2)) call mesh_build_node_pairing(global_node_id_type_face, 'y', yface1_hash, yface2_hash, node_pairing_yy_hash)
+    if (periodicAxisId(3)) call mesh_build_node_pairing(global_node_id_type_face, 'z', zface1_hash, zface2_hash, node_pairing_zz_hash)
 endif
 
 allocate(num_of_elems_of_node(numnp))
@@ -308,15 +308,15 @@ num_dest_xx_neighbors = 0
 num_dest_yy_neighbors = 0
 num_dest_zz_neighbors = 0
 
-if (periodic_axis_id(1)) call mesh_periodic_neighbors(node_pairing_xx_hash, num_dest_xx_neighbors)
-if (periodic_axis_id(2)) call mesh_periodic_neighbors(node_pairing_yy_hash, num_dest_yy_neighbors)
-if (periodic_axis_id(3)) call mesh_periodic_neighbors(node_pairing_zz_hash, num_dest_zz_neighbors)
+if (periodicAxisId(1)) call mesh_periodic_neighbors(node_pairing_xx_hash, num_dest_xx_neighbors)
+if (periodicAxisId(2)) call mesh_periodic_neighbors(node_pairing_yy_hash, num_dest_yy_neighbors)
+if (periodicAxisId(3)) call mesh_periodic_neighbors(node_pairing_zz_hash, num_dest_zz_neighbors)
 
 total_num_of_node_pairs = num_of_bulk_pairs
 
-if (periodic_axis_id(1)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_xx_hash%key_count() + num_dest_xx_neighbors)
-if (periodic_axis_id(2)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_yy_hash%key_count() + num_dest_yy_neighbors)
-if (periodic_axis_id(3)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_zz_hash%key_count() + num_dest_zz_neighbors)
+if (periodicAxisId(1)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_xx_hash%key_count() + num_dest_xx_neighbors)
+if (periodicAxisId(2)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_yy_hash%key_count() + num_dest_yy_neighbors)
+if (periodicAxisId(3)) total_num_of_node_pairs = total_num_of_node_pairs + 2 * (node_pairing_zz_hash%key_count() + num_dest_zz_neighbors)
 
 allocate(F_m%row(total_num_of_node_pairs))
 allocate(F_m%col(total_num_of_node_pairs))
@@ -341,7 +341,7 @@ call mesh_bulk_node_pairs(elemcon)
 starting_pair = num_of_bulk_pairs + 1
 ending_pair   = num_of_bulk_pairs + node_pairing_xx_hash%key_count()
 
-if (periodic_axis_id(1)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_xx_hash)
+if (periodicAxisId(1)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_xx_hash)
 
 do ii = 1, num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count()
      F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
@@ -349,7 +349,7 @@ enddo
 
 ! xx neighbors
 forward_steps = 0
-if (periodic_axis_id(1)) call mesh_append_dest_neighbors(elemcon, forward_steps, num_dest_xx_neighbors, node_pairing_xx_hash)
+if (periodicAxisId(1)) call mesh_append_dest_neighbors(elemcon, forward_steps, num_dest_xx_neighbors, node_pairing_xx_hash)
 
 do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 1, &
 &       num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors
@@ -360,7 +360,7 @@ enddo
 starting_pair = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 1
 ending_pair   = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + node_pairing_yy_hash%key_count()
 
-if (periodic_axis_id(2)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_yy_hash)
+if (periodicAxisId(2)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_yy_hash)
 
 do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 1, &
 &       num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count()
@@ -369,7 +369,7 @@ enddo
 
 ! yy neighbors
 forward_steps = 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors
-if (periodic_axis_id(2)) call mesh_append_dest_neighbors(elemcon, forward_steps, num_dest_yy_neighbors, node_pairing_yy_hash)
+if (periodicAxisId(2)) call mesh_append_dest_neighbors(elemcon, forward_steps, num_dest_yy_neighbors, node_pairing_yy_hash)
 
 do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + 1, &
 &       num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors
@@ -382,7 +382,7 @@ starting_pair = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_d
 ending_pair   = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
               &                     2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors + node_pairing_zz_hash%key_count()
 
-if (periodic_axis_id(3)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_zz_hash)
+if (periodicAxisId(3)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_zz_hash)
 
 do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
       &                     2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors + 1, &
@@ -393,7 +393,7 @@ enddo
 
 ! zz neighbors
 forward_steps = 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + 2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors
-if (periodic_axis_id(3)) call mesh_append_dest_neighbors(elemcon, forward_steps, num_dest_zz_neighbors, node_pairing_zz_hash)
+if (periodicAxisId(3)) call mesh_append_dest_neighbors(elemcon, forward_steps, num_dest_zz_neighbors, node_pairing_zz_hash)
 
 do ii = num_of_bulk_pairs + 2*node_pairing_xx_hash%key_count() + 2*num_dest_xx_neighbors + &
       &                     2*node_pairing_yy_hash%key_count() + 2*num_dest_yy_neighbors + 2*node_pairing_zz_hash%key_count() + 1, &

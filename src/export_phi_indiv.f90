@@ -6,7 +6,7 @@ subroutine export_phi_indiv(targetNumGraftedChains, numnp, xc, phi_gr_indiv)
 !------------------------------------------------------------------------------------------------------!
 use error_handing_mod
 use iofiles_mod,      only: phi_profile_indiv
-use parser_vars_mod,  only: chainlen_gr, rho_mol_bulk
+use parser_vars_mod,  only: lengthGrafted, molarBulkDensity
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
@@ -18,7 +18,7 @@ real(8), intent(in), dimension(numnp,targetNumGraftedChains) :: phi_gr_indiv
 real(8), dimension(targetNumGraftedChains)                   :: nch_gr
 !------------------------------------------------------------------------------------------------------!
 do ii = 1, targetNumGraftedChains
-    call compute_number_of_chains(numnp, chainlen_gr, rho_mol_bulk, phi_gr_indiv(:,ii), nch_gr(ii))
+    call compute_number_of_chains(numnp, lengthGrafted, molarBulkDensity, phi_gr_indiv(:,ii), nch_gr(ii))
 enddo
 
 open (unit=120, file = phi_profile_indiv)

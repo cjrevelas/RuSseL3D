@@ -62,11 +62,11 @@ flag_continue = .true.
 ! The slave processes will enter the mumps subroutine until they receive a stop signal from master proc
 if (.not.root) then
   ! Receive the matrix type from root
-  call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(mumpsMatrixType, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
   do while (.true.)
     call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
     if (flag_continue) then
-      call solver_mumps(mumps_matrix_type)
+      call solver_mumps(mumpsMatrixType)
     else
       exit
     endif
@@ -98,27 +98,27 @@ allocate(dphi2_dr2(numnp))
 dphi2_dr2=0.0d0
 
 call init_delta
-call tools_histogram(bin_thickness, volnp)
+call tools_histogram(binThickness, volnp)
 
 #ifdef USE_MPI
-call MPI_BCAST(mumps_matrix_type, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
+call MPI_BCAST(mumpsMatrixType, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 #endif
 
 if (mx_exist.eq.1) then
-  call init_chain_contour(contour_discr_mx, chainlen_mx_max, xs_crit_mx, ns_mx_ed, ds_ave_mx_ed, ds_mx_ed, xs_mx_ed, coeff_mx_ed)
+  call init_chain_contour(contour_discr_mx, lengthMatrixMax, xs_crit_mx, ns_mx_ed, ds_ave_mx_ed, ds_mx_ed, xs_mx_ed, coeff_mx_ed)
   if (contour_discr_mx.ne.contour_uniform) then
-    call init_chain_contour(contour_symm, chainlen_mx, xs_crit_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+    call init_chain_contour(contour_symm, lengthMatrix, xs_crit_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
   else
-    call init_chain_contour(contour_discr_mx, chainlen_mx, xs_crit_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+    call init_chain_contour(contour_discr_mx, lengthMatrix, xs_crit_mx, ns_mx_conv, ds_ave_mx_conv, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
   endif
 endif
 
 if (gr_exist.eq.1) then
-  call init_chain_contour(contour_discr_gr, chainlen_gr, xs_crit_gr, ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, coeff_gr_ed)
+  call init_chain_contour(contour_discr_gr, lengthGrafted, xs_crit_gr, ns_gr_ed, ds_ave_gr_ed, ds_gr_ed, xs_gr_ed, coeff_gr_ed)
   if (contour_discr_gr.ne.contour_uniform) then
-    call init_chain_contour(contour_symm, chainlen_gr, xs_crit_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
+    call init_chain_contour(contour_symm, lengthGrafted, xs_crit_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
   else
-    call init_chain_contour(contour_discr_gr, chainlen_gr, xs_crit_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
+    call init_chain_contour(contour_discr_gr, lengthGrafted, xs_crit_gr, ns_gr_conv, ds_ave_gr_conv, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
   endif
 endif
 
@@ -147,14 +147,14 @@ do iter = init_iter, iterations-1
 
     ww = ww_mix
 
-    call fem_matrix_assemble(Rg2_per_mon_mx, ww)
+    call fem_matrix_assemble(rg2OfMatrixMonomer, ww)
 
     do ii = 1, numnp
         qmx(1,ii)       = 1.0d0
         qmx_final(1,ii) = 1.0d0
     enddo
 
-    call solver_edwards(ds_mx_ed, ns_mx_ed, mumps_matrix_type, qmx, qmx_final, node_belongs_to_dirichlet_face)
+    call solver_edwards(ds_mx_ed, ns_mx_ed, mumpsMatrixType, qmx, qmx_final, node_belongs_to_dirichlet_face)
 
     if (gr_exist.eq.1) then
         do ii = 1, numnp
@@ -172,11 +172,11 @@ do iter = init_iter, iterations-1
 
             do ii = 1, targetNumGraftedChains
                 gnode_id = gpid(ii)
-                gp_init_value(ii) = delta_numer(ii) * chainlen_gr * 1.0d0 / (qmx_interp_mg(ns_gr_conv+1,gnode_id) * (molarBulkDensity * n_avog))
+                gp_init_value(ii) = delta_numer(ii) * lengthGrafted * 1.0d0 / (qmx_interp_mg(ns_gr_conv+1,gnode_id) * (molarBulkDensity * n_avog))
             enddo
         endif
 
-        call fem_matrix_assemble(Rg2_per_mon_gr, ww)
+        call fem_matrix_assemble(rg2OfGraftedMonomer, ww)
 
         qgr       = 0.0d0
         qgr_final = 0.0d0
@@ -188,7 +188,7 @@ do iter = init_iter, iterations-1
             qgr_final(1,gnode_id) = gp_init_value(ii)
         enddo
 
-        call solver_edwards(ds_gr_ed, ns_gr_ed, mumps_matrix_type, qgr, qgr_final, node_belongs_to_dirichlet_face)
+        call solver_edwards(ds_gr_ed, ns_gr_ed, mumpsMatrixType, qgr, qgr_final, node_belongs_to_dirichlet_face)
     endif
 
     if (mx_exist.eq.1) then
@@ -196,7 +196,7 @@ do iter = init_iter, iterations-1
             call interp_linear(1, ns_mx_ed+1, xs_mx_ed, qmx_final(:,ii), ns_mx_conv+1, xs_mx_conv, qmx_interp_mm(:,ii))
         enddo
 
-        call contour_convolution(numnp, chainlen_mx, ns_mx_conv, coeff_mx_conv, qmx_interp_mm, qmx_interp_mm, phi_mx)
+        call contour_convolution(numnp, lengthMatrix, ns_mx_conv, coeff_mx_conv, qmx_interp_mm, qmx_interp_mm, phi_mx)
     endif
 
     if (gr_exist.eq.1) then
@@ -204,7 +204,7 @@ do iter = init_iter, iterations-1
             call interp_linear(1, ns_gr_ed+1, xs_gr_ed, qgr_final(:,ii), ns_gr_conv+1, xs_gr_conv, qgr_interp(:,ii))
         enddo
 
-        call contour_convolution(numnp, chainlen_gr, ns_gr_conv, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr)
+        call contour_convolution(numnp, lengthGrafted, ns_gr_conv, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr)
     endif
 
     phi_total = 0.0d0
@@ -214,8 +214,8 @@ do iter = init_iter, iterations-1
     enddo
 
     if (mx_exist.eq.1) call compute_part_func_mx(numnp, ns_mx_conv, qmx_interp_mm, partitionMatrixChains)
-    if (mx_exist.eq.1) call compute_number_of_chains(numnp, chainlen_mx, molarBulkDensity, phi_mx, numMatrixChains)
-    if (gr_exist.eq.1) call compute_number_of_chains(numnp, chainlen_gr, molarBulkDensity, phi_gr, numGraftedChains)
+    if (mx_exist.eq.1) call compute_number_of_chains(numnp, lengthMatrix, molarBulkDensity, phi_mx, numMatrixChains)
+    if (gr_exist.eq.1) call compute_number_of_chains(numnp, lengthGrafted, molarBulkDensity, phi_gr, numGraftedChains)
 
     do kk = 1, numnp
         ww_new(kk) = (eos_df_drho(phi_total(kk)) - eos_df_drho(1.0d0)) / (boltz_const_Joule_K*temperature) - &
@@ -233,9 +233,9 @@ do iter = init_iter, iterations-1
     enddo
 
     fieldStdError = SQRT(fieldStdError / FLOAT((numnp - 1)))
-    fieldMaximum       = fieldMaximum       * chainlen_mx
-    fieldError  = fieldError  * chainlen_mx
-    fieldStdError = fieldStdError * chainlen_mx
+    fieldMaximum       = fieldMaximum       * lengthMatrix
+    fieldError  = fieldError  * lengthMatrix
+    fieldStdError = fieldStdError * lengthMatrix
 
     freeEnergyError = ABS(freeEnergy - freeEnergyPrevious)
     freeEnergyPrevious  = freeEnergy
@@ -254,7 +254,7 @@ do iter = init_iter, iterations-1
 
     call export_field_bin(ww_mix, numnp, 0)
 
-    if (export(export_field_bin_freq, iter, convergence)) call export_field_bin(ww_mix, numnp, iter)
+    if (export(exportFieldBinary, iter, convergence)) call export_field_bin(ww_mix, numnp, iter)
 
     if ((MOD(iter,1).eq.0).OR.convergence) call export_energies(qmx_interp_mg, qgr_interp, phi_total, ww_new, Ufield, partitionMatrixChains, targetNumGraftedChains, gpid, freeEnergy)
 
@@ -315,8 +315,8 @@ end if
 ! Deallocate all remaining dynamic memory
 deallocate(xc)
 deallocate(dphi2_dr2, d2phi_dr2)
-if (numDirichletFaces > 0)    deallocate(ids_dirichlet_faces, A_plate, sigma_plate)
-if (numNanoparticleFaces > 0) deallocate(ids_nanopart_faces, A_np, sigma_np, radius_np_eff, center_np)
+if (numDirichletFaces > 0)    deallocate(dirichletFaceId, A_plate, sigma_plate)
+if (numNanoparticleFaces > 0) deallocate(nanoparticleFaceId, A_np, sigma_np, radius_np_eff, center_np)
 deallocate(num_of_elems_of_node)
 deallocate(global_node_id_type_domain)
 deallocate(ds_mx_ed, xs_mx_ed, coeff_mx_ed)
