@@ -38,8 +38,7 @@ if (periodicAxisId(1)) call fem_apply_periodic_bcs(node_pairing_xx_hash)
 if (periodicAxisId(2)) call fem_apply_periodic_bcs(node_pairing_yy_hash)
 if (periodicAxisId(3)) call fem_apply_periodic_bcs(node_pairing_zz_hash)
 
-! Apply Dirichlet boundary conditions
-! TODO: needs generalization to nonzero values
+! Prepare stiffness matrix for Dirichlet boundary conditions
 ! In case the matrix is symmetric, remove the zero lines and rows diagonal componets with Dirichlet BC q=0.
 set_diag_to_one=.true.
 if ((mumpsMatrixType.eq.mumps_posDef).or.(mumpsMatrixType.eq.mumps_genSymm)) then

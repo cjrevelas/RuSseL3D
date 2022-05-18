@@ -18,6 +18,8 @@ real(8), parameter :: dflt_freeEnergyTolForDelta    = 1.0d-3
 real(8), parameter :: dflt_polymer_hamaker_constant = 0.0d0
 real(8), parameter :: dflt_wall_distance            = 5.0d0
 real(8), parameter :: dflt_pressure                 = 0.0d0
+real(8), parameter :: dflt_dirichletValue           = 0.0d0
+real(8), parameter :: dflt_nanoparticleValue        = 0.0d0
 
 integer, parameter :: dflt_iterations           = 1
 integer, parameter :: dflt_init_iter            = 0

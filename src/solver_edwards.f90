@@ -5,7 +5,11 @@
 subroutine solver_edwards(ds, ns, mumpsMatrixType, q, q_final, nodeBelongsToDirichletFace)
 !----------------------------------------------------------------------------------------------------------!
 use kcw_mod,         only: A_m, F_m, rdiag1
-use geometry_mod,    only: numnp, numTotalNodePairs
+use parser_vars_mod, only: numDirichletFaces, numNanoparticleFaces,   &
+                           dirichletFaceValue, nanoparticleFaceValue, &
+                           dirichletFaceId, dirichletFaceValue,       &
+                           nanoparticleFaceId, nanoparticleFaceValue
+use geometry_mod,    only: numnp, numTotalNodePairs, nodeBelongsToFaceId
 #ifdef USE_MPI
 use mpistuff
 #endif
@@ -17,7 +21,7 @@ include "mpif.h"
 #endif
 !----------------------------------------------------------------------------------------------------------!
 integer, intent(in) :: ns, mumpsMatrixType
-integer             :: ii, jj, kk, time_step, tools_sys_time, t_init, t_final
+integer             :: ii, jj, kk, time_step, tools_sys_time, t_init, t_final, face
 
 logical, intent(in), dimension(numnp) :: nodeBelongsToDirichletFace
 
@@ -55,8 +59,16 @@ do time_step = 2, ns+1
   enddo
 
   ! Assing value at the Dirichlet boundaries
-  do ii = 1, numnp
-    if (nodeBelongsToDirichletFace(ii)) rdiag1(ii) = 0.0d0
+  do face = 1, numDirichletFaces
+    do ii = 1, numnp
+      if (nodeBelongsToFaceId(ii) == dirichletFaceId(face)) rdiag1(ii) = dirichletFaceValue(face)
+    enddo
+  enddo
+
+  do face = 1, numNanoparticleFaces
+    do ii = 1, numnp
+      if (nodeBelongsToFaceId(ii) == nanoparticleFaceId(face)) rdiag1(ii) = nanoparticleFaceValue(face)
+    enddo
   enddo
 
   ! Solve the linear system of equations

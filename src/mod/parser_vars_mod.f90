@@ -29,6 +29,7 @@ real(8)               :: r_gpoint, binThickness
 ! Dirichlet boundaries
 integer                              :: numDirichletFaces, numNanoparticleFaces
 integer, allocatable, dimension(:)   :: dirichletFaceId, nanoparticleFaceId
+real(8), allocatable, dimension(:)   :: dirichletFaceValue, nanoparticleFaceValue
 real(8), allocatable, dimension(:)   :: radius_np_eff, A_np, sigma_np
 real(8), allocatable, dimension(:)   :: A_plate, sigma_plate
 real(8), allocatable, dimension(:,:) :: center_np

@@ -19,59 +19,62 @@ character(1)   :: axis
 
 integer :: Reason, ii, id, face1, face2
 
-logical :: log_meshFile                    = .false.
-logical :: log_graftFile                   = .false.
-logical :: log_fieldFile                   = .false.
-logical :: log_temperature                 = .false.
-logical :: log_pressure                    = .false.
-logical :: log_massDensity                 = .false.
-logical :: log_monomer_mass                = .false.
-logical :: log_number_of_iterations        = .false.
-logical :: log_set_initial_iteration       = .false.
-logical :: log_fieldTol                    = .false.
-logical :: log_freeEnergyTol               = .false.
-logical :: log_freeEnergyTolForDelta       = .false.
-logical :: log_field_init_scheme           = .false.
-logical :: log_fraction_of_new_field       = .false.
-logical :: log_mx_exist                    = .false.
-logical :: log_rg2OfMatrixMonomer          = .false.
-logical :: log_ds_ave_mx                   = .false.
-logical :: log_lengthMatrix                = .false.
-logical :: log_contour_discr_mx            = .false.
-logical :: log_ads_distance                = .false.
-logical :: log_gr_exist                    = .false.
-logical :: log_rg2OfGraftedMonomer         = .false.
-logical :: log_lengthGrafted               = .false.
-logical :: log_ds_ave_gr                   = .false.
-logical :: log_contour_discr_gr            = .false.
-logical :: log_grafted_ic_from_delta       = .false.
-logical :: log_numGraftedChainsTol         = .false.
-logical :: log_r_gpoint                    = .false.
-logical :: log_calc_delta_every            = .false.
-logical :: log_numDirichletFaces           = .false.
-logical :: log_numNanoparticleFaces        = .false.
-logical :: log_periodicity                 = .false.
-logical :: log_sigma_polymer               = .false.
-logical :: log_Hamaker_constant_of_polymer = .false.
-logical :: log_wall_distance               = .false.
-logical :: log_eos_type                    = .false.
-logical :: log_eos_coeffs                  = .false.
-logical :: log_influence_param             = .false.
-logical :: log_profile_dimension           = .false.
-logical :: log_mumpsMatrixType             = .false.
-logical :: log_binThickness                = .false.
-logical :: log_exportPhiGeneral            = .false.
-logical :: log_exportPhiIndividual         = .false.
-logical :: log_exportField                 = .false.
-logical :: log_exportFieldBinary           = .false.
-logical :: log_exportPropagators           = .false.
-logical :: log_exportBrushThickness        = .false.
-logical :: log_exportChainsPerArea         = .false.
-logical :: log_exportAdsorbedFree          = .false.
+real(8) :: dirichletValue = dflt_dirichletValue
+real(8) :: nanoparticleValue = dflt_nanoparticleValue
+
+logical :: log_meshFile                    = .False.
+logical :: log_graftFile                   = .False.
+logical :: log_fieldFile                   = .False.
+logical :: log_temperature                 = .False.
+logical :: log_pressure                    = .False.
+logical :: log_massDensity                 = .False.
+logical :: log_monomer_mass                = .False.
+logical :: log_number_of_iterations        = .False.
+logical :: log_set_initial_iteration       = .False.
+logical :: log_fieldTol                    = .False.
+logical :: log_freeEnergyTol               = .False.
+logical :: log_freeEnergyTolForDelta       = .False.
+logical :: log_field_init_scheme           = .False.
+logical :: log_fraction_of_new_field       = .False.
+logical :: log_mx_exist                    = .False.
+logical :: log_rg2OfMatrixMonomer          = .False.
+logical :: log_ds_ave_mx                   = .False.
+logical :: log_lengthMatrix                = .False.
+logical :: log_contour_discr_mx            = .False.
+logical :: log_ads_distance                = .False.
+logical :: log_gr_exist                    = .False.
+logical :: log_rg2OfGraftedMonomer         = .False.
+logical :: log_lengthGrafted               = .False.
+logical :: log_ds_ave_gr                   = .False.
+logical :: log_contour_discr_gr            = .False.
+logical :: log_grafted_ic_from_delta       = .False.
+logical :: log_numGraftedChainsTol         = .False.
+logical :: log_r_gpoint                    = .False.
+logical :: log_calc_delta_every            = .False.
+logical :: log_numDirichletFaces           = .False.
+logical :: log_numNanoparticleFaces        = .False.
+logical :: log_periodicity                 = .False.
+logical :: log_sigma_polymer               = .False.
+logical :: log_Hamaker_constant_of_polymer = .False.
+logical :: log_wall_distance               = .False.
+logical :: log_eos_type                    = .False.
+logical :: log_eos_coeffs                  = .False.
+logical :: log_influence_param             = .False.
+logical :: log_profile_dimension           = .False.
+logical :: log_mumpsMatrixType             = .False.
+logical :: log_binThickness                = .False.
+logical :: log_exportPhiGeneral            = .False.
+logical :: log_exportPhiIndividual         = .False.
+logical :: log_exportField                 = .False.
+logical :: log_exportFieldBinary           = .False.
+logical :: log_exportPropagators           = .False.
+logical :: log_exportBrushThickness        = .False.
+logical :: log_exportChainsPerArea         = .False.
+logical :: log_exportAdsorbedFree          = .False.
 !--------------------------------------------------------------------------------!
 ! Initialize periodicity arrays
 do ii = 1, 3
-    periodicAxisId = .false.
+    periodicAxisId = .False.
 enddo
 do ii = 1, 6
     periodicFaceId = -1
@@ -100,191 +103,195 @@ do
     else
         if (INDEX(line,"# mesh input file") > 0) then
             read(line,'(A40)') meshFile
-            log_meshFile = .true.
+            log_meshFile = .True.
         elseif (INDEX(line,"# gpoints input file") > 0) then
             read(line,'(A40)') graftFile
-            log_graftFile = .true.
+            log_graftFile = .True.
         elseif (INDEX(line,"# field input file") > 0) then
             read(line,*) fieldFile
-            log_fieldFile = .true.
+            log_fieldFile = .True.
         elseif (INDEX(line,"# temp") > 0) then
             read(line,*) temperature
-            log_temperature = .true.
+            log_temperature = .True.
         elseif (INDEX(line," pres") > 0) then
             read(line,*) pressure
-            log_pressure = .true.
+            log_pressure = .True.
         elseif (INDEX(line,"# mass den") > 0) then
             read(line,*) massDensity
-            log_massDensity = .true.
+            log_massDensity = .True.
         elseif (INDEX(line,"# mon mass") > 0) then
             read(line,*) massOfMonomer
-            log_monomer_mass = .true.
+            log_monomer_mass = .True.
         elseif (INDEX(line,"# Rg2/mon matrix") > 0) then
             read(line,*) rg2OfMatrixMonomer
-            log_rg2OfMatrixMonomer = .true.
+            log_rg2OfMatrixMonomer = .True.
         elseif (INDEX(line,"# Rg2/mon grafted") > 0) then
             read(line,*) rg2OfGraftedMonomer
-            log_rg2OfGraftedMonomer = .true.
+            log_rg2OfGraftedMonomer = .True.
         elseif (INDEX(line,"# chain length matrix") > 0) then
             read(line,*) lengthMatrix
-            log_lengthMatrix = .true.
+            log_lengthMatrix = .True.
         elseif (INDEX(line,"# chain length grafted") > 0) then
             read(line,*) lengthGrafted
-            log_lengthGrafted = .true.
+            log_lengthGrafted = .True.
         elseif (INDEX(line,"# num gr chains tol") > 0) then
             read(line,*) numGraftedChainsTol
-            log_numGraftedChainsTol = .true.
+            log_numGraftedChainsTol = .True.
         elseif (INDEX(line,"# pol sigma") > 0) then
             read(line,*) sigma_pol
-            log_sigma_polymer = .true.
+            log_sigma_polymer = .True.
         elseif (INDEX(line,"# pol ham") > 0) then
             read(line,*) A_pol
-            log_Hamaker_constant_of_polymer = .true.
+            log_Hamaker_constant_of_polymer = .True.
         elseif (INDEX(line,"# wall dist") > 0) then
             read(line,*) wall_distance
-            log_wall_distance = .true.
+            log_wall_distance = .True.
         elseif (INDEX(line,"# fraction") > 0) then
             read(line,*) frac
-            log_fraction_of_new_field = .true.
+            log_fraction_of_new_field = .True.
         elseif (INDEX(line,"# max error") > 0) then
             read(line,*) fieldTol
-            log_fieldTol = .true.
+            log_fieldTol = .True.
         elseif (INDEX(line,"# max energy error") > 0) then
             read(line,*) freeEnergyTol
-            log_freeEnergyTol = .true.
+            log_freeEnergyTol = .True.
         elseif (INDEX(line,"# energy tol for delta") > 0) then
             read(line,*) freeEnergyTolForDelta
-            log_freeEnergyTolForDelta = .true.
+            log_freeEnergyTolForDelta = .True.
         elseif (INDEX(line,"# init iter") > 0) then
             read(line,*) init_iter
-            log_set_initial_iteration= .true.
+            log_set_initial_iteration= .True.
         elseif (INDEX(line,"# num iter") > 0) then
             read(line,*) iterations
-            log_number_of_iterations = .true.
+            log_number_of_iterations = .True.
         elseif (INDEX(line,"# init field") > 0) then
             read(line,*) field_init_scheme
-            log_field_init_scheme = .true.
+            log_field_init_scheme = .True.
         elseif (INDEX(line,"# bin thickness") > 0) then
             read(line,*) binThickness
-            log_binThickness = .true.
+            log_binThickness = .True.
         elseif (INDEX(line,"# export dens profs") > 0) then
             read(line,*) exportPhiGeneral
-            log_exportPhiGeneral = .true.
+            log_exportPhiGeneral = .True.
         elseif (INDEX(line,"# export indiv dens profs") > 0) then
             read(line,*) exportPhiIndividual
-            log_exportPhiIndividual = .true.
+            log_exportPhiIndividual = .True.
         elseif (INDEX(line,"# export field") > 0) then
             read(line,*) exportField
-            log_exportField = .true.
+            log_exportField = .True.
         elseif (INDEX(line,"# export binary field") > 0) then
             read(line,*) exportFieldBinary
-            log_exportFieldBinary = .true.
+            log_exportFieldBinary = .True.
         elseif (INDEX(line,"# export propagators") > 0) then
             read(line,*) exportPropagators
-            log_exportPropagators = .true.
+            log_exportPropagators = .True.
         elseif (INDEX(line,"# export brush thickness") > 0) then
             read(line,*) exportBrushThickness
-            log_exportBrushThickness = .true.
+            log_exportBrushThickness = .True.
         elseif (INDEX(line,"# export chains per area profs") > 0) then
             read(line,*) exportChainsPerArea
-            log_exportChainsPerArea = .true.
+            log_exportChainsPerArea = .True.
         elseif (INDEX(line,"# export ads vs free profs") > 0) then
             read(line,*) exportAdsorbedFree
-            log_exportAdsorbedFree = .true.
+            log_exportAdsorbedFree = .True.
         elseif (INDEX(line,"# prof dim") > 0) then
             read(line,*) prof_dim
-            log_profile_dimension = .true.
+            log_profile_dimension = .True.
         elseif (INDEX(line,"# use matrix") > 0) then
             read(line,*) mx_exist
-            log_mx_exist = .true.
+            log_mx_exist = .True.
         elseif (INDEX(line,"# use grafted") > 0) then
             read(line,*) gr_exist
-            log_gr_exist = .true.
+            log_gr_exist = .True.
         elseif (INDEX(line,"# contour step matrix") > 0) then
             read(line,*) ds_ave_mx_ed, ds_ave_mx_conv
-            log_ds_ave_mx = .true.
+            log_ds_ave_mx = .True.
         elseif (INDEX(line,"# discr scheme matrix") > 0) then
             read(line,*) contour_discr_mx
             if (contour_discr_mx.eq.contour_hybrid) read(256,*) xs_crit_mx
-            log_contour_discr_mx = .true.
+            log_contour_discr_mx = .True.
         elseif (INDEX(line,"# ads distance") > 0) then
             read(line,*) ads_distance
-            log_ads_distance = .true.
+            log_ads_distance = .True.
         elseif (INDEX(line,"# contour step grafted") > 0) then
             read(line,*) ds_ave_gr_ed, ds_ave_gr_conv
-            log_ds_ave_gr = .true.
+            log_ds_ave_gr = .True.
         elseif (INDEX(line,"# gp dist from solid") > 0) then
             read(line,*) r_gpoint
-            log_r_gpoint = .true.
+            log_r_gpoint = .True.
         elseif (INDEX(line,"# discr scheme grafted") > 0) then
             read(line,*) contour_discr_gr
             if (contour_discr_gr.eq.contour_hybrid) read(256,*) xs_crit_gr
-            log_contour_discr_gr = .true.
+            log_contour_discr_gr = .True.
         elseif (INDEX(line,"# mumps matrix") > 0) then
             read(line,*) mumpsMatrixType
-            log_mumpsMatrixType = .true.
+            log_mumpsMatrixType = .True.
         elseif (INDEX(line,"# eos type") > 0) then
             read(line,*) eos_type
-            log_eos_type = .true.
+            log_eos_type = .True.
         elseif (INDEX(line,"# eos coeffs") > 0) then
             if (eos_type.eq.eos_helfand) then
                 read(line,*) hlf_kappa_T
             elseif (eos_type.eq.eos_sl)  then
                 read(line,*) rho_star, T_star, P_star
             endif
-            log_eos_coeffs = .true.
+            log_eos_coeffs = .True.
         elseif (INDEX(line, "# eos infl param") > 0) then
             read(line,*) k_gr_tilde
-            log_influence_param = .true.
+            log_influence_param = .True.
         elseif (INDEX(line,"# calc delta") > 0) then
             read(line,*) grafted_ic_from_delta
-            log_grafted_ic_from_delta = .true.
+            log_grafted_ic_from_delta = .True.
         elseif (INDEX(line,"# freq delta") > 0) then
             read(line,*) calc_delta_every
-            log_calc_delta_every = .true.
+            log_calc_delta_every = .True.
         elseif (INDEX(line,"# num faces") > 0) then
             read(line,*) numDirichletFaces
             if (numDirichletFaces > 0) then
                 allocate(dirichletFaceId(numDirichletFaces))
+                allocate(dirichletFaceValue(numDirichletFaces))
                 allocate(sigma_plate(numDirichletFaces))
                 allocate(A_plate(numDirichletFaces))
                 do ii = 1, numDirichletFaces
-                    read(256,*) id, sigma_plate(ii), A_plate(ii)
+                    read(256,*) id, sigma_plate(ii), A_plate(ii), dirichletValue
                     dirichletFaceId(ii) = id
+                    dirichletFaceValue(ii) = dirichletValue
                 enddo
                 A_plate = A_plate * 1.0d-20
-                log_numDirichletFaces = .true.
+                log_numDirichletFaces = .True.
             endif
         elseif (INDEX(line,"# num nanop") > 0) then
             read(line,*) numNanoparticleFaces
             if (numNanoparticleFaces > 0) then
                 allocate(nanoparticleFaceId(numNanoparticleFaces))
+                allocate(nanoparticleFaceValue(numNanoparticleFaces))
                 allocate(center_np(3,numNanoparticleFaces))
                 allocate(radius_np_eff(numNanoparticleFaces))
                 allocate(sigma_np(numNanoparticleFaces))
                 allocate(A_np(numNanoparticleFaces))
                 do ii = 1, numNanoparticleFaces
                     read(256,*) id, radius_np_eff(ii), center_np(1,ii), center_np(2,ii), center_np(3,ii), &
-                                                          & sigma_np(ii), A_np(ii)
+                                                          & sigma_np(ii), A_np(ii), nanoparticleValue
                     nanoparticleFaceId(ii) = id
+                    nanoparticleFaceValue(ii) = nanoparticleValue
                 enddo
                 A_np = A_np * 1.0d-20
-                log_numNanoparticleFaces = .true.
+                log_numNanoparticleFaces = .True.
             endif
         elseif (INDEX(line,"# periodicity") > 0) then
             read(line,*) periodicity
             do ii = 1, periodicity
                 read(256,*) axis, face1, face2
                 if (axis=='x') then
-                    periodicAxisId(1) = .true.
+                    periodicAxisId(1) = .True.
                     periodicFaceId(1) = face1
                     periodicFaceId(2) = face2
                 elseif (axis=='y') then
-                    periodicAxisId(2) = .true.
+                    periodicAxisId(2) = .True.
                     periodicFaceId(3) = face1
                     periodicFaceId(4) = face2
                 elseif (axis=='z') then
-                    periodicAxisId(3) = .true.
+                    periodicAxisId(3) = .True.
                     periodicFaceId(5) = face1
                     periodicFaceId(6) = face2
                 else
@@ -292,7 +299,7 @@ do
                     call exit_with_error(1,1,1,ERROR_MESSAGE)
                 endif
             enddo
-            log_periodicity = .true.
+            log_periodicity = .True.
         endif
    endif
 enddo
@@ -1054,6 +1061,12 @@ if (log_numDirichletFaces.and.numDirichletFaces>0) then
         write(iow,'(I3)',advance='no') dirichletFaceId(ii)
         write(6  ,'(I3)',advance='no') dirichletFaceId(ii)
     enddo
+    write(iow  ,'(3X,A39)',advance='yes') "Face values:                            "
+    write(6  ,'(3X,A39)',advance='yes')   "Face values:                            "
+    do ii = 1, numDirichletFaces
+        write(iow,'(F3.1)',advance='no') dirichletFaceValue(ii)
+        write(6  ,'(F3.1)',advance='no') dirichletFaceValue(ii)
+    enddo
     write(iow,*)
     write(6  ,*)
 else
@@ -1086,7 +1099,7 @@ endif
 
 
 if (log_periodicity.and.periodicity>0) then
-    domainIsPeriodic = .true.
+    domainIsPeriodic = .True.
 
     if (periodicAxisId(1)) then
         write(iow,'(3X,A40)')adjl("The domain is periodic along the x-axis",40)
@@ -1199,7 +1212,7 @@ else
 endif
 
 if  (log_influence_param) then
-    squareGradient = .true.
+    squareGradient = .True.
     write(iow,'(3X,A40,E16.9,A14)')adjl("Influence parameter:",45), k_gr_tilde, " [J*m^5/mol^2]"
     write(*  ,'(3X,A40,E16.9,A14)')adjl("Influence parameter:",45), k_gr_tilde, " [J*m^5/mol^2]"
 else

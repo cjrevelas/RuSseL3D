@@ -8,7 +8,7 @@ use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use parser_vars_mod, only: numDirichletFaces, numNanoparticleFaces, dirichletFaceId, nanoparticleFaceId
-use geometry_mod,    only: ndm, nodeBelongsToDirichletFace, numnp, isDirichletFace, boxLow, boxHigh, xc
+use geometry_mod,    only: ndm, nodeBelongsToDirichletFace, nodeBelongsToFaceId, numnp, isDirichletFace, boxLow, boxHigh, xc
 use iofiles_mod,     only: dir_faces
 use constants_mod,   only: tol
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -23,7 +23,10 @@ type(ints_type) :: face_entity_key
 integer :: face_entity_value
 !----------------------------------------------------------------------------------------------------------------------------------!
 allocate(nodeBelongsToDirichletFace(numnp))
+allocate(nodeBelongsToFaceId(numnp))
+
 nodeBelongsToDirichletFace = .False.
+nodeBelongsToFaceId = -1
 
 allocate(face_entity_key%ints(1))
 
@@ -42,11 +45,12 @@ do jj = 1, numel_type_face
         idummy = global_node_id_type_face(pp,jj)
 
         nodeBelongsToDirichletFace(idummy) = .True.
+        nodeBelongsToFaceId(idummy) = face_entity_value
 
         ! Find if a node is located at a corner
         kk = 0
         do mm = 1, ndm
-          if (DABS(xc(mm, idummy) - boxLow(mm)) < tol) kk = kk + 1
+          if (DABS(xc(mm, idummy) - boxLow(mm))  < tol) kk = kk + 1
           if (DABS(xc(mm, idummy) - boxHigh(mm)) < tol) kk = kk + 1
         enddo
 
@@ -66,11 +70,12 @@ do jj = 1, numel_type_face
 
   ! Nanoparticles section
   do ii = 1, numNanoparticleFaces
-    if (face_entity_value==nanoparticleFaceId(ii)) then
+    if (face_entity_value == nanoparticleFaceId(ii)) then
       do kk = 1, nen_type_face
         idummy = global_node_id_type_face(kk,jj)
 
         nodeBelongsToDirichletFace(idummy) = .True.
+        nodeBelongsToFaceId(idummy) = face_entity_value
       enddo
     endif
   enddo
