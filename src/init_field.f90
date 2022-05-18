@@ -28,6 +28,9 @@ open(unit=211, file = usolid)
 write(211,'(5(2X,A16))') "r_center_surf", "r_surf", "Uatt", "Urep", "Utot"
 
 ! TODO: compute and add solid-solid (Hamaker) interactions
+! TODO: the following two lines can be moved outside of the outer loop
+number_density = molarBulkDensity * n_avog
+radius_pol     = (3.0d0 / (4.0d0 * pi * number_density))**(1.0d0/3.0d0) * m_to_A
 
 Ufield = 0.0d0
 
@@ -71,9 +74,6 @@ do kk = 1, numnp
   enddo
 
   ! Loop over all nanoparticle faces
-  ! TODO: the following two lines can be moved outside of the outer loop
-  number_density = molarBulkDensity * n_avog
-  radius_pol     = (3.0d0 / 4.0d0 / pi / number_density)**(1.0d0/3.0d0) * m_to_A
 
   do mm = 1, numNanoparticleFaces
     r_centers        = DSQRT((xc(1,kk)-center_np(1,mm))**2.0d0 + (xc(2,kk)-center_np(2,mm))**2.0d0 + (xc(3,kk)-center_np(3,mm))**2.0d0)
