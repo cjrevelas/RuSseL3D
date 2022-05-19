@@ -19,17 +19,17 @@ integer                                      :: node_pairing_value
 
 integer, intent(out) :: num_dest_neighbors
 
-integer :: kk, source_xx, dest_xx
+integer :: kk, source, dest
 !----------------------------------------------------------------------------------------------------------------------------------!
 call node_pairing_it%begin(node_pairing_hash)
 
 do kk = 1, node_pairing_hash%key_count()
     call node_pairing_it%next(node_pairing_key, node_pairing_value)
 
-    source_xx = node_pairing_key%ints(1)
-    dest_xx   = node_pairing_value
+    source = node_pairing_key%ints(1)
+    dest   = node_pairing_value
 
-    num_dest_neighbors = num_dest_neighbors + 3 * num_of_elems_of_node(dest_xx)
+    num_dest_neighbors = num_dest_neighbors + 3 * num_of_elems_of_node(dest)
 enddo
 
 return
