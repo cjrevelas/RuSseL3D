@@ -4,6 +4,10 @@
 
 subroutine fem_bcs_and_nonzeros(ds, mumpsMatrixType, nodeBelongsToDirichletFace)
 !------------------------------------------------------------------------------------------------------!
+use, intrinsic :: iso_fortran_env
+use fhash_module__ints_double
+use ints_module
+
 use kcw_mod,         only: F_m, A_m, NNZ
 use geometry_mod,    only: numTotalNodePairs, nel, numel, numnp, node_pairing_xx_hash, &
 &                          node_pairing_yy_hash, node_pairing_zz_hash
@@ -11,7 +15,7 @@ use constants_mod,   only: tol
 use parser_vars_mod, only: periodicAxisId
 use flags_mod,       only: mumps_asymm, mumps_posDef, mumps_genSymm
 
-!#define PRINT_AFULL
+#define PRINT_AFULL
 #ifdef PRINT_AFULL
 use iofiles_mod, only: A_matrix_full
 #endif
@@ -19,12 +23,20 @@ use iofiles_mod, only: A_matrix_full
 implicit none
 !------------------------------------------------------------------------------------------------------!
 integer, intent(in) :: mumpsMatrixType
-integer             :: ii, jj, kk
+integer             :: ii, jj, kk, mm, nn
 
 logical, intent(in), dimension(numnp) :: nodeBelongsToDirichletFace
 logical, dimension(nel*numel)         :: set_diag_to_one
+logical                               :: success
+
+type(fhash_type_iterator__ints_double) :: node_pairing_xx_it, node_pairing_yy_it, node_pairing_zz_it
+type(ints_type)                        :: node_pairing_xx_key, node_pairing_yy_key, node_pairing_zz_key, dest_both_key
+integer                                :: node_pairing_xx_value, node_pairing_yy_value, node_pairing_zz_value, dest_both
 
 real(8), intent(in) :: ds
+
+integer :: source_xx, source_yy
+integer :: dest_xx, dest_yy
 
 #ifdef PRINT_AFULL
 real(8), allocatable, dimension(:,:) :: A_full
@@ -36,6 +48,43 @@ F_m%rh = F_m%c
 ! Apply periodic boundary conditions
 if (periodicAxisId(1)) call fem_apply_periodic_bcs(node_pairing_xx_hash)
 if (periodicAxisId(2)) call fem_apply_periodic_bcs(node_pairing_yy_hash)
+
+if (periodicAxisId(1).AND.periodicAxisId(2)) then
+  call node_pairing_yy_it%begin(node_pairing_yy_hash)
+
+  allocate(dest_both_key%ints(1))
+
+  do ii = 1, node_pairing_yy_hash%key_count()
+    call node_pairing_yy_it%next(node_pairing_yy_key, node_pairing_yy_value)
+    source_yy = node_pairing_yy_key%ints(1)  ! source_yy = 7
+    dest_yy   = node_pairing_yy_value        ! dest_yy   = 1
+
+    dest_both_key%ints(1) = dest_yy
+    call node_pairing_xx_hash%get(dest_both_key, dest_both, success) ! dest_both = 38
+
+    call node_pairing_xx_it%begin(node_pairing_xx_hash)
+    do jj = 1, node_pairing_xx_hash%key_count()
+      call node_pairing_xx_it%next(node_pairing_xx_key, node_pairing_xx_value)
+      source_xx = node_pairing_xx_key%ints(1) ! source_xx = 7
+      dest_xx   = node_pairing_xx_value       ! dest_xx   = 23
+
+      if (source_yy.eq.source_xx) then
+        do mm = 1, numTotalNodePairs
+          if ((F_m%row(mm).eq.dest_xx).AND.(F_m%col(mm).eq.source_xx)) then ! (23,7)
+            do nn = 1, numTotalNodePairs
+              if ((F_m%row(nn).eq.dest_both).AND.(F_m%col(nn).eq.dest_yy)) then ! (38,1)
+                F_m%g(mm) = F_m%g(mm) + F_m%g(nn)
+                F_m%g(nn) = 0.0d0
+                exit
+              endif
+            enddo
+          endif
+        enddo
+      endif
+    enddo
+  enddo
+endif
+
 if (periodicAxisId(3)) call fem_apply_periodic_bcs(node_pairing_zz_hash)
 
 ! Prepare stiffness matrix for Dirichlet boundary conditions
