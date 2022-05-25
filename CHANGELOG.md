@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.0](https://github.com/mokkapps/changelog-generator-demo/compare/v4.0.0...v4.1.0) (2022-05-25)
+
+
+### Features
+
+* each face can have its own Dirichlet value ([777a093](https://github.com/mokkapps/changelog-generator-demo/commits/777a093b58e6b503bfe8671d58e92bf661a805f5))
+* export solution and mesh coords in vtu format ([9c8c2dc](https://github.com/mokkapps/changelog-generator-demo/commits/9c8c2dc128557a33830c7cbaca04f43b41372318))
+* **export_vtu:** add cell ids and offsets ([aa27101](https://github.com/mokkapps/changelog-generator-demo/commits/aa2710186fd70acdf6dc5686cd1942c7e462c48b))
+* **export_vtu:** add cell types ([4b6ab37](https://github.com/mokkapps/changelog-generator-demo/commits/4b6ab37b143403803c07bb891edcf673e4fd7d3f))
+* **tools:** convert russel solution to vtk format ([9b7d134](https://github.com/mokkapps/changelog-generator-demo/commits/9b7d134f4b127c93aa1d67a89647bc5d7b0f3ac8))
+
+
+### Bug Fixes
+
+* **tools:** export solution in vtk with proper sorting ([3794aba](https://github.com/mokkapps/changelog-generator-demo/commits/3794aba33f1a03b3e100b27cdaa0cb68934c7427))
+
 ## [4.0.0](https://github.com/mokkapps/changelog-generator-demo/compare/v3.3.0...v4.0.0) (2022-03-18)
 
 
