@@ -25,69 +25,42 @@ call node_pairing_it%begin(node_pairing_hash)
 ! TODO: optimize periodic boundary conditions
 
 do kk = 1, node_pairing_hash%key_count()
-    call node_pairing_it%next(node_pairing_key, node_pairing_value)
+  call node_pairing_it%next(node_pairing_key, node_pairing_value)
 
-    source = node_pairing_key%ints(1)
-    dest   = node_pairing_value
+  source = node_pairing_key%ints(1)
+  dest   = node_pairing_value
 
-    do mm = 1, numTotalNodePairs
-        if (F_m%is_zero(mm)) cycle
-        if (F_m%row(mm)==0)  cycle
+  do mm = 1, numTotalNodePairs
+    if (F_m%is_zero(mm)) cycle
+    if (F_m%row(mm)==0)  cycle
 
-        if ((F_m%col(mm).eq.source).and.(F_m%row(mm).ne.dest)) then
-            do nn = 1, numTotalNodePairs
-                if (F_m%is_zero(nn)) cycle
-                if (F_m%row(nn)==0)  cycle
+    if ((F_m%row(mm).eq.source).AND.(F_m%col(mm).eq.source)) then
+      do nn = 1, numTotalNodePairs
+        if (F_m%is_zero(nn)) cycle
+        if (F_m%row(nn)==0)  cycle
 
-                if ((F_m%row(nn).eq.F_m%row(mm)).and.(F_m%col(nn).eq.dest)) then
-                    F_m%g(mm)  = F_m%g(mm)  + F_m%g(nn)
-                    F_m%rh(mm) = F_m%rh(mm) + F_m%rh(nn)
-                endif
-            enddo
+        if ((F_m%row(nn).eq.dest).AND.(F_m%col(nn).eq.dest)) then
+          F_m%g(mm)  = F_m%g(mm)  + F_m%g(nn)
+          F_m%rh(mm) = F_m%rh(mm) + F_m%rh(nn)
         endif
+      enddo
+    endif
+  enddo
 
-        if ((F_m%row(mm).eq.source).and.(F_m%col(mm).ne.dest)) then
-            do nn = 1, numTotalNodePairs
-                if (F_m%is_zero(nn)) cycle
-                if (F_m%row(nn)==0)  cycle
+  do mm = 1, numTotalNodePairs
+    if (F_m%is_zero(mm)) cycle
+    if (F_m%row(mm)==0)  cycle
 
-                if ((F_m%row(nn).eq.dest).and.(F_m%col(nn).eq.F_m%col(mm))) then
-                    F_m%g(mm)  = F_m%g(mm)  + F_m%g(nn)
-                    F_m%rh(mm) = F_m%rh(mm) + F_m%rh(nn)
-                endif
-            enddo
-        endif
-    enddo
+    if ((F_m%row(mm).eq.dest).AND.(F_m%col(mm).eq.dest))   F_m%g(mm) = 1.0d0
+    if ((F_m%row(mm).eq.dest).AND.(F_m%col(mm).eq.source)) F_m%g(mm) =-1.0d0
+  enddo
 
-    do mm = 1, numTotalNodePairs
-        if (F_m%is_zero(mm)) cycle
-        if (F_m%row(mm)==0)  cycle
+  do mm = 1, numTotalNodePairs
+    if (F_m%is_zero(mm)) cycle
+    if (F_m%row(mm)==0)  cycle
 
-        if ((F_m%row(mm).eq.source).and.(F_m%col(mm).eq.source)) then
-            do nn = 1, numTotalNodePairs
-                if (F_m%is_zero(nn)) cycle
-                if (F_m%row(nn)==0)  cycle
-
-                if ((F_m%row(nn).eq.dest).and.(F_m%col(nn).eq.dest)) then
-                    F_m%g(mm)  = F_m%g(mm)  + F_m%g(nn)
-                    F_m%rh(mm) = F_m%rh(mm) + F_m%rh(nn)
-                endif
-            enddo
-        endif
-    enddo
-
-    do mm = 1, numTotalNodePairs
-        if (F_m%is_zero(mm)) cycle
-        if (F_m%row(mm)==0)  cycle
-
-        if ((F_m%row(mm).eq.dest).or.(F_m%col(mm).eq.dest)) then
-            F_m%g(mm)  = 0.0d0
-            F_m%rh(mm) = 0.0d0
-        endif
-
-        if ((F_m%row(mm).eq.dest).and.(F_m%col(mm).eq.dest))   F_m%g(mm) =  1.0d0
-        if ((F_m%row(mm).eq.dest).and.(F_m%col(mm).eq.source)) F_m%g(mm) = -1.0d0
-    enddo
+    if ((F_m%row(mm).eq.dest).OR.(F_m%col(mm).eq.dest)) F_m%rh(mm) = 0.0d0
+  enddo
 enddo
 
 return
