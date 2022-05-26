@@ -15,7 +15,7 @@ use constants_mod,   only: tol
 use parser_vars_mod, only: periodicAxisId
 use flags_mod,       only: mumps_asymm, mumps_posDef, mumps_genSymm
 
-#define PRINT_AFULL
+!#define PRINT_AFULL
 #ifdef PRINT_AFULL
 use iofiles_mod, only: A_matrix_full
 #endif
@@ -35,8 +35,8 @@ integer                                :: node_pairing_xx_value, node_pairing_yy
 
 real(8), intent(in) :: ds
 
-integer :: source_xx, source_yy, source_zz, source_aux
-integer :: dest_xx, dest_yy, dest_zz, dest_triple
+integer :: source_xx, source_yy, source_zz, source_aux=0
+integer :: dest_xx, dest_yy, dest_zz, dest_triple=0
 
 #ifdef PRINT_AFULL
 real(8), allocatable, dimension(:,:) :: A_full
