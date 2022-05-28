@@ -101,7 +101,6 @@ OBJECTS=$(OBJDIR)/compute_contour_coeffs.o\
 	$(OBJDIR)/init_delta.o\
 	$(OBJDIR)/init_field.o\
 	$(OBJDIR)/init_scf_params.o\
-	$(OBJDIR)/mesh_append_dest_neighbors.o\
 	$(OBJDIR)/mesh_append_periodic_pairs.o\
 	$(OBJDIR)/mesh_build_node_pairing.o\
 	$(OBJDIR)/mesh_bulk_node_pairs.o\
@@ -109,7 +108,6 @@ OBJECTS=$(OBJDIR)/compute_contour_coeffs.o\
 	$(OBJDIR)/mesh_elements_per_node.o\
 	$(OBJDIR)/mesh_face_entities.o\
 	$(OBJDIR)/mesh_periodic_face_elements.o\
-	$(OBJDIR)/mesh_periodic_neighbors.o\
 	$(OBJDIR)/mesh_profile.o\
         $(OBJDIR)/parser_input.o\
 	$(OBJDIR)/parser_mesh.o\

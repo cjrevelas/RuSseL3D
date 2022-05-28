@@ -22,8 +22,6 @@ integer :: kk, mm, nn, source, dest
 !----------------------------------------------------------------------------------------------------------------------------------!
 call node_pairing_it%begin(node_pairing_hash)
 
-! TODO: optimize periodic boundary conditions
-
 do kk = 1, node_pairing_hash%key_count()
   call node_pairing_it%next(node_pairing_key, node_pairing_value)
 
