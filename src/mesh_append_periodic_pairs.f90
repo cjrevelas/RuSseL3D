@@ -8,7 +8,7 @@ use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use kcw_mod, only: F_m
-use geometry_mod, only: node_pair_id
+use geometry_mod, only: nodePairId
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -48,10 +48,10 @@ do kk = starting_pair, ending_pair
   call elemcon%get(elemcon_key, elemcon_value, success)
 
   if (success) then
-    node_pair_id(kk) = elemcon_value
+    nodePairId(kk) = elemcon_value
   else
     call elemcon%set(elemcon_key, kk)
-    node_pair_id(kk) = kk
+    nodePairId(kk) = kk
   endif
 enddo
 

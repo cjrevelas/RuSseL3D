@@ -11,17 +11,17 @@ implicit none
 !----------------------------------------------------------------------------------------------------------!
 integer, intent(in) :: node_id
 
-real(8), intent(in), dimension(numnp) :: phi
-real(8)                               :: fem_interpolation
-real(8)                               :: phi_plus_dx = 0.0d0, phi_minus_dx = 0.0d0
-real(8)                               :: phi_plus_dy = 0.0d0, phi_minus_dy = 0.0d0
-real(8)                               :: phi_plus_dz = 0.0d0, phi_minus_dz = 0.0d0
-real(8)                               :: x_node_id = 0.0d0, y_node_id = 0.0d0, z_node_id = 0.0d0
-real(8)                               :: dphi2_dx2 = 0.0d0, dphi2_dy2 = 0.0d0, dphi2_dz2 = 0.0d0
+real(8), intent(in), dimension(numNodes) :: phi
+real(8)                                  :: fem_interpolation
+real(8)                                  :: phi_plus_dx = 0.0d0, phi_minus_dx = 0.0d0
+real(8)                                  :: phi_plus_dy = 0.0d0, phi_minus_dy = 0.0d0
+real(8)                                  :: phi_plus_dz = 0.0d0, phi_minus_dz = 0.0d0
+real(8)                                  :: x_node_id = 0.0d0, y_node_id = 0.0d0, z_node_id = 0.0d0
+real(8)                                  :: dphi2_dx2 = 0.0d0, dphi2_dy2 = 0.0d0, dphi2_dz2 = 0.0d0
 !----------------------------------------------------------------------------------------------------------!
-x_node_id = xc(1,node_id)
-y_node_id = xc(2,node_id)
-z_node_id = xc(3,node_id)
+x_node_id = nodeCoord(1,node_id)
+y_node_id = nodeCoord(2,node_id)
+z_node_id = nodeCoord(3,node_id)
 
 phi_plus_dx  = fem_interpolation(node_id, x_node_id+dx, y_node_id, z_node_id, phi)
 phi_minus_dx = fem_interpolation(node_id, x_node_id-dx, y_node_id, z_node_id, phi)

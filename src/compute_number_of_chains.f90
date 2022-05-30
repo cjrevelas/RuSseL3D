@@ -2,18 +2,18 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine compute_number_of_chains(numnp, chainlen, molarBulkDensity, phi, num_chains)
+subroutine compute_number_of_chains(numNodes, chainlen, molarBulkDensity, phi, num_chains)
 !-------------------------------------------------------------------------------------------!
 use constants_mod, only : n_avog, A3_to_m3
 !-------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------!
-integer, intent(in)                   :: numnp
+integer, intent(in) :: numNodes
 
-real(8), intent(in)                   :: chainlen, molarBulkDensity
-real(8), intent(in), dimension(numnp) :: phi
-real(8), intent(out)                  :: num_chains
-real(8)                               :: sum_f, QQ, vol
+real(8), intent(in)                      :: chainlen, molarBulkDensity
+real(8), intent(in), dimension(numNodes) :: phi
+real(8), intent(out)                     :: num_chains
+real(8)                                  :: sum_f, QQ, vol
 !-------------------------------------------------------------------------------------------!
 sum_f = 0.0d0
 

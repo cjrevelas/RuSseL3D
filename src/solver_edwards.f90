@@ -9,7 +9,7 @@ use parser_vars_mod, only: numDirichletFaces, numNanoparticleFaces,   &
                            dirichletFaceValue, nanoparticleFaceValue, &
                            dirichletFaceId, dirichletFaceValue,       &
                            nanoparticleFaceId, nanoparticleFaceValue
-use geometry_mod,    only: numnp, numTotalNodePairs, nodeBelongsToFaceId
+use geometry_mod,    only: numNodes, numTotalNodePairs, nodeBelongsToFaceId
 #ifdef USE_MPI
 use mpistuff
 #endif
@@ -23,11 +23,11 @@ include "mpif.h"
 integer, intent(in) :: ns, mumpsMatrixType
 integer             :: ii, jj, kk, time_step, tools_sys_time, t_init, t_final, face
 
-logical, intent(in), dimension(numnp) :: nodeBelongsToDirichletFace
+logical, intent(in), dimension(numNodes) :: nodeBelongsToDirichletFace
 
 real(8), intent(in), dimension(ns+1)          :: ds
-real(8), intent(inout), dimension(2,numnp)    :: q
-real(8), intent(inout), dimension(ns+1,numnp) :: q_final
+real(8), intent(inout), dimension(2,numNodes)    :: q
+real(8), intent(inout), dimension(ns+1,numNodes) :: q_final
 !----------------------------------------------------------------------------------------------------------!
 t_init = tools_sys_time()
 
@@ -60,13 +60,13 @@ do time_step = 2, ns+1
 
   ! Assing value at the Dirichlet boundaries
   do face = 1, numDirichletFaces
-    do ii = 1, numnp
+    do ii = 1, numNodes
       if (nodeBelongsToFaceId(ii) == dirichletFaceId(face)) rdiag1(ii) = dirichletFaceValue(face)
     enddo
   enddo
 
   do face = 1, numNanoparticleFaces
-    do ii = 1, numnp
+    do ii = 1, numNodes
       if (nodeBelongsToFaceId(ii) == nanoparticleFaceId(face)) rdiag1(ii) = nanoparticleFaceValue(face)
     enddo
   enddo
@@ -75,12 +75,12 @@ do time_step = 2, ns+1
   call solver_mumps(mumpsMatrixType)
 
   ! Update solution/propagator
-  do kk = 1,numnp
+  do kk = 1,numNodes
     q(2,kk) = rdiag1(kk)
   enddo
 
   ! Save propagators for convolution
-  do kk = 1,numnp
+  do kk = 1,numNodes
     q_final(time_step,kk) = q(2,kk)
     q(1,kk)               = q(2,kk)
   enddo

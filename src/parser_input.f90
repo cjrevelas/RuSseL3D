@@ -34,23 +34,23 @@ logical :: log_set_initial_iteration       = .False.
 logical :: log_fieldTol                    = .False.
 logical :: log_freeEnergyTol               = .False.
 logical :: log_freeEnergyTolForDelta       = .False.
-logical :: log_field_init_scheme           = .False.
+logical :: log_fieldInitScheme             = .False.
 logical :: log_fraction_of_new_field       = .False.
-logical :: log_mx_exist                    = .False.
+logical :: log_matrixExist                 = .False.
 logical :: log_rg2OfMatrixMonomer          = .False.
 logical :: log_ds_ave_mx                   = .False.
 logical :: log_lengthMatrix                = .False.
-logical :: log_contour_discr_mx            = .False.
+logical :: log_contourMatrix               = .False.
 logical :: log_ads_distance                = .False.
-logical :: log_gr_exist                    = .False.
+logical :: log_graftedExist                = .False.
 logical :: log_rg2OfGraftedMonomer         = .False.
 logical :: log_lengthGrafted               = .False.
 logical :: log_ds_ave_gr                   = .False.
-logical :: log_contour_discr_gr            = .False.
-logical :: log_grafted_ic_from_delta       = .False.
+logical :: log_contourGrafted              = .False.
+logical :: log_getICfromDelta              = .False.
 logical :: log_numGraftedChainsTol         = .False.
-logical :: log_r_gpoint                    = .False.
-logical :: log_calc_delta_every            = .False.
+logical :: log_graftPointDistance          = .False.
+logical :: log_deltaUpdateFreq             = .False.
 logical :: log_numDirichletFaces           = .False.
 logical :: log_numNanoparticleFaces        = .False.
 logical :: log_periodicity                 = .False.
@@ -60,7 +60,7 @@ logical :: log_wall_distance               = .False.
 logical :: log_eos_type                    = .False.
 logical :: log_eos_coeffs                  = .False.
 logical :: log_influence_param             = .False.
-logical :: log_profile_dimension           = .False.
+logical :: log_profileDimensions           = .False.
 logical :: log_mumpsMatrixType             = .False.
 logical :: log_binThickness                = .False.
 logical :: log_exportPhiGeneral            = .False.
@@ -159,14 +159,14 @@ do
             read(line,*) freeEnergyTolForDelta
             log_freeEnergyTolForDelta = .True.
         elseif (INDEX(line,"# init iter") > 0) then
-            read(line,*) init_iter
+            read(line,*) initialIterationId
             log_set_initial_iteration= .True.
         elseif (INDEX(line,"# num iter") > 0) then
             read(line,*) iterations
             log_number_of_iterations = .True.
         elseif (INDEX(line,"# init field") > 0) then
-            read(line,*) field_init_scheme
-            log_field_init_scheme = .True.
+            read(line,*) fieldInitScheme
+            log_fieldInitScheme = .True.
         elseif (INDEX(line,"# bin thickness") > 0) then
             read(line,*) binThickness
             log_binThickness = .True.
@@ -195,34 +195,34 @@ do
             read(line,*) exportAdsorbedFree
             log_exportAdsorbedFree = .True.
         elseif (INDEX(line,"# prof dim") > 0) then
-            read(line,*) prof_dim
-            log_profile_dimension = .True.
+            read(line,*) profileDimensions
+            log_profileDimensions = .True.
         elseif (INDEX(line,"# use matrix") > 0) then
-            read(line,*) mx_exist
-            log_mx_exist = .True.
+            read(line,*) matrixExist
+            log_matrixExist = .True.
         elseif (INDEX(line,"# use grafted") > 0) then
-            read(line,*) gr_exist
-            log_gr_exist = .True.
+            read(line,*) graftedExist
+            log_graftedExist = .True.
         elseif (INDEX(line,"# contour step matrix") > 0) then
-            read(line,*) ds_ave_mx_ed, ds_ave_mx_conv
+            read(line,*) stepEdwAveMatrix, stepConvolAveMatrix
             log_ds_ave_mx = .True.
         elseif (INDEX(line,"# discr scheme matrix") > 0) then
-            read(line,*) contour_discr_mx
-            if (contour_discr_mx.eq.contour_hybrid) read(256,*) xs_crit_mx
-            log_contour_discr_mx = .True.
+            read(line,*) contourMatrix
+            if (contourMatrix.eq.contour_hybrid) read(256,*) xs_crit_mx
+            log_contourMatrix = .True.
         elseif (INDEX(line,"# ads distance") > 0) then
             read(line,*) ads_distance
             log_ads_distance = .True.
         elseif (INDEX(line,"# contour step grafted") > 0) then
-            read(line,*) ds_ave_gr_ed, ds_ave_gr_conv
+            read(line,*) stepEdwAveGrafted, stepConvolAveGrafted
             log_ds_ave_gr = .True.
         elseif (INDEX(line,"# gp dist from solid") > 0) then
-            read(line,*) r_gpoint
-            log_r_gpoint = .True.
+            read(line,*) graftPointDistance
+            log_graftPointDistance = .True.
         elseif (INDEX(line,"# discr scheme grafted") > 0) then
-            read(line,*) contour_discr_gr
-            if (contour_discr_gr.eq.contour_hybrid) read(256,*) xs_crit_gr
-            log_contour_discr_gr = .True.
+            read(line,*) contourGrafted
+            if (contourGrafted.eq.contour_hybrid) read(256,*) xs_crit_gr
+            log_contourGrafted = .True.
         elseif (INDEX(line,"# mumps matrix") > 0) then
             read(line,*) mumpsMatrixType
             log_mumpsMatrixType = .True.
@@ -240,11 +240,11 @@ do
             read(line,*) k_gr_tilde
             log_influence_param = .True.
         elseif (INDEX(line,"# calc delta") > 0) then
-            read(line,*) grafted_ic_from_delta
-            log_grafted_ic_from_delta = .True.
+            read(line,*) getICfromDelta
+            log_getICfromDelta = .True.
         elseif (INDEX(line,"# freq delta") > 0) then
-            read(line,*) calc_delta_every
-            log_calc_delta_every = .True.
+            read(line,*) deltaUpdateFreq
+            log_deltaUpdateFreq = .True.
         elseif (INDEX(line,"# num faces") > 0) then
             read(line,*) numDirichletFaces
             if (numDirichletFaces > 0) then
@@ -376,7 +376,7 @@ else
 endif
 
 
-if (mx_exist.eq.1) then
+if (matrixExist.eq.1) then
     if (log_lengthMatrix) then
         if (lengthMatrix>0.0d0) then
             lengthMatrixMax = lengthMatrix
@@ -391,21 +391,21 @@ if (mx_exist.eq.1) then
 endif
 
 
-if (log_gr_exist) then
-    if (gr_exist.eq.1) then
+if (log_graftedExist) then
+    if (graftedExist.eq.1) then
         write(iow,*)
         write(*,*)
         write(iow,'(A85)')adjl('-----------------------------------GRAFTED CHAINS-----------------------------------',85)
         write(*  ,'(A85)')adjl('-----------------------------------GRAFTED CHAINS-----------------------------------',85)
     else
-        gr_exist = 0
+        graftedExist = 0
     endif
 else
     continue
 endif
 
 
-if (gr_exist.eq.1) then
+if (graftedExist.eq.1) then
     if (log_graftFile) then
         inquire(file=graftFile, exist=file_exists)
         if (.not.file_exists) then
@@ -463,18 +463,18 @@ if (gr_exist.eq.1) then
     endif
 
     if (log_ds_ave_gr) then
-        if (ds_ave_gr_ed>0 .and. ds_ave_gr_conv>0) then
-            ns_gr_ed   = 2 * NINT(0.5d0 * lengthGrafted / ds_ave_gr_ed)
-            ns_gr_conv = 2 * NINT(0.5d0 * lengthGrafted / ds_ave_gr_conv)
-            write(iow,'(3X,A40,I9,I7)')adjl("Number of grafted segments:",40), ns_gr_ed, ns_gr_conv
-            write(6  ,'(3X,A40,I9,I7)')adjl("Number of grafted segments:",40), ns_gr_ed, ns_gr_conv
+        if (stepEdwAveGrafted>0 .and. stepConvolAveGrafted>0) then
+            numEdwPointsGrafted    = 2 * NINT(0.5d0 * lengthGrafted / stepEdwAveGrafted)
+            numConvolPointsGrafted = 2 * NINT(0.5d0 * lengthGrafted / stepConvolAveGrafted)
+            write(iow,'(3X,A40,I9,I7)')adjl("Number of grafted segments:",40), numEdwPointsGrafted, numConvolPointsGrafted
+            write(6  ,'(3X,A40,I9,I7)')adjl("Number of grafted segments:",40), numEdwPointsGrafted, numConvolPointsGrafted
 
-            if (MOD(ns_gr_ed,2).ne.0 .or. MOD(ns_gr_conv,2).ne.0) then
-                write(ERROR_MESSAGE,'("ns_grafted is not an even number: ",I16,I16)') ns_gr_ed, ns_gr_conv
+            if (MOD(numEdwPointsGrafted,2).ne.0 .or. MOD(numConvolPointsGrafted,2).ne.0) then
+                write(ERROR_MESSAGE,'("ns_grafted is not an even number: ",I16,I16)') numEdwPointsGrafted, numConvolPointsGrafted
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
         else
-            write(ERROR_MESSAGE,'("Contour step of grafted chains is negative: ",E16.9,E16.9)') ds_ave_gr_ed, ds_ave_gr_conv
+            write(ERROR_MESSAGE,'("Contour step of grafted chains is negative: ",E16.9,E16.9)') stepEdwAveGrafted, stepConvolAveGrafted
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -482,14 +482,14 @@ if (gr_exist.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
-    if (log_contour_discr_gr) then
-        if (contour_discr_gr.eq.contour_uniform) then
+    if (log_contourGrafted) then
+        if (contourGrafted.eq.contour_uniform) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "uniform"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "uniform"
-        elseif (contour_discr_gr.eq.contour_symm) then
+        elseif (contourGrafted.eq.contour_symm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "symm"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "symm"
-        elseif (contour_discr_gr.eq.contour_hybrid) then
+        elseif (contourGrafted.eq.contour_hybrid) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "hybrid"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "hybrid"
             if (xs_crit_gr < 0) then
@@ -503,13 +503,13 @@ if (gr_exist.eq.1) then
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
 
-            call compute_contour_step(ds_ave_gr_ed, xs_crit_gr, lengthGrafted, ns_gr_ed)
+            call compute_contour_step(stepEdwAveGrafted, xs_crit_gr, lengthGrafted, numEdwPointsGrafted)
 
-        elseif (contour_discr_gr.eq.contour_asymm) then
+        elseif (contourGrafted.eq.contour_asymm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "asymm"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "asymm"
         else
-            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme of grafted chains: ",I5)') contour_discr_gr
+            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme of grafted chains: ",I5)') contourGrafted
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -519,21 +519,21 @@ if (gr_exist.eq.1) then
 endif
 
 
-if (log_mx_exist) then
-    if (mx_exist.eq.1) then
+if (log_matrixExist) then
+    if (matrixExist.eq.1) then
         write(iow,*)
         write(*,*)
         write(iow,'(A85)')adjl('-------------------------------------MATRIX CHAINS-----------------------------------',85)
         write(*  ,'(A85)')adjl('-------------------------------------MATRIX CHAINS-----------------------------------',85)
     else
-        mx_exist = 0
+        matrixExist = 0
     endif
 else
     continue
 endif
 
 
-if (mx_exist.eq.1) then
+if (matrixExist.eq.1) then
     if (log_rg2OfMatrixMonomer) then
         if (rg2OfMatrixMonomer>0.0d0) then
             write(iow,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40), rg2OfMatrixMonomer, "[Angstrom^2]"
@@ -555,19 +555,19 @@ if (mx_exist.eq.1) then
                                                              & DSQRT(rg2OfMatrixMonomer*lengthMatrix), "[Angstrom]"
 
     if (log_ds_ave_mx) then
-        if (ds_ave_mx_ed>0.0d0 .and. ds_ave_mx_conv>0.0d0) then
-            ns_mx_ed   = 2 * NINT(0.5d0 * lengthMatrixMax / ds_ave_mx_ed)
-            ns_mx_conv = 2 * NINT(0.5d0 * lengthMatrix    / ds_ave_mx_conv)
+        if (stepEdwAveMatrix>0.0d0 .and. stepConvolAveMatrix>0.0d0) then
+            numEdwPointsMatrix    = 2 * NINT(0.5d0 * lengthMatrixMax / stepEdwAveMatrix)
+            numConvolPointsMatrix = 2 * NINT(0.5d0 * lengthMatrix    / stepConvolAveMatrix)
 
-            write(iow,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_mx_ed, ns_mx_conv
-            write(6  ,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), ns_mx_ed, ns_mx_conv
+            write(iow,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), numEdwPointsMatrix, numConvolPointsMatrix
+            write(6  ,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), numEdwPointsMatrix, numConvolPointsMatrix
 
-            if (MOD(ns_mx_ed,2).ne.0 .or. MOD(ns_mx_conv,2).ne.0) then
-                write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') ns_mx_ed, ns_mx_conv
+            if (MOD(numEdwPointsMatrix,2).ne.0 .or. MOD(numConvolPointsMatrix,2).ne.0) then
+                write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') numEdwPointsMatrix, numConvolPointsMatrix
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
         else
-            write(ERROR_MESSAGE,'("Contour step of matrix chains is negative: ",E16.9,E16.9)') ds_ave_mx_ed, ds_ave_mx_conv
+            write(ERROR_MESSAGE,'("Contour step of matrix chains is negative: ",E16.9,E16.9)') stepEdwAveMatrix, stepConvolAveMatrix
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -575,14 +575,14 @@ if (mx_exist.eq.1) then
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 
-    if (log_contour_discr_mx) then
-        if (contour_discr_mx.eq.contour_uniform) then
+    if (log_contourMatrix) then
+        if (contourMatrix.eq.contour_uniform) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "uniform"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "uniform"
-        elseif (contour_discr_mx.eq.contour_symm) then
+        elseif (contourMatrix.eq.contour_symm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "symm"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "symm"
-        elseif (contour_discr_mx.eq.contour_hybrid) then
+        elseif (contourMatrix.eq.contour_hybrid) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "hybrid"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "hybrid"
             if (xs_crit_mx < 0) then
@@ -596,13 +596,13 @@ if (mx_exist.eq.1) then
                 call exit_with_error(1,1,1,ERROR_MESSAGE)
             endif
 
-            call compute_contour_step(ds_ave_mx_ed, xs_crit_mx, lengthMatrixMax, ns_mx_ed)
+            call compute_contour_step(stepEdwAveMatrix, xs_crit_mx, lengthMatrixMax, numEdwPointsMatrix)
 
-        elseif (contour_discr_mx.eq.contour_asymm) then
+        elseif (contourMatrix.eq.contour_asymm) then
             write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
             write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
         else
-            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme of matrix chains: ",I5)') contour_discr_mx
+            write(ERROR_MESSAGE,'("Not valid Edwards contour scheme of matrix chains: ",I5)') contourMatrix
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
@@ -634,30 +634,30 @@ write(iow,'(A85)')adjl('--------------------------------SIMULATION PARAMETERS---
 write(*  ,'(A85)')adjl('--------------------------------SIMULATION PARAMETERS---------------------------------',85)
 
 
-if (log_mx_exist.and.mx_exist.ge.1) then
-    mx_exist = 1
-    write(iow,'(3X,A40,I9)')adjl("The system includes matrix chains:",40), mx_exist
-    write(6  ,'(3X,A40,I9)')adjl("The system includes matrix chains:",40), mx_exist
+if (log_matrixExist.and.matrixExist.ge.1) then
+    matrixExist = 1
+    write(iow,'(3X,A40,I9)')adjl("The system includes matrix chains:",40), matrixExist
+    write(6  ,'(3X,A40,I9)')adjl("The system includes matrix chains:",40), matrixExist
 else
-    mx_exist = dflt_mx_exist
-    write(iow,'(3X,A40,I9)')adjl("System does not include matrix chains:",40), mx_exist
-    write(6  ,'(3X,A40,I9)')adjl("System does not include matrix chains:",40), mx_exist
+    matrixExist = dflt_matrixExist
+    write(iow,'(3X,A40,I9)')adjl("System does not include matrix chains:",40), matrixExist
+    write(6  ,'(3X,A40,I9)')adjl("System does not include matrix chains:",40), matrixExist
 endif
 
 
-if (log_gr_exist.and.gr_exist.ge.1) then
-    gr_exist = 1
-    write(iow,'(3X,A40,I9)')adjl("The system includes grafted chains:",40), gr_exist
-    write(6  ,'(3X,A40,I9)')adjl("The system includes grafted chains:",40), gr_exist
+if (log_graftedExist.and.graftedExist.ge.1) then
+    graftedExist = 1
+    write(iow,'(3X,A40,I9)')adjl("The system includes grafted chains:",40), graftedExist
+    write(6  ,'(3X,A40,I9)')adjl("The system includes grafted chains:",40), graftedExist
 
-    if (log_grafted_ic_from_delta) then
-        write(iow,'(3X,A40,I9)')adjl("Grafted ic from delta:",40), grafted_ic_from_delta
-        write(6  ,'(3X,A40,I9)')adjl("Grafted ic from delta:",40), grafted_ic_from_delta
-        if (grafted_ic_from_delta.ge.1) then
-            if (log_calc_delta_every) then
-                if (calc_delta_every.gt.0) then
-                    write(iow,'(3X,A40,I9)')adjl("Delta is calculated every:",40), calc_delta_every
-                    write(6  ,'(3X,A40,I9)')adjl("Delta is calculated every:",40), calc_delta_every
+    if (log_getICfromDelta) then
+        write(iow,'(3X,A40,I9)')adjl("Grafted ic from delta:",40), getICfromDelta
+        write(6  ,'(3X,A40,I9)')adjl("Grafted ic from delta:",40), getICfromDelta
+        if (getICfromDelta.ge.1) then
+            if (log_deltaUpdateFreq) then
+                if (deltaUpdateFreq.gt.0) then
+                    write(iow,'(3X,A40,I9)')adjl("Delta is calculated every:",40), deltaUpdateFreq
+                    write(6  ,'(3X,A40,I9)')adjl("Delta is calculated every:",40), deltaUpdateFreq
                 else
                     write(iow,'(3X,A40)')adjl("Delta is read from file",40)
                     write(6  ,'(3X,A40)')adjl("Delta is read from file",40)
@@ -679,7 +679,7 @@ if (log_gr_exist.and.gr_exist.ge.1) then
                 write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), numGraftedChainsTol
             endif
         endif
-        if (grafted_ic_from_delta.lt.1) then
+        if (getICfromDelta.lt.1) then
             write(iow,'(3X,A40)')adjl("Initial conditions are read from file.",40)
             write(6  ,'(3X,A40)')adjl("Initial conditions are read from file.",40)
         endif
@@ -688,44 +688,44 @@ if (log_gr_exist.and.gr_exist.ge.1) then
         write(6  ,'(3X,A40)')adjl("Initial conditions are read from file.",40)
     endif
 
-    if (log_r_gpoint) then
-        if (r_gpoint.gt.0.0d0) then
-            write(iow,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40), r_gpoint
-            write(6  ,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40), r_gpoint
+    if (log_graftPointDistance) then
+        if (graftPointDistance.gt.0.0d0) then
+            write(iow,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40), graftPointDistance
+            write(6  ,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40), graftPointDistance
         else
-            write(ERROR_MESSAGE,'("Distance of grafting points from solid must have a positive value:",E16.9)') r_gpoint
+            write(ERROR_MESSAGE,'("Distance of grafting points from solid must have a positive value:",E16.9)') graftPointDistance
             call exit_with_error(1,1,1,ERROR_MESSAGE)
         endif
     else
-        r_gpoint = dflt_r_gpoint
+        graftPointDistance = dflt_graftPointDistance
         write(iow,'(3X,A40)')adjl("Distance of grafting points not found.",40)
-        write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), r_gpoint
+        write(iow,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), graftPointDistance
         write(6  ,'(3X,A40)')adjl("Distance of grafting points not found.",40)
-        write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), r_gpoint
+        write(6  ,'(3X,A40,E16.9)')adjl("It was set to the default value:",40), graftPointDistance
     endif
 else
-    gr_exist = dflt_gr_exist
-    write(iow,'(3X,A40,1x,I15)')adjl("System does not include grafted chains:",40), gr_exist
-    write(6  ,'(3X,A40,1x,I15)')adjl("System does not include grafted chains:",40), gr_exist
+    graftedExist = dflt_graftedExist
+    write(iow,'(3X,A40,1x,I15)')adjl("System does not include grafted chains:",40), graftedExist
+    write(6  ,'(3X,A40,1x,I15)')adjl("System does not include grafted chains:",40), graftedExist
 endif
 
 
 if (log_set_initial_iteration) then
-    if (init_iter.lt.0) then
-        write(ERROR_MESSAGE,'("Wrong value of initial iteration.",I16)') init_iter
+    if (initialIterationId.lt.0) then
+        write(ERROR_MESSAGE,'("Wrong value of initial iteration.",I16)') initialIterationId
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    init_iter = dflt_init_iter
+    initialIterationId = dflt_initialIterationId
 endif
 
 
-if (init_iter.eq.0) then
-    write(iow,'(3X,A40,I9)')adjl("Fresh simulation starting from iter:",40), init_iter
-    write(6  ,'(3X,A40,I9)')adjl("Fresh simulation starting from iter:",40), init_iter
-elseif (init_iter.gt.0) then
-    write(iow,'(3X,A40,I9)')adjl("Simulation restarting from iter:",40), init_iter
-    write(6  ,'(3X,A40,I9)')adjl("Simulation restarting from iter:",40), init_iter
+if (initialIterationId.eq.0) then
+    write(iow,'(3X,A40,I9)')adjl("Fresh simulation starting from iter:",40), initialIterationId
+    write(6  ,'(3X,A40,I9)')adjl("Fresh simulation starting from iter:",40), initialIterationId
+elseif (initialIterationId.gt.0) then
+    write(iow,'(3X,A40,I9)')adjl("Simulation restarting from iter:",40), initialIterationId
+    write(6  ,'(3X,A40,I9)')adjl("Simulation restarting from iter:",40), initialIterationId
 endif
 
 
@@ -763,28 +763,28 @@ else
 endif
 
 
-if (log_profile_dimension) then
-    if ( (prof_dim.ge.1).and.(prof_dim.le.3) ) then
-        write(iow,'(3X,A40,I9)')adjl("Profile dimension:",40), prof_dim
-        write(6  ,'(3X,A40,I9)')adjl("Profile dimension:",40), prof_dim
+if (log_profileDimensions) then
+    if ( (profileDimensions.ge.1).and.(profileDimensions.le.3) ) then
+        write(iow,'(3X,A40,I9)')adjl("Profile dimension:",40), profileDimensions
+        write(6  ,'(3X,A40,I9)')adjl("Profile dimension:",40), profileDimensions
     else
-        write(ERROR_MESSAGE,'("Profile dimension is not between 1 and 3:",I16)') prof_dim
+        write(ERROR_MESSAGE,'("Profile dimension is not between 1 and 3:",I16)') profileDimensions
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else
-    prof_dim = dflt_prof_dim
+    profileDimensions = dflt_profileDimensions
     write(iow,'(3X,A40)')adjl("Profile dimension not found.",40)
-    write(iow,'(3X,A40,I8)')adjl("It was set to the default value:",40), prof_dim
+    write(iow,'(3X,A40,I8)')adjl("It was set to the default value:",40), profileDimensions
     write(6  ,'(3X,A40)')adjl("Profile dimension not found.",40)
-    write(6  ,'(3X,A40,I8)')adjl("It was set to the default value:",40), prof_dim
+    write(6  ,'(3X,A40,I8)')adjl("It was set to the default value:",40), profileDimensions
 endif
 
 
-if (log_field_init_scheme) then
-    if (field_init_scheme==0) then
+if (log_fieldInitScheme) then
+    if (fieldInitScheme==0) then
         write(iow,'(3X,A34)')adjl("Field will be initialized to zero.",40)
         write(6  ,'(3X,A34)')adjl("Field will be initialized to zero.",40)
-    elseif (field_init_scheme==1) then
+    elseif (fieldInitScheme==1) then
         if (log_fieldFile) then
             inquire(file=fieldFile, exist=file_exists)
             if (.not.file_exists) then
@@ -808,11 +808,11 @@ if (log_field_init_scheme) then
                 STOP
             endif
         endif
-    elseif (field_init_scheme==2) then
+    elseif (fieldInitScheme==2) then
         write(iow,'(3X,A40)')adjl("Field: -kapa at Dir. and 0 elsewhere.",40)
         write(6  ,'(3X,A40)')adjl("Field: -kapa at Dir. and 0 elsewhere.",40)
     else
-        write(ERROR_MESSAGE,'("Incorrect field initialization value. Choose between 1-3.",I16)') init_iter
+        write(ERROR_MESSAGE,'("Incorrect field initialization value. Choose between 1-3.",I16)') initialIterationId
         call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
 else

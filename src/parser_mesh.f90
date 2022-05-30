@@ -10,17 +10,17 @@ use ints_module
 use error_handing_mod
 use write_helper_mod, only: adjl
 use parser_vars_mod,  only: iow, periodicAxisId, domainIsPeriodic
-use geometry_mod,     only: nel, num_of_elems_of_node, boxLow, boxHigh, boxLength,        &
-&                       xc, numnp, numel, global_node_id_type_domain,                     &
-&                       ndm, node_pair_id, numBulkNodePairs, numTotalNodePairs,           &
-&                       node_pairing_xx_hash, node_pairing_yy_hash, node_pairing_zz_hash, &
-&                       nen_type_face, numel_type_face
+use geometry_mod,     only: numNodesLocalTypeDomain, numElementsOfNode, boxLow, boxHigh, boxLength, &
+                        nodeCoord, numNodes, numElementsTypeDomain, globalNodeIdTypeDomain,         &
+                        numDimensions, nodePairId, numBulkNodePairs, numTotalNodePairs,             &
+                        nodePairingXXhash, nodePairingYYhash, nodePairingZZhash,                    &
+                        numNodesLocalTypeFace, numElementsTypeFace
 use kcw_mod,          only: F_m
 use iofiles_mod,      only: meshFile, dir_faces, com_12, inter, mesh_out,  &
-&                       mesh_prof, xface1_elements, xface2_elements,       &
-&                       yface1_elements, yface2_elements, zface1_elements, &
-&                       zface2_elements, node_pairing_xx, node_pairing_yy, &
-&                       node_pairing_zz
+                        mesh_prof, xface1_elements, xface2_elements,       &
+                        yface1_elements, yface2_elements, zface1_elements, &
+                        zface2_elements, nodePairingXX, nodePairingYY,     &
+                        nodePairingZZ
 !----------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
@@ -29,10 +29,10 @@ character(len=200) :: line, aux_line
 integer                              :: ii, jj, kk, pp
 integer                              :: starting_pair, ending_pair
 integer                              :: reason, id_of_entity_it_belongs, max_num_of_elems_per_node
-integer                              :: nen_type_vertex, numel_type_vertex
-integer                              :: nen_type_edge, numel_type_edge
+integer                              :: numElementsTypeVertex, numElementsTypeEdge
+integer                              :: numNodesLocalTypeVertex, numNodesLocalTypeEdge
 integer, allocatable, dimension(:)   :: temp3
-integer, allocatable, dimension(:,:) :: global_node_id_type_vertex, global_node_id_type_edge, global_node_id_type_face
+integer, allocatable, dimension(:,:) :: globalNodeIdTypeVertex, globalNodeIdTypeEdge, globalNodeIdTypeFace
 
 real(8) :: box_volume = 0.0d0
 
@@ -58,21 +58,21 @@ do
     exit
   else
     if (INDEX(line,"# sdim") > 0) then
-      read(line,*) ndm
+      read(line,*) numDimensions
     elseif (INDEX(line,"# number of mesh points")>0) then
-      read(line,*) numnp
-      allocate(xc(ndm,numnp))
+      read(line,*) numNodes
+      allocate(nodeCoord(numDimensions,numNodes))
     elseif (INDEX(line,"# Mesh point coordinates")>0) then
       boxLow    = 0.0d0
       boxHigh   = 0.0d0
       boxLength = 0.0d0
 
-      do ii = 1, numnp
-        read(12,*) (xc(jj,ii), jj = 1, ndm)
+      do ii = 1, numNodes
+        read(12,*) (nodeCoord(jj,ii), jj = 1, numDimensions)
 
-        do jj = 1, ndm
-          boxHigh(jj) = max(xc(jj,ii), boxHigh(jj))
-          boxLow(jj)  = min(xc(jj,ii), boxLow(jj))
+        do jj = 1, numDimensions
+          boxHigh(jj) = max(nodeCoord(jj,ii), boxHigh(jj))
+          boxLow(jj)  = min(nodeCoord(jj,ii), boxLow(jj))
         enddo
       enddo
 
@@ -81,7 +81,7 @@ do
 
       write(iow,'(A6,A13,A17,A18)') "dim", "box_length", "box_min", "box_max"
       write(6  ,'(A6,A13,A17,A18)') "dim", "box_length", "box_min", "box_max"
-      do jj = 1, ndm
+      do jj = 1, numDimensions
         boxLength(jj) = boxHigh(jj) - boxLow(jj)
         write(iow,'(I5,2X,3(E16.9,2X))') jj, boxLength(jj), boxLow(jj), boxHigh(jj)
         write(6  ,'(I5,2X,3(E16.9,2X))') jj, boxLength(jj), boxLow(jj), boxHigh(jj)
@@ -96,13 +96,13 @@ do
     elseif (INDEX(line,"3 vtx # type name")>0) then
       read(12,*)
       read(12,*)
-      read(12,*) nen_type_vertex
-      read(12,*) numel_type_vertex
-      allocate(global_node_id_type_vertex(nen_type_vertex,numel_type_vertex))
+      read(12,*) numNodesLocalTypeVertex
+      read(12,*) numElementsTypeVertex
+      allocate(globalNodeIdTypeVertex(numNodesLocalTypeVertex,numElementsTypeVertex))
       read(12,*)
 
-      do kk = 1, numel_type_vertex
-        read(12,*) (global_node_id_type_vertex(pp,kk), pp=1, nen_type_vertex)
+      do kk = 1, numElementsTypeVertex
+        read(12,*) (globalNodeIdTypeVertex(pp,kk), pp=1, numNodesLocalTypeVertex)
       enddo
       read(12,*)
       read(12,'(A100)',IOSTAT=reason) aux_line
@@ -115,8 +115,8 @@ do
       read(12,*)
 
       allocate(vertex_entity_key%ints(1))
-      call vertex_entity_hash%reserve(numel_type_vertex)
-      do kk = 1, numel_type_vertex
+      call vertex_entity_hash%reserve(numElementsTypeVertex)
+      do kk = 1, numElementsTypeVertex
         vertex_entity_key%ints(1) = kk
         read(12,*) id_of_entity_it_belongs
         call vertex_entity_hash%get(vertex_entity_key, vertex_entity_value, success)
@@ -125,20 +125,20 @@ do
     elseif ((INDEX(line,"3 edg # type name")>0).OR.(INDEX(line,"4 edg2 # type name")>0)) then
       read(12,*)
       read(12,*)
-      read(12,*) nen_type_edge
-      read(12,*) numel_type_edge
-      allocate(global_node_id_type_edge(nen_type_edge,numel_type_edge))
+      read(12,*) numNodesLocalTypeEdge
+      read(12,*) numElementsTypeEdge
+      allocate(globalNodeIdTypeEdge(numNodesLocalTypeEdge,numElementsTypeEdge))
       read(12,*)
 
-      do kk = 1, numel_type_edge
-        read(12,*) (global_node_id_type_edge(pp,kk), pp=1,nen_type_edge)
+      do kk = 1, numElementsTypeEdge
+        read(12,*) (globalNodeIdTypeEdge(pp,kk), pp=1,numNodesLocalTypeEdge)
       enddo
       read(12,*)
       read(12,'(A100)',IOSTAT=reason) aux_line
       if (INDEX(aux_line," # number of parameter values per element")>0) then
         read(12,*)
         read(12,*)
-        do ii = 1, numel_type_edge
+        do ii = 1, numElementsTypeEdge
           read(12,*)
         enddo
         read(12,*)
@@ -147,8 +147,8 @@ do
       read(12,*)
 
       allocate(edge_entity_key%ints(1))
-      call edge_entity_hash%reserve(numel_type_edge)
-      do kk = 1, numel_type_edge
+      call edge_entity_hash%reserve(numElementsTypeEdge)
+      do kk = 1, numElementsTypeEdge
         edge_entity_key%ints(1) = kk
         read(12,*) id_of_entity_it_belongs
         call edge_entity_hash%get(edge_entity_key, edge_entity_value, success)
@@ -157,23 +157,23 @@ do
     elseif ((INDEX(line,"3 tri # type name")>0).OR.(INDEX(line,"4 tri2 # type name")>0)) then
       read(12,*)
       read(12,*)
-      read(12,*) nen_type_face
-      read(12,*) numel_type_face
+      read(12,*) numNodesLocalTypeFace
+      read(12,*) numElementsTypeFace
       read(12,*)
 
-      allocate(global_node_id_type_face(nen_type_face,numel_type_face))
-      do kk = 1, numel_type_face
-        read(12,*) (global_node_id_type_face(pp,kk), pp=1,nen_type_face)
+      allocate(globalNodeIdTypeFace(numNodesLocalTypeFace,numElementsTypeFace))
+      do kk = 1, numElementsTypeFace
+        read(12,*) (globalNodeIdTypeFace(pp,kk), pp=1,numNodesLocalTypeFace)
       enddo
-      global_node_id_type_face = global_node_id_type_face + 1
+      globalNodeIdTypeFace = globalNodeIdTypeFace + 1
 
       read(12,*)
       read(12,'(A100)',IOSTAT=reason) aux_line
       if ((INDEX(aux_line,"3 # number of parameter values per element")>0).OR.&
-         &(INDEX(aux_line,"6 # number of parameter values per element")>0)) then
+          (INDEX(aux_line,"6 # number of parameter values per element")>0)) then
         read(12,*)
         read(12,*)
-        do ii = 1, numel_type_face
+        do ii = 1, numElementsTypeFace
           read(12,*)
         enddo
         read(12,*)
@@ -182,8 +182,8 @@ do
       read(12,*)
 
       allocate(face_entity_key%ints(1))
-      call face_entity_hash%reserve(numel_type_face)
-      do kk = 1, numel_type_face
+      call face_entity_hash%reserve(numElementsTypeFace)
+      do kk = 1, numElementsTypeFace
         face_entity_key%ints(1) = kk
         read(12,*) id_of_entity_it_belongs
         call face_entity_hash%get(face_entity_key, face_entity_value, success)
@@ -192,35 +192,35 @@ do
     elseif ((INDEX(line,"3 tet # type name")>0).OR.(INDEX(line,"4 tet2 # type name")>0)) then
       read(12,*)
       read(12,*)
-      read(12,*) nel
-      read(12,*) numel
+      read(12,*) numNodesLocalTypeDomain
+      read(12,*) numElementsTypeDomain
       read(12,*)
 
-      numBulkNodePairs = nel * nel * numel
+      numBulkNodePairs = numNodesLocalTypeDomain * numNodesLocalTypeDomain * numElementsTypeDomain
 
       write(iow,*)
       write(*,*)
-      write(iow,'(3X,"Number of mesh points (numnp):         ",I16)') numnp
-      write(iow,'(3X,"Number of elements (numel):            ",I16)') numel
-      write(iow,'(3X,"Number of nodes per element (nel):     ",I16)') nel
+      write(iow,'(3X,"Number of mesh points:                 ",I16)') numNodes
+      write(iow,'(3X,"Number of elements:                    ",I16)') numElementsTypeDomain
+      write(iow,'(3X,"Number of nodes per element:           ",I16)') numNodesLocalTypeDomain
       write(iow,'(3X,"Number of matrix indeces:              ",I16)') numBulkNodePairs
-      write(6,'(3X,"Number of mesh points (numnp):         ",I16)') numnp
-      write(6,'(3X,"Number of elements (numel):            ",I16)') numel
-      write(6,'(3X,"Number of nodes per element (nel):     ",I16)') nel
-      write(6,'(3X,"Number of matrix indeces:              ",I16)') numBulkNodePairs
+      write(6,'(3X,"Number of mesh points                    ",I16)') numNodes
+      write(6,'(3X,"Number of elements:                      ",I16)') numElementsTypeDomain
+      write(6,'(3X,"Number of nodes per element:             ",I16)') numNodesLocalTypeDomain
+      write(6,'(3X,"Number of matrix indeces:                ",I16)') numBulkNodePairs
 
-      allocate(global_node_id_type_domain(nel,numel))
-      do ii = 1, numel
-        read(12,*) (global_node_id_type_domain(jj,ii), jj = 1, nel)
+      allocate(globalNodeIdTypeDomain(numNodesLocalTypeDomain,numElementsTypeDomain))
+      do ii = 1, numElementsTypeDomain
+        read(12,*) (globalNodeIdTypeDomain(jj,ii), jj = 1, numNodesLocalTypeDomain)
       enddo
-      global_node_id_type_domain = global_node_id_type_domain + 1
+      globalNodeIdTypeDomain = globalNodeIdTypeDomain + 1
 
-      if (nel>4) then
-        allocate(temp3(numel))
-        do ii = 1, numel
-          temp3(ii) = global_node_id_type_domain(7,ii)
-          global_node_id_type_domain(7,ii) = global_node_id_type_domain(6,ii)
-          global_node_id_type_domain(6,ii) = temp3(ii)
+      if (numNodesLocalTypeDomain>4) then
+        allocate(temp3(numElementsTypeDomain))
+        do ii = 1, numElementsTypeDomain
+          temp3(ii) = globalNodeIdTypeDomain(7,ii)
+          globalNodeIdTypeDomain(7,ii) = globalNodeIdTypeDomain(6,ii)
+          globalNodeIdTypeDomain(6,ii) = temp3(ii)
         enddo
       endif
 
@@ -235,8 +235,8 @@ do
       read(12,*)
 
       allocate(domain_entity_key%ints(1))
-      call domain_entity_hash%reserve(numel)
-      do kk = 1, numel
+      call domain_entity_hash%reserve(numElementsTypeDomain)
+      do kk = 1, numElementsTypeDomain
         domain_entity_key%ints(1) = kk
         read(12,*) id_of_entity_it_belongs
         call domain_entity_hash%get(domain_entity_key, domain_entity_value, success)
@@ -294,19 +294,19 @@ if (domainIsPeriodic) then
   if (periodicAxisId(3)) call mesh_periodic_face_elements('z', zface1_hash, zface2_hash)
 #endif
 
-  if (periodicAxisId(1)) call mesh_build_node_pairing(global_node_id_type_face, 'x', xface1_hash, xface2_hash, node_pairing_xx_hash)
-  if (periodicAxisId(2)) call mesh_build_node_pairing(global_node_id_type_face, 'y', yface1_hash, yface2_hash, node_pairing_yy_hash)
-  if (periodicAxisId(3)) call mesh_build_node_pairing(global_node_id_type_face, 'z', zface1_hash, zface2_hash, node_pairing_zz_hash)
+  if (periodicAxisId(1)) call mesh_build_node_pairing(globalNodeIdTypeFace, 'x', xface1_hash, xface2_hash, nodePairingXXhash)
+  if (periodicAxisId(2)) call mesh_build_node_pairing(globalNodeIdTypeFace, 'y', yface1_hash, yface2_hash, nodePairingYYhash)
+  if (periodicAxisId(3)) call mesh_build_node_pairing(globalNodeIdTypeFace, 'z', zface1_hash, zface2_hash, nodePairingZZhash)
 endif
 
-allocate(num_of_elems_of_node(numnp))
-call mesh_elements_per_node(max_num_of_elems_per_node, num_of_elems_of_node)
+allocate(numElementsOfNode(numNodes))
+call mesh_elements_per_node(max_num_of_elems_per_node, numElementsOfNode)
 
 numTotalNodePairs = numBulkNodePairs
 
-if (periodicAxisId(1)) numTotalNodePairs = numTotalNodePairs + node_pairing_xx_hash%key_count()
-if (periodicAxisId(2)) numTotalNodePairs = numTotalNodePairs + node_pairing_yy_hash%key_count()
-if (periodicAxisId(3)) numTotalNodePairs = numTotalNodePairs + node_pairing_zz_hash%key_count()
+if (periodicAxisId(1)) numTotalNodePairs = numTotalNodePairs + nodePairingXXhash%key_count()
+if (periodicAxisId(2)) numTotalNodePairs = numTotalNodePairs + nodePairingYYhash%key_count()
+if (periodicAxisId(3)) numTotalNodePairs = numTotalNodePairs + nodePairingZZhash%key_count()
 
 allocate(F_m%row(numTotalNodePairs))
 allocate(F_m%col(numTotalNodePairs))
@@ -325,61 +325,61 @@ F_m%row     = 0
 F_m%col     = 0
 F_m%is_zero = .True.
 
-call mesh_bulk_node_pairs(node_pairing_xx_hash, node_pairing_yy_hash, node_pairing_zz_hash, elemcon)
+call mesh_bulk_node_pairs(nodePairingXXhash, nodePairingYYhash, nodePairingZZhash, elemcon)
 
 ! xx pairs
 starting_pair = numBulkNodePairs + 1
-ending_pair   = numBulkNodePairs + node_pairing_xx_hash%key_count()
+ending_pair   = numBulkNodePairs + nodePairingXXhash%key_count()
 
-if (periodicAxisId(1)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_xx_hash)
+if (periodicAxisId(1)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, nodePairingXXhash)
 
-do ii = 1, numBulkNodePairs + node_pairing_xx_hash%key_count()
-  F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
+do ii = 1, numBulkNodePairs + nodePairingXXhash%key_count()
+  F_m%is_zero(ii) = (nodePairId(ii)/=ii)
 enddo
 
 ! yy pairs
-starting_pair = numBulkNodePairs + node_pairing_xx_hash%key_count() + 1
-ending_pair   = numBulkNodePairs + node_pairing_xx_hash%key_count() + node_pairing_yy_hash%key_count()
+starting_pair = numBulkNodePairs + nodePairingXXhash%key_count() + 1
+ending_pair   = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count()
 
-if (periodicAxisId(2)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_yy_hash)
+if (periodicAxisId(2)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, nodePairingYYhash)
 
-do ii = numBulkNodePairs + node_pairing_xx_hash%key_count() + 1, &
-&       numBulkNodePairs + node_pairing_xx_hash%key_count() + node_pairing_yy_hash%key_count()
-  F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
+do ii = numBulkNodePairs + nodePairingXXhash%key_count() + 1, &
+        numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count()
+  F_m%is_zero(ii) = (nodePairId(ii)/=ii)
 enddo
 
 ! zz pairs
-starting_pair = numBulkNodePairs + node_pairing_xx_hash%key_count() + node_pairing_yy_hash%key_count() + 1
-ending_pair   = numBulkNodePairs + node_pairing_xx_hash%key_count() + node_pairing_yy_hash%key_count() + node_pairing_zz_hash%key_count()
+starting_pair = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + 1
+ending_pair   = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + nodePairingZZhash%key_count()
 
-if (periodicAxisId(3)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, node_pairing_zz_hash)
+if (periodicAxisId(3)) call mesh_append_periodic_pairs(elemcon, starting_pair, ending_pair, nodePairingZZhash)
 
-do ii = numBulkNodePairs + node_pairing_xx_hash%key_count() + node_pairing_yy_hash%key_count() + 1, &
-&       numBulkNodePairs + node_pairing_xx_hash%key_count() + node_pairing_yy_hash%key_count() + node_pairing_zz_hash%key_count()
-  F_m%is_zero(ii) = (node_pair_id(ii)/=ii)
+do ii = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + 1, &
+        numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + nodePairingZZhash%key_count()
+  F_m%is_zero(ii) = (nodePairId(ii)/=ii)
 enddo
 
 call elemcon%clear()
 
-call mesh_dirichlet_faces(numel_type_face, nen_type_face, global_node_id_type_face, face_entity_hash)
+call mesh_dirichlet_faces(numElementsTypeFace, numNodesLocalTypeFace, globalNodeIdTypeFace, face_entity_hash)
 
 #ifdef DEBUG_OUTPUTS
 open(unit=77, file = com_12)
 do ii = 1, numTotalNodePairs
-  write(77,'(4(2X,I9),2X,L9)') ii, F_m%row(ii), F_m%col(ii), node_pair_id(ii), F_m%is_zero(ii)
+  write(77,'(4(2X,I9),2X,L9)') ii, F_m%row(ii), F_m%col(ii), nodePairId(ii), F_m%is_zero(ii)
 enddo
 close(77)
 
 open (unit=77, file = inter)
-do ii = 1, numel
-  write(77,'(11(2X,I9))') (global_node_id_type_domain(jj,ii), jj = 1, nel)
+do ii = 1, numElementsTypeDomain
+  write(77,'(11(2X,I9))') (globalNodeIdTypeDomain(jj,ii), jj = 1, numNodesLocalTypeDomain)
 enddo
 close(77)
 
 open(77, file = mesh_out)
 write(77,'(3(2X,A16))') 'x', 'y', 'z'
-do ii = 1, numnp
-  write(77,'(3(2X,F16.9))') (xc(jj,ii), jj = 1, ndm)
+do ii = 1, numNodes
+  write(77,'(3(2X,F16.9))') (nodeCoord(jj,ii), jj = 1, numDimensions)
 enddo
 close(77)
 
@@ -394,8 +394,8 @@ call domain_entity_hash%clear()
 #endif
 
 ! Deallocate memory
-if (nel > 4) deallocate(temp3)
-deallocate(global_node_id_type_vertex, global_node_id_type_edge, global_node_id_type_face)
+if (numNodesLocalTypeDomain > 4) deallocate(temp3)
+deallocate(globalNodeIdTypeVertex, globalNodeIdTypeEdge, globalNodeIdTypeFace)
 
 return
 !----------------------------------------------------------------------------------------------------------------------------!

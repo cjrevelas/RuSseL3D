@@ -4,22 +4,24 @@
 
 subroutine compute_node_volume(volnp, node)
 !--------------------------------------------------------------------!
-use geometry_mod,     only: ndm, nel, numnp, el_node, global_node_id_type_domain,&
-&                       xc, num_of_elems_of_node
+use geometry_mod,     only: numDimensions, numNodesLocalTypeDomain, &
+                            numNodes, elementOfNode, nodeCoord,     &
+                            globalNodeIdTypeDomain, numElementsOfNode
 use error_handing_mod
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
-integer              :: i, j, ii, l, n, s, lint
+integer              :: ii, jj, kk, ll, nn, ss, lint
 integer, intent(out) :: node
 
-real(8), intent(out)         :: volnp
-real(8)                      :: xsj, uqp, sumel, vol
-real(8), dimension(nel)      :: u_local
-real(8), dimension(numnp)    :: u_spat
-real(8), dimension(ndm, nel) :: xl
-real(8), dimension(4,11)     :: shp
-real(8), dimension(5,11)     :: sv
+real(8), intent(out)                                       :: volnp
+real(8), dimension(numNodesLocalTypeDomain)                :: u_local
+real(8), dimension(numNodes)                               :: u_spat
+real(8), dimension(numDimensions, numNodesLocalTypeDomain) :: xl
+real(8), dimension(4,11)                                   :: shp
+real(8), dimension(5,11)                                   :: sv
+real(8)                                                    :: xsj, uqp
+real(8)                                                    :: sumel, vol
 !--------------------------------------------------------------------!
 volnp = 0.0d0
 
@@ -27,41 +29,41 @@ vol          = 0.0d0
 u_spat       = 0.0d0
 u_spat(node) = 1.0d0
 
-do s = 1, num_of_elems_of_node(node)
-    n = el_node(node, s)
+do ss = 1, numElementsOfNode(node)
+  nn = elementOfNode(node, ss)
 
-    do i = 1, nel
-        ii = global_node_id_type_domain(i,n)
+  do kk = 1, numNodesLocalTypeDomain
+    ii = globalNodeIdTypeDomain(kk,nn)
 
-        do j = 1, ndm
-            xl(j,i) = xc(j,ii)
-        enddo
-
-         u_local(i) = u_spat(ii)
+    do jj = 1, numDimensions
+      xl(jj,kk) = nodeCoord(jj,ii)
     enddo
 
-    ! Set up for gauss quadrature
-    l=3
-    call fem_gausspoints(l, lint, sv)
+    u_local(kk) = u_spat(ii)
+  enddo
 
-    sumel = 0.0d0
+  ! Set up for gauss quadrature
+  ll = 3
+  call fem_gausspoints(ll, lint, sv)
 
-    ! Loop over all quadrature points in element
-    do l = 1, lint
-        call fem_tetshpfun(sv(1,l), xl, ndm, nel, xsj, shp)
+  sumel = 0.0d0
 
-        xsj = xsj*sv(5,l)
+  ! Loop over all quadrature points in element
+  do ll = 1, lint
+    call fem_tetshpfun(sv(1,ll), xl, numDimensions, numNodesLocalTypeDomain, xsj, shp)
 
-        uqp = 0.0d0
+    xsj = xsj*sv(5,ll)
 
-        do j = 1, nel
-             uqp = uqp + shp(4,j)*u_local(j)
-        enddo
+    uqp = 0.0d0
 
-        sumel = sumel + uqp * xsj
+    do jj = 1, numNodesLocalTypeDomain
+      uqp = uqp + shp(4,jj)*u_local(jj)
     enddo
 
-    volnp = volnp + sumel
+    sumel = sumel + uqp * xsj
+  enddo
+
+  volnp = volnp + sumel
 enddo
 
 return

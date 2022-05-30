@@ -4,10 +4,10 @@
 
 subroutine init_field(Ufield, ww)
 !------------------------------------------------------------------------------------------------------!
-use parser_vars_mod,  only: a_pol, field_init_scheme, kapa, numNanoparticleFaces,  &
-&                       molarBulkDensity, sigma_pol, beta, wall_distance, center_np,        &
-&                       sigma_plate, radius_np_eff, sigma_np, A_np, A_plate
-use geometry_mod,     only: numnp, isDirichletFace, boxLow, boxHigh, xc, nodeBelongsToDirichletFace
+use parser_vars_mod,  only: a_pol, fieldInitScheme, kapa, numNanoparticleFaces,          &
+                            molarBulkDensity, sigma_pol, beta, wall_distance, center_np, &
+                            sigma_plate, radius_np_eff, sigma_np, A_np, A_plate
+use geometry_mod,     only: numNodes, isDirichletFace, boxLow, boxHigh, nodeCoord, nodeBelongsToDirichletFace
 use error_handing_mod
 use write_helper_mod, only: adjl
 use force_fields_mod, only: hamaker_sphere_plate, hamaker_sphere_sphere
@@ -18,23 +18,22 @@ implicit none
 !------------------------------------------------------------------------------------------------------!
 integer :: kk, mm, nn
 
-real(8), intent(out), dimension(numnp) :: Ufield, ww
-real(8)                                :: number_density=0.0d0
-real(8)                                :: r_centers=0.0d0, r_center_surf=0.0d0, r_surf=0.0d0
-real(8)                                :: radius_np_actual=0.0d0, radius_pol=0.0d0
-real(8)                                :: Urep=0.0d0, Uatt=0.0d0
+real(8), intent(out), dimension(numNodes) :: Ufield, ww
+real(8)                                   :: number_density=0.0d0
+real(8)                                   :: r_centers=0.0d0, r_center_surf=0.0d0, r_surf=0.0d0
+real(8)                                   :: radius_np_actual=0.0d0, radius_pol=0.0d0
+real(8)                                   :: Urep=0.0d0, Uatt=0.0d0
 !------------------------------------------------------------------------------------------------------!
 open(unit=211, file = usolid)
 write(211,'(5(2X,A16))') "r_center_surf", "r_surf", "Uatt", "Urep", "Utot"
 
 ! TODO: compute and add solid-solid (Hamaker) interactions
-! TODO: the following two lines can be moved outside of the outer loop
 number_density = molarBulkDensity * n_avog
 radius_pol     = (3.0d0 / (4.0d0 * pi * number_density))**(1.0d0/3.0d0) * m_to_A
 
 Ufield = 0.0d0
 
-do kk = 1, numnp
+do kk = 1, numNodes
   ! Loop over all dirichlet faces
   do mm = 1, 3
     do nn = 1, 2
@@ -43,9 +42,9 @@ do kk = 1, numnp
         radius_pol     = (3.0d0 / 4.0d0 / pi / number_density)**(1.0d0/3.0d0) * m_to_A
 
         if (nn.eq.1) then
-          r_center_surf = xc(mm,kk) - boxLow(mm) + wall_distance
+          r_center_surf = nodeCoord(mm,kk) - boxLow(mm) + wall_distance
         elseif (nn.eq.2) then
-          r_center_surf = boxHigh(mm) - xc(mm,kk) + wall_distance
+          r_center_surf = boxHigh(mm) - nodeCoord(mm,kk) + wall_distance
         endif
 
         r_surf = r_center_surf - radius_pol
@@ -58,8 +57,7 @@ do kk = 1, numnp
         Ufield(kk) = Ufield(kk) + Urep + Uatt
 
         if ((Ufield(kk)-Ufield(kk)).gt.1.0d-8) then
-          write(ERROR_MESSAGE,'("Hamaker assumed a NaN value for x = ",E16.9,". &
-                              & NaN was changed to ",E16.9)') r_surf, Ufield(kk)
+          write(ERROR_MESSAGE,'("Hamaker assumed a NaN value for x = ",E16.9,". NaN was changed to ",E16.9)') r_surf, Ufield(kk)
           call exit_with_error(1,2,1,ERROR_MESSAGE)
         endif
 
@@ -74,9 +72,8 @@ do kk = 1, numnp
   enddo
 
   ! Loop over all nanoparticle faces
-
   do mm = 1, numNanoparticleFaces
-    r_centers        = DSQRT((xc(1,kk)-center_np(1,mm))**2.0d0 + (xc(2,kk)-center_np(2,mm))**2.0d0 + (xc(3,kk)-center_np(3,mm))**2.0d0)
+    r_centers        = DSQRT((nodeCoord(1,kk)-center_np(1,mm))**2.0d0 + (nodeCoord(2,kk)-center_np(2,mm))**2.0d0 + (nodeCoord(3,kk)-center_np(3,mm))**2.0d0)
     radius_np_actual = radius_np_eff(mm) - wall_distance
     r_surf           = r_centers - radius_pol - radius_np_actual
 
@@ -98,14 +95,14 @@ enddo
 
 close(211)
 
-if (field_init_scheme.eq.0) then
+if (fieldInitScheme.eq.0) then
   ww = 0.0d0
-elseif (field_init_scheme.eq.1) then
+elseif (fieldInitScheme.eq.1) then
   open(unit=655, file = fieldFile, Form='unformatted')
   read(655) ww
   close(655)
-elseif (field_init_scheme.eq.2) then
-  do kk = 1, numnp
+elseif (fieldInitScheme.eq.2) then
+  do kk = 1, numNodes
     if (nodeBelongsToDirichletFace(kk)) then
       ww(kk) = -kapa
     else

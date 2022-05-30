@@ -2,13 +2,13 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine export_field_bin(ww, numnp, iter)
+subroutine export_field_bin(ww, numNodes, iter)
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
-integer, intent(in)                   :: numnp, iter
+integer, intent(in) :: numNodes, iter
 
-real(8), intent(in), dimension(numnp) :: ww
+real(8), intent(in), dimension(numNodes) :: ww
 
 character(40) :: field_filename_aux = ''
 !-----------------------------------------------------------------------------------------------------------!

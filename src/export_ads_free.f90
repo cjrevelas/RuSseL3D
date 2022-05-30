@@ -4,29 +4,27 @@
 
 subroutine export_ads_free(node_belongs_to_dirichlet_face, adsorbed)
 !-----------------------------------------------------------------------------------------------------------------------!
-use parser_vars_mod,  only: mumpsMatrixType, rg2OfMatrixMonomer, lengthMatrix, ns_mx_ed, ns_mx_conv
+use parser_vars_mod,  only: mumpsMatrixType, rg2OfMatrixMonomer, lengthMatrix, numEdwPointsMatrix, numConvolPointsMatrix
 use write_helper_mod, only: adjl
 use arrays_mod,       only: ds_mx_ed, xs_mx_ed, xs_mx_conv, coeff_mx_conv, qmx_interp_mm, phi_mx, ww
-use geometry_mod,     only: numnp, xc
+use geometry_mod,     only: numNodes, nodeCoord
 !-----------------------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------------------!
-integer                                :: ii, kk
+integer :: ii, kk
 
-logical, intent(in), dimension(numnp)  :: node_belongs_to_dirichlet_face, adsorbed
-logical, dimension(numnp)              :: node_belongs_to_dirichlet_face_new
+logical, intent(in), dimension(numNodes) :: node_belongs_to_dirichlet_face, adsorbed
+logical, dimension(numNodes)             :: node_belongs_to_dirichlet_face_new
 
-real(8), dimension(2,numnp)            :: qfree
-real(8), dimension(ns_mx_ed+1,numnp)   :: qfree_final
-real(8), dimension(ns_mx_conv+1,numnp) :: qfree_interp, qads
-real(8), dimension(numnp)              :: phi_free, phi_ads, phi_loop, phi_tail
+real(8), dimension(2,numNodes)                       :: qfree
+real(8), dimension(numEdwPointsMatrix+1,numNodes)    :: qfree_final
+real(8), dimension(numConvolPointsMatrix+1,numNodes) :: qfree_interp, qads
+real(8), dimension(numNodes)                         :: phi_free, phi_ads, phi_loop, phi_tail
 !-----------------------------------------------------------------------------------------------------------------------!
 write(6,'(2X,A40)')adjl("Exporting ads vs free density profiles.",40)
 
-! Assembly
 call fem_matrix_assemble(rg2OfMatrixMonomer, ww)
 
-! Initial and boundary conditions
 qfree            = 0.0d0
 qfree_final      = 0.0d0
 qfree(1,:)       = 1.0d0
@@ -34,39 +32,37 @@ qfree_final(1,:) = 1.0d0
 
 node_belongs_to_dirichlet_face_new = node_belongs_to_dirichlet_face
 
-do kk = 1, numnp
-    if (adsorbed(kk)) then
-        qfree(1,kk)       = 0.0d0
-        qfree_final(1,kk) = 0.0d0
+do kk = 1, numNodes
+  if (adsorbed(kk)) then
+    qfree(1,kk)       = 0.0d0
+    qfree_final(1,kk) = 0.0d0
 
-        node_belongs_to_dirichlet_face_new(kk) = .True.
-    endif
+    node_belongs_to_dirichlet_face_new(kk) = .True.
+  endif
 enddo
 
-! Solution
-call solver_edwards(ds_mx_ed, ns_mx_ed, mumpsMatrixType, qfree, qfree_final, node_belongs_to_dirichlet_face_new)
+call solver_edwards(ds_mx_ed, numEdwPointsMatrix, mumpsMatrixType, qfree, qfree_final, node_belongs_to_dirichlet_face_new)
 
-! Contour interpolation
-do ii = 1, numnp
-    call interp_linear(1, ns_mx_ed+1, xs_mx_ed, qfree_final(:,ii), ns_mx_conv+1, xs_mx_conv, qfree_interp(:,ii))
+do ii = 1, numNodes
+  call interp_linear(1, numEdwPointsMatrix+1, xs_mx_ed, qfree_final(:,ii), numConvolPointsMatrix+1, xs_mx_conv, qfree_interp(:,ii))
 enddo
 
-do ii = 1, ns_mx_conv+1
-    do kk = 1, numnp
-        qads(ii,kk) = qmx_interp_mm(ii,kk) - qfree_interp(ii,kk)
-    enddo
+do ii = 1, numConvolPointsMatrix+1
+  do kk = 1, numNodes
+    qads(ii,kk) = qmx_interp_mm(ii,kk) - qfree_interp(ii,kk)
+  enddo
 enddo
 
 ! Determine the density profiles
-call contour_convolution(numnp, lengthMatrix, ns_mx_conv, coeff_mx_conv, qfree_interp, qfree_interp, phi_free)
-call contour_convolution(numnp, lengthMatrix, ns_mx_conv, coeff_mx_conv, qads, qads, phi_loop)
-call contour_convolution(numnp, lengthMatrix, ns_mx_conv, coeff_mx_conv, qfree_interp, qads, phi_tail)
+call contour_convolution(numNodes, lengthMatrix, numConvolPointsMatrix, coeff_mx_conv, qfree_interp, qfree_interp, phi_free)
+call contour_convolution(numNodes, lengthMatrix, numConvolPointsMatrix, coeff_mx_conv, qads, qads, phi_loop)
+call contour_convolution(numNodes, lengthMatrix, numConvolPointsMatrix, coeff_mx_conv, qfree_interp, qads, phi_tail)
 
 open(unit=125, file="o.ads_free_mx")
 write(125,'(9(2X,A16))') "kk", 'x', 'y', 'z', "phi_free", "phi_ads", "phi_loop", "phi_tail", "phi_mx"
-do kk = 1, numnp
-    phi_ads(kk) = phi_mx(kk) - phi_free(kk)
-    write(125,'(2X,I16,8(2X,E19.9E2))') kk, xc(1,kk), xc(2,kk), xc(3,kk), phi_free(kk), phi_ads(kk), phi_loop(kk), phi_tail(kk), phi_mx(kk)
+do kk = 1, numNodes
+  phi_ads(kk) = phi_mx(kk) - phi_free(kk)
+  write(125,'(2X,I16,8(2X,E19.9E2))') kk, nodeCoord(1,kk), nodeCoord(2,kk), nodeCoord(3,kk), phi_free(kk), phi_ads(kk), phi_loop(kk), phi_tail(kk), phi_mx(kk)
 enddo
 close(125)
 

@@ -9,7 +9,7 @@ character(len=15), parameter :: dflt_fieldFile = "./in.field.bin"
 
 real(8), parameter :: dflt_ads_distance             = 1.2d1
 real(8), parameter :: dflt_numGraftedChainsTol      = 5.0d-3
-real(8), parameter :: dflt_r_gpoint                 = 4.0d-1
+real(8), parameter :: dflt_graftPointDistance       = 4.0d-1
 real(8), parameter :: dflt_binThickness             = 5.0d-1
 real(8), parameter :: dflt_fraction                 = 1.0d0
 real(8), parameter :: dflt_fieldTol                 = 5.0d-1
@@ -22,10 +22,10 @@ real(8), parameter :: dflt_dirichletValue           = 0.0d0
 real(8), parameter :: dflt_nanoparticleValue        = 0.0d0
 
 integer, parameter :: dflt_iterations           = 1
-integer, parameter :: dflt_init_iter            = 0
-integer, parameter :: dflt_mx_exist             = 0
-integer, parameter :: dflt_gr_exist             = 0
-integer, parameter :: dflt_prof_dim             = 3
+integer, parameter :: dflt_initialIterationId   = 0
+integer, parameter :: dflt_matrixExist          = 0
+integer, parameter :: dflt_graftedExist         = 0
+integer, parameter :: dflt_profileDimensions    = 3
 integer, parameter :: dflt_mumpsMatrixType      = mumps_asymm
 integer, parameter :: dflt_exportPhiGeneral     = 1
 integer, parameter :: dflt_exportPhiIndividual  = 0

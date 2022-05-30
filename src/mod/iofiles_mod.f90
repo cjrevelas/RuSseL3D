@@ -32,9 +32,9 @@ character(len=20) :: yface1_elements = "d.yface1_elements"
 character(len=20) :: yface2_elements = "d.yface2_elements"
 character(len=20) :: zface1_elements = "d.zface1_elements"
 character(len=20) :: zface2_elements = "d.zface2_elements"
-character(len=20) :: node_pairing_xx = "d.node_pairing_xx"
-character(len=20) :: node_pairing_yy = "d.node_pairing_yy"
-character(len=20) :: node_pairing_zz = "d.node_pairing_zz"
+character(len=20) :: nodePairingXX   = "d.node_pairing_xx"
+character(len=20) :: nodePairingYY   = "d.node_pairing_yy"
+character(len=20) :: nodePairingZZ   = "d.node_pairing_zz"
 
 ! Output files
 character(len=20) :: usolid            = "o.usolid"

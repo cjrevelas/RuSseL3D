@@ -2,24 +2,23 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine mesh_bulk_node_pairs(node_pairing_xx_hash, node_pairing_yy_hash, node_pairing_zz_hash, elemcon)
+subroutine mesh_bulk_node_pairs(nodePairingXXhash, nodePairingYYhash, nodePairingZZhash, elemcon)
 !----------------------------------------------------------------------------------------------------------------------------------!
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use parser_vars_mod, only: periodicAxisId
-use geometry_mod, only: nel, numel, numTotalNodePairs, node_pair_id, global_node_id_type_domain
-use kcw_mod,      only: F_m
+use geometry_mod,    only: numNodesLocalTypeDomain, numElementsTypeDomain, numTotalNodePairs, nodePairId, globalNodeIdTypeDomain
+use kcw_mod,         only: F_m
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
 logical :: success
 
-type(fhash_type__ints_double), intent(inout) :: node_pairing_xx_hash, node_pairing_yy_hash, node_pairing_zz_hash, elemcon
-type(fhash_type_iterator__ints_double)       :: node_pairing_xx_it, node_pairing_yy_it, node_pairing_zz_it
-type(ints_type)                              :: node_pairing_xx_key, node_pairing_yy_key, node_pairing_zz_key, elemcon_key
-integer                                      :: node_pairing_xx_value, node_pairing_yy_value, node_pairing_zz_value, &
-&                                               elemcon_num_of_keys, elemcon_value
+type(fhash_type__ints_double), intent(inout) :: nodePairingXXhash, nodePairingYYhash, nodePairingZZhash, elemcon
+type(fhash_type_iterator__ints_double)       :: nodePairingXXit, nodePairingYYit, nodePairingZZit
+type(ints_type)                              :: nodePairingXXkey, nodePairingYYkey, nodePairingZZkey, elemcon_key
+integer                                      :: nodePairingXXvalue, nodePairingYYvalue, nodePairingZZvalue, elemcon_num_of_keys, elemcon_value
 
 integer :: ii, jj, mm, kk
 integer :: node_pair
@@ -27,32 +26,32 @@ integer :: source_xx, dest_xx
 integer :: source_yy, dest_yy
 integer :: source_zz, dest_zz
 !----------------------------------------------------------------------------------------------------------------------------------!
-allocate(node_pair_id(numTotalNodePairs))
-node_pair_id = 0
+allocate(nodePairId(numTotalNodePairs))
+nodePairId = 0
 
-! Assembly the node_pair_id (hash) matrix
+! Assembly the nodePairId (hash) matrix
 allocate(elemcon_key%ints(2)) ! Each key is defined by a pair (2) of nodes
 
 ! Total number of required keys
-elemcon_num_of_keys = 2 * nel * numel
+elemcon_num_of_keys = 2 * numNodesLocalTypeDomain * numElementsTypeDomain
 call elemcon%reserve(elemcon_num_of_keys)
 
 node_pair = 0
-do mm = 1, numel
-  do jj = 1, nel
-    do ii = 1, nel
+do mm = 1, numElementsTypeDomain
+  do jj = 1, numNodesLocalTypeDomain
+    do ii = 1, numNodesLocalTypeDomain
       node_pair = node_pair + 1
 
       ! Define the pair of nodes to be examined and assigned a elemcon_value
-      elemcon_key%ints(1) = global_node_id_type_domain(jj,mm)
-      elemcon_key%ints(2) = global_node_id_type_domain(ii,mm)
+      elemcon_key%ints(1) = globalNodeIdTypeDomain(jj,mm)
+      elemcon_key%ints(2) = globalNodeIdTypeDomain(ii,mm)
 
       if (periodicAxisId(1)) then
-        call node_pairing_xx_it%begin(node_pairing_xx_hash)
-        do kk = 1, node_pairing_xx_hash%key_count()
-          call node_pairing_xx_it%next(node_pairing_xx_key, node_pairing_xx_value)
-          source_xx = node_pairing_xx_key%ints(1)
-          dest_xx   = node_pairing_xx_value
+        call nodePairingXXit%begin(nodePairingXXhash)
+        do kk = 1, nodePairingXXhash%key_count()
+          call nodePairingXXit%next(nodePairingXXkey, nodePairingXXvalue)
+          source_xx = nodePairingXXkey%ints(1)
+          dest_xx   = nodePairingXXvalue
 
           if ((elemcon_key%ints(1) == dest_xx).AND.(elemcon_key%ints(2) == dest_xx))   exit
           if ((elemcon_key%ints(1) == dest_xx).AND.(elemcon_key%ints(2) == source_xx)) exit
@@ -63,11 +62,11 @@ do mm = 1, numel
       endif
 
       if (periodicAxisId(2)) then
-        call node_pairing_yy_it%begin(node_pairing_yy_hash)
-        do kk = 1, node_pairing_yy_hash%key_count()
-          call node_pairing_yy_it%next(node_pairing_yy_key, node_pairing_yy_value)
-          source_yy = node_pairing_yy_key%ints(1)
-          dest_yy   = node_pairing_yy_value
+        call nodePairingYYit%begin(nodePairingYYhash)
+        do kk = 1, nodePairingYYhash%key_count()
+          call nodePairingYYit%next(nodePairingYYkey, nodePairingYYvalue)
+          source_yy = nodePairingYYkey%ints(1)
+          dest_yy   = nodePairingYYvalue
 
           if ((elemcon_key%ints(1) == dest_yy).AND.(elemcon_key%ints(2) == dest_yy))   exit
           if ((elemcon_key%ints(1) == dest_yy).AND.(elemcon_key%ints(2) == source_yy)) exit
@@ -78,11 +77,11 @@ do mm = 1, numel
       endif
 
       if (periodicAxisId(3)) then
-        call node_pairing_zz_it%begin(node_pairing_zz_hash)
-        do kk = 1, node_pairing_zz_hash%key_count()
-          call node_pairing_zz_it%next(node_pairing_zz_key, node_pairing_zz_value)
-          source_zz = node_pairing_zz_key%ints(1)
-          dest_zz   = node_pairing_zz_value
+        call nodePairingZZit%begin(nodePairingZZhash)
+        do kk = 1, nodePairingZZhash%key_count()
+          call nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
+          source_zz = nodePairingZZkey%ints(1)
+          dest_zz   = nodePairingZZvalue
 
           if ((elemcon_key%ints(1) == dest_zz).AND.(elemcon_key%ints(2) == dest_zz))   exit
           if ((elemcon_key%ints(1) == dest_zz).AND.(elemcon_key%ints(2) == source_zz)) exit
@@ -99,10 +98,10 @@ do mm = 1, numel
       call elemcon%get(elemcon_key, elemcon_value, success)
 
       if (success) then
-        node_pair_id(node_pair) = elemcon_value  ! This pair has already been met, thus assigned a elemcon_value
+        nodePairId(node_pair) = elemcon_value  ! This pair has already been met, thus assigned a elemcon_value
       else
         call elemcon%set(elemcon_key, node_pair) ! Store the new elemcon_value for next iteration's check
-        node_pair_id(node_pair) = node_pair      ! This pair is met for the first time
+        nodePairId(node_pair) = node_pair        ! This pair is met for the first time
       endif
     enddo
   enddo

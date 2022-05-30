@@ -5,24 +5,29 @@
 real(8) function compute_stretching_energy(gnode_id, qmx, qgr)
 !-------------------------------------------------------------------------------------------------!
 use constants_mod,   only: A3_to_m3
-use parser_vars_mod, only: beta, ns_gr_conv, lengthGrafted, rg2OfGraftedMonomer, segmentBulkDensity
-use geometry_mod,    only: numnp, xc
+use parser_vars_mod, only: beta, numConvolPointsGrafted, lengthGrafted, &
+                           rg2OfGraftedMonomer, segmentBulkDensity
+use geometry_mod,    only: numNodes, nodeCoord
 !-------------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------------!
 integer, intent(in) :: gnode_id
 integer             :: ii
 
-real(8), intent(in), dimension(ns_gr_conv+1,numnp) :: qmx, qgr
-real(8), dimension(numnp)                          :: dr2, phi_end, rho_end, A_stretch
-real(8)                                            :: Q, vol
+real(8), intent(in), dimension(numConvolPointsGrafted+1,numNodes) :: qmx, qgr
+real(8), dimension(numNodes)                                      :: dx2, dy2, dz2, dr2
+real(8), dimension(numNodes)                                      :: phi_end, rho_end, A_stretch
+real(8)                                                           :: Q, vol
 !-------------------------------------------------------------------------------------------------!
-do ii = 1, numnp
-    phi_end(ii) = 1 / lengthGrafted * qgr(ns_gr_conv+1,ii) * qmx(1,ii)
-    rho_end(ii) = phi_end(ii) * segmentBulkDensity * A3_to_m3
-    dr2(ii)      = (xc(1,ii)-xc(1,gnode_id))**2.0d0 + (xc(2,ii)-xc(2,gnode_id))**2.0d0 + (xc(3,ii)-xc(3,gnode_id))**2.0d0
+do ii = 1, numNodes
+  phi_end(ii) = 1 / lengthGrafted * qgr(numConvolPointsGrafted+1,ii) * qmx(1,ii)
+  rho_end(ii) = phi_end(ii) * segmentBulkDensity * A3_to_m3
+  dx2(ii)     = (nodeCoord(1,ii)-nodeCoord(1,gnode_id))**2.0d0
+  dy2(ii)     = (nodeCoord(2,ii)-nodeCoord(2,gnode_id))**2.0d0
+  dz2(ii)     = (nodeCoord(3,ii)-nodeCoord(3,gnode_id))**2.0d0
+  dr2(ii)     = dx2(ii) + dy2(ii) + dz2(ii)
 
-    A_stretch(ii) = 3.0d0/(2.0d0 * beta * (rg2OfGraftedMonomer*lengthGrafted*6.0d0)) * dr2(ii)
+  A_stretch(ii) = 3.0d0/(2.0d0 * beta * (rg2OfGraftedMonomer*lengthGrafted*6.0d0)) * dr2(ii)
 enddo
 
 call fem_integration(rho_end*A_stretch, compute_stretching_energy, Q, vol)

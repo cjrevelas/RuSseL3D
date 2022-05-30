@@ -5,26 +5,28 @@
 module parser_vars_mod
 !----------------------------------------------------------------------------------------------------------------------------!
 ! Chain contour discretization
-integer :: ns_mx_ed, ns_mx_conv, ns_gr_ed, ns_gr_conv
-integer :: contour_discr_mx, contour_discr_gr
+integer :: numEdwPointsMatrix, numConvolPointsMatrix
+integer :: numEdwPointsGrafted, numConvolPointsGrafted
+integer :: contourMatrix, contourGrafted
 real(8) :: lengthMatrix, lengthMatrixMax, lengthGrafted
-real(8) :: ds_ave_mx_ed, ds_ave_gr_ed, ds_ave_mx_conv, ds_ave_gr_conv
+real(8) :: stepEdwAveMatrix, stepConvolAveMatrix
+real(8) :: stepEdwAveGrafted, stepConvolAveGrafted
 real(8) :: xs_crit_mx, xs_crit_gr
 
 ! Indices and flags
-integer :: iow, ioe, iterations, field_init_scheme, init_iter
-integer :: mx_exist, gr_exist, calc_delta_every, grafted_ic_from_delta
+integer :: iow, ioe, iterations, fieldInitScheme, initialIterationId
+integer :: matrixExist, graftedExist, deltaUpdateFreq, getICfromDelta
 integer :: exportPhiGeneral, exportPhiIndividual, exportField, exportPropagators
 integer :: exportFieldBinary, exportBrushThickness, exportChainsPerArea, exportAdsorbedFree
 logical :: squareGradient
 
 ! Domain
-integer               :: prof_dim
+integer               :: profileDimensions
 integer               :: periodicity
 integer, dimension(6) :: periodicFaceId
 logical               :: domainIsPeriodic
 logical, dimension(3) :: periodicAxisId
-real(8)               :: r_gpoint, binThickness
+real(8)               :: graftPointDistance, binThickness
 
 ! Dirichlet boundaries
 integer                              :: numDirichletFaces, numNanoparticleFaces

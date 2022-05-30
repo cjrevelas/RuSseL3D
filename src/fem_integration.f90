@@ -4,66 +4,64 @@
 
 subroutine fem_integration(u_spat, sum_out, QQ, vol)
 !--------------------------------------------------------------------!
-use geometry_mod, only : numnp, ndm, nel, numel, global_node_id_type_domain, xc
+use geometry_mod, only : numNodes, numDimensions, &
+                         numNodesLocalTypeDomain, &
+                         numElementsTypeDomain,   &
+                         globalNodeIdTypeDomain, nodeCoord
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!
 integer :: lint
-integer :: i, j, ii, l, n
+integer :: ii, jj, kk, ll, nn
 
-real(8), intent(in), dimension(numnp) :: u_spat
-real(8), intent(out)                  :: sum_out, QQ, vol
-real(8)                               :: xsj, uqp, sumel, volel
-real(8), dimension(nel)               :: u_local
-real(8), dimension(ndm, nel)          :: xl
-real(8), dimension(4,11)              :: shp
-real(8), dimension(5,11)              :: sv
+real(8), intent(in), dimension(numNodes)                   :: u_spat
+real(8), intent(out)                                       :: sum_out, QQ, vol
+real(8), dimension(numNodesLocalTypeDomain)                :: u_local
+real(8), dimension(numDimensions, numNodesLocalTypeDomain) :: xl
+real(8), dimension(4,11)                                   :: shp
+real(8), dimension(5,11)                                   :: sv
+real(8)                                                    :: xsj, uqp
+real(8)                                                    :: sumel, volel
 !--------------------------------------------------------------------!
 sum_out = 0.0d0
 vol     = 0.0d0
 
-do n = 1, numel
+do nn = 1, numElementsTypeDomain
+  do kk = 1, numNodesLocalTypeDomain
+    ii = globalNodeIdTypeDomain(kk,nn)
 
-    do i = 1, nel
-        ii = global_node_id_type_domain(i,n)
-
-        do j = 1, ndm
-            xl(j,i) = xc(j,ii)
-        enddo
-
-        u_local(i) = u_spat(ii)
+    do jj = 1, numDimensions
+      xl(jj,kk) = nodeCoord(jj,ii)
     enddo
 
-    ! Set up for gauss quadrature
-    l=3
-    call fem_gausspoints(l, lint, sv)
+    u_local(kk) = u_spat(ii)
+  enddo
 
-    sumel = 0.0d0
-    volel = 0.0d0
+  ! Set up for gauss quadrature
+  ll = 3
+  call fem_gausspoints(ll, lint, sv)
 
-    ! Loop over all quadrature points in element
-    do l = 1, lint
+  sumel = 0.0d0
+  volel = 0.0d0
 
-        call fem_tetshpfun(sv(1,l), xl, ndm, nel, xsj, shp)
+  ! Loop over all quadrature points in element
+  do ll = 1, lint
+    call fem_tetshpfun(sv(1,ll), xl, numDimensions, numNodesLocalTypeDomain, xsj, shp)
 
-        xsj = xsj*sv(5,l)
+    xsj = xsj*sv(5,ll)
 
-        uqp = 0.0d0
+    uqp = 0.0d0
 
-        do j = 1, nel
-             uqp = uqp + shp(4,j)*u_local(j)
-        enddo
-
-        sumel = sumel + uqp * xsj
-
-        volel = volel + xsj
-
+    do jj = 1, numNodesLocalTypeDomain
+      uqp = uqp + shp(4,jj)*u_local(jj)
     enddo
 
-    sum_out = sum_out + sumel
+    sumel = sumel + uqp * xsj
+    volel = volel + xsj
+  enddo
 
-    vol = vol + volel
-
+  sum_out = sum_out + sumel
+  vol     = vol + volel
 enddo
 
 QQ = sum_out/vol

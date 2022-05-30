@@ -9,8 +9,8 @@ use fhash_module__ints_double
 use ints_module
 
 use kcw_mod,         only: F_m, A_m, NNZ
-use geometry_mod,    only: numTotalNodePairs, nel, numel, numnp, node_pairing_xx_hash, &
-&                          node_pairing_yy_hash, node_pairing_zz_hash
+use geometry_mod,    only: numTotalNodePairs, numNodesLocalTypeDomain, numElementsTypeDomain, &
+                           numNodes, nodePairingXXhash, nodePairingYYhash, nodePairingZZhash
 use constants_mod,   only: tol
 use parser_vars_mod, only: periodicAxisId
 use flags_mod,       only: mumps_asymm, mumps_posDef, mumps_genSymm
@@ -25,13 +25,13 @@ implicit none
 integer, intent(in) :: mumpsMatrixType
 integer             :: ii, jj, kk, mm, nn
 
-logical, intent(in), dimension(numnp) :: nodeBelongsToDirichletFace
-logical, dimension(nel*numel)         :: set_diag_to_one
-logical                               :: success
+logical, intent(in), dimension(numNodes)                          :: nodeBelongsToDirichletFace
+logical, dimension(numNodesLocalTypeDomain*numElementsTypeDomain) :: set_diag_to_one
+logical                                                           :: success
 
-type(fhash_type_iterator__ints_double) :: node_pairing_xx_it, node_pairing_xx_it_aux, node_pairing_yy_it, node_pairing_yy_it_aux, node_pairing_zz_it
-type(ints_type)                        :: node_pairing_xx_key, node_pairing_yy_key, node_pairing_zz_key, dest_both_key
-integer                                :: node_pairing_xx_value, node_pairing_yy_value, node_pairing_zz_value, dest_both
+type(fhash_type_iterator__ints_double) :: nodePairingXXit, nodePairingXXit_aux, nodePairingYYit, nodePairingYYit_aux, nodePairingZZit
+type(ints_type)                        :: nodePairingXXkey, nodePairingYYkey, nodePairingZZkey, dest_both_key
+integer                                :: nodePairingXXvalue, nodePairingYYvalue, nodePairingZZvalue, dest_both
 
 real(8), intent(in) :: ds
 
@@ -46,27 +46,27 @@ F_m%g  = F_m%c + ds * (F_m%k + F_m%w)
 F_m%rh = F_m%c
 
 ! Apply periodic boundary conditions
-if (periodicAxisId(1)) call fem_apply_periodic_bcs(node_pairing_xx_hash)
-if (periodicAxisId(2)) call fem_apply_periodic_bcs(node_pairing_yy_hash)
+if (periodicAxisId(1)) call fem_apply_periodic_bcs(nodePairingXXhash)
+if (periodicAxisId(2)) call fem_apply_periodic_bcs(nodePairingYYhash)
 
 if (periodicAxisId(1).AND.periodicAxisId(2)) then
-  call node_pairing_yy_it%begin(node_pairing_yy_hash)
+  call nodePairingYYit%begin(nodePairingYYhash)
 
   allocate(dest_both_key%ints(1))
 
-  do ii = 1, node_pairing_yy_hash%key_count()
-    call node_pairing_yy_it%next(node_pairing_yy_key, node_pairing_yy_value)
-    source_yy = node_pairing_yy_key%ints(1)  ! source_yy = 7
-    dest_yy   = node_pairing_yy_value        ! dest_yy   = 1
+  do ii = 1, nodePairingYYhash%key_count()
+    call nodePairingYYit%next(nodePairingYYkey, nodePairingYYvalue)
+    source_yy = nodePairingYYkey%ints(1)  ! source_yy = 7
+    dest_yy   = nodePairingYYvalue        ! dest_yy   = 1
 
     dest_both_key%ints(1) = dest_yy
-    call node_pairing_xx_hash%get(dest_both_key, dest_both, success) ! dest_both = 38
+    call nodePairingXXhash%get(dest_both_key, dest_both, success) ! dest_both = 38
 
-    call node_pairing_xx_it%begin(node_pairing_xx_hash)
-    do jj = 1, node_pairing_xx_hash%key_count()
-      call node_pairing_xx_it%next(node_pairing_xx_key, node_pairing_xx_value)
-      source_xx = node_pairing_xx_key%ints(1) ! source_xx = 7
-      dest_xx   = node_pairing_xx_value       ! dest_xx   = 23
+    call nodePairingXXit%begin(nodePairingXXhash)
+    do jj = 1, nodePairingXXhash%key_count()
+      call nodePairingXXit%next(nodePairingXXkey, nodePairingXXvalue)
+      source_xx = nodePairingXXkey%ints(1) ! source_xx = 7
+      dest_xx   = nodePairingXXvalue       ! dest_xx   = 23
 
       if (source_yy.eq.source_xx) then
         do mm = 1, numTotalNodePairs
@@ -85,28 +85,28 @@ if (periodicAxisId(1).AND.periodicAxisId(2)) then
   enddo
 endif
 
-if (periodicAxisId(3)) call fem_apply_periodic_bcs(node_pairing_zz_hash)
+if (periodicAxisId(3)) call fem_apply_periodic_bcs(nodePairingZZhash)
 
 if (periodicAxisId(1).AND.periodicAxisId(2).AND.periodicAxisId(3)) then
-  call node_pairing_zz_it%begin(node_pairing_zz_hash)
+  call nodePairingZZit%begin(nodePairingZZhash)
 
-  do ii = 1, node_pairing_zz_hash%key_count()
-    call node_pairing_zz_it%next(node_pairing_zz_key, node_pairing_zz_value)
-    source_zz = node_pairing_zz_key%ints(1) ! source_zz = 9 or 48
-    dest_zz   = node_pairing_zz_value       ! dest_zz   = 1 or 38
+  do ii = 1, nodePairingZZhash%key_count()
+    call nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
+    source_zz = nodePairingZZkey%ints(1) ! source_zz = 9 or 48
+    dest_zz   = nodePairingZZvalue       ! dest_zz   = 1 or 38
 
-    call node_pairing_yy_it%begin(node_pairing_yy_hash)
-    do jj = 1, node_pairing_yy_hash%key_count()
-      call node_pairing_yy_it%next(node_pairing_yy_key, node_pairing_yy_value)
-      source_yy = node_pairing_yy_key%ints(1) ! source_yy = 7 or 23
-      dest_yy   = node_pairing_yy_value       ! dest_yy   = 1 or 38
+    call nodePairingYYit%begin(nodePairingYYhash)
+    do jj = 1, nodePairingYYhash%key_count()
+      call nodePairingYYit%next(nodePairingYYkey, nodePairingYYvalue)
+      source_yy = nodePairingYYkey%ints(1) ! source_yy = 7 or 23
+      dest_yy   = nodePairingYYvalue       ! dest_yy   = 1 or 38
 
       if (dest_zz.eq.dest_yy) then
-        call node_pairing_yy_it_aux%begin(node_pairing_yy_hash)
-        do kk = 1, node_pairing_yy_hash%key_count()
-          call  node_pairing_yy_it_aux%next(node_pairing_yy_key, node_pairing_yy_value)
-          if (node_pairing_yy_value.eq.source_zz) then
-            source_aux = node_pairing_yy_key%ints(1) ! source_aux = 21, 31
+        call nodePairingYYit_aux%begin(nodePairingYYhash)
+        do kk = 1, nodePairingYYhash%key_count()
+          call  nodePairingYYit_aux%next(nodePairingYYkey, nodePairingYYvalue)
+          if (nodePairingYYvalue.eq.source_zz) then
+            source_aux = nodePairingYYkey%ints(1) ! source_aux = 21, 31
             exit
           endif
         enddo
@@ -123,35 +123,35 @@ if (periodicAxisId(1).AND.periodicAxisId(2).AND.periodicAxisId(3)) then
           endif
         enddo
 
-        call node_pairing_xx_it%begin(node_pairing_xx_hash)
-        do kk = 1, node_pairing_xx_hash%key_count()
-          call node_pairing_xx_it%next(node_pairing_xx_key, node_pairing_xx_value)
-          dest_xx = node_pairing_xx_value
+        call nodePairingXXit%begin(nodePairingXXhash)
+        do kk = 1, nodePairingXXhash%key_count()
+          call nodePairingXXit%next(nodePairingXXkey, nodePairingXXvalue)
+          dest_xx = nodePairingXXvalue
           if (dest_zz.eq.dest_xx) dest_triple = dest_xx
         enddo
       endif
     enddo
   enddo
 
-  call node_pairing_zz_it%begin(node_pairing_zz_hash)
-  do ii = 1, node_pairing_zz_hash%key_count()
-    call node_pairing_zz_it%next(node_pairing_zz_key, node_pairing_zz_value)
-    source_zz = node_pairing_zz_key%ints(1) ! source_zz = 31
-    dest_zz   = node_pairing_zz_value       ! dest_zz   = 23
+  call nodePairingZZit%begin(nodePairingZZhash)
+  do ii = 1, nodePairingZZhash%key_count()
+    call nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
+    source_zz = nodePairingZZkey%ints(1) ! source_zz = 31
+    dest_zz   = nodePairingZZvalue       ! dest_zz   = 23
 
-    call node_pairing_xx_it%begin(node_pairing_xx_hash)
-    do jj = 1, node_pairing_xx_hash%key_count()
-      call node_pairing_xx_it%next(node_pairing_xx_key, node_pairing_xx_value)
-      source_xx = node_pairing_xx_key%ints(1) ! source_xx = 7
-      dest_xx   = node_pairing_xx_value       ! dest_xx   = 23
+    call nodePairingXXit%begin(nodePairingXXhash)
+    do jj = 1, nodePairingXXhash%key_count()
+      call nodePairingXXit%next(nodePairingXXkey, nodePairingXXvalue)
+      source_xx = nodePairingXXkey%ints(1) ! source_xx = 7
+      dest_xx   = nodePairingXXvalue       ! dest_xx   = 23
 
       if ((dest_zz.eq.dest_xx).AND.(dest_zz.ne.dest_triple)) then
         !write(6,*) source_zz, dest_zz, source_xx, dest_xx
-        call node_pairing_xx_it_aux%begin(node_pairing_xx_hash)
-        do kk = 1, node_pairing_xx_hash%key_count()
-          call node_pairing_xx_it_aux%next(node_pairing_xx_key, node_pairing_xx_value)
-          if (node_pairing_xx_value.eq.source_zz) then
-            source_aux = node_pairing_xx_key%ints(1) ! source_aux = 21
+        call nodePairingXXit_aux%begin(nodePairingXXhash)
+        do kk = 1, nodePairingXXhash%key_count()
+          call nodePairingXXit_aux%next(nodePairingXXkey, nodePairingXXvalue)
+          if (nodePairingXXvalue.eq.source_zz) then
+            source_aux = nodePairingXXkey%ints(1) ! source_aux = 21
             exit
           endif
         enddo
@@ -235,7 +235,7 @@ do kk = 1, numTotalNodePairs
 enddo
 
 #ifdef PRINT_AFULL
-allocate(A_full(numnp,numnp))
+allocate(A_full(numNodes,numNodes))
 A_full = 0.0d0
 
 do kk = 1, NNZ
@@ -246,8 +246,8 @@ do kk = 1, NNZ
 enddo
 
 open(unit=255, file = A_matrix_full)
-do ii = 1, numnp
-  write(255,*) (A_full(ii,jj), jj = 1, numnp)
+do ii = 1, numNodes
+  write(255,*) (A_full(ii,jj), jj = 1, numNodes)
 enddo
 close(255)
 
