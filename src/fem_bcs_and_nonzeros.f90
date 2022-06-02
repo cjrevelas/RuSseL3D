@@ -42,20 +42,16 @@ if (periodicAxisId(1)) call fem_apply_periodic_bcs(nodePairingXXhash)
 if (periodicAxisId(2)) call fem_apply_periodic_bcs(nodePairingYYhash)
 if (periodicAxisId(3)) call fem_apply_periodic_bcs(nodePairingZZhash)
 
-!if (periodicity.eq.2) then
-  !if (periodicAxisId(1).AND.periodicAxisId(2)) call fem_periodicity_on_edges(nodePairingXXhash, nodePairingYYhash)
-  !if (periodicAxisId(1).AND.periodicAxisId(3)) call fem_periodicity_on_edges(nodePairingXXhash, nodePairingZZhash)
-  !if (periodicAxisId(2).AND.periodicAxisId(3)) call fem_periodicity_on_edges(nodePairingYYhash, nodePairingZZhash)
-!endif
+if (periodicity.eq.2) then
+  if (periodicAxisId(1).AND.periodicAxisId(2)) call fem_periodicity_on_edges(nodePairingXXhash, nodePairingYYhash)
+  if (periodicAxisId(1).AND.periodicAxisId(3)) call fem_periodicity_on_edges(nodePairingXXhash, nodePairingZZhash)
+  if (periodicAxisId(2).AND.periodicAxisId(3)) call fem_periodicity_on_edges(nodePairingYYhash, nodePairingZZhash)
+endif
 
-if (periodicAxisId(1).AND.periodicAxisId(2)) call fem_periodicity_on_edges(nodePairingXXhash, nodePairingYYhash)
-
-!if (periodicity.eq.3) then
-!  call fem_periodicity_on_edges(nodePairingXXhash, nodePairingYYhash)
-!  call fem_periodicity_on_corners()
-!endif
-
-if (periodicity.eq.3) call fem_periodicity_on_corners()
+if (periodicity.eq.3) then
+  call fem_periodicity_on_edges(nodePairingXXhash, nodePairingYYhash)
+  call fem_periodicity_on_corners()
+endif
 
 ! Prepare stiffness matrix for Dirichlet boundary conditions
 ! In case the matrix is symmetric, remove the zero lines and rows diagonal componets with Dirichlet BC q=0.

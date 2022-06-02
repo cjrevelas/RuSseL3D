@@ -64,7 +64,6 @@ do elem = 1, numElementsTypeDomain
 enddo
 
 ! Assembly global matrix using element matrices and nodePairId hash matrix created in parser_mesh.f90
-! TODO: Lots of nonzero entries are created with the following process -> consider removal
 do kk = 1, numBulkNodePairs
   if (F_m%is_zero(kk)) then
     ! Add up contributions of same pairs met multiple times
@@ -81,7 +80,7 @@ enddo
 open(unit=400, file = matrix_assembly)
 write(400,'(3(2X,A16))') "F_m%k","F_m%c","F_m%w"
 do kk = 1, numBulkNodePairs
-  write(400,'(3(2X,E16.9))')F_m%k(kk), F_m%c(kk), F_m%w(kk)
+  write(400,'(3(2X,E16.9))') F_m%k(kk), F_m%c(kk), F_m%w(kk)
 enddo
 close(400)
 #endif
