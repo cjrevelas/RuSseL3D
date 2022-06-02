@@ -90,6 +90,8 @@ OBJECTS=$(OBJDIR)/compute_contour_coeffs.o\
 	$(OBJDIR)/export_vtu.o\
 	$(OBJDIR)/fem_apply_periodic_bcs.o\
 	$(OBJDIR)/fem_bcs_and_nonzeros.o\
+	$(OBJDIR)/fem_periodicity_on_edges.o\
+	$(OBJDIR)/fem_periodicity_on_corners.o\
 	$(OBJDIR)/fem_gausspoints.o\
 	$(OBJDIR)/fem_integration.o\
 	$(OBJDIR)/fem_interpolation.o\
