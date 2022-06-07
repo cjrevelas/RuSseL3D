@@ -76,11 +76,11 @@ endif
 #endif
 
 iow = 10
-open(unit=iow, file = logfile)
+open(unit=iow, file = IO_logFile)
 
 ! Initialize the error log
 ioe = 11
-open(unit=ioe, file = errorfile, status='replace')
+open(unit=ioe, file = IO_errorFile, status='replace')
 close(ioe)
 !**************************************************************************************************************!
 !                                             INITIALIZATION SECTION                                           !
@@ -104,20 +104,20 @@ call MPI_BCAST(mumpsMatrixType, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 #endif
 
 if (matrixExist.eq.1) then
-  call init_chain_contour(contourMatrix, lengthMatrixMax, xs_crit_mx, numEdwPointsMatrix, stepEdwAveMatrix, ds_mx_ed, xs_mx_ed, coeff_mx_ed)
+  call init_chain_contour(contourMatrix, lengthMatrixMax, critContourMatrix, numEdwPointsMatrix, stepEdwAveMatrix, ds_mx_ed, xs_mx_ed, coeff_mx_ed)
   if (contourMatrix.ne.contour_uniform) then
-    call init_chain_contour(contour_symm, lengthMatrix, xs_crit_mx, numConvolPointsMatrix, stepConvolAveMatrix, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+    call init_chain_contour(contour_symm, lengthMatrix, critContourMatrix, numConvolPointsMatrix, stepConvolAveMatrix, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
   else
-    call init_chain_contour(contourMatrix, lengthMatrix, xs_crit_mx, numConvolPointsMatrix, stepConvolAveMatrix, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+    call init_chain_contour(contourMatrix, lengthMatrix, critContourMatrix, numConvolPointsMatrix, stepConvolAveMatrix, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
   endif
 endif
 
 if (graftedExist.eq.1) then
-  call init_chain_contour(contourGrafted, lengthGrafted, xs_crit_gr, numEdwPointsGrafted, stepEdwAveGrafted, ds_gr_ed, xs_gr_ed, coeff_gr_ed)
+  call init_chain_contour(contourGrafted, lengthGrafted, critContourGrafted, numEdwPointsGrafted, stepEdwAveGrafted, ds_gr_ed, xs_gr_ed, coeff_gr_ed)
   if (contourGrafted.ne.contour_uniform) then
-    call init_chain_contour(contour_symm, lengthGrafted, xs_crit_gr, numConvolPointsGrafted, stepConvolAveGrafted, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
+    call init_chain_contour(contour_symm, lengthGrafted, critContourGrafted, numConvolPointsGrafted, stepConvolAveGrafted, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
   else
-    call init_chain_contour(contourGrafted, lengthGrafted, xs_crit_gr, numConvolPointsGrafted, stepConvolAveGrafted, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
+    call init_chain_contour(contourGrafted, lengthGrafted, critContourGrafted, numConvolPointsGrafted, stepConvolAveGrafted, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
   endif
 endif
 
@@ -142,7 +142,7 @@ do iter = initialIterationId, iterations-1
   write(6  ,'(I4 ,1X,8(E14.4E3,1X))') iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, fieldError, fieldStdError, fieldMaximum
 
   close(iow)
-  open(unit=iow, file = logfile, position = 'append')
+  open(unit=iow, file = IO_logFile, position = 'append')
 
   ww = ww_mix
 
@@ -165,13 +165,14 @@ do iter = initialIterationId, iterations-1
       calc_delta = ((iter==0) .OR. ((freeEnergyError <= freeEnergyTolForDelta) .AND. (numGraftedChainsError > numGraftedChainsTol)))
 
       if (calc_delta) then
-        call compute_delta_numer(numNodes, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww_mix, targetNumGraftedChains, gpid, delta_numer, volnp)
-        call export_delta(numNodes, qmx_interp_mg, numConvolPointsGrafted, targetNumGraftedChains, gpid, delta_numer, gp_init_value, volnp)
+        call compute_delta_numer(numNodes, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww_mix, &
+                                 targetNumGraftedChains, graftPointId, deltaNumerical, volnp)
+        call export_delta(numNodes, qmx_interp_mg, numConvolPointsGrafted, targetNumGraftedChains, graftPointId, deltaNumerical, graftPointValue, volnp)
       endif
 
       do ii = 1, targetNumGraftedChains
-        gnode_id = gpid(ii)
-        gp_init_value(ii) = delta_numer(ii) * lengthGrafted * 1.0d0 / (qmx_interp_mg(numConvolPointsGrafted+1,gnode_id) * (molarBulkDensity * n_avog))
+        gnode_id = graftPointId(ii)
+        graftPointValue(ii) = deltaNumerical(ii) * lengthGrafted * 1.0d0 / (qmx_interp_mg(numConvolPointsGrafted+1,gnode_id) * (molarBulkDensity * n_avog))
       enddo
     endif
 
@@ -181,10 +182,10 @@ do iter = initialIterationId, iterations-1
     qgr_final = 0.0d0
 
     do ii = 1, targetNumGraftedChains
-      gnode_id = gpid(ii)
+      gnode_id = graftPointId(ii)
 
-      qgr(1,gnode_id)       = gp_init_value(ii)
-      qgr_final(1,gnode_id) = gp_init_value(ii)
+      qgr(1,gnode_id)       = graftPointValue(ii)
+      qgr_final(1,gnode_id) = graftPointValue(ii)
     enddo
 
     call solver_edwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace)
@@ -218,7 +219,7 @@ do iter = initialIterationId, iterations-1
 
   do kk = 1, numNodes
     ww_new(kk) = (eos_df_drho(phi_total(kk)) - eos_df_drho(1.0d0)) / (boltz_const_Joule_K*temperature) - &
-                 & k_gr * (segmentBulkDensity * dphi2_dr2(kk)) / (boltz_const_Joule_K * temperature) + Ufield(kk)
+                 & sgtParam * (segmentBulkDensity * dphi2_dr2(kk)) / (boltz_const_Joule_K * temperature) + Ufield(kk)
   enddo
 
   fieldError    = 0.0d0
@@ -255,7 +256,7 @@ do iter = initialIterationId, iterations-1
 
   if (export(exportFieldBinary, iter, convergence)) call export_field_bin(ww_mix, numNodes, iter)
 
-  if ((MOD(iter,1).eq.0).OR.convergence) call export_energies(qmx_interp_mg, qgr_interp, phi_total, ww_new, Ufield, partitionMatrixChains, targetNumGraftedChains, gpid, freeEnergy)
+  if ((MOD(iter,1).eq.0).OR.convergence) call export_energies(qmx_interp_mg, qgr_interp, phi_total, ww_new, Ufield, partitionMatrixChains, targetNumGraftedChains, graftPointId, freeEnergy)
 
   call export_computes(iter, convergence)
 
@@ -313,8 +314,8 @@ end if
 ! Deallocate all remaining dynamic memory
 deallocate(nodeCoord)
 deallocate(dphi2_dr2, d2phi_dr2)
-if (numDirichletFaces > 0)    deallocate(dirichletFaceId, dirichletFaceValue, A_plate, sigma_plate)
-if (numNanoparticleFaces > 0) deallocate(nanoparticleFaceId, nanoparticleFaceValue, A_np, sigma_np, radius_np_eff, center_np)
+if (numDirichletFaces > 0)    deallocate(dirichletFaceId, dirichletFaceValue, plateAlpha, plateSigma)
+if (numNanopFaces > 0) deallocate(nanopFaceId, nanopFaceValue, nanopAlpha, nanopSigma, nanopRadiusEff, nanopCenter)
 deallocate(numElementsOfNode)
 deallocate(globalNodeIdTypeDomain)
 deallocate(ds_mx_ed, xs_mx_ed, coeff_mx_ed)
@@ -326,7 +327,7 @@ endif
 if (graftedExist.eq.1) then
   deallocate(ds_gr_ed, ds_gr_conv, xs_gr_ed, xs_gr_conv, coeff_gr_ed, coeff_gr_conv)
   deallocate(qgr, qgr_final, qgr_interp)
-  deallocate(gpid, delta_numer, gp_init_value)
+  deallocate(graftPointId, deltaNumerical, graftPointValue)
   deallocate(phi_gr, phi_gr_indiv)
 endif
 deallocate(ww, ww_new, ww_mix, Ufield)

@@ -6,7 +6,7 @@ subroutine mesh_profile()
 !----------------------------------------------------------------------------------------------------------------------------------!
 use parser_vars_mod, only: profileDimensions
 use geometry_mod,    only: numNodes, boxLow, boxHigh, nodeCoord
-use iofiles_mod,     only: mesh_prof
+use iofiles_mod,     only: IO_meshProfile
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -26,7 +26,7 @@ do ii = 1, numNodes
   prof_1D_node(ibin) = prof_1D_node(ibin) + 1
 enddo
 
-open(77, file = mesh_prof)
+open(77, file = IO_meshProfile)
 do ii = 1, nbin
   write(77,*) ii, prof_1D_node(ii)
 enddo

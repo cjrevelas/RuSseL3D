@@ -7,7 +7,7 @@ character(len=15), parameter :: dflt_meshFile  = "./in.mesh"
 character(len=15), parameter :: dflt_graftFile = "./in.gnodes"
 character(len=15), parameter :: dflt_fieldFile = "./in.field.bin"
 
-real(8), parameter :: dflt_ads_distance             = 1.2d1
+real(8), parameter :: dflt_adsorptionDistance       = 1.2d1
 real(8), parameter :: dflt_numGraftedChainsTol      = 5.0d-3
 real(8), parameter :: dflt_graftPointDistance       = 4.0d-1
 real(8), parameter :: dflt_binThickness             = 5.0d-1
@@ -15,11 +15,11 @@ real(8), parameter :: dflt_fraction                 = 1.0d0
 real(8), parameter :: dflt_fieldTol                 = 5.0d-1
 real(8), parameter :: dflt_freeEnergyTol            = 1.0d-6
 real(8), parameter :: dflt_freeEnergyTolForDelta    = 1.0d-3
-real(8), parameter :: dflt_polymer_hamaker_constant = 0.0d0
-real(8), parameter :: dflt_wall_distance            = 5.0d0
+real(8), parameter :: dflt_polymerAlpha             = 0.0d0
+real(8), parameter :: dflt_wallDistance             = 5.0d0
 real(8), parameter :: dflt_pressure                 = 0.0d0
 real(8), parameter :: dflt_dirichletValue           = 0.0d0
-real(8), parameter :: dflt_nanoparticleValue        = 0.0d0
+real(8), parameter :: dflt_nanopValue               = 0.0d0
 
 integer, parameter :: dflt_iterations           = 1
 integer, parameter :: dflt_initialIterationId   = 0

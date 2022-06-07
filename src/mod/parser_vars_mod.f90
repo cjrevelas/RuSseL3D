@@ -11,7 +11,7 @@ integer :: contourMatrix, contourGrafted
 real(8) :: lengthMatrix, lengthMatrixMax, lengthGrafted
 real(8) :: stepEdwAveMatrix, stepConvolAveMatrix
 real(8) :: stepEdwAveGrafted, stepConvolAveGrafted
-real(8) :: xs_crit_mx, xs_crit_gr
+real(8) :: critContourMatrix, critContourGrafted
 
 ! Indices and flags
 integer :: iow, ioe, iterations, fieldInitScheme, initialIterationId
@@ -29,19 +29,20 @@ logical, dimension(3) :: periodicAxisId
 real(8)               :: graftPointDistance, binThickness
 
 ! Dirichlet boundaries
-integer                              :: numDirichletFaces, numNanoparticleFaces
-integer, allocatable, dimension(:)   :: dirichletFaceId, nanoparticleFaceId
-real(8), allocatable, dimension(:)   :: dirichletFaceValue, nanoparticleFaceValue
-real(8), allocatable, dimension(:)   :: radius_np_eff, A_np, sigma_np
-real(8), allocatable, dimension(:)   :: A_plate, sigma_plate
-real(8), allocatable, dimension(:,:) :: center_np
+integer                              :: numDirichletFaces, numNanopFaces
+integer, allocatable, dimension(:)   :: dirichletFaceId, nanopFaceId
+real(8), allocatable, dimension(:)   :: dirichletFaceValue, nanopFaceValue
+real(8), allocatable, dimension(:)   :: nanopRadiusEff, nanopAlpha, nanopSigma
+real(8), allocatable, dimension(:)   :: plateAlpha, plateSigma
+real(8), allocatable, dimension(:,:) :: nanopCenter
 
 ! SCF model and potential data
-real(8) :: temperature, beta, pressure, massOfMonomer, massDensity, kapa, kappa_T
+real(8) :: temperature, beta, pressure, massOfMonomer, massDensity, kapa
 real(8) :: massBulkDensity, molarBulkDensity, segmentBulkDensity
-real(8) :: k_gr, k_gr_tilde
-real(8) :: rg2OfMatrixMonomer, rg2OfGraftedMonomer, sphere_radius
-real(8) :: A_pol, sigma_pol, wall_distance, ads_distance
+real(8) :: sgtParam, sgtParamTilde
+real(8) :: rg2OfMatrixMonomer, rg2OfGraftedMonomer
+real(8) :: polymerAlpha, polymerSigma
+real(8) :: wallDistance, adsorptionDistance
 
 ! Convergence scheme
 integer :: mumpsMatrixType

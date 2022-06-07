@@ -5,8 +5,8 @@
 module delta_mod
 !----------------------------------------------------------------------------------------------------------------------------!
 integer                            :: targetNumGraftedChains
-integer, allocatable, dimension(:) :: gpid
+integer, allocatable, dimension(:) :: graftPointId
 
-real(8), allocatable, dimension(:) :: delta_numer, gp_init_value
+real(8), allocatable, dimension(:) :: deltaNumerical, graftPointValue
 !----------------------------------------------------------------------------------------------------------------------------!
 end module delta_mod

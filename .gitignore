@@ -8,5 +8,6 @@ tools/template_input_files/
 tools/in.*
 tools/o.*
 tools/*.vtu
+tools/vtu.*
 tools/large/
 tools/small/

@@ -6,15 +6,15 @@ subroutine tools_histogram(upd_lbin, volnp)
 !-----------------------------------------------------------------------------------------------------------!
 use hist_mod
 use geometry_mod,    only: numNodes, boxLength, isDirichletFace, boxLow, boxHigh, nodeCoord
-use parser_vars_mod, only: numNanoparticleFaces, wall_distance, center_np, radius_np_eff
+use parser_vars_mod, only: numNanopFaces, wallDistance, nanopCenter, nanopRadiusEff
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
 integer :: kk, mm, nn, bin
 
-real(8), intent(in)                   :: upd_lbin
 real(8), intent(in), dimension(numNodes) :: volnp
-real(8)                               :: r_center_surf, r_centers, radius_np_actual, Rmax
+real(8), intent(in)                      :: upd_lbin
+real(8)                                  :: r_center_surf, r_centers, nanopRadiusActual, Rmax
 !-----------------------------------------------------------------------------------------------------------!
 lbin = upd_lbin
 Rmax = SQRT(boxLength(1)**2.0d0 + boxLength(2)**2.0d0 + boxLength(3)**2.0d0)
@@ -30,9 +30,9 @@ if (ALLOCATED(cell_vol_sph))      deallocate(cell_vol_sph)
 allocate(planar_cell_of_np(numNodes,3,2))
 allocate(dist_from_face(numNodes,3,2))
 allocate(cell_vol_planar(nbin,3,2))
-allocate(sph_cell_of_np(numNanoparticleFaces,numNodes))
-allocate(dist_from_np(numNanoparticleFaces,numNodes))
-allocate(cell_vol_sph(numNanoparticleFaces,nbin))
+allocate(sph_cell_of_np(numNanopFaces,numNodes))
+allocate(dist_from_np(numNanopFaces,numNodes))
+allocate(cell_vol_sph(numNanopFaces,nbin))
 
 planar_cell_of_np = 0
 sph_cell_of_np    = 0
@@ -48,9 +48,9 @@ do mm = 1, 3
     if (isDirichletFace(mm,nn)) then
       do kk = 1, numNodes
         if (nn.eq.1) then
-          r_center_surf = nodeCoord(mm,kk) - boxLow(mm) + wall_distance
+          r_center_surf = nodeCoord(mm,kk) - boxLow(mm) + wallDistance
         elseif (nn.eq.2) then
-          r_center_surf = boxHigh(mm) - nodeCoord(mm,kk) + wall_distance
+          r_center_surf = boxHigh(mm) - nodeCoord(mm,kk) + wallDistance
         endif
         bin                         = INT(r_center_surf/lbin)+1
         planar_cell_of_np(kk,mm,nn) = bin
@@ -62,12 +62,12 @@ do mm = 1, 3
 enddo
 
 ! Binning in spherical geometries
-do mm = 1, numNanoparticleFaces
+do mm = 1, numNanopFaces
   do kk = 1, numNodes
-    r_centers             = DSQRT((nodeCoord(1,kk)-center_np(1,mm))**2.0d0 + (nodeCoord(2,kk)-center_np(2,mm))**2.0d0 &
-                                                                           + (nodeCoord(3,kk)-center_np(3,mm))**2.0d0)
-    radius_np_actual      = radius_np_eff(mm) - wall_distance
-    r_center_surf         = r_centers - radius_np_actual
+    r_centers             = DSQRT((nodeCoord(1,kk)-nanopCenter(1,mm))**2.0d0 + (nodeCoord(2,kk)-nanopCenter(2,mm))**2.0d0 &
+                                                                             + (nodeCoord(3,kk)-nanopCenter(3,mm))**2.0d0)
+    nanopRadiusActual     = nanopRadiusEff(mm) - wallDistance
+    r_center_surf         = r_centers - nanopRadiusActual
     bin                   = INT(r_center_surf/lbin)+1
     sph_cell_of_np(mm,kk) = bin
     cell_vol_sph(mm,bin)  = cell_vol_sph(mm,bin) + volnp(kk)

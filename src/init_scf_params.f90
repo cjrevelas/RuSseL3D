@@ -4,8 +4,8 @@
 
 subroutine init_scf_params()
 !------------------------------------------------------------------------------------------------------!
-use parser_vars_mod,  only: lengthMatrix, iow, k_gr, k_gr_tilde, massDensity, massOfMonomer, pressure, &
-                            massBulkDensity, molarBulkDensity, segmentBulkDensity, temperature
+use parser_vars_mod,  only: lengthMatrix, iow, sgtParam, sgtParamTilde, massDensity, massOfMonomer, &
+                            massBulkDensity, molarBulkDensity, segmentBulkDensity, temperature, pressure
 use constants_mod,    only: boltz_const_Joule_K, boltz_const_Joule_molK, gr_cm3_to_kg_m3, N_avog, &
                             kg_m3_to_gr_m3, m3_to_cm3
 use eos_mod,          only: eos_type, kapa, V_star, P_star, T_star, rho_star, rho_tilde_bulk, &
@@ -39,7 +39,7 @@ elseif (eos_type.eq.eos_sl) then
   write(iow,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), massBulkDensity/gr_cm3_to_kg_m3
   write(*  ,'(3X,A45,F16.4,'' g/cm3'')')adjl('mass density was recomputed as:',45), massBulkDensity/gr_cm3_to_kg_m3
 
-  k_gr = 2.0d0 * P_star * rsl_N**2.0d0 * V_star**(8.0d0/3.0d0) * k_gr_tilde
+  sgtParam = 2.0d0 * P_star * rsl_N**2.0d0 * V_star**(8.0d0/3.0d0) * sgtParamTilde
 endif
 !------------------------------------------------------------------------------------------------------!
 end subroutine init_scf_params

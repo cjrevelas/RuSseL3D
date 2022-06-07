@@ -4,14 +4,14 @@
 
 subroutine init_field(Ufield, ww)
 !------------------------------------------------------------------------------------------------------!
-use parser_vars_mod,  only: a_pol, fieldInitScheme, kapa, numNanoparticleFaces,          &
-                            molarBulkDensity, sigma_pol, beta, wall_distance, center_np, &
-                            sigma_plate, radius_np_eff, sigma_np, A_np, A_plate
+use parser_vars_mod,  only: polymerAlpha, polymerSigma, fieldInitScheme, kapa, numNanopFaces, &
+                            molarBulkDensity, beta, wallDistance, nanopCenter, plateSigma,    &
+                            plateAlpha, nanopRadiusEff, nanopSigma, nanopAlpha
 use geometry_mod,     only: numNodes, isDirichletFace, boxLow, boxHigh, nodeCoord, nodeBelongsToDirichletFace
 use error_handing_mod
 use write_helper_mod, only: adjl
 use force_fields_mod, only: hamaker_sphere_plate, hamaker_sphere_sphere
-use iofiles_mod,      only: usolid, fieldFile
+use iofiles_mod,      only: IO_solidPotential, IO_fieldFile
 use constants_mod,    only: n_avog, pi, m_to_A
 !------------------------------------------------------------------------------------------------------!
 implicit none
@@ -21,10 +21,10 @@ integer :: kk, mm, nn
 real(8), intent(out), dimension(numNodes) :: Ufield, ww
 real(8)                                   :: number_density=0.0d0
 real(8)                                   :: r_centers=0.0d0, r_center_surf=0.0d0, r_surf=0.0d0
-real(8)                                   :: radius_np_actual=0.0d0, radius_pol=0.0d0
+real(8)                                   :: nanopRadiusActual=0.0d0, radius_pol=0.0d0
 real(8)                                   :: Urep=0.0d0, Uatt=0.0d0
 !------------------------------------------------------------------------------------------------------!
-open(unit=211, file = usolid)
+open(unit=211, file = IO_solidPotential)
 write(211,'(5(2X,A16))') "r_center_surf", "r_surf", "Uatt", "Urep", "Utot"
 
 ! TODO: compute and add solid-solid (Hamaker) interactions
@@ -42,14 +42,14 @@ do kk = 1, numNodes
         radius_pol     = (3.0d0 / 4.0d0 / pi / number_density)**(1.0d0/3.0d0) * m_to_A
 
         if (nn.eq.1) then
-          r_center_surf = nodeCoord(mm,kk) - boxLow(mm) + wall_distance
+          r_center_surf = nodeCoord(mm,kk) - boxLow(mm) + wallDistance
         elseif (nn.eq.2) then
-          r_center_surf = boxHigh(mm) - nodeCoord(mm,kk) + wall_distance
+          r_center_surf = boxHigh(mm) - nodeCoord(mm,kk) + wallDistance
         endif
 
         r_surf = r_center_surf - radius_pol
 
-        call hamaker_sphere_plate(r_surf, radius_pol, sigma_pol, sigma_plate(1), A_pol, A_plate(1), Urep, Uatt)
+        call hamaker_sphere_plate(r_surf, radius_pol, polymerSigma, plateSigma(1), polymerAlpha, plateAlpha(1), Urep, Uatt)
 
         Urep = Urep*beta
         Uatt = Uatt*beta
@@ -72,12 +72,12 @@ do kk = 1, numNodes
   enddo
 
   ! Loop over all nanoparticle faces
-  do mm = 1, numNanoparticleFaces
-    r_centers        = DSQRT((nodeCoord(1,kk)-center_np(1,mm))**2.0d0 + (nodeCoord(2,kk)-center_np(2,mm))**2.0d0 + (nodeCoord(3,kk)-center_np(3,mm))**2.0d0)
-    radius_np_actual = radius_np_eff(mm) - wall_distance
-    r_surf           = r_centers - radius_pol - radius_np_actual
+  do mm = 1, numNanopFaces
+    r_centers         = DSQRT((nodeCoord(1,kk)-nanopCenter(1,mm))**2.0d0 + (nodeCoord(2,kk)-nanopCenter(2,mm))**2.0d0 + (nodeCoord(3,kk)-nanopCenter(3,mm))**2.0d0)
+    nanopRadiusActual = nanopRadiusEff(mm) - wallDistance
+    r_surf            = r_centers - radius_pol - nanopRadiusActual
 
-    call hamaker_sphere_sphere(r_surf, radius_pol, radius_np_actual, sigma_pol, sigma_np(mm), A_pol, A_np(mm), Urep, Uatt)
+    call hamaker_sphere_sphere(r_surf, radius_pol, nanopRadiusActual, polymerSigma, nanopSigma(mm), polymerAlpha, nanopAlpha(mm), Urep, Uatt)
 
     Urep = Urep * beta
     Uatt = Uatt * beta
@@ -98,7 +98,7 @@ close(211)
 if (fieldInitScheme.eq.0) then
   ww = 0.0d0
 elseif (fieldInitScheme.eq.1) then
-  open(unit=655, file = fieldFile, Form='unformatted')
+  open(unit=655, file = IO_fieldFile, Form='unformatted')
   read(655) ww
   close(655)
 elseif (fieldInitScheme.eq.2) then

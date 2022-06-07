@@ -7,10 +7,10 @@ subroutine mesh_dirichlet_faces(numElementsTypeFace, nen_type_face, globalNodeId
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
-use parser_vars_mod, only: numDirichletFaces, numNanoparticleFaces, dirichletFaceId, nanoparticleFaceId
+use parser_vars_mod, only: numDirichletFaces, numNanopFaces, dirichletFaceId, nanopFaceId
 use geometry_mod,    only: numDimensions, nodeBelongsToDirichletFace, nodeBelongsToFaceId, numNodes, &
                            isDirichletFace, boxLow, boxHigh, nodeCoord
-use iofiles_mod,     only: dir_faces
+use iofiles_mod,     only: IO_dirichletFaces
 use constants_mod,   only: tol
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
@@ -32,7 +32,7 @@ nodeBelongsToFaceId = -1
 allocate(face_entity_key%ints(1))
 
 #ifdef DEBUG_OUTPUTS
-open(unit=123, file = dir_faces)
+open(unit=123, file = IO_dirichletFaces)
 #endif
 
 isDirichletFace = .False.
@@ -69,9 +69,9 @@ do jj = 1, numElementsTypeFace
     endif
   enddo
 
-  ! Nanoparticles section
-  do ii = 1, numNanoparticleFaces
-    if (face_entity_value == nanoparticleFaceId(ii)) then
+  ! Nanops section
+  do ii = 1, numNanopFaces
+    if (face_entity_value == nanopFaceId(ii)) then
       do kk = 1, nen_type_face
         idummy = globalNodeIdTypeFace(kk,jj)
 

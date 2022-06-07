@@ -6,7 +6,7 @@ subroutine export_brush99(cell_of_np, targetNumGraftedChains, numNodes, file_nam
                           phi_gr_indiv, volnp, lbin, nbin)
 !-----------------------------------------------------------------------------------------------------------!
 use write_helper_mod, only: adjl
-use parser_vars_mod,  only: iow, numNanoparticleFaces, radius_np_eff
+use parser_vars_mod,  only: iow, numNanopFaces, nanopRadiusEff
 use geometry_mod,     only: boxLength
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
@@ -95,9 +95,9 @@ write(120,'(A8,2X,E16.9E3)') "stdev", brush99_of_chain_std
 write(120,'(A8,2X,E16.9E3)') "all"  , brush99_all
 
 ! TODO: the following warning needs revision in the case of multiple nanoparticles
-if (numNanoparticleFaces/=0) then
-  do ii = 1, numNanoparticleFaces
-    boxSize = min(boxLength(1), boxLength(2), boxLength(3))/2.d0 - radius_np_eff(ii)
+if (numNanopFaces/=0) then
+  do ii = 1, numNanopFaces
+    boxSize = min(boxLength(1), boxLength(2), boxLength(3))/2.d0 - nanopRadiusEff(ii)
   enddo
 
   if (brush99_all > (0.95d0 * boxSize)) then

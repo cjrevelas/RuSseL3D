@@ -8,61 +8,61 @@ module ints_module
   implicit none
 
     type ints_type
-        integer, allocatable :: ints(:)
+      integer, allocatable :: ints(:)
     end type ints_type
 
     interface hash_value
-        module procedure hash_value_ints
+      module procedure hash_value_ints
     end interface hash_value
 
     interface operator (==)
-        module procedure ints_equal
+      module procedure ints_equal
     end interface
 
 #ifdef __GFORTRAN__
     interface assignment (=)
-        module procedure ints_ptr_assign
+      module procedure ints_ptr_assign
     end interface
 #endif
 
   contains ! Module procedures are defined here
 
     function hash_value_ints(ints) result(hash)
-        type(ints_type), intent(in) :: ints
-        integer :: hash
-        integer :: ii
+      type(ints_type), intent(in) :: ints
+      integer :: hash
+      integer :: ii
 
-        hash = 0
-        do ii = 1, SIZE(ints%ints)
-            hash = xor(hash, ints%ints(ii) + 1640531527 + ISHFT(hash, 6) + ISHFT(hash, -2))
-        enddo
+      hash = 0
+      do ii = 1, SIZE(ints%ints)
+        hash = xor(hash, ints%ints(ii) + 1640531527 + ISHFT(hash, 6) + ISHFT(hash, -2))
+      enddo
     end function hash_value_ints
 
     function ints_equal(lhs, rhs)
-        type(ints_type), intent(in) :: lhs, rhs
-        logical :: ints_equal
-        integer :: ii
+      type(ints_type), intent(in) :: lhs, rhs
+      logical :: ints_equal
+      integer :: ii
 
-        if (SIZE(lhs%ints) /= SIZE(rhs%ints)) then
-            ints_equal = .false.
-            return
+      if (SIZE(lhs%ints) /= SIZE(rhs%ints)) then
+        ints_equal = .false.
+        return
+      endif
+
+      do ii = 1, SIZE(lhs%ints)
+        if (lhs%ints(ii) /= rhs%ints(ii)) then
+          ints_equal = .false.
+          return
         endif
+      enddo
 
-        do ii = 1, SIZE(lhs%ints)
-            if (lhs%ints(ii) /= rhs%ints(ii)) then
-                ints_equal = .false.
-                return
-            endif
-        enddo
-
-        ints_equal = .true.
+      ints_equal = .true.
     end function ints_equal
 
 #ifdef __GFORTRAN__
     subroutine ints_ptr_assign(lhs, rhs)
-        type(ints_type), pointer, intent(inout) :: lhs
-        type(ints_type), pointer, intent(in)    :: rhs
-        lhs => rhs
+      type(ints_type), pointer, intent(inout) :: lhs
+      type(ints_type), pointer, intent(in)    :: rhs
+      lhs => rhs
     end subroutine ints_ptr_assign
 #endif
 end module ints_module
@@ -83,16 +83,16 @@ module int_module
   implicit none
 
     interface hash_value
-        module procedure hash_value_int
+      module procedure hash_value_int
     end interface hash_value
 
   contains
 
     function hash_value_int(INT) result(hash)
-        integer, intent(in) :: INT
-        integer :: hash
+      integer, intent(in) :: INT
+      integer :: hash
 
-        hash = INT
+      hash = INT
     end function hash_value_int
 end module int_module
 

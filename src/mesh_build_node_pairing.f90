@@ -9,7 +9,7 @@ use fhash_module__ints_double
 use ints_module
 
 use geometry_mod, only: nodeCoord, numNodesLocalTypeFace, numElementsTypeFace
-use iofiles_mod,  only: nodePairingXX, nodePairingYY, nodePairingZZ
+use iofiles_mod,  only: IO_nodePairingXX, IO_nodePairingYY, IO_nodePairingZZ
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -35,17 +35,17 @@ if (axis=='x') then
   dimension1 = 2 ! y
   dimension2 = 3 ! z
 
-  open(unit=1111, file=nodePairingXX)
+  open(unit=1111, file=IO_nodePairingXX)
 elseif (axis=='y') then
   dimension1 = 1 ! x
   dimension2 = 3 ! z
 
-  open(unit=1111, file=nodePairingYY)
+  open(unit=1111, file=IO_nodePairingYY)
 elseif (axis=='z') then
   dimension1 = 1 ! x
   dimension2 = 2 !y
 
-  open(unit=1111, file=nodePairingZZ)
+  open(unit=1111, file=IO_nodePairingZZ)
 endif
 
 allocate(node_pairing_key%ints(1))

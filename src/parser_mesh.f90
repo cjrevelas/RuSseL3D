@@ -11,16 +11,13 @@ use error_handing_mod
 use write_helper_mod, only: adjl
 use parser_vars_mod,  only: iow, periodicAxisId, domainIsPeriodic
 use geometry_mod,     only: numNodesLocalTypeDomain, numElementsOfNode, boxLow, boxHigh, boxLength, &
-                        nodeCoord, numNodes, numElementsTypeDomain, globalNodeIdTypeDomain,         &
-                        numDimensions, nodePairId, numBulkNodePairs, numTotalNodePairs,             &
-                        nodePairingXXhash, nodePairingYYhash, nodePairingZZhash,                    &
-                        numNodesLocalTypeFace, numElementsTypeFace
+                            nodeCoord, numNodes, numElementsTypeDomain, globalNodeIdTypeDomain,     &
+                            numDimensions, nodePairId, numBulkNodePairs, numTotalNodePairs,         &
+                            nodePairingXXhash, nodePairingYYhash, nodePairingZZhash,                &
+                            numNodesLocalTypeFace, numElementsTypeFace
 use kcw_mod,          only: F_m
-use iofiles_mod,      only: meshFile, dir_faces, com_12, inter, mesh_out,  &
-                        mesh_prof, xface1_elements, xface2_elements,       &
-                        yface1_elements, yface2_elements, zface1_elements, &
-                        zface2_elements, nodePairingXX, nodePairingYY,     &
-                        nodePairingZZ
+use iofiles_mod,      only: IO_meshFile, IO_dirichletFaces, IO_nodepairs, IO_nodeConnectivity, &
+                            IO_nodecoordinates, IO_meshProfile
 !----------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
@@ -47,7 +44,7 @@ integer                                :: vertex_entity_value, edge_entity_value
 
 type(fhash_type__ints_double)          :: xface1_hash, xface2_hash, yface1_hash, yface2_hash, zface1_hash, zface2_hash
 !----------------------------------------------------------------------------------------------------------------------------!
-open(unit=12, file=meshFile)
+open(unit=12, file=IO_meshFile)
 
 do
   read(12,'(A100)',IOSTAT=reason) line
@@ -248,10 +245,10 @@ enddo
 close(12)
 
 #ifdef DEBUG_OUTPUTS
-open(unit=11, file=vertex_elements)
-open(unit=22, file=edge_elements)
-open(unit=33, file=face_elements)
-open(unit=44, file=domain_elements)
+open(unit=11, file=IO_vertexElements)
+open(unit=22, file=IO_edgeElements)
+open(unit=33, file=IO_faceElements)
+open(unit=44, file=IO_domainElements)
 
 call vertex_entity_it%begin(vertex_entity_hash)
 call edge_entity_it%begin(edge_entity_hash)
@@ -364,19 +361,19 @@ call elemcon%clear()
 call mesh_dirichlet_faces(numElementsTypeFace, numNodesLocalTypeFace, globalNodeIdTypeFace, face_entity_hash)
 
 #ifdef DEBUG_OUTPUTS
-open(unit=77, file = com_12)
+open(unit=77, file = IO_nodePairs)
 do ii = 1, numTotalNodePairs
   write(77,'(4(2X,I9),2X,L9)') ii, F_m%row(ii), F_m%col(ii), nodePairId(ii), F_m%is_zero(ii)
 enddo
 close(77)
 
-open (unit=77, file = inter)
+open (unit=77, file = IO_nodeConnectivity)
 do ii = 1, numElementsTypeDomain
   write(77,'(11(2X,I9))') (globalNodeIdTypeDomain(jj,ii), jj = 1, numNodesLocalTypeDomain)
 enddo
 close(77)
 
-open(77, file = mesh_out)
+open(77, file = IO_nodeCoordinates)
 write(77,'(3(2X,A16))') 'x', 'y', 'z'
 do ii = 1, numNodes
   write(77,'(3(2X,F16.9))') (nodeCoord(jj,ii), jj = 1, numDimensions)

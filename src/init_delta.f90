@@ -7,7 +7,7 @@ subroutine init_delta()
 use geometry_mod,     only: numNodes
 use parser_vars_mod,  only: graftedExist
 use arrays_mod,       only: phi_gr_indiv
-use iofiles_mod,      only: graftFile
+use iofiles_mod,      only: IO_graftFile
 use delta_mod
 use error_handing_mod
 !-----------------------------------------------------------------------------------------------------------!
@@ -18,7 +18,7 @@ integer :: ii, iog
 if (graftedExist.eq.1) then
   iog = 19
 
-  open(unit=iog, file=graftFile)
+  open(unit=iog, file=IO_graftFile)
   read(iog,*)
   read(iog,*)
   read(iog,*)
@@ -29,17 +29,17 @@ if (graftedExist.eq.1) then
   read(iog,*)
   read(iog,*)
 
-  allocate(gpid(targetNumGraftedChains), delta_numer(targetNumGraftedChains), gp_init_value(targetNumGraftedChains))
+  allocate(graftPointId(targetNumGraftedChains), deltaNumerical(targetNumGraftedChains), graftPointValue(targetNumGraftedChains))
 
-  gpid          = 0
-  delta_numer   = 0.0d0
-  gp_init_value = 0.0d0
+  graftPointId    = 0
+  deltaNumerical  = 0.0d0
+  graftPointValue = 0.0d0
 
   do ii = 1, targetNumGraftedChains
-    read(iog,*) gpid(ii), gp_init_value(ii), delta_numer(ii)
+    read(iog,*) graftPointId(ii), graftPointValue(ii), deltaNumerical(ii)
 
-    if (gpid(ii) > numNodes) then
-      write(ERROR_MESSAGE,'("ID of grafted chain (",I10,") is larger from numNodes (",I10,"    )")') gpid(ii), numNodes
+    if (graftPointId(ii) > numNodes) then
+      write(ERROR_MESSAGE,'("ID of grafted chain (",I10,") is larger from numNodes (",I10,"    )")') graftPointId(ii), numNodes
       call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
   enddo
@@ -47,7 +47,7 @@ if (graftedExist.eq.1) then
   close(iog)
 else
   targetNumGraftedChains = 0
-  allocate(gpid(targetNumGraftedChains))
+  allocate(graftPointId(targetNumGraftedChains))
 endif
 
 allocate(phi_gr_indiv(numNodes,targetNumGraftedChains))

@@ -3,19 +3,19 @@
 !See the LICENSE file in the root directory for license information.
 
 subroutine export_energies(qmx_interp_mg, qgr_interp, phi_total, ww, Ufield, part_func, &
-                           targetNumGraftedChains, gpid, free_energy)
+                           targetNumGraftedChains, graftPointId, free_energy)
 !-------------------------------------------------------------------------------------------------!
 use eos_mod,         only: eos_ff, eos_df_drho
 use parser_vars_mod, only: numConvolPointsGrafted, lengthMatrix, molarBulkDensity, temperature, &
                            beta, graftPointDistance
 use geometry_mod,    only: numNodes, interf_area
 use constants_mod,   only: n_avog, boltz_const_Joule_molK, N_to_mN, A2_to_m2, A3_to_m3
-use iofiles_mod,     only: energy_terms
+use iofiles_mod,     only: IO_energies
 !-------------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------------!
 integer, intent(in)                                    :: targetNumGraftedChains
-integer, intent(in), dimension(targetNumGraftedChains) :: gpid
+integer, intent(in), dimension(targetNumGraftedChains) :: graftPointId
 integer                                                :: kk, gnode_id
 
 real(8), intent(in), dimension(numConvolPointsGrafted+1,numNodes) :: qmx_interp_mg, qgr_interp
@@ -61,7 +61,7 @@ E_solid      = E_solid      * A3_to_m3 * molarBulkDensity * n_avog / beta
 E_entropy_mx = molarBulkDensity * A3_to_m3 * vol * boltz_const_Joule_molK * temperature * (1.0d0 - part_func) / lengthMatrix
 
 do kk = 1, targetNumGraftedChains
-  gnode_id              =  gpid(kk)
+  gnode_id              =  graftPointId(kk)
   term4_gpoint(kk)      = -LOG(qmx_interp_mg(numConvolPointsGrafted+1,gnode_id)) / beta
   term4_norm_gpoint(kk) = -LOG(r_ref/graftPointDistance) / beta  ! TODO: this needs revision in the case of multiple solid surfaces
   E_entropy_gr          =  E_entropy_gr        + term4_gpoint(kk)
@@ -80,7 +80,7 @@ E_stretching        = E_stretching        * N_to_mN / (interf_area()*A2_to_m2)
 
 free_energy = E_eos_f + E_eos_dfdrho + E_entropy_mx + E_entropy_gr + E_entropy_gr_normlz
 
-open(unit=837, file = energy_terms)
+open(unit=837, file = IO_energies)
 write(837,'(9(2X,A16))')     "E_ff", "E_dfdrho", "E_entropy_mx", "E_entr_gr", "E_entr_gr_norm", "E_total", "E_stretch", "E_w", "E_Us"
 write(837,'(9(2X,E16.9E2))') E_eos_f, E_eos_dfdrho, E_entropy_mx, E_entropy_gr, E_entropy_gr_normlz, free_energy, E_stretching, E_field, E_solid
 
@@ -88,7 +88,7 @@ if (targetNumGraftedChains.ne.0) then
   write(837,*)
   write(837,'(4(2X,A16))')  "id", "qmx(ns)", "E_entr_gp", "E_entr_gp_norm"
   do kk = 1, targetNumGraftedChains
-    gnode_id   = gpid(kk)
+    gnode_id   = graftPointId(kk)
     write(837,'(2X,I16,3(2X,E16.9E2))') gnode_id, qmx_interp_mg(numConvolPointsGrafted+1,gnode_id), term4_gpoint(kk), term4_norm_gpoint(kk)
   enddo
 endif

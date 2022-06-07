@@ -5,10 +5,10 @@
 subroutine solver_edwards(ds, ns, mumpsMatrixType, q, q_final, nodeBelongsToDirichletFace)
 !----------------------------------------------------------------------------------------------------------!
 use kcw_mod,         only: A_m, F_m, rdiag1
-use parser_vars_mod, only: numDirichletFaces, numNanoparticleFaces,   &
-                           dirichletFaceValue, nanoparticleFaceValue, &
-                           dirichletFaceId, dirichletFaceValue,       &
-                           nanoparticleFaceId, nanoparticleFaceValue
+use parser_vars_mod, only: numDirichletFaces, numNanopFaces,    &
+                           dirichletFaceValue, nanopFaceValue,  &
+                           dirichletFaceId, dirichletFaceValue, &
+                           nanopFaceId, nanopFaceValue
 use geometry_mod,    only: numNodes, numTotalNodePairs, nodeBelongsToFaceId
 #ifdef USE_MPI
 use mpistuff
@@ -65,9 +65,9 @@ do time_step = 2, ns+1
     enddo
   enddo
 
-  do face = 1, numNanoparticleFaces
+  do face = 1, numNanopFaces
     do ii = 1, numNodes
-      if (nodeBelongsToFaceId(ii) == nanoparticleFaceId(face)) rdiag1(ii) = nanoparticleFaceValue(face)
+      if (nodeBelongsToFaceId(ii) == nanopFaceId(face)) rdiag1(ii) = nanopFaceValue(face)
     enddo
   enddo
 

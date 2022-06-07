@@ -7,7 +7,9 @@ subroutine mesh_periodic_face_elements(axis, axis_face1_hash, axis_face2_hash)
 use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
-use iofiles_mod, only: xface1_elements, xface2_elements, yface1_elements, yface2_elements, zface1_elements, zface2_elements
+use iofiles_mod, only: IO_xFace1Elements, IO_xFace2Elements, &
+                       IO_yFace1Elements, IO_yFace2Elements, &
+                       IO_zFace1Elements, IO_zFace2Elements
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -21,14 +23,14 @@ integer                                      :: axis_face1_value, axis_face2_val
 integer :: kk
 !----------------------------------------------------------------------------------------------------------------------------------!
 if (axis=='x') then
-  open(unit=111, file=xface1_elements)
-  open(unit=222, file=xface2_elements)
+  open(unit=111, file=IO_xFace1Elements)
+  open(unit=222, file=IO_xFace2Elements)
 elseif (axis=='y') then
-  open(unit=111, file=yface1_elements)
-  open(unit=222, file=yface2_elements)
+  open(unit=111, file=IO_yFace1Elements)
+  open(unit=222, file=IO_yFace2Elements)
 elseif (axis=='z') then
-  open(unit=111, file=zface1_elements)
-  open(unit=222, file=zface2_elements)
+  open(unit=111, file=IO_zFace1Elements)
+  open(unit=222, file=IO_zFace2Elements)
 endif
 
 call axis_face1_it%begin(axis_face1_hash)

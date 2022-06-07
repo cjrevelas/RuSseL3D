@@ -2,20 +2,20 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine fem_matrix_assemble(Rg2_per_mon, ww)
+subroutine fem_matrix_assemble(rg2OfMonomer, ww)
 !----------------------------------------------------------------------------------------------------------------!
 use kcw_mod,      only: F_m
 use geometry_mod, only: numNodes, numElementsTypeDomain, numDimensions, numNodesLocalTypeDomain, &
                         numBulkNodePairs, nodePairId, globalNodeIdTypeDomain, nodeCoord
-use iofiles_mod,  only: matrix_assembly
+use iofiles_mod,  only: IO_matrixAssembly
 !----------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------!
-integer, dimension(numNodesLocalTypeDomain) :: global_index
+integer, dimension(numNodesLocalTypeDomain) :: globalIndex
 integer                                     :: lint, elem
 integer                                     :: ii, jj, kk, ll, mm, nn, pp
 
-real(8), intent(in)                                       :: Rg2_per_mon
+real(8), intent(in)                                       :: rg2OfMonomer
 real(8), intent(in), dimension(numNodes)                  :: ww
 real(8), dimension(numDimensions,numNodesLocalTypeDomain) :: xl
 real(8), dimension(4,11)                                  :: shp
@@ -31,9 +31,9 @@ F_m%w = 0.0d0
 
 do elem = 1, numElementsTypeDomain
   do ii = 1, numNodesLocalTypeDomain
-    global_index(ii) = globalNodeIdTypeDomain(ii,elem)
+    globalIndex(ii) = globalNodeIdTypeDomain(ii,elem)
     do jj = 1, numDimensions
-      xl(jj,ii) = nodeCoord(jj, global_index(ii))
+      xl(jj,ii) = nodeCoord(jj, globalIndex(ii))
     enddo
   enddo
 
@@ -49,13 +49,13 @@ do elem = 1, numElementsTypeDomain
 
     do mm = 1, numNodesLocalTypeDomain
       do nn = 1, numNodesLocalTypeDomain
-        pp = global_index(nn)
+        pp = globalIndex(nn)
 
         kk = kk + 1
 
         F_m%c(kk) = F_m%c(kk) + shp(4,nn)*shp(4,mm)*xsj*sv(5,ll)
 
-        F_m%k(kk) = F_m%k(kk) + Rg2_per_mon * (shp(1,nn)*shp(1,mm)+shp(2,nn)*shp(2,mm)+shp(3,nn)*shp(3,mm))*xsj*sv(5,ll)
+        F_m%k(kk) = F_m%k(kk) + rg2OfMonomer * (shp(1,nn)*shp(1,mm)+shp(2,nn)*shp(2,mm)+shp(3,nn)*shp(3,mm))*xsj*sv(5,ll)
 
         F_m%w(kk) = F_m%w(kk) + ww(pp)*shp(4,nn)*shp(4,mm)*xsj*sv(5,ll)
       enddo
@@ -77,7 +77,7 @@ do kk = 1, numBulkNodePairs
 enddo
 
 #ifdef DEBUG_OUTPUTS
-open(unit=400, file = matrix_assembly)
+open(unit=400, file = IO_matrixAssembly)
 write(400,'(3(2X,A16))') "F_m%k","F_m%c","F_m%w"
 do kk = 1, numBulkNodePairs
   write(400,'(3(2X,E16.9))') F_m%k(kk), F_m%c(kk), F_m%w(kk)

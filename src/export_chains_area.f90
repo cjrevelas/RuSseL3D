@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine export_chains_area(node_belongs_to_dirichlet_face, cell_of_np, chain_type, Rg2_per_mon, chainlen, &
+subroutine export_chains_area(node_belongs_to_dirichlet_face, cell_of_np, chain_type, rg2OfMonomer, chainlen, &
                               ns_ed, ds_ed, q_final, phi, ww)
 !-----------------------------------------------------------------------------------------------------------------------!
 use parser_vars_mod,  only: mumpsMatrixType, segmentBulkDensity
@@ -11,7 +11,7 @@ use write_helper_mod, only: adjl
 use constants_mod,    only: A3_to_m3
 use arrays_mod,       only: volnp
 use geometry_mod,     only: numNodes
-use delta_mod,        only: targetNumGraftedChains, gp_init_value, gpid
+use delta_mod,        only: targetNumGraftedChains, graftPointId, graftPointValue
 !-----------------------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------------------!
@@ -27,7 +27,7 @@ logical, dimension(numNodes)             :: node_belongs_to_dirichlet_face_new
 real(8), intent(in), dimension(ns_ed+1)          :: ds_ed
 real(8), intent(in), dimension(ns_ed+1,numNodes) :: q_final
 real(8), intent(in), dimension(numNodes)         :: phi, ww
-real(8), intent(in)                              :: Rg2_per_mon, chainlen
+real(8), intent(in)                              :: rg2OfMonomer, chainlen
 real(8), dimension(2,numNodes)                   :: qshape
 real(8), dimension(ns_ed+1,numNodes)             :: qshape_final
 real(8), dimension(nbin)                         :: p_cross, n_shape
@@ -36,7 +36,7 @@ real(8)                                          :: sum_qshape=0.d0, sum_Q=0.d0,
 do bin = 7, 30
   write(6,*) "bin = ",bin
 
-  call fem_matrix_assemble(Rg2_per_mon, ww)
+  call fem_matrix_assemble(rg2OfMonomer, ww)
 
   node_belongs_to_dirichlet_face_new = node_belongs_to_dirichlet_face
   do kk = 1, numNodes
@@ -54,10 +54,10 @@ do bin = 7, 30
     write(6,'(6X,A40)')adjl("Exporting grafted chains per area.",40)
 
     do ii = 1, targetNumGraftedChains
-      gnode_id = gpid(ii)
+      gnode_id = graftPointId(ii)
 
-      qshape(1,gnode_id)       = gp_init_value(ii)
-      qshape_final(1,gnode_id) = gp_init_value(ii)
+      qshape(1,gnode_id)       = graftPointValue(ii)
+      qshape_final(1,gnode_id) = graftPointValue(ii)
     enddo
   endif
 

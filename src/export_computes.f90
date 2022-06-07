@@ -9,10 +9,10 @@ use arrays_mod,       only: phi_mx, phi_gr, phi_gr_indiv, ww, ww_new, ww_mix,   
                             ds_mx_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, volnp
 use hist_mod,         only: nbin, lbin, planar_cell_of_np, sph_cell_of_np, dist_from_face,            &
                             dist_from_np, cell_vol_planar, cell_vol_sph
-use delta_mod,        only: gp_init_value, gpid, targetNumGraftedChains
+use delta_mod,        only: graftPointValue, graftPointId, targetNumGraftedChains
 use geometry_mod,     only: numNodes, nodeCoord, isDirichletFace, nodeBelongsToDirichletFace
 use write_helper_mod, only: adjl, export
-use parser_vars_mod,  only: numNanoparticleFaces, matrixExist, graftedExist, ads_distance,        &
+use parser_vars_mod,  only: numNanopFaces, matrixExist, graftedExist, adsorptionDistance,         &
                             rg2OfMatrixMonomer, rg2OfGraftedMonomer, lengthMatrix, lengthGrafted, &
                             numEdwPointsMatrix, numConvolPointsMatrix,                            &
                             numEdwPointsGrafted, numConvolPointsGrafted,                          &
@@ -52,7 +52,7 @@ if (export(exportPhiGeneral, iter, convergence)) then
   enddo
 
   ! Spherical nanoparticles
-  do mm = 1, numNanoparticleFaces
+  do mm = 1, numNanopFaces
     file_name = ""
     write(file_name,'("o.phi_smear_np",I1)') mm
     call export_phi_smeared(sph_cell_of_np(mm,:), cell_vol_sph(mm,:), numNodes, file_name, phi_mx, phi_gr, volnp, lbin, nbin)
@@ -74,7 +74,7 @@ if (matrixExist.eq.1) then
         endif
         if (export(exportAdsorbedFree, iter, convergence)) then
           do kk = 1, numNodes
-            if (dist_from_face(kk,mm,nn)<ads_distance) adsorbed(kk) = .true.
+            if (dist_from_face(kk,mm,nn)<adsorptionDistance) adsorbed(kk) = .true.
           enddo
         endif
       endif
@@ -82,7 +82,7 @@ if (matrixExist.eq.1) then
   enddo
 
   ! Spherical nanoparticles
-  do mm = 1, numNanoparticleFaces
+  do mm = 1, numNanopFaces
     if (export(exportChainsPerArea, iter, convergence)) then
       file_name = ""
       write(file_name,'("o.chains_area_w",I1,"_",I1)') mm, nn
@@ -90,7 +90,7 @@ if (matrixExist.eq.1) then
     endif
     if (export(exportAdsorbedFree, iter, convergence)) then
       do kk = 1, numNodes
-        if (dist_from_np(mm,kk)<ads_distance) adsorbed(kk) = .true.
+        if (dist_from_np(mm,kk)<adsorptionDistance) adsorbed(kk) = .true.
       enddo
     endif
   enddo
@@ -109,7 +109,7 @@ if (graftedExist.eq.1) then
   if (export(exportPropagators, iter, convergence)) call export_propagator(numEdwPointsGrafted, qgr_final, "gr")
 
   if (export(exportPhiIndividual, iter, convergence)) then
-    call compute_phi_indiv(numNodes, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, targetNumGraftedChains, gpid, gp_init_value, phi_gr_indiv)
+    call compute_phi_indiv(numNodes, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, targetNumGraftedChains, graftPointId, graftPointValue, phi_gr_indiv)
     call export_phi_indiv(targetNumGraftedChains, numNodes, nodeCoord, phi_gr_indiv)
   endif
 
@@ -135,7 +135,7 @@ if (graftedExist.eq.1) then
   enddo
 
   ! Spherical nanoparticles
-  do mm = 1, numNanoparticleFaces
+  do mm = 1, numNanopFaces
     if (export(exportBrushThickness, iter, convergence)) then
       file_name = ""
       write(file_name,'("o.brush_np",I1)') mm
