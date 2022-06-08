@@ -62,63 +62,63 @@ MODULES=$(OBJDIR)/parser_vars_mod.o\
 	$(OBJDIR)/delta_mod.o\
 	$(OBJDIR)/hist_mod.o\
 
-OBJECTS=$(OBJDIR)/compute_contour_coeffs.o\
-        $(OBJDIR)/compute_contour_step.o\
-        $(OBJDIR)/compute_delta_numer.o\
-        $(OBJDIR)/compute_gradient.o\
-	$(OBJDIR)/compute_node_volume.o\
-	$(OBJDIR)/compute_number_of_chains.o\
-	$(OBJDIR)/compute_part_func_mx.o\
-        $(OBJDIR)/compute_phi_indiv.o\
-        $(OBJDIR)/compute_stretching_energy.o\
-	$(OBJDIR)/contour_convolution.o\
-        $(OBJDIR)/contour_interp.o\
-        $(OBJDIR)/export_ads_free.o\
-	$(OBJDIR)/export_brush99.o\
-	$(OBJDIR)/export_brush.o\
-	$(OBJDIR)/export_chains_area.o\
-	$(OBJDIR)/export_computes.o\
-	$(OBJDIR)/export_delta.o\
-	$(OBJDIR)/export_energies.o\
-	$(OBJDIR)/export_field_bin.o\
-	$(OBJDIR)/export_field.o\
-        $(OBJDIR)/export_phi_end_middle_nodal.o\
-	$(OBJDIR)/export_phi_indiv.o\
-	$(OBJDIR)/export_phi_nodal.o\
-        $(OBJDIR)/export_phi_smeared.o\
-	$(OBJDIR)/export_propagator.o\
-	$(OBJDIR)/export_vtu.o\
-	$(OBJDIR)/fem_apply_periodic_bcs.o\
-	$(OBJDIR)/fem_bcs_and_nonzeros.o\
-	$(OBJDIR)/fem_periodicity_on_edges.o\
-	$(OBJDIR)/fem_periodicity_on_corners.o\
-	$(OBJDIR)/fem_gausspoints.o\
-	$(OBJDIR)/fem_integration.o\
-	$(OBJDIR)/fem_interpolation.o\
-	$(OBJDIR)/fem_is_node_inside_el.o\
-        $(OBJDIR)/fem_matrix_assemble.o\
-	$(OBJDIR)/fem_tetshpfun.o\
-	$(OBJDIR)/init_arrays.o\
-	$(OBJDIR)/init_chain_contour.o\
-	$(OBJDIR)/init_delta.o\
-	$(OBJDIR)/init_field.o\
-	$(OBJDIR)/init_scf_params.o\
-	$(OBJDIR)/mesh_append_periodic_pairs.o\
-	$(OBJDIR)/mesh_build_node_pairing.o\
-	$(OBJDIR)/mesh_bulk_node_pairs.o\
-	$(OBJDIR)/mesh_dirichlet_faces.o\
-	$(OBJDIR)/mesh_elements_per_node.o\
-	$(OBJDIR)/mesh_face_entities.o\
-	$(OBJDIR)/mesh_periodic_face_elements.o\
-	$(OBJDIR)/mesh_profile.o\
-        $(OBJDIR)/parser_input.o\
-	$(OBJDIR)/parser_mesh.o\
-	$(OBJDIR)/solver_edwards.o\
-	$(OBJDIR)/solver_mumps.o\
-	$(OBJDIR)/tools_histogram.o\
-	$(OBJDIR)/tools_matinv4.o\
-	$(OBJDIR)/tools_sys_time.o\
-	$(OBJDIR)/main.o
+OBJECTS=$(OBJDIR)/ComputeContourCoeffs.o\
+        $(OBJDIR)/ComputeContourStep.o\
+        $(OBJDIR)/ComputeDeltaNumerical.o\
+        $(OBJDIR)/ComputeGradient.o\
+	$(OBJDIR)/ComputeNodeVolume.o\
+	$(OBJDIR)/ComputeNumberOfChains.o\
+	$(OBJDIR)/ComputePartitionMatrix.o\
+        $(OBJDIR)/ComputeIndivProfile.o\
+        $(OBJDIR)/ComputeStretchingEnergy.o\
+	$(OBJDIR)/ContourConvolution.o\
+        $(OBJDIR)/ContourInterpolation.o\
+        $(OBJDIR)/ExportAdsorbed.o\
+	$(OBJDIR)/ExportBrush99.o\
+	$(OBJDIR)/ExportBrush.o\
+	$(OBJDIR)/ExportChainsArea.o\
+	$(OBJDIR)/ExportComputes.o\
+	$(OBJDIR)/ExportDelta.o\
+	$(OBJDIR)/ExportEnergies.o\
+	$(OBJDIR)/ExportFieldBinary.o\
+	$(OBJDIR)/ExportFieldAscii.o\
+        $(OBJDIR)/ExportEndMiddleProfile.o\
+	$(OBJDIR)/ExportIndivProfile.o\
+	$(OBJDIR)/ExportNodalProfile.o\
+        $(OBJDIR)/ExportSmearedProfile.o\
+	$(OBJDIR)/ExportPropagator.o\
+	$(OBJDIR)/ExportVtu.o\
+	$(OBJDIR)/FemApplyPeriodicity.o\
+	$(OBJDIR)/FemNonZeroEntries.o\
+	$(OBJDIR)/FemPeriodicEdges.o\
+	$(OBJDIR)/FemPeriodicCorners.o\
+	$(OBJDIR)/FemGaussPoints.o\
+	$(OBJDIR)/FemIntegration.o\
+	$(OBJDIR)/FemInterpolation.o\
+	$(OBJDIR)/FemIsPointInElement.o\
+        $(OBJDIR)/FemMatrixAssemble.o\
+	$(OBJDIR)/FemShapeFunctions.o\
+	$(OBJDIR)/InitArrays.o\
+	$(OBJDIR)/InitChainContour.o\
+	$(OBJDIR)/InitDelta.o\
+	$(OBJDIR)/InitField.o\
+	$(OBJDIR)/InitScfParams.o\
+	$(OBJDIR)/MeshAppendPeriodicPairs.o\
+	$(OBJDIR)/MeshPeriodicNodePairs.o\
+	$(OBJDIR)/MeshBulkNodePairs.o\
+	$(OBJDIR)/MeshDirichletFaces.o\
+	$(OBJDIR)/MeshElementsOfNode.o\
+	$(OBJDIR)/MeshFaceEntities.o\
+	$(OBJDIR)/MeshPeriodicFaces.o\
+	$(OBJDIR)/MeshProfile.o\
+        $(OBJDIR)/ParserInput.o\
+	$(OBJDIR)/ParserMesh.o\
+	$(OBJDIR)/SolverEdwards.o\
+	$(OBJDIR)/SolverMumps.o\
+	$(OBJDIR)/ToolsHistogram.o\
+	$(OBJDIR)/ToolsMatrixInversion.o\
+	$(OBJDIR)/ToolsSystemTime.o\
+	$(OBJDIR)/Main.o
 
 EXEC=$(RUNDIR)/RuSseL
 #-----------------------------------------------------------------COMPILE AND LINK----------------------------------------------------------------#
@@ -134,8 +134,8 @@ $(OBJDIR)/%.o : $(SRCDIR)/%.f90
 $(EXEC):$(LIBDMUMPS) $(MODULES) $(OBJECTS)
 	$(FL) -o $(EXEC) $(OPTL) $(MODULES) $(OBJECTS)  $(LIBDMUMPS) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS)
 
-$(OBJDIR)/solver_mumps.o:
-	$(FC) $(OPTF) $(INCS) -I. -I$(topdir)/include -I$(topdir)/$(SCRDIR) -I$(OBJDIR) -cpp $(CPPFLAGS) -c $(SRCDIR)/solver_mumps.f90 $(OUTF)$*.o
+$(OBJDIR)/SolverMumps.o:
+	$(FC) $(OPTF) $(INCS) -I. -I$(topdir)/include -I$(topdir)/$(SCRDIR) -I$(OBJDIR) -cpp $(CPPFLAGS) -c $(SRCDIR)/SolverMumps.f90 $(OUTF)$*.o
 
 .SUFFIXES: (.SUFFIXES) .F .f90 .h .p
 #-------------------------------------------------------------CLEAN WORKING DIRECTORY-------------------------------------------------------------#

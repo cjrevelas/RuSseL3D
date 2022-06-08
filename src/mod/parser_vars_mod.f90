@@ -17,7 +17,7 @@ real(8) :: critContourMatrix, critContourGrafted
 integer :: iow, ioe, iterations, fieldInitScheme, initialIterationId
 integer :: matrixExist, graftedExist, deltaUpdateFreq, getICfromDelta
 integer :: exportPhiGeneral, exportPhiIndividual, exportField, exportPropagators
-integer :: exportFieldBinary, exportBrushThickness, exportChainsPerArea, exportAdsorbedFree
+integer :: exportFieldBin, exportBrushThickness, exportChainsPerArea, exportAdsorbedFree
 logical :: squareGradient
 
 ! Domain
