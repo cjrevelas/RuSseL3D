@@ -11,7 +11,7 @@ use parser_vars_mod, only: numDirichletFaces, numNanopFaces,    &
                            nanopFaceId, nanopFaceValue
 use geometry_mod,    only: numNodes, numTotalNodePairs, nodeBelongsToFaceId
 #ifdef USE_MPI
-use mpistuff
+use mpistuff_mod
 #endif
 !----------------------------------------------------------------------------------------------------------!
 implicit none

@@ -301,16 +301,6 @@ write(6  ,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             numM
 t_final = ToolsSystemTime()
 write(6,'(3X,A40,I16)')adjl('Run duration:',40), t_final - t_init
 
-#ifdef USE_MPI
-! Root will send a stop signal to the slave processes
-if (root) then
-  flag_continue = .false.
-  call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-end if
-
-1000 call MPI_FINALIZE(ierr)
-#endif
-
 ! Deallocate all remaining dynamic memory
 deallocate(nodeCoord)
 deallocate(dphi2_dr2, d2phi_dr2)
@@ -339,5 +329,15 @@ deallocate(elementOfNode)
 deallocate(nodeBelongsToDirichletFace, nodeBelongsToFaceId)
 deallocate(rdiag1)
 deallocate(F_m%row, F_m%col, F_m%g, F_m%rh, F_m%c, F_m%k, F_m%w, F_m%is_zero)
+
+#ifdef USE_MPI
+! Root will send a stop signal to the slave processes
+if (root) then
+  flag_continue = .false.
+  call MPI_BCAST(flag_continue, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+end if
+
+1000 call MPI_FINALIZE(ierr)
+#endif
 !------------------------------------------------------------------------------------------------------------------!
 end program RuSseL

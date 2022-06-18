@@ -9,7 +9,7 @@ use geometry_mod, only: numNodes
 use flags_mod,    only: mumps_asymm, mumps_posDef, mumps_genSymm
 use error_handing_mod
 #ifdef USEMPI
-use mpistuff
+use mpistuff_mod
 #endif
 !--------------------------------------------------------------------------!
 implicit none
