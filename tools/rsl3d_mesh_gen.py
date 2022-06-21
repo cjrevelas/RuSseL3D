@@ -332,6 +332,37 @@ class GraftPoints:
         modelFile.writelines(lines)
 
         return
+
+
+    def exportt(self):
+        try:
+            testFile = open("test.lammpstrj", 'w')
+        except:
+            print("ERROR OPENING OUTPUT FILE test.lammpstrj")
+            exit()
+
+        testFile.write("ITEM: TIMESTEP\n")
+        testFile.write("0\n")
+        testFile.write("ITEM: NUMBER OF ATOMS\n")
+        testFile.write(str(self.numgp)+'\n')
+        testFile.write("ITEM: BOX BOUNDS pp pp pp\n")
+        testFile.write("%.15f %.15f\n" % (-0.5*self.boxX, 0.5*self.boxX) )
+        testFile.write("%.15f %.15f\n" % (-0.5*self.boxY, 0.5*self.boxY) )
+        testFile.write("%.15f %.15f\n" % (-0.5*self.boxZ, 0.5*self.boxZ) )
+        testFile.write("ITEM: ATOMS id type xu yu zu\n")
+
+        atomType = 1
+
+        nodeNumber = 0
+        for jj in range(0,self.numgp):
+            nodeNumber += 1
+            testFile.write(str(nodeNumber)+ "  %d" %(atomType) + "  %.15f  %.15f  %.15f " %(self.graftcoords[0,jj],
+                                                                                            self.graftcoords[1,jj],
+                                                                                            self.graftcoords[2,jj]) + '\n')
+
+        testFile.close()
+
+        return
 #----------------------------------------------------------------------------------------------------------------------------------#
 class Geometry:
     def __init__(self, x, y, z, move_by_xx):
@@ -459,9 +490,9 @@ mesh = Mesh(planar, use_gr, numgp, r_np_eff + r_gp, move, move_by_xx, reflect, i
 
 mesh.matlab("tmp_graftpoints")
 
-mesh.graftpoints.insert_to_model_file()
+#mesh.graftpoints.insert_to_model_file()
 
-edit_model_size_parameters(Lx, Ly, Lz, r_np_eff, centers)
+#edit_model_size_parameters(Lx, Ly, Lz, r_np_eff, centers)
 #exit()
 run_matlab_model()
 
