@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ExportComputes(iter, convergence)
+subroutine ExportComputes(iter, convergence, elemcon)
 !-----------------------------------------------------------------------------------------------------------!
 use arrays_mod,       only: phi_mx, phi_gr, phi_gr_indiv, ww, ww_new, ww_mix,                         &
                             qmx_final, qgr_final, qmx_interp_mm, qmx_interp_mg, qgr_interp, ds_gr_ed, &
@@ -23,6 +23,7 @@ use parser_vars_mod,  only: numNanopFaces, matrixExist, graftedExist, adsorption
                             exportBrushThickness,                                                 &
                             exportChainsPerArea,                                                  &
                             exportAdsorbedFree
+use fhash_module__ints_double
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
@@ -31,6 +32,8 @@ logical, dimension(numNodes) :: adsorbed
 
 integer, intent(in) :: iter
 integer             :: kk, mm, nn
+
+type(fhash_type__ints_double), intent(inout) :: elemcon
 
 character(40) :: file_name
 !-----------------------------------------------------------------------------------------------------------!
@@ -70,7 +73,7 @@ if (matrixExist.eq.1) then
         if (export(exportChainsPerArea, iter, convergence)) then
           file_name = ""
           write(file_name,'("o.chains_area_w",I1,"_",I1)') mm, nn
-          call ExportChainsArea(nodeBelongsToDirichletFace, planar_cell_of_np(:,mm,nn), "mx", rg2OfMatrixMonomer, lengthMatrix, numEdwPointsMatrix, ds_mx_ed, qmx_final, phi_mx, ww)
+          call ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planar_cell_of_np(:,mm,nn), "mx", rg2OfMatrixMonomer, lengthMatrix, numEdwPointsMatrix, ds_mx_ed, qmx_final, phi_mx, ww)
         endif
         if (export(exportAdsorbedFree, iter, convergence)) then
           do kk = 1, numNodes
@@ -86,7 +89,7 @@ if (matrixExist.eq.1) then
     if (export(exportChainsPerArea, iter, convergence)) then
       file_name = ""
       write(file_name,'("o.chains_area_w",I1,"_",I1)') mm, nn
-      call ExportChainsArea(nodeBelongsToDirichletFace, sph_cell_of_np(mm,:), "mx", rg2OfMatrixMonomer, lengthMatrix, numEdwPointsMatrix, ds_mx_ed, qmx_final, phi_mx, ww)
+      call ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sph_cell_of_np(mm,:), "mx", rg2OfMatrixMonomer, lengthMatrix, numEdwPointsMatrix, ds_mx_ed, qmx_final, phi_mx, ww)
     endif
     if (export(exportAdsorbedFree, iter, convergence)) then
       do kk = 1, numNodes
@@ -95,7 +98,7 @@ if (matrixExist.eq.1) then
     endif
   enddo
 
-  if (export(exportAdsorbedFree, iter, convergence)) call ExportAdsorbed(nodeBelongsToDirichletFace, adsorbed)
+  if (export(exportAdsorbedFree, iter, convergence)) call ExportAdsorbed(nodeBelongsToDirichletFace, elemcon, adsorbed)
 
 #ifdef DEBUG_OUTPUTS
   call ExportPropagator(numConvolPointsMatrix, qmx_interp_mm, "mm")
@@ -109,7 +112,7 @@ if (graftedExist.eq.1) then
   if (export(exportPropagators, iter, convergence)) call ExportPropagator(numEdwPointsGrafted, qgr_final, "gr")
 
   if (export(exportPhiIndividual, iter, convergence)) then
-    call ComputeIndivProfile(numNodes, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, targetNumGraftedChains, graftPointId, graftPointValue, phi_gr_indiv)
+    call ComputeIndivProfile(numNodes, elemcon, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, targetNumGraftedChains, graftPointId, graftPointValue, phi_gr_indiv)
     call ExportIndivProfile(targetNumGraftedChains, numNodes, nodeCoord, phi_gr_indiv)
   endif
 
@@ -128,7 +131,7 @@ if (graftedExist.eq.1) then
         if (export(exportChainsPerArea, iter, convergence)) then
           file_name = ""
           write(file_name,'("o.chains_area_w",I1,"_",I1)') mm, nn
-          call ExportChainsArea(nodeBelongsToDirichletFace, planar_cell_of_np(:,mm,nn), "gr", rg2OfGraftedMonomer, lengthGrafted, numEdwPointsGrafted, ds_gr_ed, qgr_final, phi_gr, ww)
+          call ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planar_cell_of_np(:,mm,nn), "gr", rg2OfGraftedMonomer, lengthGrafted, numEdwPointsGrafted, ds_gr_ed, qgr_final, phi_gr, ww)
         endif
       endif
     enddo
@@ -147,7 +150,7 @@ if (graftedExist.eq.1) then
     if (export(exportChainsPerArea, iter, convergence)) then
       file_name = ""
       write(file_name,'("o.chains_area_w",I1,"_",I1)') mm, nn
-      call ExportChainsArea(nodeBelongsToDirichletFace, sph_cell_of_np(mm,:), "gr", rg2OfGraftedMonomer, lengthGrafted, numEdwPointsGrafted, ds_gr_ed, qgr_final, phi_gr, ww)
+      call ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sph_cell_of_np(mm,:), "gr", rg2OfGraftedMonomer, lengthGrafted, numEdwPointsGrafted, ds_gr_ed, qgr_final, phi_gr, ww)
     endif
   enddo
 #ifdef DEBUG_OUTPUTS

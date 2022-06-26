@@ -4,7 +4,6 @@
 
 subroutine MeshBulkNodePairs(nodePairingXXhash, nodePairingYYhash, nodePairingZZhash, elemcon)
 !----------------------------------------------------------------------------------------------------------------------------------!
-use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use parser_vars_mod, only: periodicAxisId

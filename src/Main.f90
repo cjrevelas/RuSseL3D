@@ -16,6 +16,8 @@ use delta_mod
 use hist_mod
 use kcw_mod, only: rdiag1, F_m
 use flags_mod, only: contour_symm, contour_asymm, contour_hybrid
+use fhash_module__ints_double
+use ints_module
 #ifdef USE_MPI
 use mpistuff_mod
 #endif
@@ -31,6 +33,8 @@ integer :: ii, kk, iter, ToolsSystemTime, t_init, t_final, gnode_id
 logical :: convergence = .false., calc_delta = .false.
 
 real(8), allocatable, dimension(:) :: dphi2_dr2
+
+type(fhash_type__ints_double) :: elemcon
 
 real(8) :: partitionMatrixChains = 0.0d0, numMatrixChains = 0.0d0
 real(8) :: numGraftedChains = 0.0d0, numGraftedChainsError = 1.0d2
@@ -86,7 +90,7 @@ close(ioe)
 !                                             INITIALIZATION SECTION                                           !
 !**************************************************************************************************************!
 call ParserInput()
-call ParserMesh()
+call ParserMesh(elemcon)
 call InitArrays()
 
 do ii = 1, numNodes
@@ -153,7 +157,7 @@ do iter = initialIterationId, iterations-1
     qmx_final(1,ii) = 1.0d0
   enddo
 
-  call SolverEdwards(ds_mx_ed, numEdwPointsMatrix, mumpsMatrixType, qmx, qmx_final, nodeBelongsToDirichletFace)
+  call SolverEdwards(ds_mx_ed, numEdwPointsMatrix, mumpsMatrixType, qmx, qmx_final, nodeBelongsToDirichletFace, elemcon)
 
   if (graftedExist.eq.1) then
     do ii = 1, numNodes
@@ -165,7 +169,7 @@ do iter = initialIterationId, iterations-1
       calc_delta = ((iter==0) .OR. ((freeEnergyError <= freeEnergyTolForDelta) .AND. (numGraftedChainsError > numGraftedChainsTol)))
 
       if (calc_delta) then
-        call ComputeDeltaNumerical(numNodes, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww_mix, &
+        call ComputeDeltaNumerical(numNodes, elemcon, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww_mix, &
                                    targetNumGraftedChains, graftPointId, deltaNumerical, volnp)
         call ExportDelta(numNodes, qmx_interp_mg, numConvolPointsGrafted, targetNumGraftedChains, graftPointId, deltaNumerical, graftPointValue, volnp)
       endif
@@ -188,7 +192,7 @@ do iter = initialIterationId, iterations-1
       qgr_final(1,gnode_id) = graftPointValue(ii)
     enddo
 
-    call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace)
+    call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
   endif
 
   if (matrixExist.eq.1) then
@@ -258,7 +262,7 @@ do iter = initialIterationId, iterations-1
 
   if ((MOD(iter,1).eq.0).OR.convergence) call ExportEnergies(qmx_interp_mg, qgr_interp, phi_total, ww_new, Ufield, partitionMatrixChains, targetNumGraftedChains, graftPointId, freeEnergy)
 
-  call ExportComputes(iter, convergence)
+  call ExportComputes(iter, convergence, elemcon)
 
   call ExportVtu(phi_mx)
 

@@ -2,9 +2,8 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ParserMesh()
+subroutine ParserMesh(elemcon)
 !----------------------------------------------------------------------------------------------------------------------------!
-use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use error_handing_mod
@@ -35,7 +34,7 @@ real(8) :: box_volume = 0.0d0
 
 logical :: success
 
-type(fhash_type__ints_double) :: elemcon
+type(fhash_type__ints_double), intent(inout) :: elemcon
 
 type(fhash_type__ints_double)          :: vertex_entity_hash, edge_entity_hash, face_entity_hash, domain_entity_hash
 type(fhash_type_iterator__ints_double) :: vertex_entity_it, edge_entity_it, face_entity_it, domain_entity_it
@@ -356,7 +355,7 @@ do ii = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key
   F_m%is_zero(ii) = (nodePairId(ii)/=ii)
 enddo
 
-call elemcon%clear()
+!call elemcon%clear()
 
 call MeshDirichletFaces(numElementsTypeFace, numNodesLocalTypeFace, globalNodeIdTypeFace, face_entity_hash)
 

@@ -4,7 +4,6 @@
 
 subroutine MeshPeriodicFaces(axis, axis_face1_hash, axis_face2_hash)
 !----------------------------------------------------------------------------------------------------------------------------------!
-use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use iofiles_mod, only: IO_xFace1Elements, IO_xFace2Elements, &

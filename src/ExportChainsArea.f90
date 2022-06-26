@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ExportChainsArea(node_belongs_to_dirichlet_face, cell_of_np, chain_type, rg2OfMonomer, chainlen, &
+subroutine ExportChainsArea(node_belongs_to_dirichlet_face, elemcon, cell_of_np, chain_type, rg2OfMonomer, chainlen, &
                               ns_ed, ds_ed, q_final, phi, ww)
 !-----------------------------------------------------------------------------------------------------------------------!
 use parser_vars_mod,  only: mumpsMatrixType, segmentBulkDensity
@@ -12,12 +12,15 @@ use constants_mod,    only: A3_to_m3
 use arrays_mod,       only: volnp
 use geometry_mod,     only: numNodes
 use delta_mod,        only: targetNumGraftedChains, graftPointId, graftPointValue
+use fhash_module__ints_double
 !-----------------------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------------------!
 integer, intent(in), dimension(numNodes) :: cell_of_np
 integer, intent(in)                      :: ns_ed
 integer                                  :: bin, kk, ii, gnode_id
+
+type(fhash_type__ints_double), intent(inout) :: elemcon
 
 character(len=2), intent(in) :: chain_type
 
@@ -61,7 +64,7 @@ do bin = 7, 30
     enddo
   endif
 
-  call SolverEdwards(ds_ed, ns_ed, mumpsMatrixType, qshape, qshape_final, node_belongs_to_dirichlet_face_new)
+  call SolverEdwards(ds_ed, ns_ed, mumpsMatrixType, qshape, qshape_final, node_belongs_to_dirichlet_face_new, elemcon)
 
   sum_qshape = 0.0d0
   sum_Q      = 0.0d0

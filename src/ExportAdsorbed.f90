@@ -2,12 +2,13 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ExportAdsorbed(node_belongs_to_dirichlet_face, adsorbed)
+subroutine ExportAdsorbed(node_belongs_to_dirichlet_face, elemcon, adsorbed)
 !-----------------------------------------------------------------------------------------------------------------------!
 use parser_vars_mod,  only: mumpsMatrixType, rg2OfMatrixMonomer, lengthMatrix, numEdwPointsMatrix, numConvolPointsMatrix
 use write_helper_mod, only: adjl
 use arrays_mod,       only: ds_mx_ed, xs_mx_ed, xs_mx_conv, coeff_mx_conv, qmx_interp_mm, phi_mx, ww
 use geometry_mod,     only: numNodes, nodeCoord
+use fhash_module__ints_double
 !-----------------------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------------------!
@@ -15,6 +16,8 @@ integer :: ii, kk
 
 logical, intent(in), dimension(numNodes) :: node_belongs_to_dirichlet_face, adsorbed
 logical, dimension(numNodes)             :: node_belongs_to_dirichlet_face_new
+
+type(fhash_type__ints_double), intent(inout) :: elemcon
 
 real(8), dimension(2,numNodes)                       :: qfree
 real(8), dimension(numEdwPointsMatrix+1,numNodes)    :: qfree_final
@@ -41,7 +44,7 @@ do kk = 1, numNodes
   endif
 enddo
 
-call SolverEdwards(ds_mx_ed, numEdwPointsMatrix, mumpsMatrixType, qfree, qfree_final, node_belongs_to_dirichlet_face_new)
+call SolverEdwards(ds_mx_ed, numEdwPointsMatrix, mumpsMatrixType, qfree, qfree_final, node_belongs_to_dirichlet_face_new, elemcon)
 
 do ii = 1, numNodes
   call interp_linear(1, numEdwPointsMatrix+1, xs_mx_ed, qfree_final(:,ii), numConvolPointsMatrix+1, xs_mx_conv, qfree_interp(:,ii))

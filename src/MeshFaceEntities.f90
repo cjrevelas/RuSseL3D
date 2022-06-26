@@ -4,7 +4,6 @@
 
 subroutine MeshFaceEntities(axis, face_entity_hash, face1_hash, face2_hash)
 !----------------------------------------------------------------------------------------------------------------------------------!
-use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use parser_vars_mod, only: periodicFaceId

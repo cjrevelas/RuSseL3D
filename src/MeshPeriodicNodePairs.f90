@@ -4,7 +4,6 @@
 
 subroutine MeshPeriodicNodePairs(globalNodeIdTypeFace, axis, face1_hash, face2_hash, node_pairing_hash)
 !----------------------------------------------------------------------------------------------------------------------------------!
-use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 

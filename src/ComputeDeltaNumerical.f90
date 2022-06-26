@@ -2,24 +2,26 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ComputeDeltaNumerical(numNodes, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, &
+subroutine ComputeDeltaNumerical(numNodes, elemcon, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, &
                                coeff_gr_conv, ww, targetNumGraftedChains, gpid, deltaNumerical, volnp)
 !------------------------------------------------------------------------------------------------------!
 use geometry_mod,     only: nodeBelongsToDirichletFace
 use parser_vars_mod,  only: numConvolPointsGrafted, numEdwPointsGrafted, lengthGrafted, &
                             mumpsMatrixType, rg2OfGraftedMonomer, molarBulkDensity
-!------------------------------------------------------------------------------------------------------!
 use geometry_mod,     only: nodeBelongsToDirichletFace
 use parser_vars_mod,  only: numConvolPointsGrafted, numEdwPointsGrafted, lengthGrafted, mumpsMatrixType, rg2OfGraftedMonomer, molarBulkDensity
 use constants_mod,    only: n_avog, m3_to_A3
 use write_helper_mod, only: adjl
 use error_handing_mod
+use fhash_module__ints_double
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
 integer, intent(in)                                    :: numNodes, targetNumGraftedChains
 integer, intent(in), dimension(targetNumGraftedChains) :: gpid
 integer                                                :: ii, jj
+
+type(fhash_type__ints_double), intent(inout) :: elemcon
 
 real(8), intent(in), dimension(numNodes)                          :: ww, volnp
 real(8), intent(in), dimension(numConvolPointsGrafted+1,numNodes) :: qmx_interp_mg
@@ -56,7 +58,7 @@ do ii = 1, targetNumGraftedChains
   qgr_final(1,gpid(ii)) = initValue
 
   write(6, '(2X,A19,I7,A3)', advance='no') "Grafting point id: ", gpid(ii), " ->"
-  call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace)
+  call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
 
   do jj = 1, numNodes
     call interp_linear(1, numEdwPointsGrafted+1, xs_gr_ed, qgr_final(:,jj), numConvolPointsGrafted+1, xs_gr_conv, qgr_interp(:,jj))

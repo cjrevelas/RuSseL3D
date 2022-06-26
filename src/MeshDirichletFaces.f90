@@ -4,7 +4,6 @@
 
 subroutine MeshDirichletFaces(numElementsTypeFace, nen_type_face, globalNodeIdTypeFace, face_entity_hash)
 !----------------------------------------------------------------------------------------------------------------------------------!
-use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
 use parser_vars_mod, only: numDirichletFaces, numNanopFaces, dirichletFaceId, nanopFaceId

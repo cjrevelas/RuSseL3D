@@ -2,19 +2,17 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine FemNonZeroEntries(ds, mumpsMatrixType, nodeBelongsToDirichletFace)
+subroutine FemNonZeroEntries(ds, mumpsMatrixType, nodeBelongsToDirichletFace, elemcon)
 !------------------------------------------------------------------------------------------------------!
-use, intrinsic :: iso_fortran_env
 use fhash_module__ints_double
 use ints_module
-
 use kcw_mod,         only: F_m, A_m, NNZ
 use geometry_mod,    only: numTotalNodePairs, numNodesLocalTypeDomain, numElementsTypeDomain, &
                            numNodes, nodePairingXXhash, nodePairingYYhash, nodePairingZZhash
 use constants_mod,   only: tol
 use parser_vars_mod, only: periodicAxisId, periodicity
 use flags_mod,       only: mumps_asymm, mumps_posDef, mumps_genSymm
-
+use fhash_module__ints_double
 !#define PRINT_AFULL
 #ifdef PRINT_AFULL
 use iofiles_mod, only: A_matrix_full
@@ -30,6 +28,8 @@ logical, dimension(numNodesLocalTypeDomain*numElementsTypeDomain) :: set_diag_to
 
 real(8), intent(in) :: ds
 
+type(fhash_type__ints_double), intent(inout) :: elemcon
+
 #ifdef PRINT_AFULL
 real(8), allocatable, dimension(:,:) :: A_full
 #endif
@@ -38,19 +38,19 @@ F_m%g  = F_m%c + ds * (F_m%k + F_m%w)
 F_m%rh = F_m%c
 
 ! Apply periodic boundary conditions
-if (periodicAxisId(1)) call FemApplyPeriodicity(nodePairingXXhash)
-if (periodicAxisId(2)) call FemApplyPeriodicity(nodePairingYYhash)
-if (periodicAxisId(3)) call FemApplyPeriodicity(nodePairingZZhash)
+if (periodicAxisId(1)) call FemApplyPeriodicity(nodePairingXXhash, elemcon)
+if (periodicAxisId(2)) call FemApplyPeriodicity(nodePairingYYhash, elemcon)
+if (periodicAxisId(3)) call FemApplyPeriodicity(nodePairingZZhash, elemcon)
 
 if (periodicity.eq.2) then
-  if (periodicAxisId(1).AND.periodicAxisId(2)) call FemPeriodicEdges(nodePairingXXhash, nodePairingYYhash)
-  if (periodicAxisId(1).AND.periodicAxisId(3)) call FemPeriodicEdges(nodePairingXXhash, nodePairingZZhash)
-  if (periodicAxisId(2).AND.periodicAxisId(3)) call FemPeriodicEdges(nodePairingYYhash, nodePairingZZhash)
+  if (periodicAxisId(1).AND.periodicAxisId(2)) call FemPeriodicEdges(nodePairingXXhash, nodePairingYYhash, elemcon)
+  if (periodicAxisId(1).AND.periodicAxisId(3)) call FemPeriodicEdges(nodePairingXXhash, nodePairingZZhash, elemcon)
+  if (periodicAxisId(2).AND.periodicAxisId(3)) call FemPeriodicEdges(nodePairingYYhash, nodePairingZZhash, elemcon)
 endif
 
 if (periodicity.eq.3) then
-  call FemPeriodicEdges(nodePairingXXhash, nodePairingYYhash)
-  call FemPeriodicCorners()
+  call FemPeriodicEdges(nodePairingXXhash, nodePairingYYhash, elemcon)
+  call FemPeriodicCorners(elemcon)
 endif
 
 ! Prepare stiffness matrix for Dirichlet boundary conditions

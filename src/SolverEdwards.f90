@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine SolverEdwards(ds, ns, mumpsMatrixType, q, q_final, nodeBelongsToDirichletFace)
+subroutine SolverEdwards(ds, ns, mumpsMatrixType, q, q_final, nodeBelongsToDirichletFace, elemcon)
 !----------------------------------------------------------------------------------------------------------!
 use kcw_mod,         only: A_m, F_m, rdiag1
 use parser_vars_mod, only: numDirichletFaces, numNanopFaces,    &
@@ -10,6 +10,7 @@ use parser_vars_mod, only: numDirichletFaces, numNanopFaces,    &
                            dirichletFaceId, dirichletFaceValue, &
                            nanopFaceId, nanopFaceValue
 use geometry_mod,    only: numNodes, numTotalNodePairs, nodeBelongsToFaceId
+use fhash_module__ints_double
 #ifdef USE_MPI
 use mpistuff_mod
 #endif
@@ -25,14 +26,16 @@ integer             :: ii, jj, kk, time_step, ToolsSystemTime, t_init, t_final, 
 
 logical, intent(in), dimension(numNodes) :: nodeBelongsToDirichletFace
 
-real(8), intent(in), dimension(ns+1)          :: ds
+type(fhash_type__ints_double), intent(inout) :: elemcon
+
+real(8), intent(in), dimension(ns+1)             :: ds
 real(8), intent(inout), dimension(2,numNodes)    :: q
 real(8), intent(inout), dimension(ns+1,numNodes) :: q_final
 !----------------------------------------------------------------------------------------------------------!
 t_init = ToolsSystemTime()
 
 do time_step = 2, ns+1
-  call FemNonZeroEntries(ds(time_step), mumpsMatrixType, nodeBelongsToDirichletFace)
+  call FemNonZeroEntries(ds(time_step), mumpsMatrixType, nodeBelongsToDirichletFace, elemcon)
 
 #ifdef USE_MPI
   ! Send a continue (.true.) signal to the slaves
