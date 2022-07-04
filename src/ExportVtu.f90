@@ -52,15 +52,15 @@ enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,*)
 write(1111,'(A54)') line7
-allocate(offset(numElementsTypeDomain))
+allocate(offset(4*numElementsTypeDomain))
 offset = 0
 jj     = 0
-do ii = 1, numElementsTypeDomain
+do ii = 1, 4*numElementsTypeDomain
   jj = jj + numNodesLocalTypeDomain
   offset(ii) = jj
 enddo
-do ii = 0, numElementsTypeDomain-numNodesLocalTypeDomain, numNodesLocalTypeDomain
-  write(1111,'(4(I5,1X))') (offset(ii+jj), jj = 1, numNodesLocalTypeDomain)
+do ii = 0, numElementsTypeDomain-1
+  write(1111,'(4(I7,1X))') (offset(ii*4+jj), jj = 1, numNodesLocalTypeDomain)
 enddo
 deallocate(offset)
 write(1111,'(A12)') "</DataArray>"
