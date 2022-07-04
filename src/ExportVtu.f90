@@ -25,6 +25,12 @@ character(len=52)            :: line8  = '<DataArray type="UInt8" Name="types" F
 !----------------------------------------------------------------------------------------------------------------------------------!
 write(fileName,'("o.phi.",A2,".vtu")') chainType
 
+if (numNodesLocalTypeDomain.eq.4) then
+  continue
+else
+  return
+endif
+
 open(unit=1111, file=fileName)
 write(1111,'(A38)') line1
 write(1111,'(A74)') line2
