@@ -1,4 +1,4 @@
-subroutine ExportVtu(uu)
+subroutine ExportVtu(uu, chainType)
 !----------------------------------------------------------------------------------------------------------------------------------!
 use geometry_mod, only: nodeCoord, numNodes, numElementsTypeDomain, numDimensions, numNodesLocalTypeDomain, globalNodeIdTypeDomain
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -10,18 +10,22 @@ integer, allocatable, dimension(:) :: offset
 integer                            :: ii, jj
 integer                            :: vtuTetType = 10
 
-character(len=38) :: line1  = '<?xml version="1.0" encoding="UTF-8"?>'
-character(len=74) :: line2  = '<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">'
-character(len=23) :: line3a = '<Piece NumberOfPoints="'
-character(len=17) :: line3b = '" NumberOfCells="'
-character(len=2)  :: line3c = '">'
-character(len=69) :: line4  = '<DataArray type="Float64" Name="Dependent_variable_u" Format="ascii">'
-character(len=64) :: line5  = '<DataArray type="Float64" NumberOfComponents="3" Format="ascii">'
-character(len=59) :: line6  = '<DataArray type="Int32" Name="connectivity" Format="ascii">'
-character(len=54) :: line7  = '<DataArray type="Int32" Name="offsets" Format="ascii">'
-character(len=52) :: line8  = '<DataArray type="UInt8" Name="types" Format="ascii">'
+character(len=2), intent(in) :: chainType
+character(len=20)            :: fileName
+character(len=38)            :: line1  = '<?xml version="1.0" encoding="UTF-8"?>'
+character(len=74)            :: line2  = '<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">'
+character(len=23)            :: line3a = '<Piece NumberOfPoints="'
+character(len=17)            :: line3b = '" NumberOfCells="'
+character(len=2)             :: line3c = '">'
+character(len=69)            :: line4  = '<DataArray type="Float64" Name="Dependent_variable_u" Format="ascii">'
+character(len=64)            :: line5  = '<DataArray type="Float64" NumberOfComponents="3" Format="ascii">'
+character(len=59)            :: line6  = '<DataArray type="Int32" Name="connectivity" Format="ascii">'
+character(len=54)            :: line7  = '<DataArray type="Int32" Name="offsets" Format="ascii">'
+character(len=52)            :: line8  = '<DataArray type="UInt8" Name="types" Format="ascii">'
 !----------------------------------------------------------------------------------------------------------------------------------!
-open(unit=1111, file="o.phi.vtu")
+write(fileName,'("o.phi.",A2,".vtu")') chainType
+
+open(unit=1111, file=fileName)
 write(1111,'(A38)') line1
 write(1111,'(A74)') line2
 write(1111,'(A18)') "<UnstructuredGrid>"

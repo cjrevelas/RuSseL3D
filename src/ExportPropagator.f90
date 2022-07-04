@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ExportPropagator(ns, q_final, q_type)
+subroutine ExportPropagator(ns, qFinal, chainType)
 !--------------------------------------------------------------------!
 use geometry_mod,     only: numNodes, nodeCoord, numDimensions
 use write_helper_mod, only: adjl
@@ -13,27 +13,27 @@ implicit none
 integer, intent(in) :: ns
 integer             :: time_step, ii, jj
 
-character(2)  :: q_type
-character(20) :: file_name
+character(2), intent(in) :: chainType
+character(20)            :: fileName
 
-real(8), intent(in), dimension(ns+1,numNodes) :: q_final
-real(8)                                       :: iq_final
+real(8), intent(in), dimension(ns+1,numNodes) :: qFinal
+real(8)                                       :: iqFinal
 !--------------------------------------------------------------------!
-write(6,'(2X,A23,A5,A8)') "Exporting propagator of", q_type, " chains."
+write(6,'(2X,A23,A5,A8)') "Exporting propagator of", chainType, " chains."
 
-write(file_name,'("o.q",A2)') q_type
+write(fileName,'("o.q",A2)') chainType
 
-open(unit=363, file = file_name)
+open(unit=363, file = fileName)
 do ii = 1, numNodes
   do jj = 1, numDimensions
     write(363,'(E20.9)',advance='no') nodeCoord(jj,ii)
   enddo
   do time_step = 1, ns+1
-    iq_final = q_final(time_step,ii)
-    if (DABS(iq_final)<tol) then
-      iq_final = 0.0d0
+    iqFinal = qFinal(time_step,ii)
+    if (DABS(iqFinal)<tol) then
+      iqFinal = 0.0d0
     endif
-    write(363,'(E20.9)',advance='no') iq_final
+    write(363,'(E20.9)',advance='no') iqFinal
   enddo
   write(363,*)
 enddo
