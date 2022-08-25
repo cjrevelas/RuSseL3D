@@ -1,67 +1,81 @@
-subroutine ExportVtu(uu, chainType)
+subroutine ExportVtuProfiles(phi_mx, phi_gr)
 !----------------------------------------------------------------------------------------------------------------------------------!
 use geometry_mod, only: nodeCoord, numNodes, numElementsTypeDomain, numDimensions, numNodesLocalTypeDomain, globalNodeIdTypeDomain
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
-real(8), intent(in), dimension(numNodes) :: uu
+real(8), intent(in), dimension(numNodes) :: phi_mx, phi_gr
 
 integer, allocatable, dimension(:) :: offset
 integer                            :: ii, jj
 integer                            :: vtuTetType = 10
 
-character(len=2), intent(in) :: chainType
-character(len=20)            :: fileName
-character(len=38)            :: line1  = '<?xml version="1.0" encoding="UTF-8"?>'
-character(len=74)            :: line2  = '<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">'
-character(len=23)            :: line3a = '<Piece NumberOfPoints="'
-character(len=17)            :: line3b = '" NumberOfCells="'
-character(len=2)             :: line3c = '">'
-character(len=69)            :: line4  = '<DataArray type="Float64" Name="Dependent_variable_u" Format="ascii">'
-character(len=64)            :: line5  = '<DataArray type="Float64" NumberOfComponents="3" Format="ascii">'
-character(len=59)            :: line6  = '<DataArray type="Int32" Name="connectivity" Format="ascii">'
-character(len=54)            :: line7  = '<DataArray type="Int32" Name="offsets" Format="ascii">'
-character(len=52)            :: line8  = '<DataArray type="UInt8" Name="types" Format="ascii">'
+character(len=6)             :: phi_matrix  = "phi_mx"
+character(len=6)             :: phi_grafted = "phi_gr"
+character(len=38)            :: line1       = '<?xml version="1.0" encoding="UTF-8"?>'
+character(len=74)            :: line2       = '<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">'
+character(len=23)            :: line3a      = '<Piece NumberOfPoints="'
+character(len=17)            :: line3b      = '" NumberOfCells="'
+character(len=2)             :: line3c      = '">'
+character(len=32)            :: line4a      = '<DataArray type="Float64" Name="'
+character(len=40)            :: line4b      = '" Format="ascii" NumberOfComponents="1">'
+character(len=83)            :: line5       = '<DataArray type="Float64" Name="coordinates" Format="ascii" NumberOfComponents="3">'
+character(len=82)            :: line6       = '<DataArray type="Int32" Name="connectivity" Format="ascii" NumberOfComponents="1">'
+character(len=77)            :: line7       = '<DataArray type="Int32" Name="offsets" Format="ascii" NumberOfComponents="1">'
+character(len=75)            :: line8       = '<DataArray type="UInt8" Name="types" Format="ascii" NumberOfComponents="1">'
 !----------------------------------------------------------------------------------------------------------------------------------!
-write(fileName,'("o.phi.",A2,".vtu")') chainType
-
 if (numNodesLocalTypeDomain.eq.4) then
   continue
 else
   return
 endif
 
-open(unit=1111, file=fileName)
+open(unit=1111, file="o.phi.vtu") ! TODO: move this file name in iofiles_mod
 write(1111,'(A38)') line1
 write(1111,'(A74)') line2
 write(1111,'(A18)') "<UnstructuredGrid>"
 write(1111,'(A23,1X,I6,A17,1X,I8,A2)') line3a, numNodes, line3b, numElementsTypeDomain, line3c
 write(1111,*)
+
+! Export density profile of matrix chains
 write(1111,'(A11)') "<PointData>"
-write(1111,'(A69)') line4
+write(1111,'(A32,A6,A40)') line4a, phi_matrix, line4b
 do ii = 1, numNodes
-  write(1111,'(F18.16)') uu(ii)
+  write(1111,'(F18.16)') phi_mx(ii)
+enddo
+write(1111,'(A12)') "</DataArray>"
+write(1111,*)
+
+! Export density profile of grafted chains
+write(1111,'(A32,A6,A40)') line4a, phi_grafted, line4b
+do ii = 1, numNodes
+  write(1111,'(F18.16)') phi_gr(ii)
 enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,'(A12)') "</PointData>"
 write(1111,*)
-write(1111,'(A11)') "<CellData/>"
+
+! Export node coordinates
 write(1111,'(A8)') "<Points>"
-write(1111,'(A64)') line5
+write(1111,'(A83)') line5
 do ii = 1, numNodes
   write(1111,'(3(F19.15,1X))') (nodeCoord(jj,ii), jj = 1, numDimensions)
 enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,'(A9)') "</Points>"
 write(1111,*)
+
+! Export node connectivity
 write(1111,'(A7)') "<Cells>"
-write(1111,'(A59)') line6
+write(1111,'(A82)') line6
 do ii = 1, numElementsTypeDomain
   write(1111,'(4(I5,1X))') (globalNodeIdTypeDomain(jj,ii) - 1, jj = 1, numNodesLocalTypeDomain)
 enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,*)
-write(1111,'(A54)') line7
+
+! Export element offset
+write(1111,'(A77)') line7
 allocate(offset(4*numElementsTypeDomain))
 offset = 0
 jj     = 0
@@ -75,8 +89,9 @@ enddo
 deallocate(offset)
 write(1111,'(A12)') "</DataArray>"
 write(1111,*)
-write(1111,'(A52)') line8
-!add tet types
+
+! Export element types
+write(1111,'(A75)') line8
 do ii = 0, numElementsTypeDomain-numNodesLocalTypeDomain*numNodesLocalTypeDomain, numNodesLocalTypeDomain*numNodesLocalTypeDomain
   write(1111,'(16(I2,1X))') (vtuTetType, jj = 1, numNodesLocalTypeDomain*numNodesLocalTypeDomain)
 enddo
@@ -84,6 +99,8 @@ write(1111,'(9(I2,1X))') (vtuTetType, jj = 1, MOD(numElementsTypeDomain,numNodes
 write(1111,'(A12)') "</DataArray>"
 write(1111,'(A8)') "</Cells>"
 write(1111,*)
+
+! Close xml file
 write(1111,'(A8)') "</Piece>"
 write(1111,'(A19)') "</UnstructuredGrid>"
 write(1111,'(A10)') "</VTKFile>"
@@ -91,4 +108,4 @@ close(1111)
 
 return
 !----------------------------------------------------------------------------------------------------------------------------------!
-end subroutine ExportVtu
+end subroutine ExportVtuProfiles

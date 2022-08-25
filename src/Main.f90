@@ -264,8 +264,7 @@ do iter = initialIterationId, iterations-1
 
   call ExportComputes(iter, convergence, elemcon)
 
-  if (matrixExist.eq.1)  call ExportVtu(phi_mx, "mx")
-  if (graftedExist.eq.1) call ExportVtu(phi_gr, "gr")
+  call ExportVtuProfiles(phi_mx, phi_gr)
 
   if (convergence) exit
 enddo
