@@ -264,7 +264,7 @@ do iter = initialIterationId, iterations-1
 
   call ExportComputes(iter, convergence, elemcon)
 
-  call ExportVtuProfiles(phi_mx, phi_gr)
+  call ExportVtuProfiles(phi_mx, phi_gr, ww_mix)
 
   if (convergence) exit
 enddo

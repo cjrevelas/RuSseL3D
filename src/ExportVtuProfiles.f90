@@ -1,10 +1,10 @@
-subroutine ExportVtuProfiles(phi_mx, phi_gr)
+subroutine ExportVtuProfiles(phi_mx, phi_gr, ww)
 !----------------------------------------------------------------------------------------------------------------------------------!
 use geometry_mod, only: nodeCoord, numNodes, numElementsTypeDomain, numDimensions, numNodesLocalTypeDomain, globalNodeIdTypeDomain
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
-real(8), intent(in), dimension(numNodes) :: phi_mx, phi_gr
+real(8), intent(in), dimension(numNodes) :: phi_mx, phi_gr, ww
 
 integer, allocatable, dimension(:) :: offset
 integer                            :: ii, jj
@@ -12,6 +12,7 @@ integer                            :: vtuTetType = 10
 
 character(len=6)             :: phi_matrix  = "phi_mx"
 character(len=6)             :: phi_grafted = "phi_gr"
+character(len=5)             :: field       = "field"
 character(len=38)            :: line1       = '<?xml version="1.0" encoding="UTF-8"?>'
 character(len=74)            :: line2       = '<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">'
 character(len=23)            :: line3a      = '<Piece NumberOfPoints="'
@@ -30,7 +31,7 @@ else
   return
 endif
 
-open(unit=1111, file="o.phi.vtu") ! TODO: move this file name in iofiles_mod
+open(unit=1111, file="o.phi_field.vtu") ! TODO: move this file name in iofiles_mod
 write(1111,'(A38)') line1
 write(1111,'(A74)') line2
 write(1111,'(A18)') "<UnstructuredGrid>"
@@ -50,6 +51,14 @@ write(1111,*)
 write(1111,'(A32,A6,A40)') line4a, phi_grafted, line4b
 do ii = 1, numNodes
   write(1111,'(F18.16)') phi_gr(ii)
+enddo
+write(1111,'(A12)') "</DataArray>"
+write(1111,*)
+
+! Export field configuration
+write(1111,'(A32,A5,A40)') line4a, field, line4b
+do ii = 1, numNodes
+  write(1111,'(F19.16)') ww(ii)
 enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,'(A12)') "</PointData>"
