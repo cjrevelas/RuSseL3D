@@ -16,7 +16,9 @@ use parser_vars_mod,  only: numNanopFaces, matrixExist, graftedExist, adsorption
                             rg2OfMatrixMonomer, rg2OfGraftedMonomer, lengthMatrix, lengthGrafted, &
                             numEdwPointsMatrix, numConvolPointsMatrix,                            &
                             numEdwPointsGrafted, numConvolPointsGrafted,                          &
-                            exportPhiGeneral,                                                     &
+                            exportPhiNodal,                                                       &
+                            exportPhiSmeared,                                                     &
+                            exportPhiEndMiddle,                                                   &
                             exportField,                                                          &
                             exportPropagators,                                                    &
                             exportPhiIndividual,                                                  &
@@ -41,10 +43,10 @@ character(40) :: file_name
 !-----------------------------------------------------------------------------------------------------------!
 adsorbed = .False.
 
-if (export(exportPhiGeneral, iter, convergence)) call ExportNodalProfile(phi_mx, phi_gr, numNodes, nodeCoord, volnp)
-if (export(exportField, iter, convergence))      call ExportFieldAscii(ww, ww_new, ww_mix)
+if (export(exportPhiNodal, iter, convergence)) call ExportNodalProfile(phi_mx, phi_gr, numNodes, nodeCoord, volnp)
+if (export(exportField, iter, convergence))    call ExportFieldAscii(ww, ww_new, ww_mix)
 
-if (export(exportPhiGeneral, iter, convergence)) then ! TODO: a separate parser variable exportPhiSmeared is needed here
+if (export(exportPhiSmeared, iter, convergence)) then
   ! Planar surfaces
   do mm = 1, 3
     do nn = 1, 2
@@ -65,8 +67,8 @@ if (export(exportPhiGeneral, iter, convergence)) then ! TODO: a separate parser 
 endif
 
 if (matrixExist.eq.1) then
-  if (export(exportPhiGeneral, iter, convergence))  call ExportEndMiddleProfile(numEdwPointsMatrix, qmx_final, qmx_final, "mx", numNodes, nodeCoord)
-  if (export(exportPropagators, iter, convergence)) call ExportPropagator(numEdwPointsMatrix, qmx_final, "mx")
+  if (export(exportPhiEndMiddle, iter, convergence)) call ExportEndMiddleProfile(numEdwPointsMatrix, qmx_final, qmx_final, "mx", numNodes, nodeCoord)
+  if (export(exportPropagators, iter, convergence))  call ExportPropagator(numEdwPointsMatrix, qmx_final, "mx")
 
   ! Planar surfaces
   do mm = 1, 3
@@ -110,8 +112,8 @@ if (matrixExist.eq.1) then
 endif
 
 if (graftedExist.eq.1) then
-  if (export(exportPhiGeneral, iter, convergence))  call ExportEndMiddleProfile(numConvolPointsGrafted, qgr_interp, qmx_interp_mg, "gr", numNodes, nodeCoord)
-  if (export(exportPropagators, iter, convergence)) call ExportPropagator(numEdwPointsGrafted, qgr_final, "gr")
+  if (export(exportPhiEndMiddle, iter, convergence)) call ExportEndMiddleProfile(numConvolPointsGrafted, qgr_interp, qmx_interp_mg, "gr", numNodes, nodeCoord)
+  if (export(exportPropagators, iter, convergence))  call ExportPropagator(numEdwPointsGrafted, qgr_final, "gr")
 
   if (export(exportPhiIndividual, iter, convergence)) then
     call ComputeIndivProfile(numNodes, elemcon, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, targetNumGraftedChains, graftPointId, graftPointValue, phi_gr_indiv)

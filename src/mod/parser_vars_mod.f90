@@ -17,8 +17,8 @@ real(8) :: critContourMatrix, critContourGrafted
 logical :: squareGradient
 integer :: iow, ioe, iterations, fieldInitScheme, initialIterationId
 integer :: matrixExist, graftedExist, deltaUpdateFreq, getICfromDelta
-integer :: exportPhiGeneral, exportPhiIndividual, exportField, exportPropagators
-integer :: exportFieldBin, exportBrushThickness, exportChainsPerArea, exportAdsorbedFree
+integer :: exportPhiNodal, exportPhiSmeared, exportPhiIndividual, exportField, exportPropagators
+integer :: exportFieldBin, exportBrushThickness, exportChainsPerArea, exportAdsorbedFree, exportPhiEndMiddle
 integer :: exportAllGraftedChains
 integer :: numGraftedChainsToExport
 integer, allocatable, dimension(:) :: gpIndexToExport

@@ -63,8 +63,10 @@ logical :: log_influence_param       = .False.
 logical :: log_profileDimensions     = .False.
 logical :: log_mumpsMatrixType       = .False.
 logical :: log_binThickness          = .False.
-logical :: log_exportPhiGeneral      = .False.
+logical :: log_exportPhiNodal        = .False.
+logical :: log_exportPhiSmeared      = .False.
 logical :: log_exportPhiIndividual   = .False.
+logical :: log_exportPhiEndMiddle    = .False.
 logical :: log_exportField           = .False.
 logical :: log_exportFieldBin        = .False.
 logical :: log_exportPropagators     = .False.
@@ -170,9 +172,15 @@ do
     elseif (INDEX(line,"# bin thickness") > 0) then
       read(line,*) binThickness
       log_binThickness = .True.
-    elseif (INDEX(line,"# export dens profs") > 0) then
-      read(line,*) exportPhiGeneral
-      log_exportPhiGeneral = .True.
+    elseif (INDEX(line,"# export nodal dens profs") > 0) then
+      read(line,*) exportPhiNodal
+      log_exportPhiNodal = .True.
+    elseif (INDEX(line,"# export smeared dens profs") > 0) then
+      read(line,*) exportPhiSmeared
+      log_exportPhiSmeared = .True.
+    elseif (INDEX(line,"# export end/middle dens profs") > 0) then
+      read(line,*) exportPhiEndMiddle
+      log_exportPhiEndMiddle = .True.
     elseif (INDEX(line,"# export indiv dens profs") > 0) then
       read(line,*) exportPhiIndividual
       log_exportPhiIndividual = .True.
@@ -925,19 +933,51 @@ write(iow,'(A85)')adjl('-----------------------------------OUTPUT FREQUENCY-----
 write(*  ,'(A85)')adjl('-----------------------------------OUTPUT FREQUENCY-----------------------------------',85)
 
 
-if (log_exportPhiGeneral) then
-  if (exportPhiGeneral.ge.1) then
-    write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
-    write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
+if (log_exportPhiNodal) then
+  if (exportPhiNodal.ge.1) then
+    write(iow,'(3X,A40,I9)')adjl("Export nodal density profiles:",40), exportPhiNodal
+    write(6  ,'(3X,A40,I9)')adjl("Export nodal density profiles:",40), exportPhiNodal
   else
-    exportPhiGeneral = 0
-    write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
-    write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
+    exportPhiNodal = 0
+    write(iow,'(3X,A40,I9)')adjl("Export nodal density profiles:",40), exportPhiNodal
+    write(6  ,'(3X,A40,I9)')adjl("Export nodal density profiles:",40), exportPhiNodal
   endif
 else
-  exportPhiGeneral = dflt_exportPhiGeneral
-  write(iow,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
-  write(6  ,'(3X,A40,I9)')adjl("Export density profiles:",40), exportPhiGeneral
+  exportPhiNodal = dflt_exportPhiNodal
+  write(iow,'(3X,A40,I9)')adjl("Export nodal density profiles:",40), exportPhiNodal
+  write(6  ,'(3X,A40,I9)')adjl("Export nodal density profiles:",40), exportPhiNodal
+endif
+
+
+if (log_exportPhiSmeared) then
+  if (exportPhiSmeared.ge.1) then
+    write(iow,'(3X,A40,I9)')adjl("Export smeared density profiles:",40), exportPhiSmeared
+    write(6  ,'(3X,A40,I9)')adjl("Export smeared density profiles:",40), exportPhiSmeared
+  else
+    exportPhiSmeared = 0
+    write(iow,'(3X,A40,I9)')adjl("Export smeared density profiles:",40), exportPhiSmeared
+    write(6  ,'(3X,A40,I9)')adjl("Export smeared density profiles:",40), exportPhiSmeared
+  endif
+else
+  exportPhiSmeared = dflt_exportPhiSmeared
+  write(iow,'(3X,A40,I9)')adjl("Export smeared density profiles:",40), exportPhiSmeared
+  write(6  ,'(3X,A40,I9)')adjl("Export smeared density profiles:",40), exportPhiSmeared
+endif
+
+
+if (log_exportPhiEndMiddle) then
+  if (exportPhiEndMiddle.ge.1) then
+          write(iow,'(3X,A40,I9)')adjl("Export end/middle density profiles:",40), exportPhiEndMiddle
+          write(6  ,'(3X,A40,I9)')adjl("Export end/middle density profiles:",40), exportPhiEndMiddle
+  else
+    exportPhiEndMiddle = 0
+    write(iow,'(3X,A40,I9)')adjl("Export end/middle density profiles:",40), exportPhiEndMiddle
+    write(6  ,'(3X,A40,I9)')adjl("Export end/middle density profiles:",40), exportPhiEndMiddle
+  endif
+else
+  exportPhiEndMiddle = dflt_exportPhiEndMiddle
+  write(iow,'(3X,A40,I9)')adjl("Export end/middle density profiles:",40), exportPhiEndMiddle
+  write(6  ,'(3X,A40,I9)')adjl("Export end/middle density profiles:",40), exportPhiEndMiddle
 endif
 
 
