@@ -7,7 +7,7 @@ subroutine ExportComputes(iter, convergence, elemcon)
 use arrays_mod,       only: phi_mx, phi_gr, phi_gr_indiv, ww, ww_new, ww_mix,                         &
                             qmx_final, qgr_final, qmx_interp_mm, qmx_interp_mg, qgr_interp, ds_gr_ed, &
                             ds_mx_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, volnp
-use hist_mod,         only: nbin, lbin, planar_cell_of_np, sph_cell_of_np, dist_from_face,            &
+use hist_mod,         only: nbin, lbin, planar_cell_of_np, sph_cell_of_np, dist_from_face, &
                             dist_from_np, cell_vol_planar, cell_vol_sph
 use delta_mod,        only: graftPointValue, graftPointId, targetNumGraftedChains
 use geometry_mod,     only: numNodes, nodeCoord, isDirichletFace, nodeBelongsToDirichletFace
@@ -22,7 +22,9 @@ use parser_vars_mod,  only: numNanopFaces, matrixExist, graftedExist, adsorption
                             exportPhiIndividual,                                                  &
                             exportBrushThickness,                                                 &
                             exportChainsPerArea,                                                  &
-                            exportAdsorbedFree
+                            exportAdsorbedFree,                                                   &
+                            exportAllGraftedChains,                                               &
+                            numGraftedChainsToExport
 use fhash_module__ints_double
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
@@ -42,7 +44,7 @@ adsorbed = .False.
 if (export(exportPhiGeneral, iter, convergence)) call ExportNodalProfile(phi_mx, phi_gr, numNodes, nodeCoord, volnp)
 if (export(exportField, iter, convergence))      call ExportFieldAscii(ww, ww_new, ww_mix)
 
-if (export(exportPhiGeneral, iter, convergence)) then
+if (export(exportPhiGeneral, iter, convergence)) then ! TODO: a separate parser variable exportPhiSmeared is needed here
   ! Planar surfaces
   do mm = 1, 3
     do nn = 1, 2
@@ -113,7 +115,12 @@ if (graftedExist.eq.1) then
 
   if (export(exportPhiIndividual, iter, convergence)) then
     call ComputeIndivProfile(numNodes, elemcon, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww, targetNumGraftedChains, graftPointId, graftPointValue, phi_gr_indiv)
-    call ExportIndivProfile(targetNumGraftedChains, numNodes, nodeCoord, phi_gr_indiv)
+
+    if (exportAllGraftedChains.eq.1) then
+      call ExportIndivProfile(targetNumGraftedChains, numNodes, nodeCoord, phi_gr_indiv)
+    else
+      call ExportIndivProfile(numGraftedChainsToExport, numNodes, nodeCoord, phi_gr_indiv)
+    endif
   endif
 
   ! Planar surfaces

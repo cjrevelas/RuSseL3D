@@ -323,6 +323,7 @@ if (graftedExist.eq.1) then
   deallocate(qgr, qgr_final, qgr_interp)
   deallocate(graftPointId, deltaNumerical, graftPointValue)
   deallocate(phi_gr, phi_gr_indiv)
+  if ((exportPhiIndividual.eq.1).AND.(exportAllGraftedChains.eq.0)) deallocate(gpIndexToExport)
 endif
 deallocate(ww, ww_new, ww_mix, Ufield)
 deallocate(volnp)

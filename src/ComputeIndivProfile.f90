@@ -7,11 +7,11 @@ subroutine ComputeIndivProfile(numNodes, elemcon, qmx_interp_mg, ds_gr_ed, xs_gr
 !------------------------------------------------------------------------------------------------------!
 use geometry_mod,     only: nodeBelongsToDirichletFace
 use write_helper_mod, only: adjl
-use parser_vars_mod,  only: numConvolPointsGrafted, numEdwPointsGrafted, lengthGrafted, &
-                            mumpsMatrixType, rg2OfGraftedMonomer
+use parser_vars_mod,  only: numConvolPointsGrafted, numEdwPointsGrafted, lengthGrafted,   &
+                            mumpsMatrixType, rg2OfGraftedMonomer, exportAllGraftedChains, &
+                            numGraftedChainsToExport, gpIndexToExport
 use geometry_mod,     only: nodeBelongsToDirichletFace
 use write_helper_mod, only: adjl
-use parser_vars_mod,  only: numConvolPointsGrafted, numEdwPointsGrafted, lengthGrafted, mumpsMatrixType, rg2OfGraftedMonomer
 use error_handing_mod
 use fhash_module__ints_double
 !------------------------------------------------------------------------------------------------------!
@@ -32,27 +32,50 @@ real(8), intent(out), dimension(numNodes,targetNumGraftedChains)  :: phi_gr_indi
 real(8), dimension(2,numNodes)                                    :: qgr
 real(8), dimension(numEdwPointsGrafted+1,numNodes)                :: qgr_final
 real(8), dimension(numConvolPointsGrafted+1,numNodes)             :: qgr_interp
+
+integer:: gpIndex
 !------------------------------------------------------------------------------------------------------!
 write(6,'(2X,A43)')adjl("Computing indiv profiles of grafted chains.",43)
 
 call FemMatrixAssemble(rg2OfGraftedMonomer, ww)
 
-do ii = 1, targetNumGraftedChains
-  qgr       = 0.0d0
-  qgr_final = 0.0d0
+if (exportAllGraftedChains.eq.1) then
+  do ii = 1, targetNumGraftedChains
+    qgr       = 0.0d0
+    qgr_final = 0.0d0
 
-  qgr(1,gpid(ii))       = gp_init_value(ii)
-  qgr_final(1,gpid(ii)) = gp_init_value(ii)
+    qgr(1,gpid(ii))       = gp_init_value(ii)
+    qgr_final(1,gpid(ii)) = gp_init_value(ii)
 
-  write(6, '(2x,A19,I7,A3)', advance='no') "Grafting point id: ", gpid(ii), " ->"
-  call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
+    write(6, '(2X,A21,1X,I3,1X,A8,1X,I7,1X,A2,1X)', advance='no') "Grafting point index:", ii, "with id:", gpid(ii), "->"
+    call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
 
-  do jj = 1, numNodes
-    call interp_linear(1, numEdwPointsGrafted+1, xs_gr_ed, qgr_final(:,jj), numConvolPointsGrafted+1, xs_gr_conv, qgr_interp(:,jj))
+    do jj = 1, numNodes
+      call interp_linear(1, numEdwPointsGrafted+1, xs_gr_ed, qgr_final(:,jj), numConvolPointsGrafted+1, xs_gr_conv, qgr_interp(:,jj))
+    enddo
+
+    call ContourConvolution(numNodes, lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr_indiv(:,ii))
   enddo
+else
+  do ii = 1, numGraftedChainsToExport
+    qgr       = 0.0d0
+    qgr_final = 0.0d0
 
-  call ContourConvolution(numNodes, lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr_indiv(:,ii))
-enddo
+    gpIndex = gpIndexToExport(ii)
+
+    qgr(1,gpid(gpIndex))       = gp_init_value(gpIndex)
+    qgr_final(1,gpid(gpIndex)) = gp_init_value(gpIndex)
+
+    write(6, '(2X,A21,1X,I3,1X,A8,1X,I7,1X,A2,1X)', advance='no') "Grafting point index:", gpIndex, "with id:", gpid(gpIndex), "->"
+    call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
+
+    do jj = 1, numNodes
+      call interp_linear(1, numEdwPointsGrafted+1, xs_gr_ed, qgr_final(:,jj), numConvolPointsGrafted+1, xs_gr_conv, qgr_interp(:,jj))
+    enddo
+
+    call ContourConvolution(numNodes, lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr_indiv(:,gpIndex))
+  enddo
+endif
 
 return
 !------------------------------------------------------------------------------------------------------!

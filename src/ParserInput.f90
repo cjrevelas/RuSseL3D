@@ -176,6 +176,14 @@ do
     elseif (INDEX(line,"# export indiv dens profs") > 0) then
       read(line,*) exportPhiIndividual
       log_exportPhiIndividual = .True.
+      read(256,*) exportAllGraftedChains
+      if (exportAllGraftedChains.eq.1) then
+        continue
+      elseif (exportAllGraftedChains.eq.0) then
+        read(256,*) numGraftedChainsToExport
+        allocate(gpIndexToExport(numGraftedChainsToExport))
+        read(256,*) (gpIndexToExport(ii), ii = 1, numGraftedChainsToExport)
+      endif
     elseif (INDEX(line,"# export field") > 0) then
       read(line,*) exportField
       log_exportField = .True.

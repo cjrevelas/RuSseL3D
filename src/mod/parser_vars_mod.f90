@@ -14,11 +14,14 @@ real(8) :: stepEdwAveGrafted, stepConvolAveGrafted
 real(8) :: critContourMatrix, critContourGrafted
 
 ! Indices and flags
+logical :: squareGradient
 integer :: iow, ioe, iterations, fieldInitScheme, initialIterationId
 integer :: matrixExist, graftedExist, deltaUpdateFreq, getICfromDelta
 integer :: exportPhiGeneral, exportPhiIndividual, exportField, exportPropagators
 integer :: exportFieldBin, exportBrushThickness, exportChainsPerArea, exportAdsorbedFree
-logical :: squareGradient
+integer :: exportAllGraftedChains
+integer :: numGraftedChainsToExport
+integer, allocatable, dimension(:) :: gpIndexToExport
 
 ! Domain
 integer               :: profileDimensions
