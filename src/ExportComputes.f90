@@ -123,6 +123,8 @@ if (graftedExist.eq.1) then
     else
       call ExportIndivProfile(numGraftedChainsToExport, numNodes, nodeCoord, phi_gr_indiv)
     endif
+
+    call ExportVtuIndiv(numGraftedChainsToExport, phi_gr_indiv)
   endif
 
   ! Planar surfaces

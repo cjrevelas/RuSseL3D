@@ -88,6 +88,7 @@ OBJECTS=$(OBJDIR)/ComputeContourCoeffs.o\
         $(OBJDIR)/ExportSmearedProfile.o\
 	$(OBJDIR)/ExportPropagator.o\
 	$(OBJDIR)/ExportVtuProfiles.o\
+	$(OBJDIR)/ExportVtuIndiv.o\
 	$(OBJDIR)/FemApplyPeriodicity.o\
 	$(OBJDIR)/FemNonZeroEntries.o\
 	$(OBJDIR)/FemPeriodicEdges.o\

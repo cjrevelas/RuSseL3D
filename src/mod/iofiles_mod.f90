@@ -39,6 +39,8 @@ character(len=20) :: IO_nodePairingZZ    = "d.node_pairing_zz"
 ! Output files
 character(len=20) :: IO_solidPotential = "o.usolid"
 character(len=20) :: IO_nodalProfile   = "o.phi"
+character(len=20) :: IO_VtuProfiles    = "o.profiles.vtu"
+character(len=20) :: IO_VtuGrafted     = "o.grafted.vtu"
 character(len=20) :: IO_radialProfile  = "o.phi_radial"
 character(len=20) :: IO_indivProfile   = "o.phi_indiv"
 character(len=20) :: IO_field          = "o.field"
