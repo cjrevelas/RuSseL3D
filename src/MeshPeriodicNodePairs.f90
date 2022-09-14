@@ -34,17 +34,23 @@ if (axis=='x') then
   dimension1 = 2 ! y
   dimension2 = 3 ! z
 
+#ifdef DEBUG_OUTPUTS
   open(unit=1111, file=IO_nodePairingXX)
+#endif
 elseif (axis=='y') then
   dimension1 = 1 ! x
   dimension2 = 3 ! z
 
+#ifdef DEBUG_OUTPUTS
   open(unit=1111, file=IO_nodePairingYY)
+#endif
 elseif (axis=='z') then
   dimension1 = 1 ! x
   dimension2 = 2 !y
 
+#ifdef DEBUG_OUTPUTS
   open(unit=1111, file=IO_nodePairingZZ)
+#endif
 endif
 
 allocate(node_pairing_key%ints(1))
