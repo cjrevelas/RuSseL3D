@@ -22,8 +22,10 @@ integer, allocatable, dimension(:,:) :: globalNodeIdTypeDomain, elementOfNode
 
 logical, dimension(3,2)            :: isDirichletFace
 logical, allocatable, dimension(:) :: nodeBelongsToDirichletFace
+logical, allocatable, dimension(:) :: isDestPeriodicNodeXX, isDestPeriodicNodeYY, isDestPeriodicNodeZZ
 
 type(fhash_type__ints_double) :: nodePairingXXhash, nodePairingYYhash, nodePairingZZhash
+type(fhash_type__ints_double) :: nodePairingXXhashInverse, nodePairingYYhashInverse, nodePairingZZhashInverse
 
 real(8), allocatable, dimension(:,:) :: nodeCoord
 real(8), dimension(3)                :: boxLow, boxHigh, boxLength

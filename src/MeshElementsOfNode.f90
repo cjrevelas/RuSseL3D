@@ -41,6 +41,16 @@ do ii = 1, numElementsTypeDomain
   enddo
 enddo
 
+!node = 53
+!ii = numElementsOfNode(node)
+!write(6,'(A,1X,I7,1X,A,1X,I3,1X,A)') "node ", node, "belongs to ", ii, " elements."
+!write(6,'(A,5X,A)') "Element: ", "Nodes"
+
+!do jj = 1, ii
+!  element = elementOfNode(node,jj)
+!  write(6,'(I5,A1,4X,4(I5))') element, ':', (globalNodeIdTypeDomain(kk,element), kk = 1, 4)
+!enddo
+
 return
 !----------------------------------------------------------------------------------------------------------------------------------!
 end subroutine MeshElementsOfNode
