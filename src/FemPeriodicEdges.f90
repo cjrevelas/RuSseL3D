@@ -1,4 +1,4 @@
-subroutine FemPeriodicEdges(nodePairingFirst, nodePairingSecond, elemcon)
+subroutine FemPeriodicEdges(nodePairingFirst, nodePairingSecond, nodePairingSecondInverse, elemcon)
 !------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module
@@ -6,75 +6,62 @@ use kcw_mod, only: F_m
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-type(fhash_type__ints_double), intent(inout) :: nodePairingFirst, nodePairingSecond
-type(fhash_type_iterator__ints_double)       :: nodePairingFirstIt, nodePairingSecondIt
-type(ints_type)                              :: nodePairingFirstKey, nodePairingSecondKey
+type(fhash_type__ints_double), intent(inout) :: nodePairingFirst, nodePairingSecond, nodePairingSecondInverse
+type(fhash_type_iterator__ints_double)       :: nodePairingSecondIt
+type(ints_type)                              :: nodePairingSecondKey, nodePairingSecondInverseKey
 type(ints_type)                              :: destBothKey
-integer                                      :: nodePairingFirstValue, nodePairingSecondValue
+integer                                      :: nodePairingSecondValue
 
 type(fhash_type__ints_double), intent(inout) :: elemcon
-type(ints_type)                              :: elemcon_key
+type(ints_type)                              :: elemconKey
 
-integer :: source1, dest1
-integer :: source2, dest2
+integer :: source2, dest2, dest1
 integer :: destBoth
-integer :: ii, jj, mm, nn
+integer :: ii, mm, nn
 
 logical :: success
 !------------------------------------------------------------------------------------------------------!
-call nodePairingSecondIt%begin(nodePairingSecond)
-
-allocate(elemcon_key%ints(2))
+allocate(elemconKey%ints(2))
 allocate(destBothKey%ints(1))
+allocate(nodePairingSecondInverseKey%ints(1))
 
+call nodePairingSecondIt%begin(nodePairingSecond)
 do ii = 1, nodePairingSecond%key_count()
   call nodePairingSecondIt%next(nodePairingSecondKey, nodePairingSecondValue)
-  source2 = nodePairingSecondKey%ints(1)  ! source2 = 7
+  source2 = nodePairingSecondKey%ints(1)  ! source2 = 7 = source1
   dest2   = nodePairingSecondValue        ! dest2   = 1
 
   destBothKey%ints(1) = dest2
   call nodePairingFirst%get(destBothKey, destBoth, success) ! destBoth = 38
 
   if (success) then
-    call nodePairingFirstIt%begin(nodePairingFirst)
-    do jj = 1, nodePairingFirst%key_count()
-      call nodePairingFirstIt%next(nodePairingFirstKey, nodePairingFirstValue)
-      source1 = nodePairingFirstKey%ints(1) ! source1 = 7
-      dest1   = nodePairingFirstValue       ! dest1   = 23
+    ! if success, we want to find the dest1 which has source1 = source2
+    ! we can find it from the inverse hash as follows:
+    ! dest1   = inverse_hash_yy(destBoth)        ! 23 = inverse_hash_yy(38) = hash_xx(7)
+    ! source1 = source2 = inverse_hash_xx(dest1) ! 7
 
-      if (source2.eq.source1) then
-        elemcon_key%ints(1) = dest1
-        elemcon_key%ints(2) = source1
-        call elemcon%get(elemcon_key, mm) ! id of pair (23,7)
+    nodePairingSecondInverseKey%ints(1) = destBoth
+    call nodePairingSecondInverse%get(nodePairingSecondInverseKey, dest1)
 
-        !--
-        !write(6,*) "success of finding xx pair (", dest2, destBoth, "):", success
-        !write(6,*) "id of xx pair (", dest1, source1, ") is:", mm
-        !write(6,*) "zz pair is: (", dest2, source2, ')'
-        !write(6,*) "destBothKey is: ", destbothKey%ints(1)
-        !write(6,*) "destBoth is: ", destboth
-        !--\
+    elemconKey%ints(1) = dest1
+    elemconKey%ints(2) = source2
+    call elemcon%get(elemconKey, mm) ! id of pair (23,7)
 
-        elemcon_key%ints(1) = destBoth
-        elemcon_key%ints(2) = dest2
-        call elemcon%get(elemcon_key, nn) ! id of pair (38,1)
+    elemconKey%ints(1) = destBoth
+    elemconKey%ints(2) = dest2
+    call elemcon%get(elemconKey, nn) ! id of pair (38,1)
 
-        !--
-        !write(6,*) "id of pair (", destBoth, dest2, ") is:", nn
-        !write(6,*) "-----------------------------------------------------"
-        !--\
-
-        F_m%g(mm) = F_m%g(mm) + F_m%g(nn)
-        F_m%g(nn) = 0.0d0
-      endif
-    enddo
+    F_m%g(mm) = F_m%g(mm) + F_m%g(nn)
+    F_m%g(nn) = 0.0d0
   else
     cycle
   endif
 enddo
 
 deallocate(destBothKey%ints)
-deallocate(elemcon_key%ints)
+deallocate(elemconKey%ints)
+deallocate(nodePairingSecondInverseKey%ints)
+
 return
 !------------------------------------------------------------------------------------------------------!
 end subroutine FemPeriodicEdges

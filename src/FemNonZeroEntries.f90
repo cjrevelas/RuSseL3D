@@ -8,7 +8,8 @@ use fhash_module__ints_double
 use ints_module
 use kcw_mod,         only: F_m, A_m, NNZ
 use geometry_mod,    only: numTotalNodePairs, numNodesLocalTypeDomain, numElementsTypeDomain, &
-                           numNodes, nodePairingXXhash, nodePairingYYhash, nodePairingZZhash
+                           numNodes, nodePairingXXhash, nodePairingYYhash, nodePairingZZhash, &
+                           nodePairingYYhashInverse, nodePairingZZhashInverse
 use constants_mod,   only: tol
 use parser_vars_mod, only: periodicAxisId, periodicity
 use flags_mod,       only: mumps_asymm, mumps_posDef, mumps_genSymm
@@ -43,13 +44,13 @@ if (periodicAxisId(2)) call FemApplyPeriodicity(nodePairingYYhash, elemcon)
 if (periodicAxisId(3)) call FemApplyPeriodicity(nodePairingZZhash, elemcon)
 
 if (periodicity.eq.2) then
-  if (periodicAxisId(1).AND.periodicAxisId(2)) call FemPeriodicEdges(nodePairingXXhash, nodePairingYYhash, elemcon)
-  if (periodicAxisId(1).AND.periodicAxisId(3)) call FemPeriodicEdges(nodePairingXXhash, nodePairingZZhash, elemcon)
-  if (periodicAxisId(2).AND.periodicAxisId(3)) call FemPeriodicEdges(nodePairingYYhash, nodePairingZZhash, elemcon)
+  if (periodicAxisId(1).AND.periodicAxisId(2)) call FemPeriodicEdges(nodePairingXXhash, nodePairingYYhash, nodePairingYYhashInverse, elemcon)
+  if (periodicAxisId(1).AND.periodicAxisId(3)) call FemPeriodicEdges(nodePairingXXhash, nodePairingZZhash, nodePairingZZhashInverse, elemcon)
+  if (periodicAxisId(2).AND.periodicAxisId(3)) call FemPeriodicEdges(nodePairingYYhash, nodePairingZZhash, nodePairingZZhashInverse, elemcon)
 endif
 
 if (periodicity.eq.3) then
-  call FemPeriodicEdges(nodePairingXXhash, nodePairingYYhash, elemcon)
+  call FemPeriodicEdges(nodePairingXXhash, nodePairingYYhash, nodePairingYYhashInverse, elemcon)
   call FemPeriodicCorners(elemcon)
 endif
 
