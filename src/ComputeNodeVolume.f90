@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ComputeNodeVolume(volnp, node)
+subroutine ComputeNodeVolume(nodeVolume, node)
 !--------------------------------------------------------------------!
 use geometry_mod,     only: numDimensions, numNodesLocalTypeDomain, &
                             numNodes, elementOfNode, nodeCoord,     &
@@ -14,20 +14,20 @@ implicit none
 integer              :: ii, jj, kk, ll, nn, ss, lint
 integer, intent(out) :: node
 
-real(8), intent(out)                                       :: volnp
-real(8), dimension(numNodesLocalTypeDomain)                :: u_local
-real(8), dimension(numNodes)                               :: u_spat
+real(8), intent(out)                                       :: nodeVolume
+real(8), dimension(numNodesLocalTypeDomain)                :: uuLocal
+real(8), dimension(numNodes)                               :: uuSpat
 real(8), dimension(numDimensions, numNodesLocalTypeDomain) :: xl
 real(8), dimension(4,11)                                   :: shp
 real(8), dimension(5,11)                                   :: sv
 real(8)                                                    :: xsj, uqp
 real(8)                                                    :: sumel, vol
 !--------------------------------------------------------------------!
-volnp = 0.0d0
+nodeVolume = 0.0d0
 
 vol          = 0.0d0
-u_spat       = 0.0d0
-u_spat(node) = 1.0d0
+uuSpat       = 0.0d0
+uuSpat(node) = 1.0d0
 
 do ss = 1, numElementsOfNode(node)
   nn = elementOfNode(node, ss)
@@ -39,7 +39,7 @@ do ss = 1, numElementsOfNode(node)
       xl(jj,kk) = nodeCoord(jj,ii)
     enddo
 
-    u_local(kk) = u_spat(ii)
+    uuLocal(kk) = uuSpat(ii)
   enddo
 
   ! Set up for gauss quadrature
@@ -57,13 +57,13 @@ do ss = 1, numElementsOfNode(node)
     uqp = 0.0d0
 
     do jj = 1, numNodesLocalTypeDomain
-      uqp = uqp + shp(4,jj)*u_local(jj)
+      uqp = uqp + shp(4,jj)*uuLocal(jj)
     enddo
 
     sumel = sumel + uqp * xsj
   enddo
 
-  volnp = volnp + sumel
+  nodeVolume = nodeVolume + sumel
 enddo
 
 return

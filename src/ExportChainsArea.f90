@@ -2,14 +2,14 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ExportChainsArea(node_belongs_to_dirichlet_face, elemcon, cell_of_np, chain_type, rg2OfMonomer, chainlen, &
+subroutine ExportChainsArea(nodeBelongsToDirichletFace, elemcon, cell_of_np, chain_type, rg2OfMonomer, chainLength, &
                               ns_ed, ds_ed, q_final, phi, ww)
 !-----------------------------------------------------------------------------------------------------------------------!
-use parser_vars_mod,  only: mumpsMatrixType, segmentBulkDensity
+use parser_vars_mod,  only: segmentBulkDensity
 use hist_mod,         only: nbin
 use write_helper_mod, only: adjl
 use constants_mod,    only: A3_to_m3
-use arrays_mod,       only: volnp
+use arrays_mod,       only: nodeVolume
 use geometry_mod,     only: numNodes
 use delta_mod,        only: targetNumGraftedChains, graftPointId, graftPointValue
 use fhash_module__ints_double
@@ -24,13 +24,13 @@ type(fhash_type__ints_double), intent(inout) :: elemcon
 
 character(len=2), intent(in) :: chain_type
 
-logical, intent(in), dimension(numNodes) :: node_belongs_to_dirichlet_face
-logical, dimension(numNodes)             :: node_belongs_to_dirichlet_face_new
+logical, intent(in), dimension(numNodes) :: nodeBelongsToDirichletFace
+logical, dimension(numNodes)             :: nodeBelongsToDirichletFaceNew
 
 real(8), intent(in), dimension(ns_ed+1)          :: ds_ed
 real(8), intent(in), dimension(ns_ed+1,numNodes) :: q_final
 real(8), intent(in), dimension(numNodes)         :: phi, ww
-real(8), intent(in)                              :: rg2OfMonomer, chainlen
+real(8), intent(in)                              :: rg2OfMonomer, chainLength
 real(8), dimension(2,numNodes)                   :: qshape
 real(8), dimension(ns_ed+1,numNodes)             :: qshape_final
 real(8), dimension(nbin)                         :: p_cross, n_shape
@@ -41,9 +41,9 @@ do bin = 7, 30
 
   call FemMatrixAssemble(rg2OfMonomer, ww)
 
-  node_belongs_to_dirichlet_face_new = node_belongs_to_dirichlet_face
+  nodeBelongsToDirichletFaceNew = nodeBelongsToDirichletFace
   do kk = 1, numNodes
-    if (cell_of_np(kk).eq.bin) node_belongs_to_dirichlet_face_new(kk) = .true.
+    if (cell_of_np(kk).eq.bin) nodeBelongsToDirichletFaceNew(kk) = .true.
   enddo
 
   qshape       = 0.0d0
@@ -64,20 +64,20 @@ do bin = 7, 30
     enddo
   endif
 
-  call SolverEdwards(ds_ed, ns_ed, mumpsMatrixType, qshape, qshape_final, node_belongs_to_dirichlet_face_new, elemcon)
+  call SolverEdwards(ds_ed, ns_ed, qshape, qshape_final, nodeBelongsToDirichletFaceNew, elemcon)
 
   sum_qshape = 0.0d0
   sum_Q      = 0.0d0
   sum_phi    = 0.0d0
   do kk = 1, numNodes
-    sum_qshape = sum_qshape + qshape_final(ns_ed+1,kk) * volnp(kk)
-    sum_Q      = sum_Q      + q_final(ns_ed+1,kk)      * volnp(kk)
-    sum_phi    = sum_phi    + phi(kk)                  * volnp(kk)
+    sum_qshape = sum_qshape + qshape_final(ns_ed+1,kk) * nodeVolume(kk)
+    sum_Q      = sum_Q      + q_final(ns_ed+1,kk)      * nodeVolume(kk)
+    sum_phi    = sum_phi    + phi(kk)                  * nodeVolume(kk)
   enddo
 
   p_cross(bin) = 1.0d0 - sum_qshape / sum_Q
 
-  n_shape(bin) = p_cross(bin) * segmentBulkDensity * sum_phi * A3_to_m3 / chainlen !/layer_area
+  n_shape(bin) = p_cross(bin) * segmentBulkDensity * sum_phi * A3_to_m3 / chainLength !/layer_area
 
   write(6,*) "p_cross: ", p_cross(bin)
   write(6,*) "n_shape: ", n_shape(bin)

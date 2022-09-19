@@ -28,9 +28,9 @@ implicit none
 include "mpif.h"
 #endif
 !----------------------------------------------------------------------------------------------------------------------------------!
-integer :: ii, kk, iter, ToolsSystemTime, t_init, t_final, gnode_id
+integer :: ii, kk, iter, ToolsSystemTime, tInit, tFinal, graftNodeId
 
-logical :: convergence = .false., calc_delta = .false.
+logical :: convergence = .false., computeDelta = .false.
 
 real(8), allocatable, dimension(:) :: dphi2_dr2
 
@@ -38,7 +38,7 @@ type(fhash_type__ints_double) :: elemcon
 
 real(8) :: partitionMatrixChains = 0.0d0, numMatrixChains = 0.0d0
 real(8) :: numGraftedChains = 0.0d0, numGraftedChainsError = 1.0d2
-real(8) :: fieldMaximum = 0.0d0, fieldStdError = 0.0d0, fieldError = 2.0d5
+real(8) :: wwFieldMaximum = 0.0d0, wwFieldStdError = 0.0d0, wwFieldError = 2.0d5
 real(8) :: freeEnergyPrevious = 1.0d10, freeEnergy = 0.0d0, freeEnergyError = 1.0d10
 !----------------------------------------------------------------------------------------------------------------------------------!
 !**************************************************************************************************************!
@@ -94,14 +94,14 @@ call ParserMesh(elemcon)
 call InitArrays()
 
 do ii = 1, numNodes
-  call ComputeNodeVolume(volnp(ii), ii)
+  call ComputeNodeVolume(nodeVolume(ii), ii)
 enddo
 
 allocate(dphi2_dr2(numNodes))
 dphi2_dr2=0.0d0
 
 call InitDelta()
-call ToolsHistogram(binThickness, volnp)
+call ToolsHistogram(binThickness, nodeVolume)
 
 #ifdef USE_MPI
 call MPI_BCAST(mumpsMatrixType, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
@@ -125,9 +125,9 @@ if (graftedExist.eq.1) then
   endif
 endif
 
-call InitField(Ufield, ww)
+call InitField(uuField, wwField)
 
-ww_mix = ww
+wwFieldMixed = wwField
 !**************************************************************************************************************!
 !                                        LOOPS FOR FIELD CONVERGENCE                                           !
 !**************************************************************************************************************!
@@ -139,107 +139,109 @@ write(*  ,'(A85)')adjl('-----------------------------------SIMULATION STARTS----
 write(iow,'(A10,1X,8(A19,1X),A16)') "iter", "fraction", "energy", "energy_error", "gr_chains", "gr_chains_error", "field_error", "field_std_error", "field_max"
 write(6  ,'(A4,1X,8(A14,1X),A12)')  "iter", "fraction", "energy", "energy_error", "gr_chains", "gr_chains_error", "field_error", "field_std_error", "field_max"
 
-t_init = ToolsSystemTime()
+tInit = ToolsSystemTime()
 
 do iter = initialIterationId, iterations-1
-  write(iow,'(I10,1X,8(E19.9E3,1X))') iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, fieldError, fieldStdError, fieldMaximum
-  write(6  ,'(I4 ,1X,8(E14.4E3,1X))') iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, fieldError, fieldStdError, fieldMaximum
+  write(iow,'(I10,1X,8(E19.9E3,1X))') iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, wwFieldError, wwFieldStdError, wwFieldMaximum
+  write(6  ,'(I4 ,1X,8(E14.4E3,1X))') iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, wwFieldError, wwFieldStdError, wwFieldMaximum
 
   close(iow)
   open(unit=iow, file = IO_logFile, position = 'append')
 
-  ww = ww_mix
+  wwField = wwFieldMixed
 
-  call FemMatrixAssemble(rg2OfMatrixMonomer, ww)
+  call FemMatrixAssemble(rg2OfMatrixMonomer, wwField)
 
   do ii = 1, numNodes
-    qmx(1,ii)       = 1.0d0
-    qmx_final(1,ii) = 1.0d0
+    qqMatrix(1,ii)      = 1.0d0
+    qqMatrixFinal(1,ii) = 1.0d0
   enddo
 
-  call SolverEdwards(ds_mx_ed, numEdwPointsMatrix, mumpsMatrixType, qmx, qmx_final, nodeBelongsToDirichletFace, elemcon)
+  call SolverEdwards(ds_mx_ed, numEdwPointsMatrix, qqMatrix, qqMatrixFinal, nodeBelongsToDirichletFace, elemcon)
 
   if (graftedExist.eq.1) then
     do ii = 1, numNodes
-      call interp_linear(1, numEdwPointsMatrix+1, xs_mx_ed, qmx_final(:,ii), numConvolPointsGrafted+1, xs_gr_conv, qmx_interp_mg(:,ii))
+      call interp_linear(1, numEdwPointsMatrix+1, xs_mx_ed, qqMatrixFinal(:,ii), numConvolPointsGrafted+1, xs_gr_conv, qqMatrixInterpGrafted(:,ii))
     enddo
 
     ! Recompute the delta functions if necessary
     if (getICfromDelta.eq.1) then
-      calc_delta = ((iter==0) .OR. ((freeEnergyError <= freeEnergyTolForDelta) .AND. (numGraftedChainsError > numGraftedChainsTol)))
+      computeDelta = ((iter==0) .OR. ((freeEnergyError <= freeEnergyTolForDelta) .AND. (numGraftedChainsError > numGraftedChainsTol)))
 
-      if (calc_delta) then
-        call ComputeDeltaNumerical(numNodes, elemcon, qmx_interp_mg, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, ww_mix, &
-                                   targetNumGraftedChains, graftPointId, deltaNumerical, volnp)
-        call ExportDelta(numNodes, qmx_interp_mg, numConvolPointsGrafted, targetNumGraftedChains, graftPointId, deltaNumerical, graftPointValue, volnp)
+      if (computeDelta) then
+        call ComputeDeltaNumerical(elemcon, qqMatrixInterpGrafted, wwFieldMixed, deltaNumerical)
+
+        call ExportDelta(qqMatrixInterpGrafted, deltaNumerical, graftPointValue)
       endif
 
       do ii = 1, targetNumGraftedChains
-        gnode_id = graftPointId(ii)
-        graftPointValue(ii) = deltaNumerical(ii) * lengthGrafted * 1.0d0 / (qmx_interp_mg(numConvolPointsGrafted+1,gnode_id) * (molarBulkDensity * n_avog))
+        graftNodeId = graftPointId(ii)
+
+        graftPointValue(ii) = deltaNumerical(ii) * lengthGrafted * 1.0d0 / &
+                              (qqMatrixInterpGrafted(numConvolPointsGrafted+1,graftNodeId) * (molarBulkDensity * n_avog))
       enddo
     endif
 
-    call FemMatrixAssemble(rg2OfGraftedMonomer, ww)
+    call FemMatrixAssemble(rg2OfGraftedMonomer, wwField)
 
-    qgr       = 0.0d0
-    qgr_final = 0.0d0
+    qqGrafted      = 0.0d0
+    qqGraftedFinal = 0.0d0
 
     do ii = 1, targetNumGraftedChains
-      gnode_id = graftPointId(ii)
+      graftNodeId = graftPointId(ii)
 
-      qgr(1,gnode_id)       = graftPointValue(ii)
-      qgr_final(1,gnode_id) = graftPointValue(ii)
+      qqGrafted(1,graftNodeId)      = graftPointValue(ii)
+      qqGraftedFinal(1,graftNodeId) = graftPointValue(ii)
     enddo
 
-    call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
+    call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, qqGrafted, qqGraftedFinal, nodeBelongsToDirichletFace, elemcon)
   endif
 
   if (matrixExist.eq.1) then
     do ii = 1, numNodes
-      call interp_linear(1, numEdwPointsMatrix+1, xs_mx_ed, qmx_final(:,ii), numConvolPointsMatrix+1, xs_mx_conv, qmx_interp_mm(:,ii))
+      call interp_linear(1, numEdwPointsMatrix+1, xs_mx_ed, qqMatrixFinal(:,ii), numConvolPointsMatrix+1, xs_mx_conv, qqMatrixInterp(:,ii))
     enddo
 
-    call ContourConvolution(numNodes, lengthMatrix, numConvolPointsMatrix, coeff_mx_conv, qmx_interp_mm, qmx_interp_mm, phi_mx)
+    call ContourConvolution(lengthMatrix, numConvolPointsMatrix, coeff_mx_conv, qqMatrixInterp, qqMatrixInterp, phiMatrix)
   endif
 
   if (graftedExist.eq.1) then
     do ii = 1, numNodes
-      call interp_linear(1, numEdwPointsGrafted+1, xs_gr_ed, qgr_final(:,ii), numConvolPointsGrafted+1, xs_gr_conv, qgr_interp(:,ii))
+      call interp_linear(1, numEdwPointsGrafted+1, xs_gr_ed, qqGraftedFinal(:,ii), numConvolPointsGrafted+1, xs_gr_conv, qqGraftedInterp(:,ii))
     enddo
 
-    call ContourConvolution(numNodes, lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr)
+    call ContourConvolution(lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qqGraftedInterp, qqMatrixInterpGrafted, phiGrafted)
   endif
 
-  phi_total = 0.0d0
+  phiTotal = 0.0d0
   do kk = 1, numNodes
-    if (matrixExist.eq.1) phi_total(kk) = phi_total(kk) + phi_mx(kk)
-    if (graftedExist.eq.1) phi_total(kk) = phi_total(kk) + phi_gr(kk)
+    if (matrixExist.eq.1)  phiTotal(kk) = phiTotal(kk) + phiMatrix(kk)
+    if (graftedExist.eq.1) phiTotal(kk) = phiTotal(kk) + phiGrafted(kk)
   enddo
 
-  if (matrixExist.eq.1)  call ComputePartitionMatrix(numNodes, numConvolPointsMatrix, qmx_interp_mm, partitionMatrixChains)
-  if (matrixExist.eq.1)  call ComputeNumberOfChains(numNodes, lengthMatrix, molarBulkDensity, phi_mx, numMatrixChains)
-  if (graftedExist.eq.1) call ComputeNumberOfChains(numNodes, lengthGrafted, molarBulkDensity, phi_gr, numGraftedChains)
+  if (matrixExist.eq.1)  call ComputePartitionMatrix(numNodes, numConvolPointsMatrix, qqMatrixInterp, partitionMatrixChains)
+  if (matrixExist.eq.1)  call ComputeNumberOfChains(lengthMatrix, phiMatrix, numMatrixChains)
+  if (graftedExist.eq.1) call ComputeNumberOfChains(lengthGrafted, phiGrafted, numGraftedChains)
 
   do kk = 1, numNodes
-    ww_new(kk) = (eos_df_drho(phi_total(kk)) - eos_df_drho(1.0d0)) / (boltz_const_Joule_K*temperature) - &
-                 & sgtParam * (segmentBulkDensity * dphi2_dr2(kk)) / (boltz_const_Joule_K * temperature) + Ufield(kk)
+    wwFieldNew(kk) = (eos_df_drho(phiTotal(kk)) - eos_df_drho(1.0d0)) / (boltz_const_Joule_K*temperature) - &
+                   & sgtParam * (segmentBulkDensity * dphi2_dr2(kk)) / (boltz_const_Joule_K * temperature) + uuField(kk)
   enddo
 
-  fieldError    = 0.0d0
-  fieldStdError = 0.0d0
-  fieldMaximum  = 0.0d0
+  wwFieldError    = 0.0d0
+  wwFieldStdError = 0.0d0
+  wwFieldMaximum  = 0.0d0
 
   do kk = 1, numNodes
-    fieldError    = MAX(fieldError,DABS(ww_new(kk) - ww(kk)))
-    fieldStdError = fieldStdError + (ww_new(kk) - ww(kk))**2.0d0
-    fieldMaximum  = MAX(fieldMaximum, ww_new(kk))
+    wwFieldError    = MAX(wwFieldError,DABS(wwFieldNew(kk) - wwField(kk)))
+    wwFieldStdError = wwFieldStdError + (wwFieldNew(kk) - wwField(kk))**2.0d0
+    wwFieldMaximum  = MAX(wwFieldMaximum, wwFieldNew(kk))
   enddo
 
-  fieldStdError = SQRT(fieldStdError / FLOAT((numNodes - 1)))
-  fieldMaximum  = fieldMaximum  * lengthMatrix
-  fieldError    = fieldError    * lengthMatrix
-  fieldStdError = fieldStdError * lengthMatrix
+  wwFieldStdError = SQRT(wwFieldStdError / FLOAT((numNodes - 1)))
+  wwFieldMaximum  = wwFieldMaximum  * lengthMatrix
+  wwFieldError    = wwFieldError    * lengthMatrix
+  wwFieldStdError = wwFieldStdError * lengthMatrix
 
   freeEnergyError    = ABS(freeEnergy - freeEnergyPrevious)
   freeEnergyPrevious = freeEnergy
@@ -251,37 +253,37 @@ do iter = initialIterationId, iterations-1
   endif
 
   do kk = 1, numNodes
-    ww_mix(kk) = (1.0d0 - frac) * ww(kk) + frac * ww_new(kk)
+    wwFieldMixed(kk) = (1.0d0 - frac) * wwField(kk) + frac * wwFieldNew(kk)
   enddo
 
-  convergence = (fieldError<=fieldTol).OR.(freeEnergyError<=freeEnergyTol)
+  convergence = (wwFieldError<=fieldTol).OR.(freeEnergyError<=freeEnergyTol)
 
-  call ExportFieldBinary(ww_mix, numNodes, 0)
+  call ExportFieldBinary(wwFieldMixed, numNodes, 0)
 
-  if (export(exportFieldBin, iter, convergence)) call ExportFieldBinary(ww_mix, numNodes, iter)
+  if (export(exportFieldBin, iter, convergence)) call ExportFieldBinary(wwFieldMixed, numNodes, iter)
 
-  if ((MOD(iter,1).eq.0).OR.convergence) call ExportEnergies(qmx_interp_mg, qgr_interp, phi_total, ww_new, Ufield, partitionMatrixChains, targetNumGraftedChains, graftPointId, freeEnergy)
+  if ((MOD(iter,1).eq.0).OR.convergence) call ExportEnergies(qqMatrixInterpGrafted, qqGraftedInterp, phiTotal, wwFieldNew, uuField, partitionMatrixChains, targetNumGraftedChains, graftPointId, freeEnergy)
 
   call ExportComputes(iter, convergence, elemcon)
 
-  call ExportVtuProfiles(phi_mx, phi_gr, ww_mix)
+  call ExportVtuProfiles(phiMatrix, phiGrafted, wwFieldMixed)
 
   if (convergence) exit
 enddo
 !**************************************************************************************************************!
 !                                             EXPORT SIMULATION RESULTS                                        !
 !**************************************************************************************************************!
-write(iow,'(I10,1X,8(E19.9E3,1X))')  iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, fieldError, fieldStdError, fieldMaximum
-write(6  ,'(I4 ,1X,8(E14.4E3,1X))')  iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, fieldError, fieldStdError, fieldMaximum
+write(iow,'(I10,1X,8(E19.9E3,1X))')  iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, wwFieldError, wwFieldStdError, wwFieldMaximum
+write(6  ,'(I4 ,1X,8(E14.4E3,1X))')  iter, frac, freeEnergy, freeEnergyError, numGraftedChains, numGraftedChainsError, wwFieldError, wwFieldStdError, wwFieldMaximum
 
 write(iow,*)
 write(*,*)
 write(iow,'(A85)')adjl('-----------------------------------SUMMARIZED RESULTS-----------------------------------',85)
 write(*  ,'(A85)')adjl('-----------------------------------SUMMARIZED RESULTS-----------------------------------',85)
 
-if (fieldError.lt.fieldTol) then
-  write(iow,'("Field convergence of max error",F16.9)') fieldError
-  write(6  ,'("Field convergence of max error",F16.9)') fieldError
+if (wwFieldError.lt.fieldTol) then
+  write(iow,'("Field convergence of max error",F16.9)') wwFieldError
+  write(6  ,'("Field convergence of max error",F16.9)') wwFieldError
 endif
 
 if (freeEnergyError.lt.freeEnergyTol) then
@@ -291,19 +293,19 @@ endif
 
 write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 freeEnergy
 write(6  ,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 freeEnergy
-write(iow,'(3X,A40,E16.9)')adjl("Interface area (A2):",40),                 interf_area()
-write(6  ,'(3X,A40,E16.9)')adjl("Interface area (A2):",40),                 interf_area()
+write(iow,'(3X,A40,E16.9)')adjl("Interface area (A2):",40),                 interfaceArea()
+write(6  ,'(3X,A40,E16.9)')adjl("Interface area (A2):",40),                 interfaceArea()
 write(iow,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), partitionMatrixChains
 write(6  ,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), partitionMatrixChains
-write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             numGraftedChains/interf_area()
-write(6  ,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             numGraftedChains/interf_area()
+write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             numGraftedChains/interfaceArea()
+write(6  ,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             numGraftedChains/interfaceArea()
 write(iow,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            numGraftedChains
 write(6  ,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            numGraftedChains
 write(iow,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             numMatrixChains
 write(6  ,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             numMatrixChains
 
-t_final = ToolsSystemTime()
-write(6,'(3X,A40,I16)')adjl('Run duration:',40), t_final - t_init
+tFinal = ToolsSystemTime()
+write(6,'(3X,A40,I16)')adjl('Run duration:',40), tFinal - tInit
 
 ! Deallocate all remaining dynamic memory
 deallocate(nodeCoord)
@@ -313,20 +315,20 @@ if (numNanopFaces > 0) deallocate(nanopFaceId, nanopFaceValue, nanopAlpha, nanop
 deallocate(numElementsOfNode)
 deallocate(globalNodeIdTypeDomain)
 deallocate(ds_mx_ed, xs_mx_ed, coeff_mx_ed)
-deallocate(qmx, qmx_final, qmx_interp_mg)
-deallocate(phi_mx, phi_total)
+deallocate(qqMatrix, qqMatrixFinal, qqMatrixInterpGrafted)
+deallocate(phiMatrix, phiTotal)
 if (matrixExist.eq.1) then
-  deallocate(qmx_interp_mm, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+  deallocate(qqMatrixInterp, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
 endif
 if (graftedExist.eq.1) then
   deallocate(ds_gr_ed, ds_gr_conv, xs_gr_ed, xs_gr_conv, coeff_gr_ed, coeff_gr_conv)
-  deallocate(qgr, qgr_final, qgr_interp)
+  deallocate(qqGrafted, qqGraftedFinal, qqGraftedInterp)
   deallocate(graftPointId, deltaNumerical, graftPointValue)
-  deallocate(phi_gr, phi_gr_indiv)
+  deallocate(phiGrafted, phiGraftedIndiv)
   if ((exportPhiIndividual.eq.1).AND.(exportAllGraftedChains.eq.0)) deallocate(gpIndexToExport)
 endif
-deallocate(ww, ww_new, ww_mix, Ufield)
-deallocate(volnp)
+deallocate(wwField, wwFieldNew, wwFieldMixed, uuField)
+deallocate(nodeVolume)
 deallocate(planar_cell_of_np, dist_from_face, cell_vol_planar)
 deallocate(sph_cell_of_np, dist_from_np, cell_vol_sph)
 deallocate(nodePairId)

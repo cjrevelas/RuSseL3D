@@ -8,7 +8,7 @@ subroutine ExportEnergies(qmx_interp_mg, qgr_interp, phi_total, ww, Ufield, part
 use eos_mod,         only: eos_ff, eos_df_drho
 use parser_vars_mod, only: numConvolPointsGrafted, lengthMatrix, molarBulkDensity, temperature, &
                            beta, graftPointDistance
-use geometry_mod,    only: numNodes, interf_area
+use geometry_mod,    only: numNodes, interfaceArea
 use constants_mod,   only: n_avog, boltz_const_Joule_molK, N_to_mN, A2_to_m2, A3_to_m3
 use iofiles_mod,     only: IO_energies
 !-------------------------------------------------------------------------------------------------!
@@ -69,14 +69,14 @@ do kk = 1, targetNumGraftedChains
   E_stretching          =  E_stretching        + ComputeStretchingEnergy(gnode_id, qmx_interp_mg, qgr_interp)
 enddo
 
-E_eos_f             = E_eos_f             * N_to_mN / (interf_area()*A2_to_m2)
-E_eos_dfdrho        = E_eos_dfdrho        * N_to_mN / (interf_area()*A2_to_m2)
-E_field             = E_field             * N_to_mN / (interf_area()*A2_to_m2)
-E_solid             = E_solid             * N_to_mN / (interf_area()*A2_to_m2)
-E_entropy_mx        = E_entropy_mx        * N_to_mN / (interf_area()*A2_to_m2)
-E_entropy_gr        = E_entropy_gr        * N_to_mN / (interf_area()*A2_to_m2)
-E_entropy_gr_normlz = E_entropy_gr_normlz * N_to_mN / (interf_area()*A2_to_m2)
-E_stretching        = E_stretching        * N_to_mN / (interf_area()*A2_to_m2)
+E_eos_f             = E_eos_f             * N_to_mN / (interfaceArea()*A2_to_m2)
+E_eos_dfdrho        = E_eos_dfdrho        * N_to_mN / (interfaceArea()*A2_to_m2)
+E_field             = E_field             * N_to_mN / (interfaceArea()*A2_to_m2)
+E_solid             = E_solid             * N_to_mN / (interfaceArea()*A2_to_m2)
+E_entropy_mx        = E_entropy_mx        * N_to_mN / (interfaceArea()*A2_to_m2)
+E_entropy_gr        = E_entropy_gr        * N_to_mN / (interfaceArea()*A2_to_m2)
+E_entropy_gr_normlz = E_entropy_gr_normlz * N_to_mN / (interfaceArea()*A2_to_m2)
+E_stretching        = E_stretching        * N_to_mN / (interfaceArea()*A2_to_m2)
 
 free_energy = E_eos_f + E_eos_dfdrho + E_entropy_mx + E_entropy_gr + E_entropy_gr_normlz
 

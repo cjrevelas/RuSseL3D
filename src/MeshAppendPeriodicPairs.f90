@@ -2,59 +2,59 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine MeshAppendPeriodicPairs(elemcon, starting_pair, ending_pair, node_pairing_hash)
+subroutine MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingHash)
 !----------------------------------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module
-use kcw_mod, only: F_m
+use kcw_mod,      only: F_m
 use geometry_mod, only: nodePairId
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
 type(fhash_type__ints_double), intent(inout) :: elemcon
-type(ints_type)                              :: elemcon_key
-integer                                      :: elemcon_value
+type(ints_type)                              :: elemconKey
+integer                                      :: elemconValue
 
-integer, intent(in) :: starting_pair, ending_pair
+integer, intent(in) :: startingPair, endingPair
 
-type(fhash_type__ints_double), intent(inout) :: node_pairing_hash
-type(fhash_type_iterator__ints_double)       :: node_pairing_it
-type(ints_type)                              :: node_pairing_key
-integer                                      :: node_pairing_value
+type(fhash_type__ints_double), intent(inout) :: nodePairingHash
+type(fhash_type_iterator__ints_double)       :: nodePairingIt
+type(ints_type)                              :: nodePairingKey
+integer                                      :: nodePairingValue
 
 integer :: source, dest
 integer :: kk
 
 logical :: success
 !----------------------------------------------------------------------------------------------------------------------------------!
-allocate(elemcon_key%ints(2))
+allocate(elemconKey%ints(2))
 
-call node_pairing_it%begin(node_pairing_hash)
+call nodePairingIt%begin(nodePairingHash)
 
-do kk = starting_pair, ending_pair
-  call node_pairing_it%next(node_pairing_key, node_pairing_value)
+do kk = startingPair, endingPair
+  call nodePairingIt%next(nodePairingKey, nodePairingValue)
 
-  source = node_pairing_key%ints(1)
-  dest   = node_pairing_value
+  source = nodePairingKey%ints(1)
+  dest   = nodePairingValue
 
   ! Append pair
   F_m%row(kk) = dest
   F_m%col(kk) = source
 
-  elemcon_key%ints(1) = dest
-  elemcon_key%ints(2) = source
+  elemconKey%ints(1) = dest
+  elemconKey%ints(2) = source
 
-  call elemcon%get(elemcon_key, elemcon_value, success)
+  call elemcon%get(elemconKey, elemconValue, success)
 
   if (success) then
-    nodePairId(kk) = elemcon_value
+    nodePairId(kk) = elemconValue
   else
-    call elemcon%set(elemcon_key, kk)
+    call elemcon%set(elemconKey, kk)
     nodePairId(kk) = kk
   endif
 enddo
 
-deallocate(elemcon_key%ints)
+deallocate(elemconKey%ints)
 
 return
 !----------------------------------------------------------------------------------------------------------------------------------!

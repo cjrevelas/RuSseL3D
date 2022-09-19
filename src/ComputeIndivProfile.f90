@@ -7,8 +7,8 @@ subroutine ComputeIndivProfile(numNodes, elemcon, qmx_interp_mg, ds_gr_ed, xs_gr
 !------------------------------------------------------------------------------------------------------!
 use geometry_mod,     only: nodeBelongsToDirichletFace
 use write_helper_mod, only: adjl
-use parser_vars_mod,  only: numConvolPointsGrafted, numEdwPointsGrafted, lengthGrafted,   &
-                            mumpsMatrixType, rg2OfGraftedMonomer, exportAllGraftedChains, &
+use parser_vars_mod,  only: numConvolPointsGrafted, numEdwPointsGrafted, lengthGrafted, &
+                            rg2OfGraftedMonomer, exportAllGraftedChains,                &
                             numGraftedChainsToExport, gpIndexToExport
 use geometry_mod,     only: nodeBelongsToDirichletFace
 use write_helper_mod, only: adjl
@@ -48,13 +48,13 @@ if (exportAllGraftedChains.eq.1) then
     qgr_final(1,gpid(ii)) = gp_init_value(ii)
 
     write(6, '(2X,A21,1X,I3,1X,A8,1X,I7,1X,A2,1X)', advance='no') "Grafting point index:", ii, "with id:", gpid(ii), "->"
-    call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
+    call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
 
     do jj = 1, numNodes
       call interp_linear(1, numEdwPointsGrafted+1, xs_gr_ed, qgr_final(:,jj), numConvolPointsGrafted+1, xs_gr_conv, qgr_interp(:,jj))
     enddo
 
-    call ContourConvolution(numNodes, lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr_indiv(:,ii))
+    call ContourConvolution(lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr_indiv(:,ii))
   enddo
 else
   do ii = 1, numGraftedChainsToExport
@@ -67,13 +67,13 @@ else
     qgr_final(1,gpid(gpIndex)) = gp_init_value(gpIndex)
 
     write(6, '(2X,A21,1X,I3,1X,A8,1X,I7,1X,A2,1X)', advance='no') "Grafting point index:", gpIndex, "with id:", gpid(gpIndex), "->"
-    call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, mumpsMatrixType, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
+    call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
 
     do jj = 1, numNodes
       call interp_linear(1, numEdwPointsGrafted+1, xs_gr_ed, qgr_final(:,jj), numConvolPointsGrafted+1, xs_gr_conv, qgr_interp(:,jj))
     enddo
 
-    call ContourConvolution(numNodes, lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr_indiv(:,gpIndex))
+    call ContourConvolution(lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr_indiv(:,gpIndex))
   enddo
 endif
 

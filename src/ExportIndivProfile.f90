@@ -6,7 +6,7 @@ subroutine ExportIndivProfile(numGraftedChainsToExport, numNodes, nodeCoord, phi
 !------------------------------------------------------------------------------------------------------!
 use error_handing_mod
 use iofiles_mod,      only: IO_indivProfile
-use parser_vars_mod,  only: lengthGrafted, molarBulkDensity, exportAllGraftedChains, gpIndexToExport
+use parser_vars_mod,  only: lengthGrafted, exportAllGraftedChains, gpIndexToExport
 use delta_mod,        only: targetNumGraftedChains
 !------------------------------------------------------------------------------------------------------!
 implicit none
@@ -27,7 +27,7 @@ do ii = 1, numGraftedChainsToExport
   else
     gpIndex = gpIndexToExport(ii)
   endif
-  call ComputeNumberOfChains(numNodes, lengthGrafted, molarBulkDensity, phi_gr_indiv(:,gpIndex), nch_gr(gpIndex))
+  call ComputeNumberOfChains(lengthGrafted, phi_gr_indiv(:,gpIndex), nch_gr(gpIndex))
 enddo
 
 open (unit=120, file = IO_indivProfile)

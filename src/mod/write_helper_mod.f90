@@ -41,13 +41,13 @@ character(len=100) :: MESSAGE
       r = ADJUSTL(string)
     end function adjl
 
-    logical function export(export_freq, iter, convergence)
+    logical function export(exportFreq, iter, convergence)
       implicit none
-      integer, intent(in) :: export_freq, iter
+      integer, intent(in) :: exportFreq, iter
       logical, intent(in) :: convergence
       export=.false.
-      if (export_freq>0) then
-        if ((MOD(iter,export_freq).eq.0).or.convergence) export=.true.
+      if (exportFreq>0) then
+        if ((MOD(iter,exportFreq).eq.0).or.convergence) export=.true.
       endif
     end function export
 !----------------------------------------------------------------------------------------------------------------------------!

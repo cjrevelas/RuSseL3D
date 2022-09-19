@@ -5,7 +5,7 @@
 subroutine MeshElementsOfNode(numOfElementsOfNodeMax, numElementsOfNode)
 !----------------------------------------------------------------------------------------------------------------------------------!
 use parser_vars_mod, only: iow
-use geometry_mod, only: numNodes, numElementsTypeDomain, elementOfNode, globalNodeIdTypeDomain
+use geometry_mod,    only: numNodes, numElementsTypeDomain, elementOfNode, globalNodeIdTypeDomain
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 

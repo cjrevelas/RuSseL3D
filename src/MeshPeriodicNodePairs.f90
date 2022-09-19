@@ -2,7 +2,8 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine MeshPeriodicNodePairs(globalNodeIdTypeFace, axis, faceOneHash, faceTwoHash, isDestPeriodicNode, nodePairingHash, nodePairingHashInverse)
+subroutine MeshPeriodicNodePairs(globalNodeIdTypeFace, axis, faceOneHash, faceTwoHash, &
+                                 isDestPeriodicNode, nodePairingHash, nodePairingHashInverse)
 !----------------------------------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module

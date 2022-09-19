@@ -8,21 +8,21 @@ integer :: NNZ
 
 real(8), allocatable, dimension(:) :: rdiag1
 
-type mumps_matrix
+type mumpsMatrix
   sequence
     double precision, dimension(:), pointer :: value
     integer, dimension(:), pointer          :: row, col
-end type mumps_matrix
+end type mumpsMatrix
 
-type(mumps_matrix) :: A_m
+type(mumpsMatrix) :: A_m
 
-type full_matrix
+type fullMatrix
   sequence
     double precision, dimension(:), pointer :: g, rh, c, k, w
     integer, dimension(:), pointer          :: row, col
     logical, dimension(:), pointer          :: is_zero
-end type full_matrix
+end type fullMatrix
 
-type(full_matrix) :: F_m
+type(fullMatrix) :: F_m
 !----------------------------------------------------------------------------------------------------------------------------!
 end module kcw_mod

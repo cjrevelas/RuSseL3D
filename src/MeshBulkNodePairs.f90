@@ -6,8 +6,9 @@ subroutine MeshBulkNodePairs(elemcon)
 !----------------------------------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module
-use geometry_mod,    only: numNodesLocalTypeDomain, numElementsTypeDomain, numTotalNodePairs, nodePairId, globalNodeIdTypeDomain
-use kcw_mod,         only: F_m
+use geometry_mod, only: numNodesLocalTypeDomain, numElementsTypeDomain, &
+                           numTotalNodePairs, nodePairId, globalNodeIdTypeDomain
+use kcw_mod,      only: F_m
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -18,7 +19,7 @@ type(ints_type)                              :: elemconKey
 integer                                      :: elemconNumOfKeys, elemconValue
 
 integer :: ii, jj, mm
-integer :: node_pair
+integer :: nodePair
 !----------------------------------------------------------------------------------------------------------------------------------!
 allocate(nodePairId(numTotalNodePairs))
 nodePairId = 0
@@ -30,27 +31,27 @@ allocate(elemconKey%ints(2)) ! Each key is defined by a pair (2) of nodes
 elemconNumOfKeys = 2 * numNodesLocalTypeDomain * numElementsTypeDomain
 call elemcon%reserve(elemconNumOfKeys)
 
-node_pair = 0
+nodePair = 0
 do mm = 1, numElementsTypeDomain
   do jj = 1, numNodesLocalTypeDomain
     do ii = 1, numNodesLocalTypeDomain
-      node_pair = node_pair + 1
+      nodePair = nodePair + 1
 
       ! Define the pair of nodes to be examined and assigned a elemconValue
       elemconKey%ints(1) = globalNodeIdTypeDomain(jj,mm)
       elemconKey%ints(2) = globalNodeIdTypeDomain(ii,mm)
 
-      F_m%row(node_pair) = elemconKey%ints(1)
-      F_m%col(node_pair) = elemconKey%ints(2)
+      F_m%row(nodePair) = elemconKey%ints(1)
+      F_m%col(nodePair) = elemconKey%ints(2)
 
       ! Assign elemconValue to the pair
       call elemcon%get(elemconKey, elemconValue, success)
 
       if (success) then
-        nodePairId(node_pair) = elemconValue  ! This pair has already been met, thus assigned a elemconValue
+        nodePairId(nodePair) = elemconValue  ! This pair has already been met, thus assigned a elemconValue
       else
-        call elemcon%set(elemconKey, node_pair) ! Store the new elemconValue for next iteration's check
-        nodePairId(node_pair) = node_pair        ! This pair is met for the first time
+        call elemcon%set(elemconKey, nodePair) ! Store the new elemconValue for next iteration's check
+        nodePairId(nodePair) = nodePair       ! This pair is met for the first time
       endif
     enddo
   enddo

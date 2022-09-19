@@ -2,13 +2,14 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine SolverEdwards(ds, ns, mumpsMatrixType, q, q_final, nodeBelongsToDirichletFace, elemcon)
+subroutine SolverEdwards(ds, ns, q, q_final, nodeBelongsToDirichletFace, elemcon)
 !----------------------------------------------------------------------------------------------------------!
 use kcw_mod,         only: A_m, F_m, rdiag1
 use parser_vars_mod, only: numDirichletFaces, numNanopFaces,    &
                            dirichletFaceValue, nanopFaceValue,  &
                            dirichletFaceId, dirichletFaceValue, &
-                           nanopFaceId, nanopFaceValue
+                           nanopFaceId, nanopFaceValue,         &
+                           mumpsMatrixType
 use geometry_mod,    only: numNodes, numTotalNodePairs, nodeBelongsToFaceId
 use fhash_module__ints_double
 #ifdef USE_MPI
@@ -21,7 +22,7 @@ implicit none
 include "mpif.h"
 #endif
 !----------------------------------------------------------------------------------------------------------!
-integer, intent(in) :: ns, mumpsMatrixType
+integer, intent(in) :: ns
 integer             :: ii, jj, kk, time_step, ToolsSystemTime, t_init, t_final, face
 
 logical, intent(in), dimension(numNodes) :: nodeBelongsToDirichletFace
@@ -35,7 +36,7 @@ real(8), intent(inout), dimension(ns+1,numNodes) :: q_final
 t_init = ToolsSystemTime()
 
 do time_step = 2, ns+1
-  call FemNonZeroEntries(ds(time_step), mumpsMatrixType, nodeBelongsToDirichletFace, elemcon)
+  call FemNonZeroEntries(ds(time_step), nodeBelongsToDirichletFace, elemcon)
 
 #ifdef USE_MPI
   ! Send a continue (.true.) signal to the slaves

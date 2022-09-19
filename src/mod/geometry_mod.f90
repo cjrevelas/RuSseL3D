@@ -34,24 +34,24 @@ real(8), parameter                   :: dy = 1.0d-1
 real(8), parameter                   :: dz = 1.0d-1
 !----------------------------------------------------------------------------------------------------------------------------!
   contains
-    real(8) function interf_area()
+    real(8) function interfaceArea()
       integer :: ii, mm, nn
 
-      interf_area = 0.0d0
+      interfaceArea = 0.0d0
 
       do mm = 1, 3
         do nn = 1, 2
           if (isDirichletFace(mm,nn)) then
-            interf_area = interf_area + DABS((boxHigh(1)-boxLow(1))*(boxHigh(2)-boxLow(2)))
+            interfaceArea = interfaceArea + DABS((boxHigh(1)-boxLow(1))*(boxHigh(2)-boxLow(2)))
           endif
         enddo
       enddo
 
       do ii = 1, numNanopFaces
-        interf_area = interf_area + 4.0d0*pi*(nanopRadiusEff(ii)-wallDistance)**2.0d0
+        interfaceArea = interfaceArea + 4.0d0*pi*(nanopRadiusEff(ii)-wallDistance)**2.0d0
       enddo
 
       return
-    end function interf_area
+    end function interfaceArea
 !----------------------------------------------------------------------------------------------------------------------------!
 end module geometry_mod

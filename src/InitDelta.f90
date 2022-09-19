@@ -6,7 +6,7 @@ subroutine InitDelta()
 !-----------------------------------------------------------------------------------------------------------!
 use geometry_mod,     only: numNodes
 use parser_vars_mod,  only: graftedExist
-use arrays_mod,       only: phi_gr_indiv
+use arrays_mod,       only: phiGraftedIndiv
 use iofiles_mod,      only: IO_graftFile
 use delta_mod
 use error_handing_mod
@@ -50,6 +50,6 @@ else
   allocate(graftPointId(targetNumGraftedChains))
 endif
 
-allocate(phi_gr_indiv(numNodes,targetNumGraftedChains))
+allocate(phiGraftedIndiv(numNodes,targetNumGraftedChains))
 !-----------------------------------------------------------------------------------------------------------!
 end subroutine InitDelta

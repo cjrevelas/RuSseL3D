@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine FemNonZeroEntries(ds, mumpsMatrixType, nodeBelongsToDirichletFace, elemcon)
+subroutine FemNonZeroEntries(ds, nodeBelongsToDirichletFace, elemcon)
 !------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module
@@ -11,7 +11,7 @@ use geometry_mod,    only: numTotalNodePairs, numNodesLocalTypeDomain, numElemen
                            numNodes, nodePairingXXhash, nodePairingYYhash, nodePairingZZhash, &
                            nodePairingYYhashInverse, nodePairingZZhashInverse
 use constants_mod,   only: tol
-use parser_vars_mod, only: periodicAxisId, periodicity
+use parser_vars_mod, only: periodicAxisId, periodicity, mumpsMatrixType
 use flags_mod,       only: mumps_asymm, mumps_posDef, mumps_genSymm
 use fhash_module__ints_double
 !#define PRINT_AFULL
@@ -21,8 +21,7 @@ use iofiles_mod, only: A_matrix_full
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-integer, intent(in) :: mumpsMatrixType
-integer             :: ii, jj, kk
+integer :: ii, jj, kk
 
 logical, intent(in), dimension(numNodes)                          :: nodeBelongsToDirichletFace
 logical, dimension(numNodesLocalTypeDomain*numElementsTypeDomain) :: set_diag_to_one
