@@ -15,9 +15,8 @@ integer, intent(in) :: numGraftedChainsToExport, numNodes
 integer             :: ii, kk
 
 real(8), intent(in), dimension(3,numNodes)                      :: nodeCoord
-!real(8), intent(in), dimension(numNodes,numGraftedChainsToExport) :: phi_gr_indiv ! CODESMELL: maybe numGraftedChainsToExport must be targetNumGraftedChains??
-real(8), intent(in), dimension(numNodes,targetNumGraftedChains) :: phi_gr_indiv ! CODESMELL: maybe numGraftedChainsToExport must be targetNumGraftedChains??
-real(8), dimension(numGraftedChainsToExport)                    :: nch_gr
+real(8), intent(in), dimension(numNodes,targetNumGraftedChains) :: phi_gr_indiv
+real(8), dimension(targetNumGraftedChains)                      :: nch_gr
 
 integer :: gpIndex
 !------------------------------------------------------------------------------------------------------!
