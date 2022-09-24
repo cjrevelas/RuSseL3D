@@ -14,7 +14,7 @@ use geometry_mod,     only: numNodesLocalTypeDomain, numElementsOfNode, boxLow, 
                             numDimensions, nodePairId, numBulkNodePairs, numTotalNodePairs,               &
                             nodePairingXXhash, nodePairingYYhash, nodePairingZZhash,                      &
                             nodePairingXXhashInverse, nodePairingYYhashInverse, nodePairingZZhashInverse, &
-                            numNodesLocalTypeFace, numElementsTypeFace, nodePairId, isDestPeriodicNodeXX, &
+                            numNodesLocalTypeFace, numElementsTypeFace, isDestPeriodicNodeXX, &
                             isDestPeriodicNodeYY, isDestPeriodicNodeZZ
 use kcw_mod,          only: F_m
 use iofiles_mod,      only: IO_meshFile, IO_dirichletFaces, IO_nodepairs, IO_nodeConnectivity, &
@@ -42,9 +42,6 @@ type(fhash_type__ints_double)          :: vertexEntityHash, edgeEntityHash, face
 type(fhash_type_iterator__ints_double) :: vertexEntityIt, edgeEntityIt, faceEntityIt, domainEntityIt
 type(ints_type)                        :: vertexEntityKey, edgeEntityKey, faceEntityKey, domainEntityKey
 integer                                :: vertexEntityValue, edgeEntityValue, faceEntityValue, domainEntityValue
-
-type(ints_type)                        :: elemconKey, nodePairingXXkeyInverse, nodePairingYYkeyInverse, nodePairingZZkeyInverse
-integer                                :: node1, node2, pairId, elemconValueBulk, nodePairingXXvalueInverse, nodePairingYYvalueInverse, nodePairingZZvalueInverse
 
 type(fhash_type__ints_double)          :: xfaceOneHash, xfaceTwoHash, yfaceOneHash, yfaceTwoHash, zfaceOneHash, zfaceTwoHash
 !----------------------------------------------------------------------------------------------------------------------------!
@@ -338,80 +335,7 @@ F_m%is_zero = .True.
 call MeshBulkNodePairs(elemcon)
 
 if (domainIsPeriodic) then
-  allocate(elemconKey%ints(2))
-  if (periodicAxisId(1)) allocate(nodePairingXXkeyInverse%ints(1))
-  if (periodicAxisId(2)) allocate(nodePairingYYkeyInverse%ints(1))
-  if (periodicAxisId(3)) allocate(nodePairingZZkeyInverse%ints(1))
-
-  do ii = 1, numBulkNodePairs
-    node1  = F_m%row(ii)     ! 24  -> neumann
-    node2  = F_m%col(ii)     ! 23  -> neumann
-    pairId = nodePairId(ii)  ! 103 = ii = nodePairId(ii)
-
-    if ((node1==node2).and.(isDestPeriodicNodeXX(node1)).and.(isDestPeriodicNodeXX(node2))) cycle
-    if ((node1==node2).and.(isDestPeriodicNodeYY(node1)).and.(isDestPeriodicNodeYY(node2))) cycle
-    if ((node1==node2).and.(isDestPeriodicNodeZZ(node1)).and.(isDestPeriodicNodeZZ(node2))) cycle
-
-    if (isDestPeriodicNodeXX(node1)) then
-      nodePairingXXkeyInverse%ints(1) = node1
-      call nodePairingXXhashInverse%get(nodePairingXXkeyInverse, nodePairingXXvalueInverse)
-      F_m%row(ii) = nodePairingXXvalueInverse
-      node1       = nodePairingXXvalueInverse
-    endif
-
-    if (isDestPeriodicNodeXX(node2)) then
-      nodePairingXXkeyInverse%ints(1) = node2
-      call nodePairingXXhashInverse%get(nodePairingXXkeyInverse, nodePairingXXvalueInverse)
-      F_m%col(ii) = nodePairingXXvalueInverse
-      node2       = nodePairingXXvalueInverse
-    endif
-
-    if (isDestPeriodicNodeYY(node1)) then
-      nodePairingYYkeyInverse%ints(1) = node1
-      call nodePairingYYhashInverse%get(nodePairingYYkeyInverse, nodePairingYYvalueInverse)
-      F_m%row(ii) = nodePairingYYvalueInverse
-      node1       = nodePairingYYvalueInverse
-    endif
-
-    if (isDestPeriodicNodeYY(node2)) then
-      nodePairingYYkeyInverse%ints(1) = node2
-      call nodePairingYYhashInverse%get(nodePairingYYkeyInverse, nodePairingYYvalueInverse)
-      F_m%col(ii) = nodePairingYYvalueInverse
-      node2       = nodePairingYYvalueInverse
-    endif
-
-    if (isDestPeriodicNodeZZ(node1)) then
-      nodePairingZZkeyInverse%ints(1) = node1
-      call nodePairingZZhashInverse%get(nodePairingZZkeyInverse, nodePairingZZvalueInverse)
-      F_m%row(ii) = nodePairingZZvalueInverse
-      node1       = nodePairingZZvalueInverse
-    endif
-
-    if (isDestPeriodicNodeZZ(node2)) then
-      nodePairingZZkeyInverse%ints(1) = node2
-      call nodePairingZZhashInverse%get(nodePairingZZkeyInverse, nodePairingZZvalueInverse)
-      F_m%col(ii) = nodePairingZZvalueInverse
-      node2       = nodePairingZZvalueInverse
-    endif
-
-    elemconKey%ints(1) = F_m%row(ii) ! 24 -> periodic
-    elemconKey%ints(2) = F_m%col(ii) ! 7  -> periodic
-
-    call elemcon%get(elemconKey, elemconValueBulk, success) ! hash_bulk(24,7) = 201
-
-    if (success) then
-      if (elemconValueBulk > pairId) then
-        call elemcon%set(elemconKey, pairId)  ! elemconValueBulk will become equal to pairId for next instances of the same pair,   -> hash(24,7)      = 103
-        nodePairId(ii) = pairId               ! nodePairId will become equal to pairId (if is not already)                          -> nodePairId(103) = 103
-      else
-        call elemcon%set(elemconKey, elemconValueBulk) ! THIS LINE MAYBE IS NOT NEEDED
-        nodePairId(ii) = elemconValueBulk              ! nodePairId(201) = 103
-      endif
-    else
-      call elemcon%set(elemconKey, pairId) ! hash(24,7)     = 103
-      nodePairId(ii) = pairId              ! nodePairId(ii) = 103
-    endif
-  enddo
+  call MeshPeriodicDestNeighbors(isDestPeriodicNodeXX, isDestPeriodicNodeYY, isDestPeriodicNodeZZ, elemcon, nodePairId)
 endif
 
 ! xx pairs
@@ -445,8 +369,6 @@ do ii = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key
         numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + nodePairingZZhash%key_count()
   F_m%is_zero(ii) = (nodePairId(ii)/=ii)
 enddo
-
-!call elemcon%clear()
 
 call MeshDirichletFaces(numElementsTypeFace, numNodesLocalTypeFace, globalNodeIdTypeFace, faceEntityHash)
 
@@ -483,18 +405,9 @@ call domainEntityHash%clear()
 ! Deallocate memory
 if (numNodesLocalTypeDomain > 4) deallocate(temp3)
 deallocate(globalNodeIdTypeVertex, globalNodeIdTypeEdge, globalNodeIdTypeFace)
-if (periodicAxisId(1)) then
-  deallocate(isDestPeriodicNodeXX)
-  deallocate(nodePairingXXkeyInverse%ints)
-endif
-if (periodicAxisId(2)) then
-  deallocate(isDestPeriodicNodeYY)
-  deallocate(nodePairingYYkeyInverse%ints)
-endif
-if (periodicAxisId(3)) then
-  deallocate(isDestPeriodicNodeZZ)
-  deallocate(nodePairingZZkeyInverse%ints)
-endif
+if (periodicAxisId(1)) deallocate(isDestPeriodicNodeXX)
+if (periodicAxisId(2)) deallocate(isDestPeriodicNodeYY)
+if (periodicAxisId(3)) deallocate(isDestPeriodicNodeZZ)
 
 return
 !----------------------------------------------------------------------------------------------------------------------------!

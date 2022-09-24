@@ -106,6 +106,7 @@ OBJECTS=$(OBJDIR)/ComputeContourCoeffs.o\
 	$(OBJDIR)/InitScfParams.o\
 	$(OBJDIR)/MeshAppendPeriodicPairs.o\
 	$(OBJDIR)/MeshPeriodicNodePairs.o\
+	$(OBJDIR)/MeshPeriodicDestNeighbors.o\
 	$(OBJDIR)/MeshBulkNodePairs.o\
 	$(OBJDIR)/MeshDirichletFaces.o\
 	$(OBJDIR)/MeshElementsOfNode.o\
