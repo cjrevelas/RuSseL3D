@@ -43,7 +43,7 @@ write(1111,*)
 write(1111,'(A11)') "<PointData>"
 write(1111,'(A32,A6,A40)') line4a, phi_matrix, line4b
 do ii = 1, numNodes
-  write(1111,'(F18.16)') phi_mx(ii)
+  write(1111,'(F19.10)') phi_mx(ii)
 enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,*)
@@ -51,7 +51,7 @@ write(1111,*)
 ! Export density profile of grafted chains
 write(1111,'(A32,A6,A40)') line4a, phi_grafted, line4b
 do ii = 1, numNodes
-  write(1111,'(F18.16)') phi_gr(ii)
+  write(1111,'(F19.10)') phi_gr(ii)
 enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,*)
@@ -59,7 +59,7 @@ write(1111,*)
 ! Export field configuration
 write(1111,'(A32,A5,A40)') line4a, field, line4b
 do ii = 1, numNodes
-  write(1111,'(F19.16)') ww(ii)
+  write(1111,'(F19.10)') ww(ii)
 enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,'(A12)') "</PointData>"
@@ -69,7 +69,7 @@ write(1111,*)
 write(1111,'(A8)') "<Points>"
 write(1111,'(A83)') line5
 do ii = 1, numNodes
-  write(1111,'(3(F19.15,1X))') (nodeCoord(jj,ii), jj = 1, numDimensions)
+  write(1111,'(3(F19.10,1X))') (nodeCoord(jj,ii), jj = 1, numDimensions)
 enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,'(A9)') "</Points>"
@@ -79,7 +79,7 @@ write(1111,*)
 write(1111,'(A7)') "<Cells>"
 write(1111,'(A82)') line6
 do ii = 1, numElementsTypeDomain
-  write(1111,'(4(I5,1X))') (globalNodeIdTypeDomain(jj,ii) - 1, jj = 1, numNodesLocalTypeDomain)
+  write(1111,'(4(I8,1X))') (globalNodeIdTypeDomain(jj,ii) - 1, jj = 1, numNodesLocalTypeDomain)
 enddo
 write(1111,'(A12)') "</DataArray>"
 write(1111,*)
@@ -94,7 +94,7 @@ do ii = 1, 4*numElementsTypeDomain
   offset(ii) = jj
 enddo
 do ii = 0, numElementsTypeDomain-1
-  write(1111,'(4(I7,1X))') (offset(ii*4+jj), jj = 1, numNodesLocalTypeDomain)
+  write(1111,'(4(I8,1X))') (offset(ii*4+jj), jj = 1, numNodesLocalTypeDomain)
 enddo
 deallocate(offset)
 write(1111,'(A12)') "</DataArray>"
