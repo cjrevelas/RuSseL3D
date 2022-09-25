@@ -9,7 +9,7 @@ use geometry_mod, only: numNodes
 implicit none
 !-------------------------------------------------------------------------------------------!
 integer, intent(in) :: ns
-integer             :: kk, timeStep
+integer             :: kk, step
 
 real(8), intent(in)                           :: chainLength
 real(8), intent(in), dimension(ns+1)          :: coeff
@@ -20,8 +20,8 @@ real(8)                                       :: summer
 do kk = 1, numNodes
   summer = 0.0d0
 
-  do timeStep = 1, ns+1
-    summer = summer + coeff(timeStep) * qq1(timeStep,kk) * qq2(ns+2-timeStep,kk)
+  do step = 1, ns+1
+    summer = summer + coeff(step) * qq1(step,kk) * qq2(ns+2-step,kk)
   enddo
 
   phi(kk) = summer / chainLength
