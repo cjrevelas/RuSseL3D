@@ -51,8 +51,9 @@ else
   exportAll = .False.
 endif
 
+write(1111,'(A11)') "<PointData>"
 do ii = 1, gpCounter
-  ! Export density profile current grafted chain
+  ! Export density profile of current grafted chain
   if (exportAll) then
     gpIndex = ii
   else
@@ -63,7 +64,6 @@ do ii = 1, gpCounter
 
   write(chainId,'("index:",1X,I4,1X,", id:",1X,I7)') gpIndex, gpId
 
-  write(1111,'(A11)') "<PointData>"
   write(1111,'(A32,A25,A40)') line4a, chainId, line4b
   do jj = 1, numNodes
     write(1111,'(F18.16)') phi_gr_indiv(jj,gpIndex)
