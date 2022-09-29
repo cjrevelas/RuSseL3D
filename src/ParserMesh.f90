@@ -338,6 +338,8 @@ if (domainIsPeriodic) then
   call MeshPeriodicDestNeighbors(isDestPeriodicNodeXX, isDestPeriodicNodeYY, isDestPeriodicNodeZZ, elemcon, nodePairId)
 endif
 
+if (domainIsPeriodic) call MeshPeriodicEdges(nodePairingXXhash, nodePairingYYhash, nodePairingYYhashInverse)
+
 ! xx pairs
 startingPair = numBulkNodePairs + 1
 endingPair   = numBulkNodePairs + nodePairingXXhash%key_count()

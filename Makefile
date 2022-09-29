@@ -112,6 +112,7 @@ OBJECTS=$(OBJDIR)/ComputeContourCoeffs.o\
 	$(OBJDIR)/MeshElementsOfNode.o\
 	$(OBJDIR)/MeshFaceEntities.o\
 	$(OBJDIR)/MeshPeriodicFaces.o\
+	$(OBJDIR)/MeshPeriodicEdges.o\
 	$(OBJDIR)/MeshProfile.o\
         $(OBJDIR)/ParserInput.o\
 	$(OBJDIR)/ParserMesh.o\

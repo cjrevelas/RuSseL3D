@@ -16,8 +16,10 @@ integer                              :: numDimensions, numNodes
 integer                              :: numNodesLocalTypeFace, numNodesLocalTypeDomain
 integer                              :: numElementsTypeFace, numElementsTypeDomain
 integer                              :: numBulkNodePairs, numTotalNodePairs
+integer                              :: numEdgePeriodicPairs
 integer, allocatable, dimension(:)   :: nodePairId, numElementsOfNode
 integer, allocatable, dimension(:)   :: nodeBelongsToFaceId
+integer, allocatable, dimension(:)   :: edgeNodeOne, edgeNodeTwo, edgeNodeThree, edgeNodeFour
 integer, allocatable, dimension(:,:) :: globalNodeIdTypeDomain, elementOfNode
 
 logical, dimension(3,2)            :: isDirichletFace
