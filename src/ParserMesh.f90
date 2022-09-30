@@ -339,6 +339,7 @@ if (domainIsPeriodic) then
 endif
 
 if (domainIsPeriodic) call MeshPeriodicEdges(nodePairingXXhash, nodePairingYYhash, nodePairingYYhashInverse)
+if (domainIsPeriodic) call MeshPeriodicCorners()
 
 ! xx pairs
 startingPair = numBulkNodePairs + 1

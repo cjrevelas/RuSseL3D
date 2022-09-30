@@ -17,9 +17,13 @@ integer                              :: numNodesLocalTypeFace, numNodesLocalType
 integer                              :: numElementsTypeFace, numElementsTypeDomain
 integer                              :: numBulkNodePairs, numTotalNodePairs
 integer                              :: numEdgePeriodicPairs
+integer                              :: numCornerPeriodicPairsXX, numCornerPeriodicPairsYY
+integer                              :: destTriple
 integer, allocatable, dimension(:)   :: nodePairId, numElementsOfNode
 integer, allocatable, dimension(:)   :: nodeBelongsToFaceId
 integer, allocatable, dimension(:)   :: edgeNodeOne, edgeNodeTwo, edgeNodeThree, edgeNodeFour
+integer, allocatable, dimension(:)   :: cornerNodeOneYY, cornerNodeTwoYY, cornerNodeThreeYY, cornerNodeFourYY
+integer, allocatable, dimension(:)   :: cornerNodeOneXX, cornerNodeTwoXX, cornerNodeThreeXX, cornerNodeFourXX
 integer, allocatable, dimension(:,:) :: globalNodeIdTypeDomain, elementOfNode
 
 logical, dimension(3,2)            :: isDirichletFace
