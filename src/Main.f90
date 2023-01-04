@@ -296,18 +296,22 @@ if (freeEnergyError.lt.freeEnergyTol) then
   write(6  ,'("Energy convergence of max error",F16.9)') freeEnergyError
 endif
 
-write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 freeEnergy
-write(6  ,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40),                 freeEnergy
-write(iow,'(3X,A40,E16.9)')adjl("Interface area (A2):",40),                 interfaceArea()
-write(6  ,'(3X,A40,E16.9)')adjl("Interface area (A2):",40),                 interfaceArea()
-write(iow,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), partitionMatrixChains
-write(6  ,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), partitionMatrixChains
-write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             numGraftedChains/interfaceArea()
-write(6  ,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),             numGraftedChains/interfaceArea()
-write(iow,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            numGraftedChains
-write(6  ,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40),            numGraftedChains
-write(iow,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             numMatrixChains
-write(6  ,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             numMatrixChains
+write(iow,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40), freeEnergy
+write(6  ,'(3X,A40,E16.9)')adjl("Free energy (mJ/m2):",40), freeEnergy
+write(iow,'(3X,A40,E16.9)')adjl("Interface area (A2):",40), interfaceArea()
+write(6  ,'(3X,A40,E16.9)')adjl("Interface area (A2):",40), interfaceArea()
+if (matrixExist.eq.1) then
+  write(iow,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), partitionMatrixChains
+  write(6  ,'(3X,A40,E16.9)')adjl("Partition function of matrix chains:",40), partitionMatrixChains
+  write(iow,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             numMatrixChains
+  write(6  ,'(3X,A40,E16.4)')adjl("Number of matrix chains:",40),             numMatrixChains
+endif
+if (graftedExist.eq.1) then
+  write(iow,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),  numGraftedChains/interfaceArea()
+  write(6  ,'(3X,A40,E16.9)')adjl("Grafting density (A^-2):",40),  numGraftedChains/interfaceArea()
+  write(iow,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40), numGraftedChains
+  write(6  ,'(3X,A40,E16.4)')adjl("Number of grafted chains:",40), numGraftedChains
+endif
 
 tFinal = ToolsSystemTime()
 write(6,'(3X,A40,I16)')adjl('Run duration:',40), tFinal - tInit
