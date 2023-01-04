@@ -1230,13 +1230,12 @@ if (log_eos_type) then
     write(iow,'(3X,A40,I9)')adjl("Equation of state: Helfand",40), eos_type
     write(*  ,'(3X,A40,I9)')adjl("Equation of state: Helfand",40), eos_type
   elseif (eos_type.eq.eos_sl) then
-    write(iow,'(3X,A45,I9)')adjl("Equation of state: Sanchez-Lacombe",40), eos_type
-    write(*  ,'(3X,A45,I9)')adjl("Equation of state: Sanchez-Lacombe",40), eos_type
+    write(iow,'(3X,A40,I9)')adjl("Equation of state: Sanchez-Lacombe",40), eos_type
+    write(*  ,'(3X,A40,I9)')adjl("Equation of state: Sanchez-Lacombe",40), eos_type
   else
     write(*  ,'(A45,I11)') 'EOS flag different than 0 (HF) or 1 (SL)', eos_type
     STOP
   endif
-  call InitScfParams()
 else
   write(iow,'(A45)') "EOS flag not set"
   write(*  ,'(A45)') "EOS flag not set"
@@ -1249,9 +1248,15 @@ if (log_eos_coeffs) then
     write(iow,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40), hlf_kappa_T, " [Pa^-1]"
     write(*  ,'(3X,A40,E16.9,A8)')adjl("Helfand isothermal compressibility:",40), hlf_kappa_T, " [Pa^-1]"
   elseif (eos_type.eq.eos_sl) then
-    write(iow,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
-    write(*  ,'(A40,3(F16.4))') "rho_star, T_star, P_star = ", rho_star, T_star, P_star
+    write(iow,'(3X,A40,E16.9,A8)')adjl("SL characteristic density (rho_star):",40), rho_star, " [g/cm3]"
+    write(*  ,'(3X,A40,E16.9,A8)')adjl("SL characteristic density (rho_star):",40), rho_star, " [g/cm3]"
+    write(iow,'(3X,A40,E16.9,A8)')adjl("SL characteristic temperature (T_star):",40), T_star, " [K]"
+    write(*  ,'(3X,A40,E16.9,A8)')adjl("SL characteristic temperature (T_star):",40), T_star, " [K]"
+    write(iow,'(3X,A40,E16.9,A8)')adjl("SL characteristic pressure (P_star):",40), P_star, " [Pa]"
+    write(*  ,'(3X,A40,E16.9,A8)')adjl("SL characteristic pressure (P_star):",40), P_star, " [Pa]"
   endif
+
+  call InitScfParams()
 else
   write(iow,'(A40)') "EOS coeffs were not found"
   write(*  ,'(A40)') "EOS coeffs were not found"
