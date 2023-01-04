@@ -107,8 +107,10 @@ call ToolsHistogram(binThickness, nodeVolume)
 call MPI_BCAST(mumpsMatrixType, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
 #endif
 
+call InitChainContour(contourMatrix, lengthMatrixMax, critContourMatrix, numEdwPointsMatrix, stepEdwAveMatrix, ds_mx_ed, xs_mx_ed, coeff_mx_ed)
+
+! In absence of mx chains, skip discretization for mx convolution
 if (matrixExist.eq.1) then
-  call InitChainContour(contourMatrix, lengthMatrixMax, critContourMatrix, numEdwPointsMatrix, stepEdwAveMatrix, ds_mx_ed, xs_mx_ed, coeff_mx_ed)
   if (contourMatrix.ne.contour_uniform) then
     call InitChainContour(contour_symm, lengthMatrix, critContourMatrix, numConvolPointsMatrix, stepConvolAveMatrix, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
   else
@@ -157,6 +159,7 @@ do iter = initialIterationId, iterations-1
     qqMatrixFinal(1,ii) = 1.0d0
   enddo
 
+  ! We always need to solve for mx chains to perform convolution
   call SolverEdwards(ds_mx_ed, numEdwPointsMatrix, qqMatrix, qqMatrixFinal, nodeBelongsToDirichletFace, elemcon)
 
   if (graftedExist.eq.1) then
@@ -197,6 +200,7 @@ do iter = initialIterationId, iterations-1
     call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, qqGrafted, qqGraftedFinal, nodeBelongsToDirichletFace, elemcon)
   endif
 
+  ! In absence of mx chains, skip mx convolution
   if (matrixExist.eq.1) then
     do ii = 1, numNodes
       call interp_linear(1, numEdwPointsMatrix+1, xs_mx_ed, qqMatrixFinal(:,ii), numConvolPointsMatrix+1, xs_mx_conv, qqMatrixInterp(:,ii))
@@ -223,6 +227,7 @@ do iter = initialIterationId, iterations-1
   if (matrixExist.eq.1)  call ComputeNumberOfChains(lengthMatrix, phiMatrix, numMatrixChains)
   if (graftedExist.eq.1) call ComputeNumberOfChains(lengthGrafted, phiGrafted, numGraftedChains)
 
+  ! Compare this to russel1d
   do kk = 1, numNodes
     wwFieldNew(kk) = (eos_df_drho(phiTotal(kk)) - eos_df_drho(1.0d0)) / (boltz_const_Joule_K*temperature) - &
                    & sgtParam * (segmentBulkDensity * dphi2_dr2(kk)) / (boltz_const_Joule_K * temperature) + uuField(kk)

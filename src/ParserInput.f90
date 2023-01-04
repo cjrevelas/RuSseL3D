@@ -568,78 +568,78 @@ if (matrixExist.eq.1) then
   write(6  ,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40), lengthMatrix, "[monomers]"
   write(6  ,'(3X,A40,E16.9,A11)')adjl("Radius of gyration of matrix chains:",40), &
                                                            & DSQRT(rg2OfMatrixMonomer*lengthMatrix), "[Angstrom]"
+endif
 
-  if (log_ds_ave_mx) then
-    if (stepEdwAveMatrix>0.0d0 .and. stepConvolAveMatrix>0.0d0) then
-      numEdwPointsMatrix    = 2 * NINT(0.5d0 * lengthMatrixMax / stepEdwAveMatrix)
-      numConvolPointsMatrix = 2 * NINT(0.5d0 * lengthMatrix    / stepConvolAveMatrix)
+if (log_ds_ave_mx) then
+  if (stepEdwAveMatrix>0.0d0 .and. stepConvolAveMatrix>0.0d0) then
+    numEdwPointsMatrix    = 2 * NINT(0.5d0 * lengthMatrixMax / stepEdwAveMatrix)
+    numConvolPointsMatrix = 2 * NINT(0.5d0 * lengthMatrix    / stepConvolAveMatrix)
 
-      write(iow,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), numEdwPointsMatrix, numConvolPointsMatrix
-      write(6  ,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), numEdwPointsMatrix, numConvolPointsMatrix
+    write(iow,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), numEdwPointsMatrix, numConvolPointsMatrix
+    write(6  ,'(3X,A40,I9,I7)')adjl("Number of matrix segments:",40), numEdwPointsMatrix, numConvolPointsMatrix
 
-      if (MOD(numEdwPointsMatrix,2).ne.0 .or. MOD(numConvolPointsMatrix,2).ne.0) then
-        write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') numEdwPointsMatrix, numConvolPointsMatrix
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-      endif
-    else
-      write(ERROR_MESSAGE,'("Contour step of matrix chains is negative: ",E16.9,E16.9)') stepEdwAveMatrix, stepConvolAveMatrix
+    if (MOD(numEdwPointsMatrix,2).ne.0 .or. MOD(numConvolPointsMatrix,2).ne.0) then
+      write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') numEdwPointsMatrix, numConvolPointsMatrix
       call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
   else
-    ERROR_MESSAGE="Contour step of matrix chains was not detected."
+    write(ERROR_MESSAGE,'("Contour step of matrix chains is negative: ",E16.9,E16.9)') stepEdwAveMatrix, stepConvolAveMatrix
     call exit_with_error(1,1,1,ERROR_MESSAGE)
   endif
+else
+  ERROR_MESSAGE="Contour step of matrix chains was not detected."
+  call exit_with_error(1,1,1,ERROR_MESSAGE)
+endif
 
-  if (log_contourMatrix) then
-    if (contourMatrix.eq.contour_uniform) then
-      write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "uniform"
-      write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "uniform"
-    elseif (contourMatrix.eq.contour_symm) then
-      write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "symm"
-      write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "symm"
-    elseif (contourMatrix.eq.contour_hybrid) then
-      write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "hybrid"
-      write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "hybrid"
-      if (critContourMatrix < 0) then
-        write(ERROR_MESSAGE,'("Critical contour point of matrix chains is negative: ",E16.9)') critContourMatrix
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-      elseif (critContourMatrix > 0) then
-        write(iow,'(3X,A40,F16.9)')adjl("Critical contour point of matrix chains:",40), critContourMatrix
-        write(6  ,'(3X,A40,F16.9)')adjl("Critical contour point of matrix chains:",40), critContourMatrix
-      else
-        ERROR_MESSAGE = "Critical contour point of matrix chains was not detected."
-        call exit_with_error(1,1,1,ERROR_MESSAGE)
-      endif
-
-      call ComputeContourStep(stepEdwAveMatrix, critContourMatrix, lengthMatrixMax, numEdwPointsMatrix)
-
-    elseif (contourMatrix.eq.contour_asymm) then
-      write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
-      write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
+if (log_contourMatrix) then
+  if (contourMatrix.eq.contour_uniform) then
+    write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "uniform"
+    write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "uniform"
+  elseif (contourMatrix.eq.contour_symm) then
+    write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "symm"
+    write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "symm"
+  elseif (contourMatrix.eq.contour_hybrid) then
+    write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "hybrid"
+    write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "hybrid"
+    if (critContourMatrix < 0) then
+      write(ERROR_MESSAGE,'("Critical contour point of matrix chains is negative: ",E16.9)') critContourMatrix
+      call exit_with_error(1,1,1,ERROR_MESSAGE)
+    elseif (critContourMatrix > 0) then
+      write(iow,'(3X,A40,F16.9)')adjl("Critical contour point of matrix chains:",40), critContourMatrix
+      write(6  ,'(3X,A40,F16.9)')adjl("Critical contour point of matrix chains:",40), critContourMatrix
     else
-      write(ERROR_MESSAGE,'("Not valid Edwards contour scheme of matrix chains: ",I5)') contourMatrix
+      ERROR_MESSAGE = "Critical contour point of matrix chains was not detected."
       call exit_with_error(1,1,1,ERROR_MESSAGE)
     endif
+
+    call ComputeContourStep(stepEdwAveMatrix, critContourMatrix, lengthMatrixMax, numEdwPointsMatrix)
+
+  elseif (contourMatrix.eq.contour_asymm) then
+    write(iow,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
+    write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
   else
-    ERROR_MESSAGE = "Edwards contour scheme of matrix chains was not detected."
+    write(ERROR_MESSAGE,'("Not valid Edwards contour scheme of matrix chains: ",I5)') contourMatrix
     call exit_with_error(1,1,1,ERROR_MESSAGE)
   endif
+else
+  ERROR_MESSAGE = "Edwards contour scheme of matrix chains was not detected."
+  call exit_with_error(1,1,1,ERROR_MESSAGE)
+endif
 
-  if (log_adsorptionDistance) then
-    if (adsorptionDistance.ge.0.0d0) then
-      write(iow,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40), adsorptionDistance, "[Angstrom]"
-      write(6  ,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40), adsorptionDistance, "[Angstrom]"
-    else
-      write(ERROR_MESSAGE,'("Adsorption distance for chain segments is negative:",E16.9)') adsorptionDistance
-      call exit_with_error(1,1,1,ERROR_MESSAGE)
-    endif
+if (log_adsorptionDistance) then
+  if (adsorptionDistance.ge.0.0d0) then
+    write(iow,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40), adsorptionDistance, "[Angstrom]"
+    write(6  ,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40), adsorptionDistance, "[Angstrom]"
   else
-    adsorptionDistance = dflt_adsorptionDistance
-    write(iow,'(3X,A40)')adjl("Adsorption distance not found.",40)
-    write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), adsorptionDistance, "[Angstrom]"
-    write(6  ,'(3X,A40)')adjl("Adsorption distance not found.",40)
-    write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), adsorptionDistance, "[Angstrom]"
+    write(ERROR_MESSAGE,'("Adsorption distance for chain segments is negative:",E16.9)') adsorptionDistance
+    call exit_with_error(1,1,1,ERROR_MESSAGE)
   endif
+else
+  adsorptionDistance = dflt_adsorptionDistance
+  write(iow,'(3X,A40)')adjl("Adsorption distance not found.",40)
+  write(iow,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), adsorptionDistance, "[Angstrom]"
+  write(6  ,'(3X,A40)')adjl("Adsorption distance not found.",40)
+  write(6  ,'(3X,A40,E16.9,A11)')adjl("It was set to the default value:",40), adsorptionDistance, "[Angstrom]"
 endif
 
 
