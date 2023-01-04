@@ -55,7 +55,7 @@ elseif (eos_type.eq.eos_sl) then
   write(iow,'(3X,A40,E16.9," [g/cm3]")')adjl('Bulk mass density was recomputed as:',40), massBulkDensity/gr_cm3_to_kg_m3
   write(*  ,'(3X,A40,E16.9," [g/cm3]")')adjl('Bulk mass density was recomputed as:',40), massBulkDensity/gr_cm3_to_kg_m3
 
-  aux = T_tilde * P_star * rho_tilde_bulk**2.0d0 / (1.0d0/(1.0d0-rho_tilde_bulk) + 1.0d0/(rho_tilde_bulk*rsl_N*lengthBulk) - 2.0d0/T_tilde)
+  aux = T_tilde * P_star * rho_tilde_bulk**2.0d0 * (1.0d0/(1.0d0-rho_tilde_bulk) + 1.0d0/(rho_tilde_bulk*rsl_N*lengthBulk) - 2.0d0/T_tilde)
   slCompressibility = 1.0d0 / aux
 
   write(iow,'(3X,A40,E16.9," [Pa^-1]")')adjl('SL isothermal compressibility:',40), slCompressibility
