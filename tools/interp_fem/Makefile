@@ -2,7 +2,7 @@
 #                  Makefile of FEM-INTERPOLATION code                 #
 #######################################################################
 MAKE_PRODUCTION_RUN = 1
-FC                  = /home/cjrevelas/programs/GCC-5.1.0/bin/gfortran
+FC                  = /usr/bin/gfortran
 PROD_OPTIONS        =
 DEBUG_OPTIONS       = -DDEBUG_OUTPUTS
 BOTH_OPTIONS        =

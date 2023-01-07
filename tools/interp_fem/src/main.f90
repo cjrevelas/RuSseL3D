@@ -9,15 +9,18 @@ program fem3d_spatial_interpolation
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------------------------------------------------------------------------------!
-integer                              :: i, j, ii, jj, numnp, numel, dummy
-integer                              :: nodeId, i_node
-integer, parameter                   :: max_el_node=70
-integer, allocatable, dimension(:)   :: n_el_node
-integer, allocatable, dimension(:,:) :: ix, el_node
+integer                              :: i, j, ii, numnp, numel, num_plot_points, dummy
+integer, allocatable, dimension(:,:) :: ix
 
+logical :: plot_across_x, plot_across_y, plot_across_z, plot_across_r
+
+real(8)                              :: delta_plot, coef_x, coef_y, coef_z, coef_r
+real(8)                              :: x_plot, x_plot_min, x_plot_max
+real(8)                              :: y_plot, y_plot_min, y_plot_max
+real(8)                              :: z_plot, z_plot_min, z_plot_max
+real(8)                              :: r_plot, r_plot_min, r_plot_max
+real(8)                              :: x_gp, y_gp, z_gp
 real(8)                              :: time_1, time_2, delta_time
-real(8)                              :: x_test, y_test, z_test
-real(8)                              :: interp, phi_interp
 real(8), allocatable, dimension(:)   :: phi_matrix, phi_grafted, wa
 real(8), allocatable, dimension(:,:) :: xc
 !--------------------------------------------------------------------------------------------------------------------------------------------!
@@ -26,7 +29,74 @@ call cpu_time(time_1)
 open(unit = 22, file = "in.input")
 read(22,*) numnp
 read(22,*) numel
+read(22,*) num_plot_points
+
+read(22,*)
+
+read(22,*) plot_across_x
+read(22,*) plot_across_y
+read(22,*) plot_across_z
+read(22,*) plot_across_r
+
+read(22,*)
+
+read(22,*) x_plot_min, x_plot_max
+read(22,*) y_plot_min, y_plot_max
+read(22,*) z_plot_min, z_plot_max
+read(22,*) r_plot_min, r_plot_max
+
+read(22,*)
+
+read(22,*) x_gp
+read(22,*) y_gp
+read(22,*) z_gp
 close(22)
+
+if (plot_across_x) then
+    coef_x = 1.0
+    coef_y = 0.0
+    coef_z = 0.0
+    coef_r = 0.0
+
+    delta_plot = x_plot_max - x_plot_min
+    x_plot     = x_plot_min
+    y_plot     = y_plot_min
+    z_plot     = z_plot_min
+    r_plot     = r_plot_min
+elseif (plot_across_y) then
+    coef_x = 0.0
+    coef_y = 1.0
+    coef_z = 0.0
+    coef_r = 0.0
+
+    delta_plot = y_plot_max - y_plot_min
+    x_plot     = x_plot_min
+    y_plot     = y_plot_min
+    z_plot     = z_plot_min
+    r_plot     = r_plot_min
+elseif (plot_across_z) then
+    coef_x = 0.0
+    coef_y = 0.0
+    coef_z = 1.0
+    coef_r = 0.0
+
+    delta_plot = z_plot_max - z_plot_min
+    x_plot     = x_plot_min
+    y_plot     = y_plot_min
+    z_plot     = z_plot_max
+    r_plot     = r_plot_min
+elseif (plot_across_r) then
+    coef_x = 0.0
+    coef_y = 0.0
+    coef_z = 0.0
+    coef_r = 1.0
+
+    delta_plot = r_plot_max - r_plot_min
+    x_plot     = x_plot_min
+    y_plot     = y_plot_min
+    z_plot     = z_plot_min
+    r_plot     = r_plot_min
+endif
 
 allocate(xc(3,numnp), ix(4,numel), phi_matrix(numnp), phi_grafted(numnp), wa(numnp))
 
@@ -36,45 +106,14 @@ close(77)
 
 ix = ix + 1
 
-! compute the array elements of node
-allocate(n_el_node(numnp))
-allocate(el_node(numnp, max_el_node))
-
-n_el_node = 0
-do ii = 1, numel
-   do jj = 1, 4
-      i_node = ix(jj, ii)
-      n_el_node(i_node) = n_el_node(i_node) + 1
-      el_node(i_node, n_el_node(i_node)) = ii
-   enddo
-enddo
-
-!do ii = 1, numnp
-!   write(123,*) (el_node(ii,jj), jj=1, n_el_node(ii))
-!enddo
-
-open(unit = 88, file = "in.profiles")
+open(unit = 88, file = "in.profiles.r24_ng040_N384")
 do i = 1, numnp
     read(88,*) dummy, (xc(j,i), j=1,3), phi_matrix(i), phi_grafted(i), wa(i)
 enddo
 close(88)
 
-open(unit = 80, file = "o.interp")
-!nodeId = 10
-!x_test = xc(1,nodeId)
-x_test = 0.d0
-!y_test = xc(2,nodeId)
-y_test = 0.d0
-!z_test = xc(3,nodeId)
-z_test = 5.d1
-
-do ii = 1, 1000
-    z_test     = z_test - 5.d1 / 1000
-    phi_interp = interp(numnp, numel, el_node, n_el_node, max_el_node, nodeId, ix, xc, x_test, y_test, z_test, phi_matrix)
-
-    write(80 ,'(I8,4(2X,E16.9))')nodeId, x_test, y_test, z_test, phi_interp
-enddo
-close(80)
+call interp(numnp, numel, num_plot_points, coef_x, coef_y, coef_z, coef_r, x_plot, y_plot, z_plot, &
+            & r_plot, delta_plot, x_gp, y_gp, z_gp, ix, xc, phi_matrix, phi_grafted, wa)
 
 call cpu_time(time_2)
 
@@ -82,6 +121,6 @@ delta_time = time_2 - time_1
 
 write(6, '("cpu time: ", F12.2, "min")') delta_time/6.d01
 
-deallocate(xc, ix, phi_matrix, n_el_node, el_node)
+deallocate(xc, ix, phi_matrix, phi_grafted, wa)
 !--------------------------------------------------------------------------------------------------------------------------------------------!
 end program fem3d_spatial_interpolation

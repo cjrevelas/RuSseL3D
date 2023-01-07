@@ -13,3 +13,4 @@ tools/test.*
 tools/*.test
 tools/large/
 tools/small/
+tools/interp_fem/macro2022
