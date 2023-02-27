@@ -27,7 +27,7 @@ real(8) :: T_tilde, P_tilde, rho_tilde_bulk, rsl_N
         ff = 5.0d-1 / hlf_kappa_T * (phi - 1.0d0)**2.0d0
       elseif (eos_type.eq.eos_sl) then
         rho_tilde = rho_tilde_bulk*phi
-        if (rho_tilde.gt.1.0d0) rho_tilde = 0.9999d0
+        if (rho_tilde.gt.1.0d0) rho_tilde = 0.96d0
 
         ff = P_star*(T_tilde*rho_tilde - rho_tilde**2.0d0 + T_tilde*(1.0d0-rho_tilde)*LOG(1.0d0-rho_tilde))
       endif
@@ -45,7 +45,7 @@ real(8) :: T_tilde, P_tilde, rho_tilde_bulk, rsl_N
         df_drho = (phi-1.0d0)/(hlf_kappa_T*molarBulkDensity*n_avog)
       elseif (eos_type.eq.eos_sl) then
         rho_tilde = rho_tilde_bulk*phi
-        if (rho_tilde.gt.1.0d0) rho_tilde = 0.9999d0
+        if (rho_tilde.gt.1.0d0) rho_tilde = 0.96d0
 
         df_drho = boltz_const_Joule_K*T_star*(-2.0d0*rsl_N*rho_tilde - T_tilde*rsl_N*LOG(1.0d0-rho_tilde))
       endif
