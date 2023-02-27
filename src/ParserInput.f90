@@ -187,7 +187,7 @@ do
       read(256,*) exportAllGraftedChains
       if (exportAllGraftedChains.eq.1) then
         continue
-      elseif (exportAllGraftedChains.eq.0) then
+      elseif ((exportAllGraftedChains.eq.0).or.(exportAllGraftedChains.eq.2)) then
         read(256,*) numGraftedChainsToExport
         allocate(gpIndexToExport(numGraftedChainsToExport))
         read(256,*) (gpIndexToExport(ii), ii = 1, numGraftedChainsToExport)

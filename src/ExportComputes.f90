@@ -125,7 +125,7 @@ if (graftedExist.eq.1) then
 
     if (exportAllGraftedChains.eq.1) then
       call ExportIndivProfile(targetNumGraftedChains, numNodes, nodeCoord, phiGraftedIndiv)
-    else
+    elseif ((exportAllGraftedChains.eq.0).or.(exportAllGraftedChains.eq.2)) then
       call ExportIndivProfile(numGraftedChainsToExport, numNodes, nodeCoord, phiGraftedIndiv)
     endif
 

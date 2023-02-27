@@ -46,31 +46,42 @@ write(1111,*)
 if (exportAllGraftedChains.eq.1) then
   gpCounter = targetNumGraftedChains
   exportAll = .True.
-else
+elseif (exportAllGraftedChains.eq.0) then
   gpCounter = numGraftedChainsToExport
   exportAll = .False.
 endif
 
 write(1111,'(A11)') "<PointData>"
-do ii = 1, gpCounter
-  ! Export density profile of current grafted chain
-  if (exportAll) then
-    gpIndex = ii
-  else
-    gpIndex = gpIndexToExport(ii)
-  endif
+if ((exportAllGraftedChains.eq.0).or.(exportAllGraftedChains.eq.1)) then
+  do ii = 1, gpCounter
+    ! Export density profile of current grafted chain
+    if (exportAll) then
+      gpIndex = ii
+    else
+      gpIndex = gpIndexToExport(ii)
+    endif
 
-  gpId = graftPointId(gpIndex)
+    gpId = graftPointId(gpIndex)
 
-  write(chainId,'("index:",1X,I4,1X,", id:",1X,I7)') gpIndex, gpId
+    write(chainId,'("index:",1X,I4,1X,", id:",1X,I7)') gpIndex, gpId
+
+    write(1111,'(A32,A25,A40)') line4a, chainId, line4b
+    do jj = 1, numNodes
+      write(1111,'(F19.10)') phi_gr_indiv(jj,gpIndex)
+    enddo
+    write(1111,'(A12)') "</DataArray>"
+    write(1111,*)
+  enddo
+elseif (exportAllGraftedChains.eq.2) then
+  write(chainId,'("index:",1X,I4,1X,", id:",1X,I7)') 1, 1
 
   write(1111,'(A32,A25,A40)') line4a, chainId, line4b
   do jj = 1, numNodes
-    write(1111,'(F19.10)') phi_gr_indiv(jj,gpIndex)
+    write(1111,'(F19.10)') phi_gr_indiv(jj,1)
   enddo
   write(1111,'(A12)') "</DataArray>"
   write(1111,*)
-enddo
+endif
 
 write(1111,'(A12)') "</PointData>"
 write(1111,*)

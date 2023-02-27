@@ -39,7 +39,7 @@ write(6,'(2X,A43)')adjl("Computing indiv profiles of grafted chains.",43)
 
 call FemMatrixAssemble(rg2OfGraftedMonomer, ww)
 
-if (exportAllGraftedChains.eq.1) then
+if (exportAllGraftedChains.eq.1) then ! export profile of all grafted chains separately
   do ii = 1, targetNumGraftedChains
     qgr       = 0.0d0
     qgr_final = 0.0d0
@@ -56,7 +56,7 @@ if (exportAllGraftedChains.eq.1) then
 
     call ContourConvolution(lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr_indiv(:,ii))
   enddo
-else
+elseif (exportAllGraftedChains.eq.0) then ! export profile of specific grafted chains separately
   do ii = 1, numGraftedChainsToExport
     qgr       = 0.0d0
     qgr_final = 0.0d0
@@ -75,6 +75,25 @@ else
 
     call ContourConvolution(lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr_indiv(:,gpIndex))
   enddo
+elseif (exportAllGraftedChains.eq.2) then ! export profile of specific grafted chains as a sum
+  qgr       = 0.0d0
+  qgr_final = 0.0d0
+
+  do ii = 1, numGraftedChainsToExport
+    gpIndex = gpIndexToExport(ii)
+
+    qgr(1,gpid(gpIndex))       = gp_init_value(gpIndex)
+    qgr_final(1,gpid(gpIndex)) = gp_init_value(gpIndex)
+  enddo
+
+  write(6, '(2X,A40)') "Some of specifiec grafted chains:"
+  call SolverEdwards(ds_gr_ed, numEdwPointsGrafted, qgr, qgr_final, nodeBelongsToDirichletFace, elemcon)
+
+  do jj = 1, numNodes
+    call interp_linear(1, numEdwPointsGrafted+1, xs_gr_ed, qgr_final(:,jj), numConvolPointsGrafted+1, xs_gr_conv, qgr_interp(:,jj))
+  enddo
+
+  call ContourConvolution(lengthGrafted, numConvolPointsGrafted, coeff_gr_conv, qgr_interp, qmx_interp_mg, phi_gr_indiv(:,1))
 endif
 
 return
