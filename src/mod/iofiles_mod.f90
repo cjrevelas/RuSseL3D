@@ -35,6 +35,7 @@ character(len=20) :: IO_zFace2Elements   = "d.zface2_elements"
 character(len=20) :: IO_nodePairingXX    = "d.node_pairing_xx"
 character(len=20) :: IO_nodePairingYY    = "d.node_pairing_yy"
 character(len=20) :: IO_nodePairingZZ    = "d.node_pairing_zz"
+character(len=20) :: IO_A_matrix_full    = "d.stiffness_matrix"
 
 ! Output files
 character(len=20) :: IO_solidPotential = "o.usolid"

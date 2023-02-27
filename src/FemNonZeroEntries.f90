@@ -15,7 +15,7 @@ use flags_mod,       only: mumps_asymm, mumps_posDef, mumps_genSymm
 use fhash_module__ints_double
 !#define PRINT_AFULL
 #ifdef PRINT_AFULL
-use iofiles_mod, only: A_matrix_full
+use iofiles_mod, only: IO_A_matrix_full
 #endif
 !------------------------------------------------------------------------------------------------------!
 implicit none
@@ -126,7 +126,7 @@ do kk = 1, NNZ
   A_full(ii,jj) = A_m%value(kk)
 enddo
 
-open(unit=255, file = A_matrix_full)
+open(unit=255, file = IO_A_matrix_full)
 do ii = 1, numNodes
   write(255,*) (A_full(ii,jj), jj = 1, numNodes)
 enddo
