@@ -4,52 +4,65 @@ import os
 import sys
 #----------------------------------------------------------------------------------------------------------------------------------#
 class Mesh:
-    def __init__(self, planar, grafting, numgp, radius, move, move_by_xx, reflect, importing):
-        self.planar     = planar
-        self.sphere     = not(self.planar)
-        self.grafting   = grafting
-        self.radius     = radius
-        self.move       = move
-        self.move_by_xx = move_by_xx
-        self.reflect    = reflect
-        self.importing  = importing
-
-        if (self.planar):
+    def __init__(self, planar, Lx, Ly, Lz, grafting, numgp, radius, moveXX, move_by_xx, moveYY, move_by_yy, moveZZ, move_by_zz, reflectXX, reflectYY, reflectZZ, importing):
+        if (planar):
             print("Geometry type = planar")
-        elif (self.sphere):
+        else:
             print("Geometry type = spherical")
 
-        if (self.grafting):
-            self.numgp       = numgp
-            self.graftcoords = np.zeros((3,self.numgp),float)
-            self.graftpoints = GraftPoints(self.planar, self.numgp, self.radius)
+        if (grafting):
+            self.graftpoints = GraftPoints(numgp)
 
-            if (self.importing):
-                self.graftcoords = self.graftpoints.importt()
+            if (importing):
+                self.graftpoints.coords = self.graftpoints.importt()
             else:
-                self.graftcoords = self.graftpoints.generate(self.radius)
+                self.graftpoints.coords = self.graftpoints.generate(planar, Lx, Ly, Lz, radius)
 
-            self.numgp    = self.graftpoints.numgp
-            self.geometry = Geometry(self.graftcoords[0,:], self.graftcoords[1,:], self.graftcoords[2,:], self.move_by_xx)
+            self.geometry = Geometry(self.graftpoints.coords[0,:], self.graftpoints.coords[1,:], self.graftpoints.coords[2,:])
 
-            if (self.move):
-                self.graftcoords[0,:] = self.geometry.moveAlongX()
+            if (moveXX):
+                self.graftpoints.coords[0,:] = self.geometry.moveAlongX(move_by_xx)
 
-            if (self.reflect):
+            if (moveYY):
+                self.graftpoints.coords[1,:] = self.geometry.moveAlongY(move_by_yy)
+
+            if (moveZZ):
+                self.graftpoints.coords[2,:] = self.geometry.moveAlongZ(move_by_zz)
+
+            if (reflectXX):
                 (tempX, tempY, tempZ) = self.geometry.reflectX()
 
-                self.graftcoords = np.zeros((3,tempX.size))
+                self.graftpoints.coords = np.zeros((3,tempX.size))
+                self.graftpoints.numgp  = tempX.size
 
-                self.graftcoords[0,:] = tempX
-                self.graftcoords[1,:] = tempY
-                self.graftcoords[2,:] = tempZ
+                self.graftpoints.coords[0,:] = tempX
+                self.graftpoints.coords[1,:] = tempY
+                self.graftpoints.coords[2,:] = tempZ
 
-                self.numgp = tempX.size
+            if (reflectYY):
+                (tempX, tempY, tempZ) = self.geometry.reflectY()
+
+                self.graftpoints.coords = np.zeros((3,tempY.size))
+                self.graftpoints.numgp  = tempY.size
+
+                self.graftpoints.coords[0,:] = tempX
+                self.graftpoints.coords[1,:] = tempY
+                self.graftpoints.coords[2,:] = tempZ
+
+            if (reflectZZ):
+                (tempX, tempY, tempZ) = self.geometry.reflectZ()
+
+                self.graftpoints.coords = np.zeros((3,tempZ.size))
+                self.graftpoints.numgp  = tempZ.size
+
+                self.graftpoints.coords[0,:] = tempX
+                self.graftpoints.coords[1,:] = tempY
+                self.graftpoints.coords[2,:] = tempZ
 
 
-    def read_the_mesh(self):
+    def read_the_mesh(self, Lx, Ly, Lz):
         try:
-            mesh_file = open("mesh.in.mphtxt", 'r')
+            mesh_file = open("in.mesh.mphtxt", 'r')
         except:
             print("ERROR OPENING INPUT FILE mesh.in.mphtxt")
             exit()
@@ -80,23 +93,26 @@ class Mesh:
                 for jj in range(0,self.numnp):
                     coords = mesh_file.readline()
                     meshpoints_file.write(coords)
-                    #meshpoints_file.write(str(jj+1) + " " + coords)
                     coords = coords.split()
                     self.meshpoint[0,jj] = float(coords[0])
                     self.meshpoint[1,jj] = float(coords[1])
                     self.meshpoint[2,jj] = float(coords[2])
 
-                self.x_min = np.amin(self.meshpoint,axis=1)[0]
-                self.y_min = np.amin(self.meshpoint,axis=1)[1]
-                self.z_min = np.amin(self.meshpoint,axis=1)[2]
+                x_min = np.amin(self.meshpoint,axis=1)[0]
+                y_min = np.amin(self.meshpoint,axis=1)[1]
+                z_min = np.amin(self.meshpoint,axis=1)[2]
 
-                self.x_max = np.amax(self.meshpoint,axis=1)[0]
-                self.y_max = np.amax(self.meshpoint,axis=1)[1]
-                self.z_max = np.amax(self.meshpoint,axis=1)[2]
+                x_max = np.amax(self.meshpoint,axis=1)[0]
+                y_max = np.amax(self.meshpoint,axis=1)[1]
+                z_max = np.amax(self.meshpoint,axis=1)[2]
 
-                self.boxX = self.x_max - self.x_min
-                self.boxY = self.y_max - self.y_min
-                self.boxZ = self.z_max - self.z_min
+                self.boxX = x_max - x_min
+                self.boxY = y_max - y_min
+                self.boxZ = z_max - z_min
+
+                if (np.absolute(Lx-self.boxX)>1.e-6 or np.absolute(Ly-self.boxY)>1.e-6 or np.absolute(Lz-self.boxZ)>1.e-6):
+                    message = "Box dimensions do not match:\n boxX = %.3f, boxY = %.3f, boxZ = %.3f\n Lx = %.3f, Ly = %.3f, Lz = %.3f" % (self.boxX, self.boxY, self.boxZ, Lx, Ly, Lz)
+                    raise Exception(message)
 
             if ("4 # number of nodes per element" in line):
                 self.nen = int(line.split()[0])
@@ -111,7 +127,6 @@ class Mesh:
                 for kk in range(0,self.numel):
                     global_node_index = mesh_file.readline()
                     elem_con_file.write(global_node_index)
-                    #elem_con_file.write(str(kk+1) + " " + global_node_index)
                     global_node_index = global_node_index.split()
 
                     for pp in range(0,self.nen):
@@ -147,9 +162,11 @@ class Mesh:
         mFile.write("model.component('comp1').geom.create('geom1', 3);\n")
         mFile.write('\n')
 
-        for point in range(0, self.numgp):
+        for point in range(0, self.graftpoints.numgp):
             mFile.write("model.component('comp1').geom('geom1').create('p" + str(point+1) + "'," + " 'Point');\n")
-            mFile.write("model.component('comp1').geom('geom1').feature('p" + str(point+1) + "').set('p',[" + str(self.graftcoords[0,point]) + "," + str(self.graftcoords[1,point]) + "," + str(self.graftcoords[2,point]) + "]);\n")
+            mFile.write("model.component('comp1').geom('geom1').feature('p" + str(point+1) + "').set('p',[" + str(self.graftpoints.coords[0,point]) +
+                                                                                                        "," + str(self.graftpoints.coords[1,point]) +
+                                                                                                        "," + str(self.graftpoints.coords[2,point]) + "]);\n")
 
         mFile.write("model.component('comp1').geom('geom1').run;\n")
         mFile.write('\n')
@@ -177,7 +194,7 @@ class Mesh:
         nodeFile.write("ITEM: TIMESTEP\n")
         nodeFile.write("0\n")
         nodeFile.write("ITEM: NUMBER OF ATOMS\n")
-        nodeFile.write(str(self.numgp)+'\n')
+        nodeFile.write(str(self.graftpoints.numgp)+'\n')
         nodeFile.write("ITEM: BOX BOUNDS pp pp pp\n")
         nodeFile.write("%.15f %.15f\n" % (-0.5*self.boxX, 0.5*self.boxX) )
         nodeFile.write("%.15f %.15f\n" % (-0.5*self.boxY, 0.5*self.boxY) )
@@ -192,9 +209,13 @@ class Mesh:
 
             nodeNumber += 1
 
-            for pp in range(0, self.numgp):
-                if np.absolute(self.meshpoint[0,jj]-self.graftcoords[0,pp])<tol and np.absolute(self.meshpoint[1,jj]-self.graftcoords[1,pp])<tol and np.absolute(self.meshpoint[2,jj]-self.graftcoords[2,pp])<tol:
-                    nodeFile.write(str(nodeNumber)+ "  %.1f" %(initial) + "  %.15f  %.15f  %.15f " %(self.graftcoords[0,pp], self.graftcoords[1,pp], self.graftcoords[2,pp]) + '\n')
+            for pp in range(0, self.graftpoints.numgp):
+                if (np.absolute(self.meshpoint[0,jj]-self.graftpoints.coords[0,pp])<tol and
+                    np.absolute(self.meshpoint[1,jj]-self.graftpoints.coords[1,pp])<tol and
+                    np.absolute(self.meshpoint[2,jj]-self.graftpoints.coords[2,pp])<tol):
+                    nodeFile.write(str(nodeNumber)+ "  %.1f" %(initial) + "  %.15f  %.15f  %.15f " %(self.graftpoints.coords[0,pp],
+                                                                                                     self.graftpoints.coords[1,pp],
+                                                                                                     self.graftpoints.coords[2,pp]) + '\n')
                     break
 
         nodeFile.close()
@@ -202,72 +223,60 @@ class Mesh:
         return
 #----------------------------------------------------------------------------------------------------------------------------------#
 class GraftPoints:
-    def __init__(self, planar, numgp, radius):
-        self.planar = planar
-        self.sphere = not(self.planar)
+    def __init__(self, numgp):
         self.numgp  = numgp
-        self.count  = 0
+        self.coords = np.zeros((3,self.numgp),float)
 
 
     def importt(self):
-        self.coords = np.array([[],[],[]],float)
-
         try:
             graftFile = open("in.gpoints", 'r')
         except:
             print("ERROR OPENING INPUT FILE in.gpoints")
             exit()
 
+        count = 0
         for line in graftFile:
-            x = float(line.split()[0])
-            y = float(line.split()[1])
-            z = float(line.split()[2])
-            self.coords = np.append(self.coords, [[x], [y], [z]], axis=1)
-            self.count += 1
+            self.coords[0,count] = float(line.split()[0])
+            self.coords[1,count] = float(line.split()[1])
+            self.coords[2,count] = float(line.split()[2])
+            count += 1
 
-        self.numgp = self.count
+        self.numgp = count
 
         return self.coords
 
 
-    def generate(self, radius):
-        if (self.planar):
-            self.coords = np.zeros((3,self.numgp),float)
-
+    def generate(self, planar, Lx, Ly, Lz, radius):
+        if (planar):
             periodicity_along_x = True
             periodicity_along_y = True
             periodicity_along_z = False
 
             dz = 0.2
-
-            gp_dist = np.sqrt(1/self.sigma)
+            sigma = self.numgp / (Lx * Ly)
+            gp_dist = np.sqrt(1/sigma)
 
             if (periodicity_along_x):
-                numgp_x = int(self.boxX / gp_dist)
+                numgp_x = int(Lx / gp_dist)
 
                 for ii in range(0, numgp_x):
                     for jj in range(numgp_x*ii, numgp_x*(ii+1)):
-                        self.coords[0,jj] = float(ii+1) * gp_dist - self.boxX * int( (float(ii+1)*gp_dist) / self.boxX) - gp_dist
+                        self.coords[0,jj] = float(ii+1) * gp_dist - Lx * int( (float(ii+1)*gp_dist) / Lx) - gp_dist
 
             if (periodicity_along_y):
-                numgp_y = int(self.boxY / gp_dist)
+                numgp_y = int(Ly / gp_dist)
 
                 for ii in range(0, numgp_x*numgp_y):
-                    self.coords[1,ii] = float(ii+1) * gp_dist - self.boxX * int( (float(ii+1)*gp_dist) / self.boxY) - gp_dist
+                    self.coords[1,ii] = float(ii+1) * gp_dist - Lx * int( (float(ii+1)*gp_dist) / Ly) - gp_dist
 
             if (periodicity_along_z):
-                numgp_z = int(self.boxZ / gp_dist)
+                numgp_z = int(Lz / gp_dist)
             else:
-                self.coords[2,:] = self.boxZ - dz
+                self.coords[2,:] = Lz - dz
 
-            return self.coords
-
-        if (self.sphere):
-            self.radius = radius
-
-            self.coords = np.array([[],[],[]],float)
-
-            #alpha = (4 * np.pi * self.radius**2)/(self.radius**2 * self.num_chains)
+        if (not(planar)):
+            #alpha = (4 * np.pi * radius**2)/(radius**2 * self.numgp)
             alpha = 4 * np.pi / self.numgp
 
             d = np.sqrt(alpha)
@@ -279,6 +288,7 @@ class GraftPoints:
 
             print("d_theta/d_phi = %.3f" %(d_theta/d_phi))
 
+            count = 0
             for ii in range(0, m_theta):
                 theta = np.pi * (ii + 0.5)/m_theta
                 m_phi = int(round(2 * np.pi * np.sin(theta)/d_phi))
@@ -286,21 +296,35 @@ class GraftPoints:
                 for jj in range(0, m_phi):
                     phi = (2 * np.pi * jj)/m_phi
 
-                    x = self.radius * np.sin(theta) * np.cos(phi)
-                    y = self.radius * np.sin(theta) * np.sin(phi)
-                    z = self.radius * np.cos(theta)
+                    if (count < self.numgp):
+                        self.coords[0,count] = radius * np.sin(theta) * np.cos(phi)
+                        self.coords[1,count] = radius * np.sin(theta) * np.sin(phi)
+                        self.coords[2,count] = radius * np.cos(theta)
+                    else:
+                        x = radius * np.sin(theta) * np.cos(phi)
+                        y = radius * np.sin(theta) * np.sin(phi)
+                        z = radius * np.cos(theta)
+                        tempArray = np.array([[x],[y],[z]])
+                        self.coords = np.append(self.coords, tempArray, axis=1)
 
-                    self.coords = np.append(self.coords, [[x], [y], [z]], axis=1)
+                    count += 1
 
-                    self.count += 1
+            self.numgp = count
 
-            self.numgp = self.count
+            print("Number of grafted chains =", self.numgp)
+            print("Surface grafting density = %.3f chains/Angstrom2" %(float(self.numgp)/(4*np.pi*radius**2)))
+            print("                         = %.2f chains/nm2      " %(float(self.numgp)/(4*np.pi*radius**2)*100))
 
-            print("Number of grafted chains =", self.count)
-            print("Surface grafting density = %.3f chains/Angstrom2" %(float(self.count)/(4*np.pi*self.radius**2)))
-            print("                         = %.2f chains/nm2      " %(float(self.count)/(4*np.pi*self.radius**2)*100))
+        return self.coords
 
-            return self.coords
+
+    def checkOutOfBox(self, Lx, Ly, Lz):
+        self.coords = np.delete(self.coords, np.where(self.coords>=Lx/2.0)[1], axis=1)
+        self.coords = np.delete(self.coords, np.where(self.coords<=-Lx/2.0)[1], axis=1)
+        self.numgp = self.coords.shape[1]
+        for ii in range(self.numgp):
+            sys.stdout.write("%d  %.4f  %.4f  %.4f\n" %(ii+1, self.coords[0,ii], self.coords[1,ii], self.coords[2,ii]))
+        return
 
 
     def insert_to_model_file(self):
@@ -334,7 +358,7 @@ class GraftPoints:
         return
 
 
-    def exportt(self):
+    def exportt(self, Lx, Ly, Lz):
         try:
             testFile = open("test.lammpstrj", 'w')
         except:
@@ -346,58 +370,89 @@ class GraftPoints:
         testFile.write("ITEM: NUMBER OF ATOMS\n")
         testFile.write(str(self.numgp)+'\n')
         testFile.write("ITEM: BOX BOUNDS pp pp pp\n")
-        testFile.write("%.15f %.15f\n" % (-0.5*self.boxX, 0.5*self.boxX) )
-        testFile.write("%.15f %.15f\n" % (-0.5*self.boxY, 0.5*self.boxY) )
-        testFile.write("%.15f %.15f\n" % (-0.5*self.boxZ, 0.5*self.boxZ) )
+        testFile.write("%.15f %.15f\n" % (-0.5*Lx, 0.5*Lx) )
+        testFile.write("%.15f %.15f\n" % (-0.5*Ly, 0.5*Ly) )
+        testFile.write("%.15f %.15f\n" % (-0.5*Lz, 0.5*Lz) )
         testFile.write("ITEM: ATOMS id type xu yu zu\n")
 
-        atomType = 1
+        atomType = 0
 
         nodeNumber = 0
         for jj in range(0,self.numgp):
             nodeNumber += 1
-            testFile.write(str(nodeNumber)+ "  %d" %(atomType) + "  %.15f  %.15f  %.15f " %(self.graftcoords[0,jj],
-                                                                                            self.graftcoords[1,jj],
-                                                                                            self.graftcoords[2,jj]) + '\n')
+            testFile.write(str(nodeNumber)+ "  %d" %(atomType) + "  %.15f  %.15f  %.15f " %(self.coords[0,jj],
+                                                                                            self.coords[1,jj],
+                                                                                            self.coords[2,jj]) + '\n')
 
         testFile.close()
 
         return
 #----------------------------------------------------------------------------------------------------------------------------------#
 class Geometry:
-    def __init__(self, x, y, z, move_by_xx):
-        self.x          = x
-        self.y          = y
-        self.z          = z
-        self.move_by_xx = move_by_xx
+    def __init__(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
 
 
     def cutInHalf(self):
         positiveX = np.where(self.x > 0.0)
-        self.negX = np.delete(self.x, positiveX)
-        self.negY = np.delete(self.y, positiveX)
-        self.negZ = np.delete(self.z, positiveX)
+        negX = np.delete(self.x, positiveX)
+        negY = np.delete(self.y, positiveX)
+        negZ = np.delete(self.z, positiveX)
 
         negativeX = np.where(self.x < 0.0)
-        self.posX = np.delete(self.x, negativeX)
-        self.posY = np.delete(self.y, negativeX)
-        self.posZ = np.delete(self.z, negativeX)
+        posX = np.delete(self.x, negativeX)
+        posY = np.delete(self.y, negativeX)
+        posZ = np.delete(self.z, negativeX)
 
         return
 
 
-    def moveAlongX(self):
-        self.x += self.move_by_xx
+    def moveAlongX(self, move_by_xx):
+        self.x += move_by_xx
 
         return self.x
 
 
-    def reflectX(self):
-        self.x_refl = -self.x
+    def moveAlongY(self, move_by_yy):
+        self.y += move_by_yy
 
-        self.x = np.append(self.x, self.x_refl)
+        return self.y
+
+
+    def moveAlongZ(self, move_by_zz):
+        self.z += move_by_zz
+
+        return self.z
+
+
+    def reflectX(self):
+        x_refl = -self.x
+
+        self.x = np.append(self.x, x_refl)
         self.y = np.append(self.y, self.y)
         self.z = np.append(self.z, self.z)
+
+        return (self.x, self.y, self.z)
+
+
+    def reflectY(self):
+        y_refl = -self.y
+
+        self.x = np.append(self.x, self.x)
+        self.y = np.append(self.y, y_refl)
+        self.z = np.append(self.z, self.z)
+
+        return (self.x, self.y, self.z)
+
+
+    def reflectZ(self):
+        z_refl = -self.z
+
+        self.x = np.append(self.x, self.x)
+        self.y = np.append(self.y, self.y)
+        self.z = np.append(self.z, z_refl)
 
         return (self.x, self.y, self.z)
 #----------------------------------------------------------------------------------------------------------------------------------#
@@ -416,14 +471,14 @@ def run_matlab_model():
     return
 
 
-def edit_model_size_parameters(boxLx, boxLy, boxLz, r_np_eff, centers):
+def edit_model_size_parameters(Lx, Ly, Lz, r_np_eff, centers):
     print("Editing model size parameters..")
-    print("boxLx:   ", boxLx)
-    set_variable_value("BOXLX", boxLx, "rsl3d_mesh_gen.m")
-    print("boxLy:   ", boxLy)
-    set_variable_value("BOXLY", boxLy, "rsl3d_mesh_gen.m")
-    print("boxLz:   ", boxLz)
-    set_variable_value("BOXLZ", boxLz, "rsl3d_mesh_gen.m")
+    print("boxLx:   ", Lx)
+    set_variable_value("BOXLX", Lx, "rsl3d_mesh_gen.m")
+    print("boxLy:   ", Ly)
+    set_variable_value("BOXLY", Ly, "rsl3d_mesh_gen.m")
+    print("boxLz:   ", Lz)
+    set_variable_value("BOXLZ", Lz, "rsl3d_mesh_gen.m")
     print("radius: ", r_np_eff)
     set_variable_value("RNP_EFF", r_np_eff, "rsl3d_mesh_gen.m")
 
@@ -440,63 +495,116 @@ def edit_model_size_parameters(boxLx, boxLy, boxLz, r_np_eff, centers):
 #----------------------------------------------------------------------------------------------------------------------------------#
 planar = False
 
-Lx = 380.0
-Ly = 220.0
-Lz = 220.0
+Lx = 80.0   # 380.0
+Ly = 80.0   # 220.0
+Lz = 80.0   # 220.0
 
-num_part = 2
+num_part = 8  # 2
 r_np_eff = 24.0
 r_gp     = 0.4
 
-h_ss_HS  = 132.8  # if num_part=1, this number does not make a difference
-
 use_gr  = True
-importt = True
-numgp   = 30     # If importt=true (nonuniform), this number does not make a difference
+importt = False #True
+numgp   = 37    # 30 # If importt=true (e.g., nonuniform), this number does not make a difference
 
-if num_part==1:
-    h_cc = 0
-elif num_part==2:
-    h_cc = 2*r_np_eff + h_ss_HS
+centers = np.zeros((3,num_part), float)
 
-centers       = np.empty((3,num_part), float)
-centers[0][0] = h_cc / 2.0
-centers[1][0] = 0.0
-centers[2][0] = 0.0
-
-if num_part == 1:
+if (num_part == 1):
     os.system("cp ./template_input_files/rsl3d_mesh_gen_template_sph1.m rsl3d_mesh_gen.m")
 
-    move       = False
+    moveXX     = False
     move_by_xx = 0.0
     reflect    = False
-elif num_part == 2:
+elif (num_part == 2):
     os.system("cp ./template_input_files/rsl3d_mesh_gen_template_sph2.m rsl3d_mesh_gen.m")
 
+    h_ss_HS = 132.8
+    h_cc    = 2*r_np_eff + h_ss_HS
+
+    centers[0][0] = +h_cc / 2.0
+    centers[0][1] = -h_cc / 2.0
+
     if (importt):
-        move       = False
+        moveXX     = False
         move_by_xx = 0
         reflect    = False
     else:
-        move       = True
+        moveXX     = True
         move_by_xx = h_cc / 2.0
         reflect    = True
+else:
+    os.system("cp ./template_input_files/rsl3d_mesh_gen_template_sph8.m rsl3d_mesh_gen.m")
 
-    centers[0][1] = -centers[0][0]
-    centers[1][1] =  centers[1][0]
-    centers[2][1] =  centers[2][0]
+    moveXX     = True
+    moveYY     = True
+    moveZZ     = True
+    move_by_xx = Lx / 2.0
+    move_by_yy = Ly / 2.0
+    move_by_zz = Lz / 2.0
+    reflectXX  = True
+    reflectYY  = True
+    reflectZZ  = True
 
-mesh = Mesh(planar, use_gr, numgp, r_np_eff + r_gp, move, move_by_xx, reflect, importt)
+    centers[0,0] = -Lx / 2.0
+    centers[1,0] = -Ly / 2.0
+    centers[2,0] = -Lz / 2.0
 
-mesh.matlab("tmp_graftpoints")
+    centers[0,1] = +Lx / 2.0
+    centers[1,1] = -Ly / 2.0
+    centers[2,1] = -Lz / 2.0
 
+    centers[0,2] = -Lx / 2.0
+    centers[1,2] = +Ly / 2.0
+    centers[2,2] = -Lz / 2.0
+
+    centers[0,3] = -Lx / 2.0
+    centers[1,3] = -Ly / 2.0
+    centers[2,3] = +Lz / 2.0
+
+    centers[0,4] = -Lx / 2.0
+    centers[1,4] = +Ly / 2.0
+    centers[2,4] = +Lz / 2.0
+
+    centers[0,5] = +Lx / 2.0
+    centers[1,5] = -Ly / 2.0
+    centers[2,5] = +Lz / 2.0
+
+    centers[0,6] = +Lx / 2.0
+    centers[1,6] = +Ly / 2.0
+    centers[2,6] = -Lz / 2.0
+
+    centers[0,7] = +Lx / 2.0
+    centers[1,7] = +Ly / 2.0
+    centers[2,7] = +Lz / 2.0
+
+mesh = Mesh(planar,
+            Lx,
+            Ly,
+            Lz,
+            use_gr,
+            numgp,
+            r_np_eff + r_gp,
+            moveXX,
+            move_by_xx,
+            moveYY,
+            move_by_yy,
+            moveZZ,
+            move_by_zz,
+            reflectXX,
+            reflectYY,
+            reflectZZ,
+            importt)
+
+mesh.graftpoints.checkOutOfBox(Lx, Ly, Lz)
+#mesh.matlab("tmp_graftpoints")
+#mesh.graftpoints.exportt(Lx, Ly, Lz)
 #mesh.graftpoints.insert_to_model_file()
 
 #edit_model_size_parameters(Lx, Ly, Lz, r_np_eff, centers)
 #exit()
 run_matlab_model()
 
-mesh.read_the_mesh()
+mesh.read_the_mesh(Lx, Ly, Lz)
 
 mesh.coords_to_nodes()
 
