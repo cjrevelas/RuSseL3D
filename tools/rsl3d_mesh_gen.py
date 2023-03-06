@@ -270,9 +270,7 @@ class GraftPoints:
                 for ii in range(0, numgp_x*numgp_y):
                     self.coords[1,ii] = float(ii+1) * gp_dist - Lx * int( (float(ii+1)*gp_dist) / Ly) - gp_dist
 
-            if (periodicity_along_z):
-                numgp_z = int(Lz / gp_dist)
-            else:
+            if (not periodicity_along_z):
                 self.coords[2,:] = Lz - dz
 
         if (not(planar)):
@@ -406,7 +404,7 @@ class Geometry:
         posY = np.delete(self.y, negativeX)
         posZ = np.delete(self.z, negativeX)
 
-        return
+        return (posX, posY, posZ, negX, negY, negZ)
 
 
     def moveAlongX(self, move_by_xx):
