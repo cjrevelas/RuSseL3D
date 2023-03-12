@@ -10,7 +10,7 @@ import csv
 
 NULLVAL = -1
 N_MAX   = 150
-N_AVOG  =
+N_AVOG  = 6.022 * 10**23
 
 export_thermo    = True
 export_phi_smear = False
@@ -85,14 +85,13 @@ def get_params_from_dirname(dirname):
 
 
 def get_input_params(dir):
-    filename = "input.in.txt"
+    filename = "in.input"
     path = dir + '/' + filename
 
     sphere_args = []
     face_args   = []
 
     wall_dist   = NULLVAL
-    interf_area = NULLVAL
     n_spheres   = NULLVAL
     eos_type    = NULLVAL
     fraction    = NULLVAL
@@ -113,7 +112,6 @@ def get_input_params(dir):
             line = input_file.readline()
             if not line: break
             if "# wall dist" in line: wall_dist   = cast_fort_float(line.split()[0])
-            if "# area"      in line: interf_area = cast_fort_float(line.split()[0])
             if "# num nanop" in line:
                 n_spheres = int(line.split()[0])
                 for ii in range(n_spheres):
@@ -141,13 +139,13 @@ def get_input_params(dir):
             if "# crit contour grafted"  in line:
                 xs_crit_gr = line.split()[0]
 
-    return [use_mx, use_gr, N_mx, N_gr, interf_area, wall_dist, eos_type, fraction, ds_ed_mx, ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr, sphere_args, face_args]
+    return [use_mx, use_gr, n_spheres, N_mx, N_gr, wall_dist, eos_type, fraction, ds_ed_mx, ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr, sphere_args, face_args]
 
 
 def get_energies(dir):
     energies = [NULLVAL]*6
 
-    filename = "o.energy_terms.out.txt"
+    filename = "o.energy_terms"
     path = dir + '/' + filename
 
     if os.path.exists(path):
@@ -165,7 +163,7 @@ def get_energies(dir):
 def is_finished(dir):
     run_state = -1
 
-    filename = "o.log.out.txt"
+    filename = "o.log"
     path = dir + '/' + filename
 
     if "SUMMARIZED RESULTS" in open(path).read():
@@ -179,7 +177,7 @@ def is_finished(dir):
 def get_last_thermo(dir):
     [step, n_gr_chains, max_error, std_error] = [NULLVAL]*4
 
-    filename = "o.log.out.txt"
+    filename = "o.log"
 
     path = dir + '/' + filename
 
@@ -198,7 +196,7 @@ def get_last_thermo(dir):
 
 
 def get_phi_smear(dir):
-    filename = "o.phi_smear_np1.out.txt"
+    filename = "o.phi_smear_np1"
     path     = dir + '/' + filename
     rr       = [0.0]*N_MAX
     phi_mx   = [0.0]*N_MAX
@@ -225,7 +223,7 @@ def get_phi_smear(dir):
 tempDirsList = os.listdir(path='.')
 dirs = []
 for dir in tempDirsList:
-    filename = "o.log.out.txt"
+    filename = "o.log"
     path = dir + '/' + filename
     if os.path.exists(path):
         dirs.append(dir)
@@ -235,57 +233,60 @@ if export_thermo:
     csvWriter = csv.writer(csvFile)
 
     csvWriter.writerow(["dirname", "run_state", "kind", "numPoles", "param1", "param2", "index",           \
-                        "r_np_eff", "use_mx", "use_gr", "N_mx", "N_gr", "n_gr_chains", "interf_area",      \
-                        "gdens", "free_energy", "term1", "term2", "term3", "term4", "term4_norm",          \
-                        "hh_mean", "hh_std", "hh_all", "hh99_mean", "hh99_std", "hh99_all", "wall_dist",   \
-                        "eos_type", "fraction", "step", "max_error", "std_error", "ds_ed_mx", "ds_conv_mx",\
-                        "xs_crit_mx", "ds_ed_gr", "ds_conv_gr", "xs_crit_gr", "sphere_args", "face_args"])
+                        "r_np_eff (A)", "use_mx", "use_gr", "n_spheres", "N_mx", "N_gr", "n_gr_chains", "interf_area (A2)",\
+                        "gdens (A-2)", "free_energy (mJ/m2)", "free_energy (kJ/mol)", "term1 (mJ/m2)", "term2 (mJ/m2)",    \
+                        "term3 (mJ/m2)", "term4 (mJ/m2)", "term4_norm (mJ/m2)", "hh_mean (A)", "hh_std (A)", "hh_all (A)", \
+                        "hh99_mean (A)", "hh99_std (A)", "hh99_all (A)", "wall_dist (A)", "eos_type", "fraction", "step",  \
+                        "max_error", "std_error", "ds_ed_mx", "ds_conv_mx", "xs_crit_mx", "ds_ed_gr", "ds_conv_gr",        \
+                        "xs_crit_gr", "sphere_args", "face_args"])
 
     for dir in dirs:
-        [use_mx, use_gr, N_mx, N_gr, interf_area, wall_dist, eos_type,    \
+        [use_mx, use_gr, n_spheres, N_mx, N_gr, wall_dist, eos_type,      \
          fraction, ds_ed_mx, ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr,\
          xs_crit_gr, sphere_args, face_args] = get_input_params(dir)
 
         [step, n_gr_chains, max_error, std_error] = get_last_thermo(dir)
 
-        r_np_eff = float(sphere_args[0][1])
-
-        N_mx = float(N_mx)
-        N_gr = float(N_gr)
-
-        gdens = float(n_gr_chains) / float(interf_area)
+        r_np_eff    = float(sphere_args[0][1])
+        N_mx        = float(N_mx)
+        N_gr        = float(N_gr)
+        interf_area = n_spheres * 4.0 * np.pi * (r_np_eff - wall_dist)**2
+        gdens       = float(n_gr_chains) / interf_area
 
         [term1, term2, term3, term4, term4_norm, free_energy] = get_energies(dir)
 
-        [hh_mean, hh_std, hh_all]       = get_brush_thickness(dir, "o.brush_np1.out.txt")
-        [hh99_mean, hh99_std, hh99_all] = get_brush_thickness(dir, "o.brush99_np1.out.txt")
+        free_energy_kJ_mol = (float(free_energy) * 1e-6) * (interf_area * 1e-20) * N_AVOG
+
+        [hh_mean, hh_std, hh_all]       = get_brush_thickness(dir, "o.brush_np1")
+        [hh99_mean, hh99_std, hh99_all] = get_brush_thickness(dir, "o.brush99_np1")
 
         run_state = is_finished(dir)
 
         full_path = get_sim_full_path(dir)
 
-        csvWriter.writerow([dir, run_state] + get_params_from_dirname(dir) +                  \
-                           [r_np_eff, use_mx, use_gr, N_mx, N_gr, n_gr_chains, interf_area,   \
-                            gdens, free_energy, term1, term2, term3, term4, term4_norm,       \
-                            hh_mean, hh_std, hh_all, hh99_mean, hh99_std, hh99_all, wall_dist,\
-                            eos_type, fraction, step, max_error, std_error, ds_ed_mx,         \
-                            ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr,         \
+        csvWriter.writerow([dir, run_state] + get_params_from_dirname(dir) +                                \
+                           [r_np_eff, use_mx, use_gr, n_spheres, N_mx, N_gr, n_gr_chains, interf_area,      \
+                            gdens, free_energy, free_energy_kJ_mol, term1, term2, term3, term4, term4_norm, \
+                            hh_mean, hh_std, hh_all, hh99_mean, hh99_std, hh99_all, wall_dist,              \
+                            eos_type, fraction, step, max_error, std_error, ds_ed_mx,                       \
+                            ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr,                       \
                             sphere_args, face_args])
     csvFile.close()
 
 if export_phi_smear:
     prof_smeared = {}
     for dir in dirs:
-        [wall_dist, interf_area, eos_type, fraction, use_mx, N_mx, \
-         ds_ed_mx, ds_conv_mx, xs_crit_mx, use_gr, N_gr, ds_ed_gr, \
-         ds_conv_gr, xs_crit_gr, sphere_args, face_args] = get_input_params(dir)
+        [use_mx, use_gr, n_spheres, N_mx, N_gr, wall_dist, eos_type, fraction, \
+         ds_ed_mx, ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr,   \
+         sphere_args, face_args] = get_input_params(dir)
 
         [step, n_gr_chains, max_error, std_error] = get_last_thermo(dir)
 
-        R_np  = float(sphere_args[0][1])
-        N_mx  = float(N_mx)
-        N_gr  = float(N_gr)
-        gdens = float(n_gr_chains) / float(interf_area)
+        r_np_eff    = float(sphere_args[0][1])
+        N_mx        = float(N_mx)
+        N_gr        = float(N_gr)
+        interf_area = n_spheres * 4.0 * np.pi * (r_np_eff - wall_dist)**2
+        gdens       = float(n_gr_chains) / interf_area
 
         [rr, prof_mx, prof_gr] = get_phi_smear(dir)
 
