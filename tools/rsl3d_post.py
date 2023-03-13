@@ -176,23 +176,45 @@ def restart_calculations():
     return
 
 
+def get_box_dimensions(directory):
+    filename = "o.log"
+    path = directory + '/' + filename
+
+    box_length = []
+
+    if os.path.exists(path):
+        log  = open(path, 'r')
+
+        while True:
+            line = log.readline()
+
+            if "box_length" in line:
+                for ii in range(3):
+                    line = log.readline().split()
+                    box_length.append(float(line[1]))
+                break
+
+    return box_length
+
+
+
 def cast_fort_float(val):
     return float(val.replace('D', 'E'))
 
 
-def get_sim_full_path(dir):
-    cmd = "readlink -f " + dir
+def get_sim_full_path(directory):
+    cmd = "readlink -f " + directory
     output = subprocess.getoutput(cmd)
 
     return output
 
 
-def get_brush_thickness(dir, filename):
+def get_brush_thickness(directory, filename):
     [mean, stdev, all] = [NULLVAL]*3
-    path = dir + '/' + filename
+    path = directory + '/' + filename
 
     if os.path.exists(path):
-        brush_thickness_file = open(dir + '/' + filename, 'r')
+        brush_thickness_file = open(path, 'r')
         while True:
             line = brush_thickness_file.readline()
             if not line: break
@@ -244,9 +266,9 @@ def get_params_from_dirname(dirname):
     return [kind, str(numPoles), str(param1), str(param2), str(index)]
 
 
-def get_input_params(dir):
+def get_input_params(directory):
     filename = "in.input"
-    path = dir + '/' + filename
+    path = directory + '/' + filename
 
     sphere_args = []
     face_args   = []
@@ -267,11 +289,11 @@ def get_input_params(dir):
     xs_crit_gr  = NULLVAL
 
     if os.path.exists(path):
-        input_file = open(dir + '/' + filename, 'r')
+        input_file = open(path, 'r')
         while True:
             line = input_file.readline()
             if not line: break
-            if "# wall dist" in line: wall_dist   = cast_fort_float(line.split()[0])
+            if "# wall dist" in line: wall_dist = cast_fort_float(line.split()[0])
             if "# num nanop" in line:
                 n_spheres = int(line.split()[0])
                 for ii in range(n_spheres):
@@ -302,14 +324,14 @@ def get_input_params(dir):
     return [use_mx, use_gr, n_spheres, N_mx, N_gr, wall_dist, eos_type, fraction, ds_ed_mx, ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr, sphere_args, face_args]
 
 
-def get_energies(dir):
+def get_energies(directory):
     energies = [NULLVAL]*6
 
     filename = "o.energy_terms"
-    path = dir + '/' + filename
+    path = directory + '/' + filename
 
     if os.path.exists(path):
-        energies_file  = open(dir + '/' + filename, 'r')
+        energies_file  = open(path, 'r')
         line = energies_file.readline()
         line = energies_file.readline()
         energies = line.split()
@@ -320,11 +342,11 @@ def get_energies(dir):
     return energies
 
 
-def is_finished(dir):
+def is_finished(directory):
     run_state = -1
 
     filename = "o.log"
-    path = dir + '/' + filename
+    path = directory + '/' + filename
 
     if "SUMMARIZED RESULTS" in open(path).read():
         run_state = 1
@@ -334,12 +356,12 @@ def is_finished(dir):
     return run_state
 
 
-def get_last_thermo(dir):
+def get_last_thermo(directory):
     [step, n_gr_chains, max_error, std_error] = [NULLVAL]*4
 
     filename = "o.log"
 
-    path = dir + '/' + filename
+    path = directory + '/' + filename
 
     if os.path.exists(path):
         for line in reversed(open(path).readlines()):
@@ -382,11 +404,11 @@ def get_phi_smear(directory):
 
 tempDirsList = os.listdir(path='.')
 dirs = []
-for dir in tempDirsList:
+for directory in tempDirsList:
     filename = "o.log"
-    path = dir + '/' + filename
+    path = directory + '/' + filename
     if os.path.exists(path):
-        dirs.append(dir)
+        dirs.append(directory)
 
 if export_thermo:
     csvFile   = open("RuSseL3D.csv", 'w')
@@ -407,10 +429,17 @@ if export_thermo:
 
         [step, n_gr_chains, max_error, std_error] = get_last_thermo(directory)
 
-        r_np_eff    = float(sphere_args[0][1])
+        box = get_box_dimensions(directory)   
+
+        if sphere_args != []:
+            r_np_eff    = float(sphere_args[0][1])
+            interf_area = n_spheres * 4.0 * np.pi * (r_np_eff - wall_dist)**2
+        else:
+            r_np_eff    = -1
+            interf_area = box[0] * box[1]
+
         N_mx        = float(N_mx)
         N_gr        = float(N_gr)
-        interf_area = n_spheres * 4.0 * np.pi * (r_np_eff - wall_dist)**2
         gdens       = float(n_gr_chains) / interf_area
 
         [term1, term2, term3, term4, term4_norm, free_energy] = get_energies(directory)
@@ -432,6 +461,7 @@ if export_thermo:
                             ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr,                       \
                             sphere_args, face_args])
     csvFile.close()
+
 
 if export_phi_smear:
     prof_smeared = {}
@@ -480,6 +510,7 @@ if export_phi_smear:
             prof_gr_out.write("%f " %(prof_smeared[tag][2][binn]))
         prof_gr_out.write('\n')
     prof_gr_out.close()
+
 
 if restart:
     restart_calculations()
