@@ -7,6 +7,7 @@ import copy   as cp
 import random as rnd
 import subprocess
 import csv
+import fileinput
 
 NULLVAL = -1
 N_MAX   = 150
@@ -14,6 +15,165 @@ N_AVOG  = 6.022 * 10**23
 
 export_thermo    = True
 export_phi_smear = False
+restart          = False
+with_mpi         = True
+
+read_field = 1
+init_iter  = 1
+num_iter   = 2
+
+compute_dens_profs_every       = 1
+compute_indiv_dens_profs_every = 1
+compute_field_every            = 1
+compute_binary_field_every     = 0
+compute_propagators_every      = 0
+compute_brush_every            = 1
+compute_chainshape_every       = 1
+compute_ads_free_every         = 1
+compute_chain_ends_every       = 1
+
+if with_mpi:
+    exec_file = "home/cjrevelas/bin/RuSseL3D_2023-01-29_MPI"
+else:
+    exec_file = "home/cjrevelas/bin/RuSseL3D_2023-01-29_SERIAL"
+
+submit_job = "qsub /home/cjrevelas/bin/runqueue.sh"
+input_file = "in.input"
+log_file   = "o.log"
+
+
+def run_qsub(directory):
+   os.chdir(directory)
+   os.system(submit_job)
+   os.chdir("..")
+   return
+
+
+def modify_input_parameters(input_path):
+    standard_entry_length = 16
+
+    if os.path.exists(input_path):
+        input_file = open(input_path, 'r+')
+
+        while True:
+            line = input_file.readline()
+            if not line: break
+            if "# init field" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(read_field) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# init iter" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(init_iter) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# num iter" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(num_iter) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# export dens profs" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_dens_profs_every) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# export indiv dens profs" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_indiv_dens_profs_every) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# export field" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_field_every) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# export binary field" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_binary_field_every) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# export propagators" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_propagators_every) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# export brush thickness" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_brush_every) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# export chains per area profs" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_chainshape_every) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# export ads vs free profs" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_ads_free_every) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# export chain ends profs" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_chain_ends_every) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+        input_file.close()
+
+    return
+
+
+def restart_calculations():
+    tempDirList = os.listdir(path=".")
+    dirs = []
+
+    for directory in tempDirList:
+        path = directory + "/" + log_file
+        if os.path.exists(path):
+            dirs.append(directory)
+
+    for directory in dirs:
+        path = directory + "/" + input_file
+        modify_input_parameters(path)
+        run_qsub(directory)
+
+    return
 
 
 def cast_fort_float(val):
@@ -195,15 +355,15 @@ def get_last_thermo(dir):
     return [step, n_gr_chains, max_error, std_error]
 
 
-def get_phi_smear(dir):
+def get_phi_smear(directory):
     filename = "o.phi_smear_np1"
-    path     = dir + '/' + filename
+    path     = directory + '/' + filename
     rr       = [0.0]*N_MAX
     phi_mx   = [0.0]*N_MAX
     phi_gr   = [0.0]*N_MAX
 
     try:
-        phi_smeared_file = open(dir + '/' + filename, 'r')
+        phi_smeared_file = open(path, 'r')
         phi_smeared_file.readline()
         for ii in range(N_MAX):
             line = phi_smeared_file.readline()
@@ -214,7 +374,7 @@ def get_phi_smear(dir):
             phi_gr[ii] = float(line[2])
         phi_smeared_file.close()
     except:
-        print("FAILED: " + dir)
+        print("FAILED: " + directory)
         pass
 
     return [rr, phi_mx, phi_gr]
@@ -240,12 +400,12 @@ if export_thermo:
                         "max_error", "std_error", "ds_ed_mx", "ds_conv_mx", "xs_crit_mx", "ds_ed_gr", "ds_conv_gr",        \
                         "xs_crit_gr", "sphere_args", "face_args"])
 
-    for dir in dirs:
+    for directory in dirs:
         [use_mx, use_gr, n_spheres, N_mx, N_gr, wall_dist, eos_type,      \
          fraction, ds_ed_mx, ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr,\
-         xs_crit_gr, sphere_args, face_args] = get_input_params(dir)
+         xs_crit_gr, sphere_args, face_args] = get_input_params(directory)
 
-        [step, n_gr_chains, max_error, std_error] = get_last_thermo(dir)
+        [step, n_gr_chains, max_error, std_error] = get_last_thermo(directory)
 
         r_np_eff    = float(sphere_args[0][1])
         N_mx        = float(N_mx)
@@ -253,18 +413,18 @@ if export_thermo:
         interf_area = n_spheres * 4.0 * np.pi * (r_np_eff - wall_dist)**2
         gdens       = float(n_gr_chains) / interf_area
 
-        [term1, term2, term3, term4, term4_norm, free_energy] = get_energies(dir)
+        [term1, term2, term3, term4, term4_norm, free_energy] = get_energies(directory)
 
         free_energy_kJ_mol = (float(free_energy) * 1e-6) * (interf_area * 1e-20) * N_AVOG
 
-        [hh_mean, hh_std, hh_all]       = get_brush_thickness(dir, "o.brush_np1")
-        [hh99_mean, hh99_std, hh99_all] = get_brush_thickness(dir, "o.brush99_np1")
+        [hh_mean, hh_std, hh_all]       = get_brush_thickness(directory, "o.brush_np1")
+        [hh99_mean, hh99_std, hh99_all] = get_brush_thickness(directory, "o.brush99_np1")
 
-        run_state = is_finished(dir)
+        run_state = is_finished(directory)
 
-        full_path = get_sim_full_path(dir)
+        full_path = get_sim_full_path(directory)
 
-        csvWriter.writerow([dir, run_state] + get_params_from_dirname(dir) +                                \
+        csvWriter.writerow([directory, run_state] + get_params_from_dirname(directory) +                    \
                            [r_np_eff, use_mx, use_gr, n_spheres, N_mx, N_gr, n_gr_chains, interf_area,      \
                             gdens, free_energy, free_energy_kJ_mol, term1, term2, term3, term4, term4_norm, \
                             hh_mean, hh_std, hh_all, hh99_mean, hh99_std, hh99_all, wall_dist,              \
@@ -275,12 +435,12 @@ if export_thermo:
 
 if export_phi_smear:
     prof_smeared = {}
-    for dir in dirs:
+    for directory in dirs:
         [use_mx, use_gr, n_spheres, N_mx, N_gr, wall_dist, eos_type, fraction, \
          ds_ed_mx, ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr,   \
-         sphere_args, face_args] = get_input_params(dir)
+         sphere_args, face_args] = get_input_params(directory)
 
-        [step, n_gr_chains, max_error, std_error] = get_last_thermo(dir)
+        [step, n_gr_chains, max_error, std_error] = get_last_thermo(directory)
 
         r_np_eff    = float(sphere_args[0][1])
         N_mx        = float(N_mx)
@@ -288,9 +448,9 @@ if export_phi_smear:
         interf_area = n_spheres * 4.0 * np.pi * (r_np_eff - wall_dist)**2
         gdens       = float(n_gr_chains) / interf_area
 
-        [rr, prof_mx, prof_gr] = get_phi_smear(dir)
+        [rr, prof_mx, prof_gr] = get_phi_smear(directory)
 
-        tag = str(R_np) + '_' + str(N_mx) + '_' + str(N_gr) + '_' + str(gdens)
+        tag = str(r_np_eff) + '_' + str(N_mx) + '_' + str(N_gr) + '_' + str(gdens)
         prof_smeared[tag] = [rr, prof_mx, prof_gr]
 
     prof_mx_out = open("o.phi_smear_mx.txt", 'w')
@@ -300,10 +460,10 @@ if export_phi_smear:
         prof_mx_out.write("%s " %(tag))
     prof_mx_out.write('\n')
 
-    for bin in range(len(prof_smeared[tag][0])):
-        prof_mx_out.write("%d " %(bin))
+    for binn in range(len(prof_smeared[tag][0])):
+        prof_mx_out.write("%d " %(binn))
         for tag in prof_smeared:
-            prof_mx_out.write("%f " %(prof_smeared[tag][1][bin]))
+            prof_mx_out.write("%f " %(prof_smeared[tag][1][binn]))
         prof_mx_out.write('\n')
     prof_mx_out.close()
 
@@ -314,9 +474,14 @@ if export_phi_smear:
         prof_gr_out.write("%s " %(tag))
     prof_gr_out.write('\n')
 
-    for bin in range(len(prof_smeared[tag][0])):
-        prof_gr_out.write("%d " % (bin) )
+    for binn in range(len(prof_smeared[tag][0])):
+        prof_gr_out.write("%d " % (binn) )
         for tag in prof_smeared:
-            prof_gr_out.write("%f " %(prof_smeared[tag][2][bin]))
+            prof_gr_out.write("%f " %(prof_smeared[tag][2][binn]))
         prof_gr_out.write('\n')
     prof_gr_out.close()
+
+if restart:
+    restart_calculations()
+
+exit()
