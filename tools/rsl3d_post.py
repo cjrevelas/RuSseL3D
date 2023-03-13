@@ -1,3 +1,4 @@
+#------------------------------------------------------------------------------------------------------------#
 import os
 import sys
 import ast
@@ -8,7 +9,7 @@ import random as rnd
 import subprocess
 import csv
 import fileinput
-
+#------------------------------------------------------------------------------------------------------------#
 NULLVAL = -1
 N_MAX   = 150
 N_AVOG  = 6.022 * 10**23
@@ -40,23 +41,32 @@ else:
 submit_job = "qsub /home/cjrevelas/bin/runqueue.sh"
 input_file = "in.input"
 log_file   = "o.log"
-
-
+#------------------------------------------------------------------------------------------------------------#
 def run_qsub(directory):
    os.chdir(directory)
    os.system(submit_job)
    os.chdir("..")
+
    return
+#------------------------------------------------------------------------------------------------------------#
+def get_directories():
+    tempDirsList = os.listdir(path='.')
+    dirs = []
+    for directory in tempDirsList:
+        path = directory + '/' + log_file
+        if os.path.exists(path):
+            dirs.append(directory)
 
-
+    return dirs
+#------------------------------------------------------------------------------------------------------------#
 def modify_input_parameters(input_path):
     standard_entry_length = 16
 
     if os.path.exists(input_path):
-        input_file = open(input_path, 'r+')
+        input = open(input_path, 'r+')
 
         while True:
-            line = input_file.readline()
+            line = input.readline()
             if not line: break
             if "# init field" in line:
                 oldLine      = line.rstrip('\n')
@@ -154,36 +164,25 @@ def modify_input_parameters(input_path):
                     newLineSplit[0] += ' '
                 cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
                 os.system(cmd)
-        input_file.close()
+        input.close()
 
     return
-
-
-def restart_calculations():
-    tempDirList = os.listdir(path=".")
-    dirs = []
-
-    for directory in tempDirList:
-        path = directory + "/" + log_file
-        if os.path.exists(path):
-            dirs.append(directory)
-
+#------------------------------------------------------------------------------------------------------------#
+def restart_calculations(dirs):
     for directory in dirs:
         path = directory + "/" + input_file
         modify_input_parameters(path)
         run_qsub(directory)
 
     return
-
-
+#------------------------------------------------------------------------------------------------------------#
 def get_box_dimensions(directory):
-    filename = "o.log"
-    path = directory + '/' + filename
+    path = directory + '/' + log_file
 
     box_length = []
 
     if os.path.exists(path):
-        log  = open(path, 'r')
+        log = open(path, 'r')
 
         while True:
             line = log.readline()
@@ -195,20 +194,16 @@ def get_box_dimensions(directory):
                 break
 
     return box_length
-
-
-
+#------------------------------------------------------------------------------------------------------------#
 def cast_fort_float(val):
     return float(val.replace('D', 'E'))
-
-
+#------------------------------------------------------------------------------------------------------------#
 def get_sim_full_path(directory):
     cmd = "readlink -f " + directory
     output = subprocess.getoutput(cmd)
 
     return output
-
-
+#------------------------------------------------------------------------------------------------------------#
 def get_brush_thickness(directory, filename):
     [mean, stdev, all] = [NULLVAL]*3
     path = directory + '/' + filename
@@ -223,8 +218,7 @@ def get_brush_thickness(directory, filename):
             if "all"   in line: all   = line.split()[1]
 
     return [mean, stdev, all]
-
-
+#------------------------------------------------------------------------------------------------------------#
 def get_params_from_dirname(dirname):
     dirname_new = dirname.replace('_',' ')
     dirname_splitted = dirname_new.split()
@@ -259,16 +253,14 @@ def get_params_from_dirname(dirname):
         if "index" in subString:
             index = int(subString.replace("index",''))
 
-    #for the uniform grafting point distributions
+    #for equidistant grafting
     if kind==NULLVAL:
         kind = "uniform"
 
     return [kind, str(numPoles), str(param1), str(param2), str(index)]
-
-
+#------------------------------------------------------------------------------------------------------------#
 def get_input_params(directory):
-    filename = "in.input"
-    path = directory + '/' + filename
+    path = directory + '/' + input_file
 
     sphere_args = []
     face_args   = []
@@ -289,20 +281,20 @@ def get_input_params(directory):
     xs_crit_gr  = NULLVAL
 
     if os.path.exists(path):
-        input_file = open(path, 'r')
+        input = open(path, 'r')
         while True:
-            line = input_file.readline()
+            line = input.readline()
             if not line: break
             if "# wall dist" in line: wall_dist = cast_fort_float(line.split()[0])
             if "# num nanop" in line:
                 n_spheres = int(line.split()[0])
                 for ii in range(n_spheres):
-                    line = input_file.readline().split()
+                    line = input.readline().split()
                     sphere_args.append(line)
             if "# num faces"  in line:
                 n_faces = int(line.split()[0])
                 for ii in range(n_faces):
-                    line = input_file.readline().split()
+                    line = input.readline().split()
                     face_args.append(line)
             if "# eos type"            in line: eos_type = line.split()[0]
             if "# fraction"            in line: fraction = cast_fort_float(line.split()[0])
@@ -322,8 +314,7 @@ def get_input_params(directory):
                 xs_crit_gr = line.split()[0]
 
     return [use_mx, use_gr, n_spheres, N_mx, N_gr, wall_dist, eos_type, fraction, ds_ed_mx, ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr, sphere_args, face_args]
-
-
+#------------------------------------------------------------------------------------------------------------#
 def get_energies(directory):
     energies = [NULLVAL]*6
 
@@ -340,13 +331,11 @@ def get_energies(directory):
     energies = [energies[ii] for ii in range(6)]
 
     return energies
-
-
+#------------------------------------------------------------------------------------------------------------#
 def is_finished(directory):
     run_state = -1
 
-    filename = "o.log"
-    path = directory + '/' + filename
+    path = directory + '/' + log_file
 
     if "SUMMARIZED RESULTS" in open(path).read():
         run_state = 1
@@ -354,14 +343,11 @@ def is_finished(directory):
         run_state = 0
 
     return run_state
-
-
+#------------------------------------------------------------------------------------------------------------#
 def get_last_thermo(directory):
     [step, n_gr_chains, max_error, std_error] = [NULLVAL]*4
 
-    filename = "o.log"
-
-    path = directory + '/' + filename
+    path = directory + '/' + log_file
 
     if os.path.exists(path):
         for line in reversed(open(path).readlines()):
@@ -375,8 +361,7 @@ def get_last_thermo(directory):
                     return [step, n_gr_chains, max_error, std_error]
 
     return [step, n_gr_chains, max_error, std_error]
-
-
+#------------------------------------------------------------------------------------------------------------#
 def get_phi_smear(directory):
     filename = "o.phi_smear_np1"
     path     = directory + '/' + filename
@@ -400,15 +385,8 @@ def get_phi_smear(directory):
         pass
 
     return [rr, phi_mx, phi_gr]
-
-
-tempDirsList = os.listdir(path='.')
-dirs = []
-for directory in tempDirsList:
-    filename = "o.log"
-    path = directory + '/' + filename
-    if os.path.exists(path):
-        dirs.append(directory)
+#------------------------------------------------------------------------------------------------------------#
+dirs = get_directories()
 
 if export_thermo:
     csvFile   = open("RuSseL3D.csv", 'w')
@@ -429,7 +407,7 @@ if export_thermo:
 
         [step, n_gr_chains, max_error, std_error] = get_last_thermo(directory)
 
-        box = get_box_dimensions(directory)   
+        box = get_box_dimensions(directory)
 
         if sphere_args != []:
             r_np_eff    = float(sphere_args[0][1])
@@ -438,9 +416,9 @@ if export_thermo:
             r_np_eff    = -1
             interf_area = box[0] * box[1]
 
-        N_mx        = float(N_mx)
-        N_gr        = float(N_gr)
-        gdens       = float(n_gr_chains) / interf_area
+        N_mx  = float(N_mx)
+        N_gr  = float(N_gr)
+        gdens = float(n_gr_chains) / interf_area
 
         [term1, term2, term3, term4, term4_norm, free_energy] = get_energies(directory)
 
@@ -460,9 +438,9 @@ if export_thermo:
                             eos_type, fraction, step, max_error, std_error, ds_ed_mx,                       \
                             ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr,                       \
                             sphere_args, face_args])
+
     csvFile.close()
-
-
+#------------------------------------------------------------------------------------------------------------#
 if export_phi_smear:
     prof_smeared = {}
     for directory in dirs:
@@ -510,9 +488,9 @@ if export_phi_smear:
             prof_gr_out.write("%f " %(prof_smeared[tag][2][binn]))
         prof_gr_out.write('\n')
     prof_gr_out.close()
-
-
+#------------------------------------------------------------------------------------------------------------#
 if restart:
-    restart_calculations()
+    restart_calculations(dirs)
 
 exit()
+#------------------------------------------------------------------------------------------------------------#
