@@ -180,8 +180,13 @@ def modify_input_parameters(input_path):
 def restart_calculations(dirs):
     for directory in dirs:
         path = directory + "/" + input_file
+
+        print("Modifying parameters in file: " + path)
         modify_input_parameters(path)
+
+        print("Running calculation in directory: " + directory)
         run_qsub(directory)
+        print("OK")
 
     return
 #------------------------------------------------------------------------------------------------------------#
@@ -500,6 +505,7 @@ if export_phi_smear:
     prof_gr_out.close()
 #------------------------------------------------------------------------------------------------------------#
 if restart:
+    print("Restarting calculations")
     restart_calculations(dirs)
 
 exit()
