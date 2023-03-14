@@ -1,14 +1,8 @@
 #------------------------------------------------------------------------------------------------------------#
 import os
-import sys
-import ast
-import numpy  as np
-import math   as m
-import copy   as cp
-import random as rnd
+import numpy as np
 import subprocess
 import csv
-import fileinput
 #------------------------------------------------------------------------------------------------------------#
 NULLVAL = -1
 N_MAX   = 150
