@@ -23,15 +23,16 @@ read_field = 1
 init_iter  = 1
 num_iter   = 2
 
-compute_dens_profs_every       = 1
-compute_indiv_dens_profs_every = 1
-compute_field_every            = 1
-compute_binary_field_every     = 0
-compute_propagators_every      = 0
-compute_brush_every            = 1
-compute_chainshape_every       = 1
-compute_ads_free_every         = 1
-compute_chain_ends_every       = 1
+export_dens_profs_every         = 1
+export_smeared_dens_profs_every = 0
+export_indiv_dens_profs_every   = 0
+export_field_every              = 0
+export_binary_field_every       = 0
+export_propagators_every        = 0
+export_brush_every              = 1
+export_chainshape_every         = 0
+export_ads_free_every           = 0
+export_chain_ends_every         = 0
 
 if with_mpi:
     exec_file = "home/cjrevelas/bin/RuSseL3D_2023-01-29_MPI"
@@ -63,10 +64,10 @@ def modify_input_parameters(input_path):
     standard_entry_length = 16
 
     if os.path.exists(input_path):
-        input = open(input_path, 'r+')
+        inputt = open(input_path, 'r+')
 
         while True:
-            line = input.readline()
+            line = inputt.readline()
             if not line: break
             if "# init field" in line:
                 oldLine      = line.rstrip('\n')
@@ -94,7 +95,15 @@ def modify_input_parameters(input_path):
                 os.system(cmd)
             if "# export dens profs" in line:
                 oldLine      = line.rstrip('\n')
-                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_dens_profs_every) + ' ')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(export_dens_profs_every) + ' ')
+                newLineSplit = newLine.split()
+                for kk in range(standard_entry_length-len(newLine.split()[0])):
+                    newLineSplit[0] += ' '
+                cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
+                os.system(cmd)
+            if "# export smeared dens profs" in line:
+                oldLine      = line.rstrip('\n')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(export_smeared_dens_profs_every) + ' ')
                 newLineSplit = newLine.split()
                 for kk in range(standard_entry_length-len(newLine.split()[0])):
                     newLineSplit[0] += ' '
@@ -102,7 +111,7 @@ def modify_input_parameters(input_path):
                 os.system(cmd)
             if "# export indiv dens profs" in line:
                 oldLine      = line.rstrip('\n')
-                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_indiv_dens_profs_every) + ' ')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(export_indiv_dens_profs_every) + ' ')
                 newLineSplit = newLine.split()
                 for kk in range(standard_entry_length-len(newLine.split()[0])):
                     newLineSplit[0] += ' '
@@ -110,7 +119,7 @@ def modify_input_parameters(input_path):
                 os.system(cmd)
             if "# export field" in line:
                 oldLine      = line.rstrip('\n')
-                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_field_every) + ' ')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(export_field_every) + ' ')
                 newLineSplit = newLine.split()
                 for kk in range(standard_entry_length-len(newLine.split()[0])):
                     newLineSplit[0] += ' '
@@ -118,7 +127,7 @@ def modify_input_parameters(input_path):
                 os.system(cmd)
             if "# export binary field" in line:
                 oldLine      = line.rstrip('\n')
-                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_binary_field_every) + ' ')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(export_binary_field_every) + ' ')
                 newLineSplit = newLine.split()
                 for kk in range(standard_entry_length-len(newLine.split()[0])):
                     newLineSplit[0] += ' '
@@ -126,7 +135,7 @@ def modify_input_parameters(input_path):
                 os.system(cmd)
             if "# export propagators" in line:
                 oldLine      = line.rstrip('\n')
-                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_propagators_every) + ' ')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(export_propagators_every) + ' ')
                 newLineSplit = newLine.split()
                 for kk in range(standard_entry_length-len(newLine.split()[0])):
                     newLineSplit[0] += ' '
@@ -134,7 +143,7 @@ def modify_input_parameters(input_path):
                 os.system(cmd)
             if "# export brush thickness" in line:
                 oldLine      = line.rstrip('\n')
-                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_brush_every) + ' ')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(export_brush_every) + ' ')
                 newLineSplit = newLine.split()
                 for kk in range(standard_entry_length-len(newLine.split()[0])):
                     newLineSplit[0] += ' '
@@ -142,7 +151,7 @@ def modify_input_parameters(input_path):
                 os.system(cmd)
             if "# export chains per area profs" in line:
                 oldLine      = line.rstrip('\n')
-                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_chainshape_every) + ' ')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(export_chainshape_every) + ' ')
                 newLineSplit = newLine.split()
                 for kk in range(standard_entry_length-len(newLine.split()[0])):
                     newLineSplit[0] += ' '
@@ -150,21 +159,21 @@ def modify_input_parameters(input_path):
                 os.system(cmd)
             if "# export ads vs free profs" in line:
                 oldLine      = line.rstrip('\n')
-                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_ads_free_every) + ' ')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(export_ads_free_every) + ' ')
                 newLineSplit = newLine.split()
                 for kk in range(standard_entry_length-len(newLine.split()[0])):
                     newLineSplit[0] += ' '
                 cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
                 os.system(cmd)
-            if "# export chain ends profs" in line:
+            if "# export end/middle dens profs" in line:
                 oldLine      = line.rstrip('\n')
-                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(compute_chain_ends_every) + ' ')
+                newLine      = oldLine.replace(oldLine.split()[0] + ' ', str(export_chain_ends_every) + ' ')
                 newLineSplit = newLine.split()
                 for kk in range(standard_entry_length-len(newLine.split()[0])):
                     newLineSplit[0] += ' '
                 cmd = "sed -i \"s|" + oldLine + '|' + ' '.join(newLineSplit) + "|g\" " + input_path
                 os.system(cmd)
-        input.close()
+        inputt.close()
 
     return
 #------------------------------------------------------------------------------------------------------------#
@@ -192,6 +201,7 @@ def get_box_dimensions(directory):
                     line = log.readline().split()
                     box_length.append(float(line[1]))
                 break
+        log.close()
 
     return box_length
 #------------------------------------------------------------------------------------------------------------#
@@ -253,9 +263,9 @@ def get_params_from_dirname(dirname):
         if "index" in subString:
             index = int(subString.replace("index",''))
 
-    #for equidistant grafting
+    # for equidistant grafting
     if kind==NULLVAL:
-        kind = "uniform"
+        kind = "uniform" # change this to "equidistant" in the future
 
     return [kind, str(numPoles), str(param1), str(param2), str(index)]
 #------------------------------------------------------------------------------------------------------------#
@@ -281,20 +291,20 @@ def get_input_params(directory):
     xs_crit_gr  = NULLVAL
 
     if os.path.exists(path):
-        input = open(path, 'r')
+        inputt = open(path, 'r')
         while True:
-            line = input.readline()
+            line = inputt.readline()
             if not line: break
             if "# wall dist" in line: wall_dist = cast_fort_float(line.split()[0])
             if "# num nanop" in line:
                 n_spheres = int(line.split()[0])
                 for ii in range(n_spheres):
-                    line = input.readline().split()
+                    line = inputt.readline().split()
                     sphere_args.append(line)
             if "# num faces"  in line:
                 n_faces = int(line.split()[0])
                 for ii in range(n_faces):
-                    line = input.readline().split()
+                    line = inputt.readline().split()
                     face_args.append(line)
             if "# eos type"            in line: eos_type = line.split()[0]
             if "# fraction"            in line: fraction = cast_fort_float(line.split()[0])
