@@ -8,10 +8,19 @@ NULLVAL = -1
 N_MAX   = 150
 N_AVOG  = 6.022 * 10**23
 
-export_thermo    = True
-export_phi_smear = False
-restart          = False
-with_mpi         = True
+input_file   = "in.input"
+log_file     = "o.log"
+energy_file  = "o.energy_terms"
+smeared_file = "o.phi_smear_np1"
+#------------------------------------------------------------------------------------------------------------#
+# Export specified properties without having to restart RuSseL
+export_thermo  = True
+export_smeared = False
+export_vtu     = False
+#------------------------------------------------------------------------------------------------------------#
+# Specified properties will be exported from RuSseL after restart
+restart  = False
+with_mpi = True
 
 read_field = 1
 init_iter  = 1
@@ -34,8 +43,6 @@ else:
     exec_file = "home/cjrevelas/bin/RuSseL3D_2023-01-29_SERIAL"
 
 submit_job = "qsub /home/cjrevelas/bin/runqueue.sh"
-input_file = "in.input"
-log_file   = "o.log"
 #------------------------------------------------------------------------------------------------------------#
 def run_qsub(directory):
    os.chdir(directory)
@@ -204,10 +211,10 @@ def get_box_dimensions(directory):
 
     return box_length
 #------------------------------------------------------------------------------------------------------------#
-def cast_fort_float(val):
+def cast_fortran_float(val):
     return float(val.replace('D', 'E'))
 #------------------------------------------------------------------------------------------------------------#
-def get_sim_full_path(directory):
+def get_calculation_full_path(directory):
     cmd = "readlink -f " + directory
     output = subprocess.getoutput(cmd)
 
@@ -228,7 +235,7 @@ def get_brush_thickness(directory, filename):
 
     return [mean, stdev, all]
 #------------------------------------------------------------------------------------------------------------#
-def get_params_from_dirname(dirname):
+def get_parameters_from_dirname(dirname):
     dirname_new = dirname.replace('_',' ')
     dirname_splitted = dirname_new.split()
 
@@ -268,7 +275,7 @@ def get_params_from_dirname(dirname):
 
     return [kind, str(numPoles), str(param1), str(param2), str(index)]
 #------------------------------------------------------------------------------------------------------------#
-def get_input_params(directory):
+def get_calculation_parameters(directory):
     path = directory + '/' + input_file
 
     sphere_args = []
@@ -294,7 +301,7 @@ def get_input_params(directory):
         while True:
             line = inputt.readline()
             if not line: break
-            if "# wall dist" in line: wall_dist = cast_fort_float(line.split()[0])
+            if "# wall dist" in line: wall_dist = cast_fortran_float(line.split()[0])
             if "# num nanop" in line:
                 n_spheres = int(line.split()[0])
                 for ii in range(n_spheres):
@@ -306,16 +313,16 @@ def get_input_params(directory):
                     line = inputt.readline().split()
                     face_args.append(line)
             if "# eos type"            in line: eos_type = line.split()[0]
-            if "# fraction"            in line: fraction = cast_fort_float(line.split()[0])
+            if "# fraction"            in line: fraction = cast_fortran_float(line.split()[0])
             if "# use matrix"          in line: use_mx   = line.split()[0]
-            if "# chain length matrix" in line: N_mx     = cast_fort_float(line.split()[0])
+            if "# chain length matrix" in line: N_mx     = cast_fortran_float(line.split()[0])
             if "# contour step matrix" in line:
                 ds_ed_mx   = line.split()[0]
                 ds_conv_mx = line.split()[1]
             if "# crit contour matrix" in line:
                 xs_crit_mx = line.split()[0]
             if "# use grafted"          in line: use_gr = line.split()[0]
-            if "# chain length grafted" in line: N_gr   = cast_fort_float(line.split()[0])
+            if "# chain length grafted" in line: N_gr   = cast_fortran_float(line.split()[0])
             if "# contour step grafted" in line:
                 ds_ed_gr   = line.split()[0]
                 ds_conv_gr = line.split()[1]
@@ -327,8 +334,7 @@ def get_input_params(directory):
 def get_energies(directory):
     energies = [NULLVAL]*6
 
-    filename = "o.energy_terms"
-    path = directory + '/' + filename
+    path = directory + '/' + energy_file
 
     if os.path.exists(path):
         energies_file  = open(path, 'r')
@@ -353,7 +359,7 @@ def is_finished(directory):
 
     return run_state
 #------------------------------------------------------------------------------------------------------------#
-def get_last_thermo(directory):
+def get_last_thermo_state(directory):
     [step, n_gr_chains, max_error, std_error] = [NULLVAL]*4
 
     path = directory + '/' + log_file
@@ -367,13 +373,13 @@ def get_last_thermo(directory):
                     n_gr_chains = linesplit[3]
                     max_error   = linesplit[4]
                     std_error   = linesplit[5]
+
                     return [step, n_gr_chains, max_error, std_error]
 
     return [step, n_gr_chains, max_error, std_error]
 #------------------------------------------------------------------------------------------------------------#
-def get_phi_smear(directory):
-    filename = "o.phi_smear_np1"
-    path     = directory + '/' + filename
+def get_phi_smeared(directory):
+    path     = directory + '/' + smeared_file
     rr       = [0.0]*N_MAX
     phi_mx   = [0.0]*N_MAX
     phi_gr   = [0.0]*N_MAX
@@ -396,7 +402,7 @@ def get_phi_smear(directory):
     return [rr, phi_mx, phi_gr]
 #------------------------------------------------------------------------------------------------------------#
 dirs = get_directories()
-
+#------------------------------------------------------------------------------------------------------------#
 if export_thermo:
     csvFile   = open("RuSseL3D.csv", 'w')
     csvWriter = csv.writer(csvFile)
@@ -412,9 +418,9 @@ if export_thermo:
     for directory in dirs:
         [use_mx, use_gr, n_spheres, N_mx, N_gr, wall_dist, eos_type,      \
          fraction, ds_ed_mx, ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr,\
-         xs_crit_gr, sphere_args, face_args] = get_input_params(directory)
+         xs_crit_gr, sphere_args, face_args] = get_calculation_parameters(directory)
 
-        [step, n_gr_chains, max_error, std_error] = get_last_thermo(directory)
+        [step, n_gr_chains, max_error, std_error] = get_last_thermo_state(directory)
 
         box = get_box_dimensions(directory)
 
@@ -438,9 +444,9 @@ if export_thermo:
 
         run_state = is_finished(directory)
 
-        full_path = get_sim_full_path(directory)
+        full_path = get_calculation_full_path(directory)
 
-        csvWriter.writerow([directory, run_state] + get_params_from_dirname(directory) +                    \
+        csvWriter.writerow([directory, run_state] + get_parameters_from_dirname(directory) +                \
                            [r_np_eff, use_mx, use_gr, n_spheres, N_mx, N_gr, n_gr_chains, interf_area,      \
                             gdens, free_energy, free_energy_kJ_mol, term1, term2, term3, term4, term4_norm, \
                             hh_mean, hh_std, hh_all, hh99_mean, hh99_std, hh99_all, wall_dist,              \
@@ -450,14 +456,14 @@ if export_thermo:
 
     csvFile.close()
 #------------------------------------------------------------------------------------------------------------#
-if export_phi_smear:
+if export_smeared:
     prof_smeared = {}
     for directory in dirs:
         [use_mx, use_gr, n_spheres, N_mx, N_gr, wall_dist, eos_type, fraction, \
          ds_ed_mx, ds_conv_mx, xs_crit_mx, ds_ed_gr, ds_conv_gr, xs_crit_gr,   \
-         sphere_args, face_args] = get_input_params(directory)
+         sphere_args, face_args] = get_calculation_parameters(directory)
 
-        [step, n_gr_chains, max_error, std_error] = get_last_thermo(directory)
+        [step, n_gr_chains, max_error, std_error] = get_last_thermo_state(directory)
 
         r_np_eff    = float(sphere_args[0][1])
         N_mx        = float(N_mx)
@@ -465,7 +471,7 @@ if export_phi_smear:
         interf_area = n_spheres * 4.0 * np.pi * (r_np_eff - wall_dist)**2
         gdens       = float(n_gr_chains) / interf_area
 
-        [rr, prof_mx, prof_gr] = get_phi_smear(directory)
+        [rr, prof_mx, prof_gr] = get_phi_smeared(directory)
 
         tag = str(r_np_eff) + '_' + str(N_mx) + '_' + str(N_gr) + '_' + str(gdens)
         prof_smeared[tag] = [rr, prof_mx, prof_gr]
