@@ -45,3 +45,9 @@ To configure and compile, the code type the following commands inside the root d
  - non monodisperse matrix and grafted chains
  - find faster solver for linear system of equations (maybe iterative)
  - dynamic density functional theory calculations (ddft)
+
+# Short Description of code capabilities
+Using this code, we can grafted polymer chains on solid surfaces according\
+to various distributions, as shown in the image below.
+
+![Demo of irregular grafting distributions](images/distributions.png "grafting distributions")
