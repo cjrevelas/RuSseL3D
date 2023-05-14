@@ -6,7 +6,7 @@ The code is named after the British philosopher and mathematician, Bertrand Russ
 It is an open-source code, distributed under the terms of the accompanying LICENSE.
 
 # Authors
-- Mr. Constantinos J. Revelas (cjrevelas@gmail.com)
+- Dr. Constantinos J. Revelas (cjrevelas@gmail.com)
 - Dr. Aristotelis P. Sgouros (arissgouros@gmail.com)
 - Dr. Apostolos T. Lakkas (tolis1981@gmail.com)
 - Prof. Doros N. Theodorou (doros@central.ntua.gr, scientific advisor and mentor)
