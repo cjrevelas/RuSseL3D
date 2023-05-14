@@ -51,3 +51,10 @@ Using this code, we can grafted polymer chains on solid surfaces according\
 to various distributions, as shown in the image below.
 
 ![Demo of irregular grafting distributions](images/distributions.png "grafting distributions")
+
+In the following image, a cross-sectional view is displayed of the density cloud\
+of matrix chains, chains grafted on the surface of a spherical nanoparticle and\
+the self-consistent field resulting in these profiles (illustration via ParaView\
+software).
+
+![Field slice view](images/slice_and_clip.png "field slice view")
