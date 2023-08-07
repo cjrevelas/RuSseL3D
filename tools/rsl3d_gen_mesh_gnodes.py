@@ -59,21 +59,21 @@ class Mesh:
 
     def ReadMesh(self, Lx, Ly, Lz):
         try:
-            mesh_file = open("in.mesh.mphtxt", 'r')
+            mesh_file = open("in.mesh", 'r')
         except:
-            print("ERROR OPENING INPUT FILE mesh.in.mphtxt")
+            print("ERROR OPENING INPUT FILE in.mesh")
             exit()
 
         try:
-            meshpoints_file = open("tmp_meshpoints.txt", 'w')
+            meshpoints_file = open("t.meshpoints", 'w')
         except:
-            print("ERROR OPENING OUTPUT FILE tmp_meshpoints.txt")
+            print("ERROR OPENING OUTPUT FILE t.meshpoints")
             exit()
 
         try:
-            elem_con_file = open("tmp_elemcon.txt", 'w')
+            elem_con_file = open("t.elemcon", 'w')
         except:
-            print("ERROR OPENING OUTPUT FILE tmp_elemcon.txt")
+            print("ERROR OPENING OUTPUT FILE t.elemcon")
             exit()
 
         for line in mesh_file:
@@ -348,7 +348,7 @@ class GraftPoints:
 
 
     def InsertToModelFile(self):
-        print("Copying grafting point coordinates to matlab model file.")
+        print("Copying grafting point coordinates to matlab model file..")
 
         try:
             modelFile = open("model.m", 'r+')
@@ -357,9 +357,9 @@ class GraftPoints:
             exit()
 
         try:
-            graftpointsFile = open("tmp_graftpoints.m", 'r')
+            graftpointsFile = open("t.graftpoints.m", 'r')
         except:
-            print("ERROR OPENING GRAFTPOINS FILE tmp_graftpoints.m")
+            print("ERROR OPENING GRAFTPOINS FILE t.graftpoints.m")
             exit()
 
         lines = modelFile.readlines()
@@ -508,7 +508,7 @@ def EditModelSizeParameters(Lx, Ly, Lz, radiusEffective, centers):
 
 
 def InsertNanoparticlesToModelFile(numberOfParticles, effectiveRadius, denseMeshWidth, centers):
-    print("Copying nanoparticle center coordinates to matlab model file")
+    print("Copying nanoparticle center coordinates to matlab model file..")
 
     try:
         modelFile = open("model.m", 'r+')
@@ -573,10 +573,10 @@ reflect = np.array([False, False, False], bool)
 
 # Check different cases
 if (numberOfParticles == 1):
-    os.system("cp ./template_input_files/rsl3d_mesh_gen_template_sph1.m model.m")
+    os.system("cp ./template_input_files/rsl3d_gen_mesh_template_sph1.m model.m")
 
 elif (numberOfParticles == 2):
-    os.system("cp ./template_input_files/rsl3d_mesh_gen_template_sph2.m model.m")
+    os.system("cp ./template_input_files/rsl3d_gen_mesh_template_sph2.m model.m")
 
     h_ss_HS = 132.8
     h_cc    = 2*radiusEffective + h_ss_HS
@@ -590,7 +590,7 @@ elif (numberOfParticles == 2):
         reflect[0] = True
 
 elif (generalPeriodicMesh):
-    os.system("cp rsl3d_mesh_gen_template_fcc.m model.m")
+    os.system("cp rsl3d_gen_mesh_template_fcc.m model.m")
 
     try:
         inputFile = open("o.mesh_input", 'r')
@@ -632,20 +632,24 @@ elif (generalPeriodicMesh):
 mesh = Mesh(planar, Lx, Ly, Lz, useGrafted, numberOfPoints, radiusEffective + graftingDistance, move, moveBy, reflect, importt, generalPeriodicMesh)
 
 #mesh.graftpoints.CheckOutOfBox(Lx, Ly, Lz)
-mesh.Matlab("tmp_graftpoints")
+mesh.Matlab("t.graftpoints")
 #mesh.graftpoints.Export(Lx, Ly, Lz)
 mesh.graftpoints.InsertToModelFile()
 
 EditModelSizeParameters(Lx, Ly, Lz, radiusEffective, centers)
-#exit()
-#RunMatlabModel()
+RunMatlabModel()
 
-#mesh.ReadMesh(Lx, Ly, Lz)
+print("Reading mesh created by comsol model..")
+os.system("mv in.mesh.mphtxt in.mesh")
+mesh.ReadMesh(Lx, Ly, Lz)
 
-#mesh.CoordsToNodes()
+print("Searching for grafting points for in.gnodes file..")
+mesh.CoordsToNodes()
 
+print("Removing temporary files..")
+#os.system("rm t.meshpoints t.elemcon")
 #os.system("rm model.m")
-os.system("rm tmp_graftpoints.m")
+#os.system("rm t.graftpoints.m")
 
 exit()
 #----------------------------------------------------------------------------------------------------------------------------------#
