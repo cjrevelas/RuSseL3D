@@ -4,7 +4,6 @@ node_modules/
 test_integrity/
 tools/interp_fem/run/
 tools/interp_fem/run_old/
-tools/template_input_files/
 tools/in.*
 tools/o.*
 tools/*.vtu
