@@ -18,7 +18,7 @@ type(fhash_type__ints_double), intent(inout) :: elemcon
 type(ints_type)                              :: elemconKey
 integer                                      :: elemconNumOfKeys, elemconValue
 
-integer :: ii, jj, mm
+integer :: localNodeIndex1, localNodeIndex2, element
 integer :: nodePair
 !----------------------------------------------------------------------------------------------------------------------------------!
 allocate(nodePairId(numTotalNodePairs))
@@ -32,14 +32,14 @@ elemconNumOfKeys = 2 * numNodesLocalTypeDomain * numElementsTypeDomain
 call elemcon%reserve(elemconNumOfKeys)
 
 nodePair = 0
-do mm = 1, numElementsTypeDomain
-  do jj = 1, numNodesLocalTypeDomain
-    do ii = 1, numNodesLocalTypeDomain
+do element = 1, numElementsTypeDomain
+  do localNodeIndex1 = 1, numNodesLocalTypeDomain
+    do localNodeIndex2 = 1, numNodesLocalTypeDomain
       nodePair = nodePair + 1
 
       ! Define the pair of nodes to be examined and assigned a elemconValue
-      elemconKey%ints(1) = globalNodeIdTypeDomain(jj,mm)
-      elemconKey%ints(2) = globalNodeIdTypeDomain(ii,mm)
+      elemconKey%ints(1) = globalNodeIdTypeDomain(localNodeIndex1,element)
+      elemconKey%ints(2) = globalNodeIdTypeDomain(localNodeIndex2,element)
 
       F_m%row(nodePair) = elemconKey%ints(1)
       F_m%col(nodePair) = elemconKey%ints(2)
@@ -48,7 +48,7 @@ do mm = 1, numElementsTypeDomain
       call elemcon%get(elemconKey, elemconValue, success)
 
       if (success) then
-        nodePairId(nodePair) = elemconValue  ! This pair has already been met, thus assigned a elemconValue
+        nodePairId(nodePair) = elemconValue  ! This pair has already been met, thus assigned an elemconValue
       else
         call elemcon%set(elemconKey, nodePair) ! Store the new elemconValue for next iteration's check
         nodePairId(nodePair) = nodePair       ! This pair is met for the first time

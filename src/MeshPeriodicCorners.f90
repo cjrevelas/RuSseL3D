@@ -24,7 +24,7 @@ logical :: success, successAux
 integer :: sourceXX
 integer :: sourceYY
 integer :: sourceZZ, destZZ
-integer :: sourceAux=0
+integer :: sourceAux = 0
 integer :: ii, kk
 !------------------------------------------------------------------------------------------------------!
 allocate(nodePairingYYhashInverseKey%ints(1))
@@ -46,7 +46,8 @@ do ii = 1, nodePairingZZhash%key_count()
 enddo
 
 numCornerPeriodicPairsYY = kk
-write(6,*) "corner yy zz pairs:" , numCornerPeriodicPairsYY
+!write(123,*) "corner yy zz pairs:" , numCornerPeriodicPairsYY
+
 allocate(cornerNodeOneYY(numCornerPeriodicPairsYY))
 allocate(cornerNodeTwoYY(numCornerPeriodicPairsYY))
 allocate(cornerNodeThreeYY(numCornerPeriodicPairsYY))
@@ -96,7 +97,8 @@ do ii = 1, nodePairingZZhash%key_count()
 enddo
 
 numCornerPeriodicPairsXX = kk
-write(6,*) "corner xx zz pairs:" , numCornerPeriodicPairsXX
+!write(123,*) "corner xx zz pairs:" , numCornerPeriodicPairsXX
+
 allocate(cornerNodeOneXX(numCornerPeriodicPairsXX))
 allocate(cornerNodeTwoXX(numCornerPeriodicPairsXX))
 allocate(cornerNodeThreeXX(numCornerPeriodicPairsXX))

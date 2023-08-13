@@ -23,7 +23,7 @@ type(ints_type)                              :: nodePairingKey
 integer                                      :: nodePairingValue
 
 integer :: source, dest
-integer :: kk
+integer :: pairId
 
 logical :: success
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -31,15 +31,15 @@ allocate(elemconKey%ints(2))
 
 call nodePairingIt%begin(nodePairingHash)
 
-do kk = startingPair, endingPair
+do pairId = startingPair, endingPair
   call nodePairingIt%next(nodePairingKey, nodePairingValue)
 
   source = nodePairingKey%ints(1)
   dest   = nodePairingValue
 
   ! Append pair
-  F_m%row(kk) = dest
-  F_m%col(kk) = source
+  F_m%row(pairId) = dest
+  F_m%col(pairId) = source
 
   elemconKey%ints(1) = dest
   elemconKey%ints(2) = source
@@ -47,10 +47,10 @@ do kk = startingPair, endingPair
   call elemcon%get(elemconKey, elemconValue, success)
 
   if (success) then
-    nodePairId(kk) = elemconValue
+    nodePairId(pairId) = elemconValue
   else
-    call elemcon%set(elemconKey, kk)
-    nodePairId(kk) = kk
+    call elemcon%set(elemconKey, pairId)
+    nodePairId(pairId) = pairId
   endif
 enddo
 

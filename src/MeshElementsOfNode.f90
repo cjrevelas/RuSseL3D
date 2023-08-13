@@ -9,19 +9,20 @@ use geometry_mod,    only: numNodes, numElementsTypeDomain, elementOfNode, globa
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 
-integer :: ii, jj, node
+integer :: element, localNodeId, globalNodeId
 integer, intent(out) :: numOfElementsOfNodeMax
 integer, intent(out), dimension(numNodes) :: numElementsOfNode
 !----------------------------------------------------------------------------------------------------------------------------------!
 numElementsOfNode = 0
 
 numOfElementsOfNodeMax = 0
-do ii = 1, numElementsTypeDomain
- do jj = 1, 4
-   node = globalNodeIdTypeDomain(jj, ii)
+do element = 1, numElementsTypeDomain
+ do localNodeId = 1, 4
+   globalNodeId = globalNodeIdTypeDomain(localNodeId,element)
 
-   numElementsOfNode(node) = numElementsOfNode(node) + 1
-   numOfElementsOfNodeMax = MAX(numOfElementsOfNodeMax, numElementsOfNode(node))
+   numElementsOfNode(globalNodeId) = numElementsOfNode(globalNodeId) + 1
+
+   numOfElementsOfNodeMax = MAX(numOfElementsOfNodeMax, numElementsOfNode(globalNodeId))
  enddo
 enddo
 
@@ -32,24 +33,15 @@ allocate(elementOfNode(numNodes, numOfElementsOfNodeMax))
 elementOfNode = 0
 
 numElementsOfNode = 0
-do ii = 1, numElementsTypeDomain
-  do jj = 1, 4
-    node = globalNodeIdTypeDomain(jj,ii)
+do element = 1, numElementsTypeDomain
+  do localNodeId = 1, 4
+    globalNodeId = globalNodeIdTypeDomain(localNodeId,element)
 
-    numElementsOfNode(node) = numElementsOfNode(node) + 1
-    elementOfNode(node, numElementsOfNode(node)) = ii
+    numElementsOfNode(globalNodeId) = numElementsOfNode(globalNodeId) + 1
+
+    elementOfNode(globalNodeId, numElementsOfNode(globalNodeId)) = element
   enddo
 enddo
-
-!node = 53
-!ii = numElementsOfNode(node)
-!write(6,'(A,1X,I7,1X,A,1X,I3,1X,A)') "node ", node, "belongs to ", ii, " elements."
-!write(6,'(A,5X,A)') "Element: ", "Nodes"
-
-!do jj = 1, ii
-!  element = elementOfNode(node,jj)
-!  write(6,'(I5,A1,4X,4(I5))') element, ':', (globalNodeIdTypeDomain(kk,element), kk = 1, 4)
-!enddo
 
 return
 !----------------------------------------------------------------------------------------------------------------------------------!

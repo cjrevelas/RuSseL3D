@@ -72,6 +72,7 @@ E_field      = E_field      * A3_to_m3 * molarBulkDensity * n_avog / beta
 E_solid      = E_solid      * A3_to_m3 * molarBulkDensity * n_avog / beta
 
 if (matrixExist.eq.1) E_entropy_mx = molarBulkDensity * A3_to_m3 * vol * boltz_const_Joule_molK * temperature * (1.0d0 - part_func) / lengthMatrix
+!if (matrixExist.eq.1) E_entropy_mx = molarBulkDensity * A3_to_m3 * vol * boltz_const_Joule_molK * temperature * (0.0d0 - part_func) / lengthMatrix
 
 if (graftedExist.eq.1) then
   do kk = 1, targetNumGraftedChains

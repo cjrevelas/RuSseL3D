@@ -22,9 +22,9 @@ use iofiles_mod,      only: IO_meshFile, IO_dirichletFaces, IO_nodepairs, IO_nod
 !----------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
-character(len=200) :: line, aux_line
+character(len=200) :: line, auxLine
 
-integer                              :: ii, jj, kk, pp
+integer                              :: element, localNodeId, globalNodeId, pairId, axis, keyIndex
 integer                              :: startingPair, endingPair
 integer                              :: reason, idOfEntityItBelongs, maxNumOfElementsPerNode
 integer                              :: numElementsTypeVertex, numElementsTypeEdge
@@ -32,7 +32,7 @@ integer                              :: numNodesLocalTypeVertex, numNodesLocalTy
 integer, allocatable, dimension(:)   :: temp3
 integer, allocatable, dimension(:,:) :: globalNodeIdTypeVertex, globalNodeIdTypeEdge, globalNodeIdTypeFace
 
-real(8) :: box_volume = 0.0d0
+real(8) :: boxVolume = 0.0d0
 
 logical :: success
 
@@ -65,12 +65,12 @@ do
       boxHigh   = 0.0d0
       boxLength = 0.0d0
 
-      do ii = 1, numNodes
-        read(12,*) (nodeCoord(jj,ii), jj = 1, numDimensions)
+      do globalNodeId = 1, numNodes
+        read(12,*) (nodeCoord(axis,globalNodeId), axis = 1, numDimensions)
 
-        do jj = 1, numDimensions
-          boxHigh(jj) = max(nodeCoord(jj,ii), boxHigh(jj))
-          boxLow(jj)  = min(nodeCoord(jj,ii), boxLow(jj))
+        do axis = 1, numDimensions
+          boxHigh(axis) = MAX(nodeCoord(axis,globalNodeId), boxHigh(axis))
+          boxLow(axis)  = MIN(nodeCoord(axis,globalNodeId), boxLow(axis))
         enddo
       enddo
 
@@ -79,18 +79,18 @@ do
 
       write(iow,'(A6,A13,A17,A18)') "dim", "box_length", "box_min", "box_max"
       write(6  ,'(A6,A13,A17,A18)') "dim", "box_length", "box_min", "box_max"
-      do jj = 1, numDimensions
-        boxLength(jj) = boxHigh(jj) - boxLow(jj)
-        write(iow,'(I5,2X,3(E16.9,2X))') jj, boxLength(jj), boxLow(jj), boxHigh(jj)
-        write(6  ,'(I5,2X,3(E16.9,2X))') jj, boxLength(jj), boxLow(jj), boxHigh(jj)
+      do axis = 1, numDimensions
+        boxLength(axis) = boxHigh(axis) - boxLow(axis)
+        write(iow,'(I5,2X,3(E16.9,2X))') axis, boxLength(axis), boxLow(axis), boxHigh(axis)
+        write(6  ,'(I5,2X,3(E16.9,2X))') axis, boxLength(axis), boxLow(axis), boxHigh(axis)
       enddo
 
       write(6,*)
       write(iow,*)
 
-      box_volume = boxLength(1) * boxLength(2) * boxLength(3)
-      write(iow,'(3X,A40,E16.9,A13)')adjl("Box volume:",40), box_volume, " [Angstrom^3]"
-      write(6  ,'(3X,A40,E16.9,A13)')adjl("Box volume:",40), box_volume, " [Angstrom^3]"
+      boxVolume = boxLength(1) * boxLength(2) * boxLength(3)
+      write(iow,'(3X,A40,E16.9,A13)')adjl("Box volume:",40), boxVolume, " [Angstrom^3]"
+      write(6  ,'(3X,A40,E16.9,A13)')adjl("Box volume:",40), boxVolume, " [Angstrom^3]"
     elseif (INDEX(line,"3 vtx # type name")>0) then
       read(12,*)
       read(12,*)
@@ -99,12 +99,12 @@ do
       allocate(globalNodeIdTypeVertex(numNodesLocalTypeVertex,numElementsTypeVertex))
       read(12,*)
 
-      do kk = 1, numElementsTypeVertex
-        read(12,*) (globalNodeIdTypeVertex(pp,kk), pp=1, numNodesLocalTypeVertex)
+      do element = 1, numElementsTypeVertex
+        read(12,*) (globalNodeIdTypeVertex(localNodeId,element), localNodeId = 1, numNodesLocalTypeVertex)
       enddo
       read(12,*)
-      read(12,'(A100)',IOSTAT=reason) aux_line
-      if (INDEX(aux_line," # number of parameter values per element")>0) then
+      read(12,'(A100)',IOSTAT=reason) auxLine
+      if (INDEX(auxLine," # number of parameter values per element")>0) then
         read(12,*)
         read(12,*)
         read(12,*)
@@ -114,8 +114,8 @@ do
 
       allocate(vertexEntityKey%ints(1))
       call vertexEntityHash%reserve(numElementsTypeVertex)
-      do kk = 1, numElementsTypeVertex
-        vertexEntityKey%ints(1) = kk
+      do element = 1, numElementsTypeVertex
+        vertexEntityKey%ints(1) = element
         read(12,*) idOfEntityItBelongs
         call vertexEntityHash%get(vertexEntityKey, vertexEntityValue, success)
         if (.NOT.success) call vertexEntityHash%set(vertexEntityKey, idOfEntityItBelongs)
@@ -128,15 +128,15 @@ do
       allocate(globalNodeIdTypeEdge(numNodesLocalTypeEdge,numElementsTypeEdge))
       read(12,*)
 
-      do kk = 1, numElementsTypeEdge
-        read(12,*) (globalNodeIdTypeEdge(pp,kk), pp=1,numNodesLocalTypeEdge)
+      do element = 1, numElementsTypeEdge
+        read(12,*) (globalNodeIdTypeEdge(localNodeId,element), localNodeId = 1, numNodesLocalTypeEdge)
       enddo
       read(12,*)
-      read(12,'(A100)',IOSTAT=reason) aux_line
-      if (INDEX(aux_line," # number of parameter values per element")>0) then
+      read(12,'(A100)',IOSTAT=reason) auxLine
+      if (INDEX(auxLine," # number of parameter values per element")>0) then
         read(12,*)
         read(12,*)
-        do ii = 1, numElementsTypeEdge
+        do element = 1, numElementsTypeEdge
           read(12,*)
         enddo
         read(12,*)
@@ -146,8 +146,8 @@ do
 
       allocate(edgeEntityKey%ints(1))
       call edgeEntityHash%reserve(numElementsTypeEdge)
-      do kk = 1, numElementsTypeEdge
-        edgeEntityKey%ints(1) = kk
+      do element = 1, numElementsTypeEdge
+        edgeEntityKey%ints(1) = element
         read(12,*) idOfEntityItBelongs
         call edgeEntityHash%get(edgeEntityKey, edgeEntityValue, success)
         if (.NOT.success) call edgeEntityHash%set(edgeEntityKey, idOfEntityItBelongs)
@@ -160,18 +160,18 @@ do
       read(12,*)
 
       allocate(globalNodeIdTypeFace(numNodesLocalTypeFace,numElementsTypeFace))
-      do kk = 1, numElementsTypeFace
-        read(12,*) (globalNodeIdTypeFace(pp,kk), pp=1,numNodesLocalTypeFace)
+      do element = 1, numElementsTypeFace
+        read(12,*) (globalNodeIdTypeFace(localNodeId,element), localNodeId = 1, numNodesLocalTypeFace)
       enddo
       globalNodeIdTypeFace = globalNodeIdTypeFace + 1
 
       read(12,*)
-      read(12,'(A100)',IOSTAT=reason) aux_line
-      if ((INDEX(aux_line,"3 # number of parameter values per element")>0).OR.&
-          (INDEX(aux_line,"6 # number of parameter values per element")>0)) then
+      read(12,'(A100)',IOSTAT=reason) auxLine
+      if ((INDEX(auxLine,"3 # number of parameter values per element")>0).OR.&
+          (INDEX(auxLine,"6 # number of parameter values per element")>0)) then
         read(12,*)
         read(12,*)
-        do ii = 1, numElementsTypeFace
+        do element = 1, numElementsTypeFace
           read(12,*)
         enddo
         read(12,*)
@@ -181,8 +181,8 @@ do
 
       allocate(faceEntityKey%ints(1))
       call faceEntityHash%reserve(numElementsTypeFace)
-      do kk = 1, numElementsTypeFace
-        faceEntityKey%ints(1) = kk
+      do element = 1, numElementsTypeFace
+        faceEntityKey%ints(1) = element
         read(12,*) idOfEntityItBelongs
         call faceEntityHash%get(faceEntityKey, faceEntityValue, success)
         if (.NOT.success) call faceEntityHash%set(faceEntityKey, idOfEntityItBelongs+1)
@@ -208,23 +208,23 @@ do
       write(6,'(3X,"Number of matrix indeces:                ",I16)') numBulkNodePairs
 
       allocate(globalNodeIdTypeDomain(numNodesLocalTypeDomain,numElementsTypeDomain))
-      do ii = 1, numElementsTypeDomain
-        read(12,*) (globalNodeIdTypeDomain(jj,ii), jj = 1, numNodesLocalTypeDomain)
+      do element = 1, numElementsTypeDomain
+        read(12,*) (globalNodeIdTypeDomain(localNodeId,element), localNodeId = 1, numNodesLocalTypeDomain)
       enddo
       globalNodeIdTypeDomain = globalNodeIdTypeDomain + 1
 
       if (numNodesLocalTypeDomain>4) then
         allocate(temp3(numElementsTypeDomain))
-        do ii = 1, numElementsTypeDomain
-          temp3(ii) = globalNodeIdTypeDomain(7,ii)
-          globalNodeIdTypeDomain(7,ii) = globalNodeIdTypeDomain(6,ii)
-          globalNodeIdTypeDomain(6,ii) = temp3(ii)
+        do element = 1, numElementsTypeDomain
+          temp3(element) = globalNodeIdTypeDomain(7,element)
+          globalNodeIdTypeDomain(7,element) = globalNodeIdTypeDomain(6,element)
+          globalNodeIdTypeDomain(6,element) = temp3(element)
         enddo
       endif
 
       read(12,*)
-      read(12,'(A100)',IOSTAT=reason) aux_line
-      if ((INDEX(aux_line,"4 # number of parameter values per element")>0).OR.(INDEX(aux_line,"10 # number of parameter values per element")>0)) then
+      read(12,'(A100)',IOSTAT=reason) auxLine
+      if ((INDEX(auxLine,"4 # number of parameter values per element")>0).OR.(INDEX(auxLine,"10 # number of parameter values per element")>0)) then
         read(12,*)
         read(12,*)
         read(12,*)
@@ -234,8 +234,8 @@ do
 
       allocate(domainEntityKey%ints(1))
       call domainEntityHash%reserve(numElementsTypeDomain)
-      do kk = 1, numElementsTypeDomain
-        domainEntityKey%ints(1) = kk
+      do element = 1, numElementsTypeDomain
+        domainEntityKey%ints(1) = element
         read(12,*) idOfEntityItBelongs
         call domainEntityHash%get(domainEntityKey, domainEntityValue, success)
         if (.NOT.success) call domainEntityHash%set(domainEntityKey, idOfEntityItBelongs)
@@ -255,17 +255,17 @@ call vertexEntityIt%begin(vertexEntityHash)
 call edgeEntityIt%begin(edgeEntityHash)
 call domainEntityIt%begin(domainEntityHash)
 
-do kk = 1, vertexEntityHash%key_count()
+do keyIndex = 1, vertexEntityHash%key_count()
   call vertexEntityIt%next(vertexEntityKey, vertexEntityValue)
   write(11,*) vertexEntityValue, vertexEntityKey%ints(1)
 enddo
 
-do kk = 1, edgeEntityHash%key_count()
+do keyIndex = 1, edgeEntityHash%key_count()
   call edgeEntityIt%next(edgeEntityKey, edgeEntityValue)
   write(22,*) edgeEntityValue, edgeEntityKey%ints(1)
 enddo
 
-do kk = 1, domainEntityHash%key_count()
+do keyIndex = 1, domainEntityHash%key_count()
   call domainEntityIt%next(domainEntityKey, domainEntityValue)
   write(44,*) domainEntityValue, domainEntityKey%ints(1)
 enddo
@@ -278,7 +278,7 @@ if (domainIsPeriodic) then
 
 #ifdef DEBUG_OUTPUTS
   call faceEntityIt%begin(faceEntityHash)
-  do kk = 1, faceEntityHash%key_count()
+  do keyIndex = 1, faceEntityHash%key_count()
     call faceEntityIt%next(faceEntityKey, faceEntityValue)
     write(33,*) faceEntityValue-1, faceEntityKey%ints(1)
   enddo
@@ -347,8 +347,8 @@ endingPair   = numBulkNodePairs + nodePairingXXhash%key_count()
 
 if (periodicAxisId(1)) call MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingXXhash)
 
-do ii = 1, numBulkNodePairs + nodePairingXXhash%key_count()
-  F_m%is_zero(ii) = (nodePairId(ii)/=ii)
+do pairId = 1, numBulkNodePairs + nodePairingXXhash%key_count()
+  F_m%is_zero(pairId) = (nodePairId(pairId) /= pairId)
 enddo
 
 ! yy pairs
@@ -357,9 +357,9 @@ endingPair   = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYh
 
 if (periodicAxisId(2)) call MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingYYhash)
 
-do ii = numBulkNodePairs + nodePairingXXhash%key_count() + 1, &
+do pairId = numBulkNodePairs + nodePairingXXhash%key_count() + 1, &
         numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count()
-  F_m%is_zero(ii) = (nodePairId(ii)/=ii)
+  F_m%is_zero(pairId) = (nodePairId(pairId) /= pairId)
 enddo
 
 ! zz pairs
@@ -368,30 +368,30 @@ endingPair   = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYh
 
 if (periodicAxisId(3)) call MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingZZhash)
 
-do ii = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + 1, &
+do pairId = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + 1, &
         numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + nodePairingZZhash%key_count()
-  F_m%is_zero(ii) = (nodePairId(ii)/=ii)
+  F_m%is_zero(pairId) = (nodePairId(pairId) /= pairId)
 enddo
 
 call MeshDirichletFaces(numElementsTypeFace, numNodesLocalTypeFace, globalNodeIdTypeFace, faceEntityHash)
 
 #ifdef DEBUG_OUTPUTS
 open(unit=77, file = IO_nodePairs)
-do ii = 1, numTotalNodePairs
-  write(77,'(4(2X,I9),2X,L9)') ii, F_m%row(ii), F_m%col(ii), nodePairId(ii), F_m%is_zero(ii)
+do pairId = 1, numTotalNodePairs
+  write(77,'(4(2X,I9),2X,L9)') pairId, F_m%row(pairId), F_m%col(pairId), nodePairId(pairId), F_m%is_zero(pairId)
 enddo
 close(77)
 
 open (unit=77, file = IO_nodeConnectivity)
-do ii = 1, numElementsTypeDomain
-  write(77,'(11(2X,I9))') (globalNodeIdTypeDomain(jj,ii), jj = 1, numNodesLocalTypeDomain)
+do element = 1, numElementsTypeDomain
+  write(77,'(11(2X,I9))') (globalNodeIdTypeDomain(localNodeId,element), localNodeId = 1, numNodesLocalTypeDomain)
 enddo
 close(77)
 
 open(77, file = IO_nodeCoordinates)
 write(77,'(3(2X,A16))') 'x', 'y', 'z'
-do ii = 1, numNodes
-  write(77,'(3(2X,F16.9))') (nodeCoord(jj,ii), jj = 1, numDimensions)
+do element = 1, numNodes
+  write(77,'(3(2X,F16.9))') (nodeCoord(axis,element), axis = 1, numDimensions)
 enddo
 close(77)
 

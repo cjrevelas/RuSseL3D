@@ -2,14 +2,14 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine MeshPeriodicNodePairs(globalNodeIdTypeFace, axis, faceOneHash, faceTwoHash, &
-                                 isDestPeriodicNode, nodePairingHash, nodePairingHashInverse)
+subroutine MeshPeriodicNodePairs(globalNodeIdTypeFace, axis, faceOneHash, faceTwoHash, isDestPeriodicNode, nodePairingHash, nodePairingHashInverse)
 !----------------------------------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module
 
-use geometry_mod, only: nodeCoord, numNodesLocalTypeFace, numElementsTypeFace, numNodes
-use iofiles_mod,  only: IO_nodePairingXX, IO_nodePairingYY, IO_nodePairingZZ
+use geometry_mod,  only: nodeCoord, numNodesLocalTypeFace, numElementsTypeFace, numNodes
+use iofiles_mod,   only: IO_nodePairingXX, IO_nodePairingYY, IO_nodePairingZZ
+use constants_mod, only: tol
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -77,7 +77,7 @@ do kk = 1, faceOneHash%key_count()
       node1 = globalNodeIdTypeFace(ii,elem1)
       do jj = 1, 3
         node2 = globalNodeIdTypeFace(jj, elem2)
-        if ((ABS(nodeCoord(dimension1,node1)-nodeCoord(dimension1,node2))<1.0d-12).AND.(ABS(nodeCoord(dimension2,node1)-nodeCoord(dimension2,node2))<1.0d-12)) then
+        if ((ABS(nodeCoord(dimension1,node1) - nodeCoord(dimension1,node2)) < tol).AND.(ABS(nodeCoord(dimension2,node1) - nodeCoord(dimension2,node2)) < tol)) then
           nodePairingKey%ints(1) = node1
           call nodePairingHash%set(nodePairingKey, node2)
 
@@ -112,8 +112,8 @@ close(1111)
 
 deallocate(nodePairingKey%ints)
 deallocate(nodePairingKeyInverse%ints)
-deallocate(faceOneKey%ints)
-deallocate(faceTwoKey%ints)
+!deallocate(faceOneKey%ints)
+!deallocate(faceTwoKey%ints)
 
 call faceOneHash%clear()
 call faceTwoHash%clear()
