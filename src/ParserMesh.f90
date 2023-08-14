@@ -272,9 +272,18 @@ enddo
 #endif
 
 if (domainIsPeriodic) then
-  if (periodicAxisId(1)) call MeshFaceEntities('x', faceEntityHash, xfaceOneHash, xfaceTwoHash)
-  if (periodicAxisId(2)) call MeshFaceEntities('y', faceEntityHash, yfaceOneHash, yfaceTwoHash)
-  if (periodicAxisId(3)) call MeshFaceEntities('z', faceEntityHash, zfaceOneHash, zfaceTwoHash)
+  if (periodicAxisId(1)) then
+    call MeshFaceEntities(1, boxLow(1),  globalNodeIdTypeFace, faceEntityHash, xfaceOneHash)
+    call MeshFaceEntities(1, boxHigh(1), globalNodeIdTypeFace, faceEntityHash, xfaceTwoHash)
+  endif
+  if (periodicAxisId(2)) then
+    call MeshFaceEntities(2, boxLow(2),  globalNodeIdTypeFace, faceEntityHash, yfaceOneHash)
+    call MeshFaceEntities(2, boxHigh(2), globalNodeIdTypeFace, faceEntityHash, yfaceTwoHash)
+  endif
+  if (periodicAxisId(3)) then
+    call MeshFaceEntities(3, boxHigh(3),  globalNodeIdTypeFace, faceEntityHash, zfaceOneHash)
+    call MeshFaceEntities(3, boxLow(3),   globalNodeIdTypeFace, faceEntityHash, zfaceTwoHash)
+  endif
 
 #ifdef DEBUG_OUTPUTS
   call faceEntityIt%begin(faceEntityHash)

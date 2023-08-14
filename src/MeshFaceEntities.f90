@@ -2,71 +2,79 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine MeshFaceEntities(axis, faceEntityHash, faceOneHash, faceTwoHash)
+subroutine MeshFaceEntities(axis, boundaryCoord, globalNodeIdTypeFace, faceEntityHash, faceHash)
 !----------------------------------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module
-use parser_vars_mod, only: periodicFaceId
+use geometry_mod,  only: numNodesLocalTypeFace, numElementsTypeFace, nodeCoord
+use constants_mod, only: tol
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
-character(len=1), intent(in) :: axis
+integer, intent(in) :: axis
+real(8), intent(in) :: boundaryCoord
+
+integer, intent(in), dimension(numNodesLocalTypeFace, numElementsTypeFace) :: globalNodeIdTypeFace
 
 type(fhash_type__ints_double), intent(inout) :: faceEntityHash
 type(fhash_type_iterator__ints_double)       :: faceEntityIt
 type(ints_type)                              :: faceEntityKey
 integer                                      :: faceEntityValue
 
-type(fhash_type__ints_double), intent(out) :: faceOneHash, faceTwoHash
-type(ints_type)                            :: faceOneKey, faceTwoKey
-integer                                    :: faceOneSize, faceTwoSize
+type(fhash_type__ints_double), intent(out) :: faceHash
+type(ints_type)                            :: faceKey
+integer                                    :: faceSize
 
-integer :: kk, periodicFaceOne, periodicFaceTwo
+real(8) :: centerOfMassCoord
+integer :: keyIndex, localNodeId, globalNodeId, element
 !----------------------------------------------------------------------------------------------------------------------------------!
-faceOneSize = 0
-faceTwoSize = 0
+faceSize = 0
 
-periodicFaceOne = 0
-periodicFaceTwo = 0
-
-if (axis=='x') then
-  periodicFaceOne = periodicFaceId(1)
-  periodicFaceTwo = periodicFaceId(2)
-elseif (axis=='y') then
-  periodicFaceOne = periodicFaceId(3)
-  periodicFaceTwo = periodicFaceId(4)
-elseif (axis=='z') then
-  periodicFaceOne = periodicFaceId(5)
-  periodicFaceTwo = periodicFaceId(6)
-endif
-
-! Calculate the size of face entity hashes
+! Determine the size of face entity hashes for proper allocation
 call faceEntityIt%begin(faceEntityHash)
-do kk = 1, faceEntityHash%key_count()
+do keyIndex = 1, faceEntityHash%key_count()
+  centerOfMassCoord = 0.d0
+
   call faceEntityIt%next(faceEntityKey, faceEntityValue)
 
-  if (faceEntityValue == periodicFaceOne) faceOneSize = faceOneSize + 1
-  if (faceEntityValue == periodicFaceTwo) faceTwoSize = faceTwoSize + 1
+  element = faceEntityKey%ints(1)
+
+  do localNodeId = 1, 3
+    globalNodeId = globalNodeIdTypeFace(localNodeId,element)
+
+    centerOfMassCoord = centerOfMassCoord + nodeCoord(axis,globalNodeId)
+  enddo
+
+  centerOfMassCoord = centerOfMassCoord / 3.0d0
+
+  if (ABS(centerOfMassCoord - boundaryCoord) < tol) faceSize = faceSize + 1
 enddo
 
-allocate(faceOneKey%ints(1))
-allocate(faceTwoKey%ints(1))
+allocate(faceKey%ints(1))
 
-call faceOneHash%reserve(faceOneSize)
-call faceTwoHash%reserve(faceTwoSize)
+call faceHash%reserve(faceSize)
 
 ! Fill the face entity hashes
 call faceEntityIt%begin(faceEntityHash)
-do kk = 1, faceEntityHash%key_count()
+do keyIndex = 1, faceEntityHash%key_count()
+  centerOfMassCoord = 0.d0
+
   call faceEntityIt%next(faceEntityKey, faceEntityValue)
-  if (faceEntityValue == periodicFaceOne) then
-    faceOneKey%ints(1) = faceEntityKey%ints(1)
-    call faceOneHash%set(faceOneKey, faceEntityValue)
-    cycle
-  endif
-  if (faceEntityValue == periodicFaceTwo) then
-    faceTwoKey%ints(1) = faceEntityKey%ints(1)
-    call faceTwoHash%set(faceTwoKey, faceEntityValue)
+
+  element = faceEntityKey%ints(1)
+
+  do localNodeId = 1, 3
+    globalNodeId = globalNodeIdTypeFace(localNodeId,element)
+
+    centerOfMassCoord = centerOfMassCoord + nodeCoord(axis,globalNodeId)
+  enddo
+
+  centerOfMassCoord = centerOfMassCoord / 3.0d0
+
+  if (ABS(centerOfMassCoord - boundaryCoord) < tol) then
+    faceKey%ints(1) = element
+    
+    call faceHash%set(faceKey, faceEntityValue)
     cycle
   endif
 enddo
