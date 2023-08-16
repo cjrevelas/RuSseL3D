@@ -112,8 +112,8 @@ close(1111)
 
 deallocate(nodePairingKey%ints)
 deallocate(nodePairingKeyInverse%ints)
-!deallocate(faceOneKey%ints)
-!deallocate(faceTwoKey%ints)
+deallocate(faceOneKey%ints)
+deallocate(faceTwoKey%ints)
 
 call faceOneHash%clear()
 call faceTwoHash%clear()
