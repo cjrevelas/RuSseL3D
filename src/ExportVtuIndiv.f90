@@ -49,6 +49,8 @@ if (exportAllGraftedChains.eq.1) then
 elseif (exportAllGraftedChains.eq.0) then
   gpCounter = numGraftedChainsToExport
   exportAll = .False.
+else
+  exportAll = .False.
 endif
 
 write(1111,'(A11)') "<PointData>"
