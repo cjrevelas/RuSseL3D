@@ -10,8 +10,8 @@ use arrays_mod,       only: phiMatrix, phiGrafted, phiGraftedIndiv,             
                             qqGraftedFinal, qqGraftedInterp, ds_gr_ed,            &
                             ds_mx_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv,        &
                             nodeVolume
-use hist_mod,         only: nbin, lbin, planar_cell_of_np, sph_cell_of_np, dist_from_face, &
-                            dist_from_np, cell_vol_planar, cell_vol_sph
+use hist_mod,         only: numBins, binLength, planarCellId, sphericalCellId, distanceFromFace, &
+                            distanceFromNanop, planarCellVolume, sphericalCellVolume
 use delta_mod,        only: graftPointValue, graftPointId, targetNumGraftedChains
 use geometry_mod,     only: numNodes, nodeCoord, isDirichletFace, nodeBelongsToDirichletFace
 use write_helper_mod, only: adjl, export
@@ -46,8 +46,8 @@ character(40) :: fileName
 !-----------------------------------------------------------------------------------------------------------!
 adsorbed = .False.
 
-if (export(exportPhiNodal, iter, convergence)) call ExportNodalProfile(phiMatrix, phiGrafted, numNodes, nodeCoord, nodeVolume)
-if (export(exportField, iter, convergence))    call ExportFieldAscii(wwField, wwFieldNew, wwFieldMixed)
+if (export(exportPhiNodal, iter, convergence)) CALL ExportNodalProfile(phiMatrix, phiGrafted, numNodes, nodeCoord, nodeVolume)
+if (export(exportField, iter, convergence))    CALL ExportFieldAscii(wwField, wwFieldNew, wwFieldMixed)
 
 if (export(exportPhiSmeared, iter, convergence)) then
   ! Planar surfaces
@@ -56,7 +56,7 @@ if (export(exportPhiSmeared, iter, convergence)) then
       if (isDirichletFace(mm,nn)) then
         fileName = ""
         write(fileName,'("o.phi_smear_w",I1,"_",I1)') mm, nn
-        call ExportSmearedProfile(planar_cell_of_np(:,mm,nn), cell_vol_planar(:,mm,nn), numNodes, fileName, phiMatrix, phiGrafted, nodeVolume, lbin, nbin)
+        CALL ExportSmearedProfile(planarCellId(:,mm,nn), planarCellVolume(:,mm,nn), numNodes, fileName, phiMatrix, phiGrafted, nodeVolume, binLength, numBins)
       endif
     enddo
   enddo
@@ -65,13 +65,13 @@ if (export(exportPhiSmeared, iter, convergence)) then
   do mm = 1, numNanopFaces
     fileName = ""
     write(fileName,'("o.phi_smear_np",I1)') mm
-    call ExportSmearedProfile(sph_cell_of_np(mm,:), cell_vol_sph(mm,:), numNodes, fileName, phiMatrix, phiGrafted, nodeVolume, lbin, nbin)
+    CALL ExportSmearedProfile(sphericalCellId(mm,:), sphericalCellVolume(mm,:), numNodes, fileName, phiMatrix, phiGrafted, nodeVolume, binLength, numBins)
   enddo
 endif
 
 if (matrixExist.eq.1) then
-  if (export(exportPhiEndMiddle, iter, convergence)) call ExportEndMiddleProfile(numEdwPointsMatrix, qqMatrixFinal, qqMatrixFinal, "mx", numNodes, nodeCoord)
-  if (export(exportPropagators, iter, convergence))  call ExportPropagator(numEdwPointsMatrix, qqMatrixFinal, "mx")
+  if (export(exportPhiEndMiddle, iter, convergence)) CALL ExportEndMiddleProfile(numEdwPointsMatrix, qqMatrixFinal, qqMatrixFinal, "mx", numNodes, nodeCoord)
+  if (export(exportPropagators, iter, convergence))  CALL ExportPropagator(numEdwPointsMatrix, qqMatrixFinal, "mx")
 
   ! Planar surfaces
   do mm = 1, 3
@@ -80,12 +80,12 @@ if (matrixExist.eq.1) then
         if (export(exportChainsPerArea, iter, convergence)) then
           fileName = ""
           write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
-          call ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planar_cell_of_np(:,mm,nn), "mx", rg2OfMatrixMonomer, &
+          CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planarCellId(:,mm,nn), "mx", rg2OfMatrixMonomer, &
           lengthMatrix, numEdwPointsMatrix, ds_mx_ed, qqMatrixFinal, phiMatrix, wwField)
         endif
         if (export(exportAdsorbedFree, iter, convergence)) then
           do kk = 1, numNodes
-            if (dist_from_face(kk,mm,nn)<adsorptionDistance) adsorbed(kk) = .true.
+            if (distanceFromFace(kk,mm,nn)<adsorptionDistance) adsorbed(kk) = .true.
           enddo
         endif
       endif
@@ -97,39 +97,39 @@ if (matrixExist.eq.1) then
     if (export(exportChainsPerArea, iter, convergence)) then
       fileName = ""
       write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
-      call ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sph_cell_of_np(mm,:), "mx", rg2OfMatrixMonomer, lengthMatrix, &
+      CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sphericalCellId(mm,:), "mx", rg2OfMatrixMonomer, lengthMatrix, &
                             numEdwPointsMatrix, ds_mx_ed, qqMatrixFinal, phiMatrix, wwField)
     endif
     if (export(exportAdsorbedFree, iter, convergence)) then
       do kk = 1, numNodes
-        if (dist_from_np(mm,kk)<adsorptionDistance) adsorbed(kk) = .true.
+        if (distanceFromNanop(mm,kk) < adsorptionDistance) adsorbed(kk) = .true.
       enddo
     endif
   enddo
 
-  if (export(exportAdsorbedFree, iter, convergence)) call ExportAdsorbed(nodeBelongsToDirichletFace, elemcon, adsorbed)
+  if (export(exportAdsorbedFree, iter, convergence)) CALL ExportAdsorbed(nodeBelongsToDirichletFace, elemcon, adsorbed)
 
 #ifdef DEBUG_OUTPUTS
-  call ExportPropagator(numConvolPointsMatrix, qqMatrixInterp, "mm")
-  call ExportPropagator(numConvolPointsGrafted, qqMatrixInterpGrafted, "mg")
+  CALL ExportPropagator(numConvolPointsMatrix, qqMatrixInterp, "mm")
+  CALL ExportPropagator(numConvolPointsGrafted, qqMatrixInterpGrafted, "mg")
   write(6,'(2X,A40)')adjl("****************************************",40)
 #endif
 endif
 
 if (graftedExist.eq.1) then
-  if (export(exportPhiEndMiddle, iter, convergence)) call ExportEndMiddleProfile(numConvolPointsGrafted, qqGraftedInterp, qqMatrixInterpGrafted, "gr", numNodes, nodeCoord)
-  if (export(exportPropagators, iter, convergence))  call ExportPropagator(numEdwPointsGrafted, qqGraftedFinal, "gr")
+  if (export(exportPhiEndMiddle, iter, convergence)) CALL ExportEndMiddleProfile(numConvolPointsGrafted, qqGraftedInterp, qqMatrixInterpGrafted, "gr", numNodes, nodeCoord)
+  if (export(exportPropagators, iter, convergence))  CALL ExportPropagator(numEdwPointsGrafted, qqGraftedFinal, "gr")
 
   if (export(exportPhiIndividual, iter, convergence)) then
-    call ComputeIndivProfile(numNodes, elemcon, qqMatrixInterpGrafted, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, wwField, targetNumGraftedChains, graftPointId, graftPointValue, phiGraftedIndiv)
+    CALL ComputeIndivProfile(numNodes, elemcon, qqMatrixInterpGrafted, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, wwField, targetNumGraftedChains, graftPointId, graftPointValue, phiGraftedIndiv)
 
     if (exportAllGraftedChains.eq.1) then
-      call ExportIndivProfile(targetNumGraftedChains, numNodes, nodeCoord, phiGraftedIndiv)
+      CALL ExportIndivProfile(targetNumGraftedChains, numNodes, nodeCoord, phiGraftedIndiv)
     elseif ((exportAllGraftedChains.eq.0).or.(exportAllGraftedChains.eq.2)) then
-      call ExportIndivProfile(numGraftedChainsToExport, numNodes, nodeCoord, phiGraftedIndiv)
+      CALL ExportIndivProfile(numGraftedChainsToExport, numNodes, nodeCoord, phiGraftedIndiv)
     endif
 
-    call ExportVtuIndiv(numGraftedChainsToExport, phiGraftedIndiv)
+    CALL ExportVtuIndiv(numGraftedChainsToExport, phiGraftedIndiv)
   endif
 
   ! Planar surfaces
@@ -139,16 +139,16 @@ if (graftedExist.eq.1) then
         if (export(exportBrushThickness, iter, convergence)) then
           fileName = ""
           write(fileName,'("o.brush_w",I1,"_",I1)') mm, nn
-          call ExportBrush(targetNumGraftedChains, numNodes, phiGrafted, phiGraftedIndiv, nodeVolume, fileName, dist_from_face(:,mm,nn))
+          CALL ExportBrush(targetNumGraftedChains, numNodes, phiGrafted, phiGraftedIndiv, nodeVolume, fileName, distanceFromFace(:,mm,nn))
           fileName = ""
           write(fileName,'("o.brush99_w",I1,"_",I1)') mm, nn
-          call ExportBrush99(planar_cell_of_np(:,mm,nn), targetNumGraftedChains, numNodes, fileName, phiGrafted, phiGraftedIndiv, nodeVolume, lbin, nbin)
+          CALL ExportBrush99(planarCellId(:,mm,nn), targetNumGraftedChains, numNodes, fileName, phiGrafted, phiGraftedIndiv, nodeVolume, binLength, numBins)
         endif
         if (export(exportChainsPerArea, iter, convergence)) then
           fileName = ""
           write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
-          call ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planar_cell_of_np(:,mm,nn), "gr", rg2OfGraftedMonomer, &
-          lengthGrafted, numEdwPointsGrafted, ds_gr_ed, qqGraftedFinal, phiGrafted, wwField)
+          CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planarCellId(:,mm,nn), "gr", rg2OfGraftedMonomer, &
+                                lengthGrafted, numEdwPointsGrafted, ds_gr_ed, qqGraftedFinal, phiGrafted, wwField)
         endif
       endif
     enddo
@@ -159,20 +159,20 @@ if (graftedExist.eq.1) then
     if (export(exportBrushThickness, iter, convergence)) then
       fileName = ""
       write(fileName,'("o.brush_np",I1)') mm
-      call ExportBrush(targetNumGraftedChains, numNodes, phiGrafted, phiGraftedIndiv, nodeVolume, fileName, dist_from_np(mm,:))
+      CALL ExportBrush(targetNumGraftedChains, numNodes, phiGrafted, phiGraftedIndiv, nodeVolume, fileName, distanceFromNanop(mm,:))
       fileName = ""
       write(fileName,'("o.brush99_np",I1)') mm
-      call ExportBrush99(sph_cell_of_np(mm,:), targetNumGraftedChains, numNodes, fileName, phiGrafted, phiGraftedIndiv, nodeVolume, lbin, nbin)
+      CALL ExportBrush99(sphericalCellId(mm,:), targetNumGraftedChains, numNodes, fileName, phiGrafted, phiGraftedIndiv, nodeVolume, binLength, numBins)
     endif
     if (export(exportChainsPerArea, iter, convergence)) then
       fileName = ""
       write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
-      call ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sph_cell_of_np(mm,:), "gr", rg2OfGraftedMonomer, lengthGrafted, &
+      CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sphericalCellId(mm,:), "gr", rg2OfGraftedMonomer, lengthGrafted, &
                             numEdwPointsGrafted, ds_gr_ed, qqGraftedFinal, phiGrafted, wwField)
     endif
   enddo
 #ifdef DEBUG_OUTPUTS
-  call ExportPropagator(numConvolPointsGrafted, qqGraftedInterp, "gg")
+  CALL ExportPropagator(numConvolPointsGrafted, qqGraftedInterp, "gg")
 #endif
 endif
 

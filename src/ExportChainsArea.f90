@@ -6,7 +6,7 @@ subroutine ExportChainsArea(nodeBelongsToDirichletFace, elemcon, cell_of_np, cha
                               ns_ed, ds_ed, q_final, phi, ww)
 !-----------------------------------------------------------------------------------------------------------------------!
 use parser_vars_mod,  only: segmentBulkDensity
-use hist_mod,         only: nbin
+use hist_mod,         only: numBins
 use write_helper_mod, only: adjl
 use constants_mod,    only: A3_to_m3
 use arrays_mod,       only: nodeVolume
@@ -33,7 +33,7 @@ real(8), intent(in), dimension(numNodes)         :: phi, ww
 real(8), intent(in)                              :: rg2OfMonomer, chainLength
 real(8), dimension(2,numNodes)                   :: qshape
 real(8), dimension(ns_ed+1,numNodes)             :: qshape_final
-real(8), dimension(nbin)                         :: p_cross, n_shape
+real(8), dimension(numBins)                      :: p_cross, n_shape
 real(8)                                          :: sum_qshape=0.d0, sum_Q=0.d0, sum_phi=0.d0
 !-----------------------------------------------------------------------------------------------------------------------!
 do bin = 7, 30

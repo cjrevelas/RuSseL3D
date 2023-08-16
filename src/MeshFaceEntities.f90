@@ -26,16 +26,17 @@ type(ints_type)                            :: faceKey
 integer                                    :: faceSize
 
 real(8) :: centerOfMassCoord
+
 integer :: keyIndex, localNodeId, globalNodeId, element
 !----------------------------------------------------------------------------------------------------------------------------------!
 faceSize = 0
 
 ! Determine the size of face entity hashes for proper allocation
-call faceEntityIt%begin(faceEntityHash)
+CALL faceEntityIt%begin(faceEntityHash)
 do keyIndex = 1, faceEntityHash%key_count()
   centerOfMassCoord = 0.d0
 
-  call faceEntityIt%next(faceEntityKey, faceEntityValue)
+  CALL faceEntityIt%next(faceEntityKey, faceEntityValue)
 
   element = faceEntityKey%ints(1)
 
@@ -52,14 +53,14 @@ enddo
 
 allocate(faceKey%ints(1))
 
-call faceHash%reserve(faceSize)
+CALL faceHash%reserve(faceSize)
 
 ! Fill the face entity hashes
-call faceEntityIt%begin(faceEntityHash)
+CALL faceEntityIt%begin(faceEntityHash)
 do keyIndex = 1, faceEntityHash%key_count()
   centerOfMassCoord = 0.d0
 
-  call faceEntityIt%next(faceEntityKey, faceEntityValue)
+  CALL faceEntityIt%next(faceEntityKey, faceEntityValue)
 
   element = faceEntityKey%ints(1)
 
@@ -74,7 +75,7 @@ do keyIndex = 1, faceEntityHash%key_count()
   if (ABS(centerOfMassCoord - boundaryCoord) < tol) then
     faceKey%ints(1) = element
     
-    call faceHash%set(faceKey, faceEntityValue)
+    CALL faceHash%set(faceKey, faceEntityValue)
     cycle
   endif
 enddo

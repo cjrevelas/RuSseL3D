@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ToolsHistogram(upd_lbin, volnp)
+subroutine ToolsHistogram(updatedBinLength, nodeVolume)
 !-----------------------------------------------------------------------------------------------------------!
 use hist_mod
 use geometry_mod,    only: numNodes, boxLength, isDirichletFace, boxLow, boxHigh, nodeCoord
@@ -10,68 +10,69 @@ use parser_vars_mod, only: numNanopFaces, wallDistance, nanopCenter, nanopRadius
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
-integer :: kk, mm, nn, bin
+integer :: axis, face, node, bin
 
-real(8), intent(in), dimension(numNodes) :: volnp
-real(8), intent(in)                      :: upd_lbin
-real(8)                                  :: r_center_surf, r_centers, nanopRadiusActual, Rmax
+real(8), intent(in), dimension(numNodes) :: nodeVolume
+real(8), intent(in)                      :: updatedBinLength
+real(8)                                  :: nanopRadiusActual, maxDistance
+real(8)                                  :: centerDistance, surfaceDistance
 !-----------------------------------------------------------------------------------------------------------!
-lbin = upd_lbin
-Rmax = SQRT(boxLength(1)**2.0d0 + boxLength(2)**2.0d0 + boxLength(3)**2.0d0)
-nbin = INT(Rmax / lbin) + 1
+binLength   = updatedBinLength
+maxDistance = SQRT(boxLength(1)**2.0d0 + boxLength(2)**2.0d0 + boxLength(3)**2.0d0)
+numBins     = INT(maxDistance / binLength) + 1
 
-if (ALLOCATED(planar_cell_of_np)) deallocate(planar_cell_of_np)
-if (ALLOCATED(sph_cell_of_np))    deallocate(sph_cell_of_np)
-if (ALLOCATED(dist_from_face))    deallocate(dist_from_face)
-if (ALLOCATED(dist_from_np))      deallocate(dist_from_np)
-if (ALLOCATED(cell_vol_planar))   deallocate(cell_vol_planar)
-if (ALLOCATED(cell_vol_sph))      deallocate(cell_vol_sph)
+if (ALLOCATED(planarCellId))        deallocate(planarCellId)
+if (ALLOCATED(sphericalCellId))     deallocate(sphericalCellId)
+if (ALLOCATED(distanceFromFace))    deallocate(distanceFromFace)
+if (ALLOCATED(distanceFromNanop))   deallocate(distanceFromNanop)
+if (ALLOCATED(planarCellVolume))    deallocate(planarCellVolume)
+if (ALLOCATED(sphericalCellVolume)) deallocate(sphericalCellVolume)
 
-allocate(planar_cell_of_np(numNodes,3,2))
-allocate(dist_from_face(numNodes,3,2))
-allocate(cell_vol_planar(nbin,3,2))
-allocate(sph_cell_of_np(numNanopFaces,numNodes))
-allocate(dist_from_np(numNanopFaces,numNodes))
-allocate(cell_vol_sph(numNanopFaces,nbin))
+allocate(planarCellId(numNodes,3,2))
+allocate(distanceFromFace(numNodes,3,2))
+allocate(planarCellVolume(numBins,3,2))
+allocate(sphericalCellId(numNanopFaces,numNodes))
+allocate(distanceFromNanop(numNanopFaces,numNodes))
+allocate(sphericalCellVolume(numNanopFaces,numBins))
 
-planar_cell_of_np = 0
-sph_cell_of_np    = 0
-dist_from_face    = 0.0d0
-dist_from_np      = 0.0d0
-cell_vol_planar   = 0.0d0
-cell_vol_sph      = 0.0d0
-r_center_surf     = 0.0d0
+planarCellId        = 0
+sphericalCellId     = 0
+distanceFromFace    = 0.0d0
+distanceFromNanop   = 0.0d0
+planarCellVolume    = 0.0d0
+sphericalCellVolume = 0.0d0
+surfaceDistance     = 0.0d0
 
 ! Binning in planar geometries
-do mm = 1, 3
-  do nn = 1, 2
-    if (isDirichletFace(mm,nn)) then
-      do kk = 1, numNodes
-        if (nn.eq.1) then
-          r_center_surf = nodeCoord(mm,kk) - boxLow(mm) + wallDistance
-        elseif (nn.eq.2) then
-          r_center_surf = boxHigh(mm) - nodeCoord(mm,kk) + wallDistance
+do axis = 1, 3
+  do face = 1, 2
+    if (isDirichletFace(axis,face)) then
+      do node = 1, numNodes
+        if (face.eq.1) then
+          surfaceDistance = nodeCoord(axis,node) - boxLow(axis) + wallDistance
+        elseif (face.eq.2) then
+          surfaceDistance = boxHigh(axis) - nodeCoord(axis,node) + wallDistance
         endif
-        bin                         = INT(r_center_surf/lbin)+1
-        planar_cell_of_np(kk,mm,nn) = bin
-        cell_vol_planar(bin,mm,nn)  = cell_vol_planar(bin,mm,nn) + volnp(kk)
-        dist_from_face(kk,mm,nn)    = r_center_surf
+        bin                              = INT(surfaceDistance/binLength) + 1
+        planarCellId(node,axis,face)     = bin
+        planarCellVolume(bin,axis,face)  = planarCellVolume(bin,axis,face) + nodeVolume(node)
+        distanceFromFace(node,axis,face) = surfaceDistance
       enddo
     endif
   enddo
 enddo
 
 ! Binning in spherical geometries
-do mm = 1, numNanopFaces
-  do kk = 1, numNodes
-    r_centers             = DSQRT((nodeCoord(1,kk)-nanopCenter(1,mm))**2.0d0 + (nodeCoord(2,kk)-nanopCenter(2,mm))**2.0d0 &
-                                                                             + (nodeCoord(3,kk)-nanopCenter(3,mm))**2.0d0)
-    nanopRadiusActual     = nanopRadiusEff(mm) - wallDistance
-    r_center_surf         = r_centers - nanopRadiusActual
-    bin                   = INT(r_center_surf/lbin)+1
-    sph_cell_of_np(mm,kk) = bin
-    cell_vol_sph(mm,bin)  = cell_vol_sph(mm,bin) + volnp(kk)
-    dist_from_np(mm,kk)   = r_center_surf
+do face = 1, numNanopFaces
+  do node = 1, numNodes
+    centerDistance                = DSQRT((nodeCoord(1,node)-nanopCenter(1,face))**2.0d0 + (nodeCoord(2,node)-nanopCenter(2,face))**2.0d0 &
+                                                                                         + (nodeCoord(3,node)-nanopCenter(3,face))**2.0d0)
+    nanopRadiusActual             = nanopRadiusEff(face) - wallDistance
+    surfaceDistance               = centerDistance - nanopRadiusActual
+    bin                           = INT(surfaceDistance/binLength) + 1
+    sphericalCellId(face,node)    = bin
+    sphericalCellVolume(face,bin) = sphericalCellVolume(face,bin) + nodeVolume(node)
+    distanceFromNanop(face,node)  = surfaceDistance
   enddo
 enddo
 !-----------------------------------------------------------------------------------------------------------!
