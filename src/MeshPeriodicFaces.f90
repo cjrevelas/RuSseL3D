@@ -19,7 +19,7 @@ type(fhash_type_iterator__ints_double)       :: axisFaceOneIt, axisFaceTwoIt
 type(ints_type)                              :: axisFaceOneKey, axisFaceTwoKey
 integer                                      :: axisFaceOneValue, axisFaceTwoValue
 
-integer :: kk
+integer :: keyIndex
 !----------------------------------------------------------------------------------------------------------------------------------!
 if (axis=='x') then
   open(unit=111, file=IO_xFaceOneElements)
@@ -35,12 +35,12 @@ endif
 call axisFaceOneIt%begin(axisFaceOneHash)
 call axisFaceTwoIt%begin(axisFaceTwoHash)
 
-do kk = 1, axisFaceOneHash%key_count()
+do keyIndex = 1, axisFaceOneHash%key_count()
   call axisFaceOneIt%next(axisFaceOneKey, axisFaceOneValue)
   write(111,*) axisFaceOneValue, axisFaceOneKey%ints(1)
 enddo
 
-do kk = 1, axisFaceTwoHash%key_count()
+do keyIndex = 1, axisFaceTwoHash%key_count()
   call axisFaceTwoIt%next(axisFaceTwoKey, axisFaceTwoValue)
   write(222,*) axisFaceTwoValue, axisFaceTwoKey%ints(1)
 enddo

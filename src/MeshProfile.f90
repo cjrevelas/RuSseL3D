@@ -10,30 +10,31 @@ use iofiles_mod,     only: IO_meshProfile
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
-integer :: ii, ibin, nbin
-integer, allocatable, dimension(:) :: prof_1D_node
+integer :: node, bin, numBins
+integer, allocatable, dimension(:) :: profile
 
-real(8) :: prof_bin
+real(8) :: binSize
 !----------------------------------------------------------------------------------------------------------------------------------!
-prof_bin = 0.5d0
-nbin     = NINT((boxHigh(profileDimensions) - boxLow(profileDimensions)) / prof_bin) + 1
+binSize = 0.5d0
+numBins  = NINT((boxHigh(profileDimensions) - boxLow(profileDimensions)) / binSize) + 1
 
-allocate(prof_1D_node(nbin))
+allocate(profile(numBins))
 
-prof_1D_node=0
-do ii = 1, numNodes
-  ibin               = NINT((nodeCoord(profileDimensions,ii) - boxLow(profileDimensions))/prof_bin) + 1
-  prof_1D_node(ibin) = prof_1D_node(ibin) + 1
+profile = 0
+
+do node = 1, numNodes
+  bin          = NINT((nodeCoord(profileDimensions,node) - boxLow(profileDimensions)) / binSize) + 1
+  profile(bin) = profile(bin) + 1
 enddo
 
 open(77, file = IO_meshProfile)
-do ii = 1, nbin
-  write(77,*) ii, prof_1D_node(ii)
+do bin = 1, numBins
+  write(77,*) bin, profile(bin)
 enddo
 close(77)
 
 ! Deallocate memory
-deallocate(prof_1D_node)
+deallocate(profile)
 
 return
 !----------------------------------------------------------------------------------------------------------------------------------!

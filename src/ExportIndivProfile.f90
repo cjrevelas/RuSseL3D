@@ -4,7 +4,7 @@
 
 subroutine ExportIndivProfile(numGraftedChainsToExport, numNodes, nodeCoord, phi_gr_indiv)
 !------------------------------------------------------------------------------------------------------!
-use error_handing_mod
+use error_handling_mod
 use iofiles_mod,      only: IO_indivProfile
 use parser_vars_mod,  only: lengthGrafted, exportAllGraftedChains, gpIndexToExport
 use delta_mod,        only: targetNumGraftedChains

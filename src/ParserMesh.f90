@@ -6,7 +6,7 @@ subroutine ParserMesh(elemcon)
 !----------------------------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module
-use error_handing_mod
+use error_handling_mod
 use write_helper_mod, only: adjl
 use parser_vars_mod,  only: iow, periodicAxisId, domainIsPeriodic
 use geometry_mod,     only: numNodesLocalTypeDomain, numElementsOfNode, boxLow, boxHigh, boxLength,       &
@@ -29,7 +29,7 @@ integer                              :: startingPair, endingPair
 integer                              :: reason, idOfEntityItBelongs, maxNumOfElementsPerNode
 integer                              :: numElementsTypeVertex, numElementsTypeEdge
 integer                              :: numNodesLocalTypeVertex, numNodesLocalTypeEdge
-integer, allocatable, dimension(:)   :: temp3
+integer, allocatable, dimension(:)   :: temp
 integer, allocatable, dimension(:,:) :: globalNodeIdTypeVertex, globalNodeIdTypeEdge, globalNodeIdTypeFace
 
 real(8) :: boxVolume = 0.0d0
@@ -214,11 +214,11 @@ do
       globalNodeIdTypeDomain = globalNodeIdTypeDomain + 1
 
       if (numNodesLocalTypeDomain>4) then
-        allocate(temp3(numElementsTypeDomain))
+        allocate(temp(numElementsTypeDomain))
         do element = 1, numElementsTypeDomain
-          temp3(element) = globalNodeIdTypeDomain(7,element)
+          temp(element) = globalNodeIdTypeDomain(7,element)
           globalNodeIdTypeDomain(7,element) = globalNodeIdTypeDomain(6,element)
-          globalNodeIdTypeDomain(6,element) = temp3(element)
+          globalNodeIdTypeDomain(6,element) = temp(element)
         enddo
       endif
 
@@ -331,15 +331,15 @@ allocate(F_m%rh(numTotalNodePairs))
 allocate(F_m%c(numTotalNodePairs))
 allocate(F_m%k(numTotalNodePairs))
 allocate(F_m%w(numTotalNodePairs))
-allocate(F_m%is_zero(numTotalNodePairs))
+allocate(F_m%isZero(numTotalNodePairs))
 
-F_m%g       = 0.0d0
-F_m%k       = 0.0d0
-F_m%c       = 0.0d0
-F_m%rh      = 0.0d0
-F_m%row     = 0
-F_m%col     = 0
-F_m%is_zero = .True.
+F_m%g      = 0.0d0
+F_m%k      = 0.0d0
+F_m%c      = 0.0d0
+F_m%rh     = 0.0d0
+F_m%row    = 0
+F_m%col    = 0
+F_m%isZero = .True.
 
 call MeshBulkNodePairs(elemcon)
 
@@ -356,7 +356,7 @@ endingPair   = numBulkNodePairs + nodePairingXXhash%key_count()
 if (periodicAxisId(1)) call MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingXXhash)
 
 do pairId = 1, numBulkNodePairs + nodePairingXXhash%key_count()
-  F_m%is_zero(pairId) = (nodePairId(pairId) /= pairId)
+  F_m%isZero(pairId) = (nodePairId(pairId) /= pairId)
 enddo
 
 ! yy pairs
@@ -367,7 +367,7 @@ if (periodicAxisId(2)) call MeshAppendPeriodicPairs(elemcon, startingPair, endin
 
 do pairId = numBulkNodePairs + nodePairingXXhash%key_count() + 1, &
         numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count()
-  F_m%is_zero(pairId) = (nodePairId(pairId) /= pairId)
+  F_m%isZero(pairId) = (nodePairId(pairId) /= pairId)
 enddo
 
 ! zz pairs
@@ -378,7 +378,7 @@ if (periodicAxisId(3)) call MeshAppendPeriodicPairs(elemcon, startingPair, endin
 
 do pairId = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + 1, &
         numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + nodePairingZZhash%key_count()
-  F_m%is_zero(pairId) = (nodePairId(pairId) /= pairId)
+  F_m%isZero(pairId) = (nodePairId(pairId) /= pairId)
 enddo
 
 call MeshDirichletFaces(numElementsTypeFace, numNodesLocalTypeFace, globalNodeIdTypeFace, faceEntityHash)
@@ -386,7 +386,7 @@ call MeshDirichletFaces(numElementsTypeFace, numNodesLocalTypeFace, globalNodeId
 #ifdef DEBUG_OUTPUTS
 open(unit=77, file = IO_nodePairs)
 do pairId = 1, numTotalNodePairs
-  write(77,'(4(2X,I9),2X,L9)') pairId, F_m%row(pairId), F_m%col(pairId), nodePairId(pairId), F_m%is_zero(pairId)
+  write(77,'(4(2X,I9),2X,L9)') pairId, F_m%row(pairId), F_m%col(pairId), nodePairId(pairId), F_m%isZero(pairId)
 enddo
 close(77)
 
@@ -408,13 +408,14 @@ call MeshProfile()
 
 #ifdef DEBUG_OUTPUTS
 deallocate(vertexEntityKey%ints, edgeEntityKey%ints, domainEntityKey%ints)
+
 call vertexEntityHash%clear()
 call edgeEntityHash%clear()
 call domainEntityHash%clear()
 #endif
 
 ! Deallocate memory
-if (numNodesLocalTypeDomain > 4) deallocate(temp3)
+if (numNodesLocalTypeDomain > 4) deallocate(temp)
 deallocate(globalNodeIdTypeVertex, globalNodeIdTypeEdge, globalNodeIdTypeFace)
 if (periodicAxisId(1)) deallocate(isDestPeriodicNodeXX)
 if (periodicAxisId(2)) deallocate(isDestPeriodicNodeYY)

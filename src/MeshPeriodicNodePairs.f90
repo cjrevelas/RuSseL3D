@@ -29,9 +29,11 @@ type(fhash_type_iterator__ints_double)       :: faceOneIt, faceTwoIt
 type(ints_type)                              :: faceOneKey, faceTwoKey
 integer                                      :: faceOneValue, faceTwoValue
 
-integer :: ii, jj, kk, mm
-integer :: elem1, elem2, node1, node2
-integer :: dimension1=0, dimension2=0
+integer :: localNodeIndex1, localNodeIndex2
+integer :: globalNodeId1, globalNodeId2
+integer :: keyIndex1, keyIndex2
+integer :: element1, element2
+integer :: dimension1 = 0, dimension2 = 0
 !----------------------------------------------------------------------------------------------------------------------------------!
 if (axis=='x') then
   dimension1 = 2 ! y
@@ -62,30 +64,31 @@ allocate(nodePairingKeyInverse%ints(1))
 call nodePairingHash%reserve(faceOneHash%key_count())
 call nodePairingHashInverse%reserve(faceTwoHash%key_count())
 
-isDestPeriodicNode = .false.
+isDestPeriodicNode = .False.
 
 call faceOneIt%begin(faceOneHash)
-do kk = 1, faceOneHash%key_count()
+do keyIndex1 = 1, faceOneHash%key_count()
   call faceOneIt%next(faceOneKey, faceOneValue)
-  elem1 = faceOneKey%ints(1)
+  element1 = faceOneKey%ints(1)
 
   call faceTwoIt%begin(faceTwoHash)
-  do mm = 1, faceTwoHash%key_count()
+  do keyIndex2 = 1, faceTwoHash%key_count()
     call faceTwoIt%next(faceTwoKey, faceTwoValue)
-    elem2 = faceTwoKey%ints(1)
-    do ii = 1, 3
-      node1 = globalNodeIdTypeFace(ii,elem1)
-      do jj = 1, 3
-        node2 = globalNodeIdTypeFace(jj, elem2)
-        if ((ABS(nodeCoord(dimension1,node1) - nodeCoord(dimension1,node2)) < tol).AND.(ABS(nodeCoord(dimension2,node1) - nodeCoord(dimension2,node2)) < tol)) then
-          nodePairingKey%ints(1) = node1
-          call nodePairingHash%set(nodePairingKey, node2)
+    element2 = faceTwoKey%ints(1)
+    do localNodeIndex1 = 1, 3
+      globalNodeId1 = globalNodeIdTypeFace(localNodeIndex1,element1)
+      do localNodeIndex2 = 1, 3
+        globalNodeId2 = globalNodeIdTypeFace(localNodeIndex2, element2)
+        if ((ABS(nodeCoord(dimension1,globalNodeId1) - nodeCoord(dimension1,globalNodeId2)) < tol).AND.&
+            (ABS(nodeCoord(dimension2,globalNodeId1) - nodeCoord(dimension2,globalNodeId2)) < tol)) then
+          nodePairingKey%ints(1) = globalNodeId1
+          call nodePairingHash%set(nodePairingKey, globalNodeId2)
 
-          nodePairingKeyInverse%ints(1) = node2
-          call nodePairingHashInverse%set(nodePairingKeyInverse, node1)
+          nodePairingKeyInverse%ints(1) = globalNodeId2
+          call nodePairingHashInverse%set(nodePairingKeyInverse, globalNodeId1)
 
-          isDestPeriodicNode(node2) = .True.
-        endif
+          isDestPeriodicNode(globalNodeId2) = .True.
+       endif
       enddo
     enddo
   enddo
@@ -95,14 +98,14 @@ enddo
 call nodePairingIt%begin(nodePairingHash)
 call nodePairingItInverse%begin(nodePairingHashInverse)
 
-do kk = 1, nodePairingHash%key_count()
+do keyIndex1 = 1, nodePairingHash%key_count()
   call nodePairingIt%next(nodePairingKey, nodePairingValue)
   write(1111,*) nodePairingKey%ints(1), nodePairingValue
 enddo
 
 write(1111,*)
 
-do kk = 1, nodePairingHashInverse%key_count()
+do keyIndex1 = 1, nodePairingHashInverse%key_count()
   call nodePairingItInverse%next(nodePairingKeyInverse, nodePairingValueInverse)
   write(1111,*) nodePairingKeyInverse%ints(1), nodePairingValueInverse
 enddo

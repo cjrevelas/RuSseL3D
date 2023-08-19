@@ -12,7 +12,7 @@ use parser_vars_mod,  only: numConvolPointsGrafted, numEdwPointsGrafted, lengthG
                             numGraftedChainsToExport, gpIndexToExport
 use geometry_mod,     only: nodeBelongsToDirichletFace
 use write_helper_mod, only: adjl
-use error_handing_mod
+use error_handling_mod
 use fhash_module__ints_double
 !------------------------------------------------------------------------------------------------------!
 implicit none

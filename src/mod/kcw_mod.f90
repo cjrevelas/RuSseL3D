@@ -4,7 +4,7 @@
 
 module kcw_mod
 !----------------------------------------------------------------------------------------------------------------------------!
-integer :: NNZ
+integer :: numNonZeroEntries
 
 real(8), allocatable, dimension(:) :: rdiag1
 
@@ -20,7 +20,7 @@ type fullMatrix
   sequence
     double precision, dimension(:), pointer :: g, rh, c, k, w
     integer, dimension(:), pointer          :: row, col
-    logical, dimension(:), pointer          :: is_zero
+    logical, dimension(:), pointer          :: isZero
 end type fullMatrix
 
 type(fullMatrix) :: F_m

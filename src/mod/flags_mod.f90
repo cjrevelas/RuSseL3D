@@ -4,17 +4,20 @@
 
 module flags_mod
 !----------------------------------------------------------------------------------------------------------------------------!
-integer, parameter :: contour_uniform = 1
-integer, parameter :: contour_symm    = 2
-integer, parameter :: contour_asymm   = 3
-integer, parameter :: contour_hybrid  = 4
-integer, parameter :: sys_m           = 1
-integer, parameter :: sys_mg          = 2
-integer, parameter :: eos_helfand     = 0
-integer, parameter :: eos_sl          = 1
-integer, parameter :: eos_sl_grad     = 2
-integer, parameter :: mumps_asymm     = 0
-integer, parameter :: mumps_posDef    = 1
-integer, parameter :: mumps_genSymm   = 2
+integer, parameter :: contourUniform    = 1
+integer, parameter :: contourSymmetric  = 2
+integer, parameter :: contourAsymmetric = 3
+integer, parameter :: contourHybrid     = 4
+
+integer, parameter :: systemMatrix        = 1
+integer, parameter :: systemMatrixGrafted = 2
+
+integer, parameter :: eosHelfand            = 0
+integer, parameter :: eosSanchezLacombe     = 1
+integer, parameter :: eosSanchezLacombeGrad = 2
+
+integer, parameter :: mumpsAsymmetric       = 0
+integer, parameter :: mumpsPositiveDefinite = 1
+integer, parameter :: mumpsGeneralSymmetric = 2
 !----------------------------------------------------------------------------------------------------------------------------!
 end module flags_mod

@@ -7,7 +7,7 @@ subroutine ComputeNodeVolume(nodeVolume, node)
 use geometry_mod,     only: numDimensions, numNodesLocalTypeDomain, &
                             numNodes, elementOfNode, nodeCoord,     &
                             globalNodeIdTypeDomain, numElementsOfNode
-use error_handing_mod
+use error_handling_mod
 !--------------------------------------------------------------------!
 implicit none
 !--------------------------------------------------------------------!

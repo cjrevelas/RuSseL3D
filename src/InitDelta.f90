@@ -9,7 +9,7 @@ use parser_vars_mod,  only: graftedExist
 use arrays_mod,       only: phiGraftedIndiv
 use iofiles_mod,      only: IO_graftFile
 use delta_mod
-use error_handing_mod
+use error_handling_mod
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
@@ -40,7 +40,7 @@ if (graftedExist.eq.1) then
 
     if (graftPointId(ii) > numNodes) then
       write(ERROR_MESSAGE,'("ID of grafted chain (",I10,") is larger from numNodes (",I10,"    )")') graftPointId(ii), numNodes
-      call exit_with_error(1,1,1,ERROR_MESSAGE)
+      call exitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
   enddo
 

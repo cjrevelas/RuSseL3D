@@ -57,7 +57,7 @@ MODULES=$(OBJDIR)/parser_vars_mod.o\
 	$(OBJDIR)/write_helper_mod.o\
 	$(OBJDIR)/arrays_mod.o\
 	$(OBJDIR)/iofiles_mod.o\
-	$(OBJDIR)/error_handing_mod.o\
+	$(OBJDIR)/error_handling_mod.o\
 	$(OBJDIR)/force_fields_mod.o\
 	$(OBJDIR)/delta_mod.o\
 	$(OBJDIR)/hist_mod.o\

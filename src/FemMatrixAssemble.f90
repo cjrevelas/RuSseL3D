@@ -65,7 +65,7 @@ enddo
 
 ! Assembly global matrix using element matrices and nodePairId hash matrix created in parser_mesh.f90
 do kk = 1, numBulkNodePairs
-  if (F_m%is_zero(kk)) then
+  if (F_m%isZero(kk)) then
     ! Add up contributions of same pairs met multiple times
     F_m%k(nodePairId(kk)) = F_m%k(nodePairId(kk)) + F_m%k(kk)
     F_m%k(kk)             = 0.0d0

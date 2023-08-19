@@ -1,6 +1,6 @@
 module defaults_mod
 !----------------------------------------------------------------------------------------------------------------------------!
-use flags_mod, only: mumps_asymm
+use flags_mod, only: mumpsAsymmetric
 !----------------------------------------------------------------------------------------------------------------------------!
 character(len=15), parameter :: dflt_inputFile = "./in.input"
 character(len=15), parameter :: dflt_meshFile  = "./in.mesh"
@@ -26,7 +26,7 @@ integer, parameter :: dflt_initialIterationId   = 0
 integer, parameter :: dflt_matrixExist          = 0
 integer, parameter :: dflt_graftedExist         = 0
 integer, parameter :: dflt_profileDimensions    = 3
-integer, parameter :: dflt_mumpsMatrixType      = mumps_asymm
+integer, parameter :: dflt_mumpsMatrixType      = mumpsAsymmetric
 integer, parameter :: dflt_exportPhiNodal       = 1
 integer, parameter :: dflt_exportPhiSmeared     = 0
 integer, parameter :: dflt_exportPhiIndividual  = 0

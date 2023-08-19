@@ -2,16 +2,16 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine FemNonZeroEntries(ds, nodeBelongsToDirichletFace, elemcon)
+subroutine FemNonZeroEntries(stepSize, nodeBelongsToDirichletFace, elemcon)
 !------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module
-use kcw_mod,         only: F_m, A_m, NNZ
+use kcw_mod,         only: F_m, A_m, numNonZeroEntries
 use geometry_mod,    only: numTotalNodePairs, numNodesLocalTypeDomain, numElementsTypeDomain, &
                            numNodes, nodePairingXXhash, nodePairingYYhash, nodePairingZZhash
 use constants_mod,   only: tol
 use parser_vars_mod, only: periodicAxisId, periodicity, mumpsMatrixType
-use flags_mod,       only: mumps_asymm, mumps_posDef, mumps_genSymm
+use flags_mod,       only: mumpsAsymmetric, mumpsPositiveDefinite, mumpsGeneralSymmetric
 use fhash_module__ints_double
 !#define PRINT_AFULL
 #ifdef PRINT_AFULL
@@ -20,20 +20,22 @@ use iofiles_mod, only: IO_A_matrix_full
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
-integer :: ii, jj, kk
-
 logical, intent(in), dimension(numNodes)                          :: nodeBelongsToDirichletFace
-logical, dimension(numNodesLocalTypeDomain*numElementsTypeDomain) :: set_diag_to_one
+logical, dimension(numNodesLocalTypeDomain*numElementsTypeDomain) :: setDiagToOne
 
-real(8), intent(in) :: ds
+real(8), intent(in) :: stepSize
 
 type(fhash_type__ints_double), intent(inout) :: elemcon
 
+integer :: nodePair, row, col
+
 #ifdef PRINT_AFULL
+integer :: entry
+
 real(8), allocatable, dimension(:,:) :: A_full
 #endif
 !------------------------------------------------------------------------------------------------------!
-F_m%g  = F_m%c + ds * (F_m%k + F_m%w)
+F_m%g  = F_m%c + stepSize * (F_m%k + F_m%w)
 F_m%rh = F_m%c
 
 ! Apply periodic boundary conditions
@@ -54,64 +56,64 @@ endif
 
 ! Prepare stiffness matrix for Dirichlet boundary conditions
 ! In case the matrix is symmetric, remove the zero lines and rows diagonal componets with Dirichlet BC q=0.
-set_diag_to_one=.true.
-if ((mumpsMatrixType.eq.mumps_posDef).or.(mumpsMatrixType.eq.mumps_genSymm)) then
-  do kk = 1, numTotalNodePairs
-    if (F_m%is_zero(kk)) cycle
-    if (F_m%row(kk)==0)  cycle
+setDiagToOne = .True.
+if ((mumpsMatrixType.eq.mumpsPositiveDefinite).or.(mumpsMatrixType.eq.mumpsGeneralSymmetric)) then
+  do nodePair = 1, numTotalNodePairs
+    if (F_m%isZero(nodePair)) cycle
+    if (F_m%row(nodePair)==0) cycle
 
-    ii = F_m%row(kk)
-    jj = F_m%col(kk)
+    row = F_m%row(nodePair)
+    col = F_m%col(nodePair)
 
-    if (ii > jj) F_m%g(kk) = 0.0d0
+    if (row > col) F_m%g(nodePair) = 0.0d0
 
-    if (nodeBelongsToDirichletFace(ii).OR.nodeBelongsToDirichletFace(jj)) then
-      F_m%g(kk) = 0.0d0
-      if (ii==jj.and.set_diag_to_one(ii)) then
-        F_m%g(kk)           = 1.0d0
-        set_diag_to_one(ii) = .false.
+    if (nodeBelongsToDirichletFace(row).OR.nodeBelongsToDirichletFace(col)) then
+      F_m%g(nodePair) = 0.0d0
+      if ((row==col).AND.setDiagToOne(row)) then
+        F_m%g(nodePair)   = 1.0d0
+        setDiagToOne(row) = .false.
       endif
     endif
   enddo
 endif
 
-if (mumpsMatrixType.eq.mumps_asymm) then
-  do kk = 1, numTotalNodePairs
-    if (F_m%is_zero(kk)) cycle
+if (mumpsMatrixType.eq.mumpsAsymmetric) then
+  do nodePair = 1, numTotalNodePairs
+    if (F_m%isZero(nodePair)) cycle
 
-    if (F_m%row(kk)==0) cycle
+    if (F_m%row(nodePair)==0) cycle
 
-    jj = F_m%col(kk)
-    ii = F_m%row(kk)
+    row = F_m%row(nodePair)
+    col = F_m%col(nodePair)
 
-    if (nodeBelongsToDirichletFace(ii)) then
-      F_m%g(kk) = 0.0d0
-      if (ii==jj.and.set_diag_to_one(ii)) then
-        F_m%g(kk)           =  1.0d0
-        set_diag_to_one(ii) = .false.
+    if (nodeBelongsToDirichletFace(row)) then
+      F_m%g(nodePair) = 0.0d0
+      if ((row==col).AND.setDiagToOne(row)) then
+        F_m%g(nodePair)   =  1.0d0
+        setDiagToOne(row) = .False.
       endif
     endif
   enddo
 endif
 
 ! Determine non_zero entries
-NNZ = 0
-do kk = 1, numTotalNodePairs
-  if (ABS(F_m%g(kk)) > tol) NNZ = NNZ + 1
+numNonZeroEntries = 0
+do nodePair = 1, numTotalNodePairs
+  if (ABS(F_m%g(nodePair)) > tol) numNonZeroEntries = numNonZeroEntries + 1
 enddo
 
-allocate(A_m%value(NNZ))
-allocate(A_m%col(NNZ))
-allocate(A_m%row(NNZ))
+allocate(A_m%value(numNonZeroEntries))
+allocate(A_m%col(numNonZeroEntries))
+allocate(A_m%row(numNonZeroEntries))
 
-NNZ = 0
-do kk = 1, numTotalNodePairs
-  if (ABS(F_m%g(kk)) > tol) then
-    NNZ = NNZ + 1
+numNonZeroEntries = 0
+do nodePair = 1, numTotalNodePairs
+  if (ABS(F_m%g(nodePair)) > tol) then
+    numNonZeroEntries = numNonZeroEntries + 1
 
-    A_m%value(NNZ) = F_m%g(kk)
-    A_m%row(NNZ)   = F_m%row(kk)
-    A_m%col(NNZ)   = F_m%col(kk)
+    A_m%value(numNonZeroEntries) = F_m%g(nodePair)
+    A_m%row(numNonZeroEntries)   = F_m%row(nodePair)
+    A_m%col(numNonZeroEntries)   = F_m%col(nodePair)
   endif
 enddo
 
@@ -119,16 +121,16 @@ enddo
 allocate(A_full(numNodes,numNodes))
 A_full = 0.0d0
 
-do kk = 1, NNZ
-  ii = A_m%row(kk)
-  jj = A_m%col(kk)
+do entry = 1, numNonZeroEntries
+  row = A_m%row(entry)
+  col = A_m%col(entry)
 
-  A_full(ii,jj) = A_m%value(kk)
+  A_full(row,col) = A_m%value(entry)
 enddo
 
 open(unit=255, file = IO_A_matrix_full)
-do ii = 1, numNodes
-  write(255,*) (A_full(ii,jj), jj = 1, numNodes)
+do row = 1, numNodes
+  write(255,*) (A_full(row,col), col = 1, numNodes)
 enddo
 close(255)
 

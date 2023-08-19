@@ -2,8 +2,7 @@ subroutine MeshPeriodicEdges(nodePairingFirst, nodePairingSecond, nodePairingSec
 !----------------------------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module
-use geometry_mod, only: edgeNodeOne, edgeNodeTwo, edgeNodeThree, edgeNodeFour, &
-                        numEdgePeriodicPairs
+use geometry_mod, only: edgeNodeOne, edgeNodeTwo, edgeNodeThree, edgeNodeFour, numEdgePeriodicPairs
 !----------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
@@ -16,16 +15,17 @@ type(ints_type)                              :: nodePairingSecondInverseKey
 type(ints_type)                              :: destBothKey
 integer                                      :: nodePairingSecondValue
 
-integer :: dest1, source2, destBoth, dest2, ii, kk
+integer :: dest1, source2, destBoth, dest2, keyIndex, pair, numPairs
 
 logical :: success
 !----------------------------------------------------------------------------------------------------------------------------!
 allocate(destBothKey%ints(1))
 allocate(nodePairingSecondInverseKey%ints(1))
 
-kk = 0 ! counter of periodic pairs belonging to edges and thus need correction later
+numPairs = 0 ! counter of periodic pairs belonging to edges and thus need correction later
+
 call nodePairingSecondIt%begin(nodePairingSecond)
-do ii = 1, nodePairingSecond%key_count()
+do keyIndex = 1, nodePairingSecond%key_count()
   call nodePairingSecondIt%next(nodePairingSecondKey, nodePairingSecondValue)
 
   source2 = nodePairingSecondKey%ints(1)  ! source2 = 7 = source1
@@ -34,19 +34,20 @@ do ii = 1, nodePairingSecond%key_count()
   destBothKey%ints(1) = dest2
   call nodePairingFirst%get(destBothKey, destBoth, success)  ! destBoth = 38
 
-  if (success) kk = kk + 1
+  if (success) numPairs = numPairs + 1
 enddo
 
-numEdgePeriodicPairs = kk
+numEdgePeriodicPairs = numPairs
 
 allocate(edgeNodeOne(numEdgePeriodicPairs))
 allocate(edgeNodeTwo(numEdgePeriodicPairs))
 allocate(edgeNodeThree(numEdgePeriodicPairs))
 allocate(edgeNodeFour(numEdgePeriodicPairs))
 
-kk = 0
+pair = 0
+
 call nodePairingSecondIt%begin(nodePairingSecond)
-do ii = 1, nodePairingSecond%key_count()
+do keyIndex = 1, nodePairingSecond%key_count()
   call nodePairingSecondIt%next(nodePairingSecondKey, nodePairingSecondValue)
 
   source2 = nodePairingSecondKey%ints(1)  ! source2 = 7 = source1
@@ -56,7 +57,7 @@ do ii = 1, nodePairingSecond%key_count()
   call nodePairingFirst%get(destBothKey, destBoth, success)  ! destBoth = 38
 
   if (success) then
-    kk = kk + 1
+    pair = pair + 1
 
     ! if success, we want to find the dest1 which has source1 = source2
     ! we can find it from the inverse hash as follows:
@@ -66,11 +67,11 @@ do ii = 1, nodePairingSecond%key_count()
     nodePairingSecondInverseKey%ints(1) = destBoth
     call nodePairingSecondInverse%get(nodePairingSecondInverseKey, dest1)
 
-    edgeNodeOne(kk) = dest1
-    edgeNodeTwo(kk) = source2
+    edgeNodeOne(pair) = dest1
+    edgeNodeTwo(pair) = source2
 
-    edgeNodeThree(kk) = destBoth
-    edgeNodeFour(kk)  = dest2
+    edgeNodeThree(pair) = destBoth
+    edgeNodeFour(pair)  = dest2
   else
     cycle
   endif

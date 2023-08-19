@@ -11,7 +11,7 @@ use arrays_mod,       only: nodeVolume
 use iofiles_mod,      only: IO_graftFile
 use write_helper_mod, only: adjl
 use constants_mod,    only: m3_to_A3
-use error_handing_mod
+use error_handling_mod
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!

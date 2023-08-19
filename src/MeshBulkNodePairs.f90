@@ -7,7 +7,7 @@ subroutine MeshBulkNodePairs(elemcon)
 use fhash_module__ints_double
 use ints_module
 use geometry_mod, only: numNodesLocalTypeDomain, numElementsTypeDomain, &
-                           numTotalNodePairs, nodePairId, globalNodeIdTypeDomain
+                        numTotalNodePairs, nodePairId, globalNodeIdTypeDomain
 use kcw_mod,      only: F_m
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none

@@ -25,15 +25,15 @@ integer :: sourceXX
 integer :: sourceYY
 integer :: sourceZZ, destZZ
 integer :: sourceAux = 0
-integer :: ii, kk
+integer :: counter, keyIndex
 !------------------------------------------------------------------------------------------------------!
 allocate(nodePairingYYhashInverseKey%ints(1))
 allocate(nodePairingXXhashInverseKey%ints(1))
 
 call nodePairingZZit%begin(nodePairingZZhash)
 
-kk = 0
-do ii = 1, nodePairingZZhash%key_count()
+counter = 0
+do keyIndex = 1, nodePairingZZhash%key_count()
   call NodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
 
   sourceZZ = nodePairingZZhashKey%ints(1)
@@ -42,10 +42,10 @@ do ii = 1, nodePairingZZhash%key_count()
   nodePairingYYhashInverseKey%ints(1) = destZZ
   call nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceYY, success)
 
-  if (success) kk = kk + 1
+  if (success) counter = counter + 1
 enddo
 
-numCornerPeriodicPairsYY = kk
+numCornerPeriodicPairsYY = counter
 !write(123,*) "corner yy zz pairs:" , numCornerPeriodicPairsYY
 
 allocate(cornerNodeOneYY(numCornerPeriodicPairsYY))
@@ -55,8 +55,8 @@ allocate(cornerNodeFourYY(numCornerPeriodicPairsYY))
 
 call nodePairingZZit%begin(nodePairingZZhash)
 
-kk = 0
-do ii = 1, nodePairingZZhash%key_count()
+counter = 0
+do keyIndex = 1, nodePairingZZhash%key_count()
   call nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
 
   sourceZZ = nodePairingZZhashKey%ints(1)
@@ -66,15 +66,16 @@ do ii = 1, nodePairingZZhash%key_count()
   call nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceYY, success)
 
   if (success) then
-    kk = kk + 1
+    counter = counter + 1
+
     nodePairingYYhashInverseKey%ints(1) = sourceZZ
     call nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceAux)
 
-    cornerNodeOneYY(kk) = sourceZZ
-    cornerNodeTwoYY(kk) = sourceAux
+    cornerNodeOneYY(counter) = sourceZZ
+    cornerNodeTwoYY(counter) = sourceAux
 
-    cornerNodeThreeYY(kk) = destZZ
-    cornerNodeFourYY(kk)  = sourceYY
+    cornerNodeThreeYY(counter) = destZZ
+    cornerNodeFourYY(counter)  = sourceYY
 
     nodePairingXXhashInverseKey%ints(1) = destZZ
     call nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, successAux)
@@ -84,8 +85,8 @@ enddo
 
 call nodePairingZZit%begin(nodePairingZZhash)
 
-kk = 0
-do ii = 1, nodePairingZZhash%key_count()
+counter = 0
+do keyIndex = 1, nodePairingZZhash%key_count()
   call nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
   sourceZZ = nodePairingZZhashKey%ints(1)
   destZZ   = nodePairingZZvalue
@@ -93,10 +94,10 @@ do ii = 1, nodePairingZZhash%key_count()
   nodePairingXXhashInverseKey%ints(1) = destZZ
   call nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, success)
 
-  if (success) kk = kk + 1
+  if (success) counter = counter + 1
 enddo
 
-numCornerPeriodicPairsXX = kk
+numCornerPeriodicPairsXX = counter
 !write(123,*) "corner xx zz pairs:" , numCornerPeriodicPairsXX
 
 allocate(cornerNodeOneXX(numCornerPeriodicPairsXX))
@@ -106,8 +107,8 @@ allocate(cornerNodeFourXX(numCornerPeriodicPairsXX))
 
 call nodePairingZZit%begin(nodePairingZZhash)
 
-kk = 0
-do ii = 1, nodePairingZZhash%key_count()
+counter = 0
+do keyIndex = 1, nodePairingZZhash%key_count()
   call nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
 
   sourceZZ = nodePairingZZhashKey%ints(1)
@@ -117,16 +118,16 @@ do ii = 1, nodePairingZZhash%key_count()
   call nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, success)
 
   if (success.and.(destZZ.ne.destTriple)) then
-    kk = kk + 1
+    counter = counter + 1
 
     nodePairingXXhashInverseKey%ints(1) = sourceZZ
     call nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceAux)
 
-    cornerNodeOneXX(kk) = sourceZZ
-    cornerNodeTwoXX(kk) = sourceAux
+    cornerNodeOneXX(counter) = sourceZZ
+    cornerNodeTwoXX(counter) = sourceAux
 
-    cornerNodeThreeXX(kk) = destZZ
-    cornerNodeFourXX(kk)  = sourceXX
+    cornerNodeThreeXX(counter) = destZZ
+    cornerNodeFourXX(counter)  = sourceXX
   endif
 enddo
 

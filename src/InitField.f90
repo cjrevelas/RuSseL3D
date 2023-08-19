@@ -8,7 +8,7 @@ use parser_vars_mod,  only: polymerAlpha, polymerSigma, fieldInitScheme, kapa, n
                             molarBulkDensity, beta, wallDistance, nanopCenter, plateSigma,    &
                             plateAlpha, nanopRadiusEff, nanopSigma, nanopAlpha
 use geometry_mod,     only: numNodes, isDirichletFace, boxLow, boxHigh, nodeCoord, nodeBelongsToDirichletFace
-use error_handing_mod
+use error_handling_mod
 use write_helper_mod, only: adjl
 use force_fields_mod, only: hamaker_sphere_plate, hamaker_sphere_sphere
 use iofiles_mod,      only: IO_solidPotential, IO_fieldFile
@@ -58,12 +58,12 @@ do kk = 1, numNodes
 
         if ((Ufield(kk)-Ufield(kk)).gt.1.0d-8) then
           write(ERROR_MESSAGE,'("Hamaker assumed a NaN value for x = ",E16.9,". NaN was changed to ",E16.9)') r_surf, Ufield(kk)
-          call exit_with_error(1,2,1,ERROR_MESSAGE)
+          call exitWithError(1,2,1,ERROR_MESSAGE)
         endif
 
         if (r_surf.lt.0.0d0) then
           write(ERROR_MESSAGE,'("Hamaker distance smaller than zero! (",E16.9,").")') r_surf
-          call exit_with_error(1,2,1,ERROR_MESSAGE)
+          call exitWithError(1, 2, 1, ERROR_MESSAGE)
         endif
 
         write(211,'(5(2X,E16.9E2))') r_center_surf, r_surf, Uatt, Urep, Urep+Uatt
@@ -86,7 +86,7 @@ do kk = 1, numNodes
 
     if ((Ufield(kk)-Ufield(kk)).gt.1.0d-8) then
       write(ERROR_MESSAGE,'("Hamaker assumed a NaN value for x = ",E16.9,". NaN was changed to ",E16.9)') r_surf, Ufield(kk)
-      call exit_with_error(1,2,1,ERROR_MESSAGE)
+      call exitWithError(1, 2, 1, ERROR_MESSAGE)
     endif
 
     write(211,'(5(2X,E16.9E2))') r_centers, r_surf, Uatt, Urep, Urep+Uatt

@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-module error_handing_mod
+module error_handling_mod
 !----------------------------------------------------------------------------------------------------------------------------!
 use iofiles_mod
 !----------------------------------------------------------------------------------------------------------------------------!
@@ -13,7 +13,7 @@ integer        :: ERROR_TYPE
 logical        :: FILE_EXISTS
 !----------------------------------------------------------------------------------------------------------------------------!
   contains
-    subroutine exit_with_error(STOP_SIGNAL, ERROR_TYPE, SCREEN, ERROR_MESSAGE)
+    subroutine exitWithError(STOP_SIGNAL, ERROR_TYPE, SCREEN, ERROR_MESSAGE)
       implicit none
       character(100) :: ERROR_MESSAGE
       integer        :: ERROR_TYPE
@@ -46,6 +46,6 @@ logical        :: FILE_EXISTS
         write(*,*) " Exiting.."
         STOP
       endif
-    end subroutine exit_with_error
+    end subroutine exitWithError
 !----------------------------------------------------------------------------------------------------------------------------!
-end module error_handing_mod
+end module error_handling_mod

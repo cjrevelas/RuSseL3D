@@ -11,7 +11,7 @@ use arrays_mod,       only: ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, nodeV
 use constants_mod,    only: n_avog, m3_to_A3
 use delta_mod,        only: graftPointId, targetNumGraftedChains
 use write_helper_mod, only: adjl
-use error_handing_mod
+use error_handling_mod
 use fhash_module__ints_double
 !------------------------------------------------------------------------------------------------------!
 implicit none

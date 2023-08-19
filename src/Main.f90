@@ -8,14 +8,14 @@ use parser_vars_mod
 use arrays_mod
 use eos_mod
 use constants_mod
-use error_handing_mod
+use error_handling_mod
 use write_helper_mod
 use geometry_mod
 use iofiles_mod
 use delta_mod
 use hist_mod
 use kcw_mod, only: rdiag1, F_m
-use flags_mod, only: contour_symm, contour_asymm, contour_hybrid
+use flags_mod, only: contourSymmetric, contourAsymmetric, contourHybrid
 use fhash_module__ints_double
 use ints_module
 #ifdef USE_MPI
@@ -111,8 +111,8 @@ CALL InitChainContour(contourMatrix, lengthMatrixMax, critContourMatrix, numEdwP
 
 ! In absence of mx chains, skip discretization for mx convolution
 if (matrixExist.eq.1) then
-  if (contourMatrix.ne.contour_uniform) then
-    CALL InitChainContour(contour_symm, lengthMatrix, critContourMatrix, numConvolPointsMatrix, stepConvolAveMatrix, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
+  if (contourMatrix.ne.contourUniform) then
+    CALL InitChainContour(contourSymmetric, lengthMatrix, critContourMatrix, numConvolPointsMatrix, stepConvolAveMatrix, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
   else
     CALL InitChainContour(contourMatrix, lengthMatrix, critContourMatrix, numConvolPointsMatrix, stepConvolAveMatrix, ds_mx_conv, xs_mx_conv, coeff_mx_conv)
   endif
@@ -120,8 +120,8 @@ endif
 
 if (graftedExist.eq.1) then
   CALL InitChainContour(contourGrafted, lengthGrafted, critContourGrafted, numEdwPointsGrafted, stepEdwAveGrafted, ds_gr_ed, xs_gr_ed, coeff_gr_ed)
-  if (contourGrafted.ne.contour_uniform) then
-    CALL InitChainContour(contour_symm, lengthGrafted, critContourGrafted, numConvolPointsGrafted, stepConvolAveGrafted, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
+  if (contourGrafted.ne.contourUniform) then
+    CALL InitChainContour(contourSymmetric, lengthGrafted, critContourGrafted, numConvolPointsGrafted, stepConvolAveGrafted, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
   else
     CALL InitChainContour(contourGrafted, lengthGrafted, critContourGrafted, numConvolPointsGrafted, stepConvolAveGrafted, ds_gr_conv, xs_gr_conv, coeff_gr_conv)
   endif
@@ -344,7 +344,7 @@ deallocate(nodePairId)
 deallocate(elementOfNode)
 deallocate(nodeBelongsToDirichletFace, nodeBelongsToFaceId)
 deallocate(rdiag1)
-deallocate(F_m%row, F_m%col, F_m%g, F_m%rh, F_m%c, F_m%k, F_m%w, F_m%is_zero)
+deallocate(F_m%row, F_m%col, F_m%g, F_m%rh, F_m%c, F_m%k, F_m%w, F_m%isZero)
 
 #ifdef USE_MPI
 ! Root will send a stop signal to the slave processes
