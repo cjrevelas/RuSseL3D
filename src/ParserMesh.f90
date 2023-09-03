@@ -113,12 +113,12 @@ do
       read(12,*)
 
       allocate(vertexEntityKey%ints(1))
-      call vertexEntityHash%reserve(numElementsTypeVertex)
+      CALL vertexEntityHash%reserve(numElementsTypeVertex)
       do element = 1, numElementsTypeVertex
         vertexEntityKey%ints(1) = element
         read(12,*) idOfEntityItBelongs
-        call vertexEntityHash%get(vertexEntityKey, vertexEntityValue, success)
-        if (.NOT.success) call vertexEntityHash%set(vertexEntityKey, idOfEntityItBelongs)
+        CALL vertexEntityHash%get(vertexEntityKey, vertexEntityValue, success)
+        if (.NOT.success) CALL vertexEntityHash%set(vertexEntityKey, idOfEntityItBelongs)
       enddo
     elseif ((INDEX(line,"3 edg # type name")>0).OR.(INDEX(line,"4 edg2 # type name")>0)) then
       read(12,*)
@@ -145,12 +145,12 @@ do
       read(12,*)
 
       allocate(edgeEntityKey%ints(1))
-      call edgeEntityHash%reserve(numElementsTypeEdge)
+      CALL edgeEntityHash%reserve(numElementsTypeEdge)
       do element = 1, numElementsTypeEdge
         edgeEntityKey%ints(1) = element
         read(12,*) idOfEntityItBelongs
-        call edgeEntityHash%get(edgeEntityKey, edgeEntityValue, success)
-        if (.NOT.success) call edgeEntityHash%set(edgeEntityKey, idOfEntityItBelongs)
+        CALL edgeEntityHash%get(edgeEntityKey, edgeEntityValue, success)
+        if (.NOT.success) CALL edgeEntityHash%set(edgeEntityKey, idOfEntityItBelongs)
       enddo
     elseif ((INDEX(line,"3 tri # type name")>0).OR.(INDEX(line,"4 tri2 # type name")>0)) then
       read(12,*)
@@ -180,12 +180,12 @@ do
       read(12,*)
 
       allocate(faceEntityKey%ints(1))
-      call faceEntityHash%reserve(numElementsTypeFace)
+      CALL faceEntityHash%reserve(numElementsTypeFace)
       do element = 1, numElementsTypeFace
         faceEntityKey%ints(1) = element
         read(12,*) idOfEntityItBelongs
-        call faceEntityHash%get(faceEntityKey, faceEntityValue, success)
-        if (.NOT.success) call faceEntityHash%set(faceEntityKey, idOfEntityItBelongs+1)
+        CALL faceEntityHash%get(faceEntityKey, faceEntityValue, success)
+        if (.NOT.success) CALL faceEntityHash%set(faceEntityKey, idOfEntityItBelongs+1)
       enddo
     elseif ((INDEX(line,"3 tet # type name")>0).OR.(INDEX(line,"4 tet2 # type name")>0)) then
       read(12,*)
@@ -233,12 +233,12 @@ do
       read(12,*)
 
       allocate(domainEntityKey%ints(1))
-      call domainEntityHash%reserve(numElementsTypeDomain)
+      CALL domainEntityHash%reserve(numElementsTypeDomain)
       do element = 1, numElementsTypeDomain
         domainEntityKey%ints(1) = element
         read(12,*) idOfEntityItBelongs
-        call domainEntityHash%get(domainEntityKey, domainEntityValue, success)
-        if (.NOT.success) call domainEntityHash%set(domainEntityKey, idOfEntityItBelongs)
+        CALL domainEntityHash%get(domainEntityKey, domainEntityValue, success)
+        if (.NOT.success) CALL domainEntityHash%set(domainEntityKey, idOfEntityItBelongs)
       enddo
     endif
   endif
@@ -251,44 +251,44 @@ open(unit=22, file=IO_edgeElements)
 open(unit=33, file=IO_faceElements)
 open(unit=44, file=IO_domainElements)
 
-call vertexEntityIt%begin(vertexEntityHash)
-call edgeEntityIt%begin(edgeEntityHash)
-call domainEntityIt%begin(domainEntityHash)
+CALL vertexEntityIt%begin(vertexEntityHash)
+CALL edgeEntityIt%begin(edgeEntityHash)
+CALL domainEntityIt%begin(domainEntityHash)
 
 do keyIndex = 1, vertexEntityHash%key_count()
-  call vertexEntityIt%next(vertexEntityKey, vertexEntityValue)
+  CALL vertexEntityIt%next(vertexEntityKey, vertexEntityValue)
   write(11,*) vertexEntityValue, vertexEntityKey%ints(1)
 enddo
 
 do keyIndex = 1, edgeEntityHash%key_count()
-  call edgeEntityIt%next(edgeEntityKey, edgeEntityValue)
+  CALL edgeEntityIt%next(edgeEntityKey, edgeEntityValue)
   write(22,*) edgeEntityValue, edgeEntityKey%ints(1)
 enddo
 
 do keyIndex = 1, domainEntityHash%key_count()
-  call domainEntityIt%next(domainEntityKey, domainEntityValue)
+  CALL domainEntityIt%next(domainEntityKey, domainEntityValue)
   write(44,*) domainEntityValue, domainEntityKey%ints(1)
 enddo
 #endif
 
 if (domainIsPeriodic) then
   if (periodicAxisId(1)) then
-    call MeshFaceEntities(1, boxLow(1),  globalNodeIdTypeFace, faceEntityHash, xfaceOneHash)
-    call MeshFaceEntities(1, boxHigh(1), globalNodeIdTypeFace, faceEntityHash, xfaceTwoHash)
+    CALL MeshFaceEntities(1, boxLow(1),  globalNodeIdTypeFace, faceEntityHash, xfaceOneHash)
+    CALL MeshFaceEntities(1, boxHigh(1), globalNodeIdTypeFace, faceEntityHash, xfaceTwoHash)
   endif
   if (periodicAxisId(2)) then
-    call MeshFaceEntities(2, boxLow(2),  globalNodeIdTypeFace, faceEntityHash, yfaceOneHash)
-    call MeshFaceEntities(2, boxHigh(2), globalNodeIdTypeFace, faceEntityHash, yfaceTwoHash)
+    CALL MeshFaceEntities(2, boxLow(2),  globalNodeIdTypeFace, faceEntityHash, yfaceOneHash)
+    CALL MeshFaceEntities(2, boxHigh(2), globalNodeIdTypeFace, faceEntityHash, yfaceTwoHash)
   endif
   if (periodicAxisId(3)) then
-    call MeshFaceEntities(3, boxHigh(3),  globalNodeIdTypeFace, faceEntityHash, zfaceOneHash)
-    call MeshFaceEntities(3, boxLow(3),   globalNodeIdTypeFace, faceEntityHash, zfaceTwoHash)
+    CALL MeshFaceEntities(3, boxHigh(3), globalNodeIdTypeFace, faceEntityHash, zfaceOneHash)
+    CALL MeshFaceEntities(3, boxLow(3),  globalNodeIdTypeFace, faceEntityHash, zfaceTwoHash)
   endif
 
 #ifdef DEBUG_OUTPUTS
-  call faceEntityIt%begin(faceEntityHash)
+  CALL faceEntityIt%begin(faceEntityHash)
   do keyIndex = 1, faceEntityHash%key_count()
-    call faceEntityIt%next(faceEntityKey, faceEntityValue)
+    CALL faceEntityIt%next(faceEntityKey, faceEntityValue)
     write(33,*) faceEntityValue-1, faceEntityKey%ints(1)
   enddo
   close(11)
@@ -296,27 +296,22 @@ if (domainIsPeriodic) then
   close(33)
   close(44)
 
-  if (periodicAxisId(1)) call MeshPeriodicFaces('x', xfaceOneHash, xfaceTwoHash)
-  if (periodicAxisId(2)) call MeshPeriodicFaces('y', yfaceOneHash, yfaceTwoHash)
-  if (periodicAxisId(3)) call MeshPeriodicFaces('z', zfaceOneHash, zfaceTwoHash)
+  if (periodicAxisId(1)) CALL MeshPeriodicFaces('x', xfaceOneHash, xfaceTwoHash)
+  if (periodicAxisId(2)) CALL MeshPeriodicFaces('y', yfaceOneHash, yfaceTwoHash)
+  if (periodicAxisId(3)) CALL MeshPeriodicFaces('z', zfaceOneHash, zfaceTwoHash)
 #endif
 
-  if (periodicAxisId(1)) then
-    allocate(isDestPeriodicNodeXX(numNodes))
-    call MeshPeriodicNodePairs(globalNodeIdTypeFace, 'x', xfaceOneHash, xfaceTwoHash, isDestPeriodicNodeXX, nodePairingXXhash, nodePairingXXhashInverse)
-  endif
-  if (periodicAxisId(2)) then
-    allocate(isDestPeriodicNodeYY(numNodes))
-    call MeshPeriodicNodePairs(globalNodeIdTypeFace, 'y', yfaceOneHash, yfaceTwoHash, isDestPeriodicNodeYY, nodePairingYYhash, nodePairingYYhashInverse)
-  endif
-  if (periodicAxisId(3)) then
-    allocate(isDestPeriodicNodeZZ(numNodes))
-    call MeshPeriodicNodePairs(globalNodeIdTypeFace, 'z', zfaceOneHash, zfaceTwoHash, isDestPeriodicNodeZZ, nodePairingZZhash, nodePairingZZhashInverse)
-  endif
+  allocate(isDestPeriodicNodeXX(numNodes))
+  allocate(isDestPeriodicNodeYY(numNodes))
+  allocate(isDestPeriodicNodeZZ(numNodes))
+
+  if (periodicAxisId(1)) CALL MeshPeriodicNodePairs(globalNodeIdTypeFace, 'x', xfaceOneHash, xfaceTwoHash, isDestPeriodicNodeXX, nodePairingXXhash, nodePairingXXhashInverse)
+  if (periodicAxisId(2)) CALL MeshPeriodicNodePairs(globalNodeIdTypeFace, 'y', yfaceOneHash, yfaceTwoHash, isDestPeriodicNodeYY, nodePairingYYhash, nodePairingYYhashInverse)
+  if (periodicAxisId(3)) CALL MeshPeriodicNodePairs(globalNodeIdTypeFace, 'z', zfaceOneHash, zfaceTwoHash, isDestPeriodicNodeZZ, nodePairingZZhash, nodePairingZZhashInverse)
 endif
 
 allocate(numElementsOfNode(numNodes))
-call MeshElementsOfNode(maxNumOfElementsPerNode, numElementsOfNode)
+CALL MeshElementsOfNode(maxNumOfElementsPerNode, numElementsOfNode)
 
 numTotalNodePairs = numBulkNodePairs
 
@@ -341,19 +336,24 @@ F_m%row    = 0
 F_m%col    = 0
 F_m%isZero = .True.
 
-call MeshBulkNodePairs(elemcon)
+CALL MeshBulkNodePairs(elemcon)
 
 if (domainIsPeriodic) then
-  call MeshPeriodicDestNeighbors(isDestPeriodicNodeXX, isDestPeriodicNodeYY, isDestPeriodicNodeZZ, elemcon, nodePairId)
-  call MeshPeriodicEdges(nodePairingXXhash, nodePairingYYhash, nodePairingYYhashInverse)
-  call MeshPeriodicCorners()
+  CALL MeshPeriodicDestNeighbors(isDestPeriodicNodeXX, isDestPeriodicNodeYY, isDestPeriodicNodeZZ, elemcon, nodePairId)
+
+  if (periodicAxisId(1).and.periodicAxisId(2)) CALL MeshPeriodicEdges(nodePairingXXhash, nodePairingYYhash, nodePairingYYhashInverse)
+
+  if (periodicAxisId(1).and.periodicAxisId(3).and.(.not.periodicAxisId(2))) CALL MeshPeriodicEdges(nodePairingXXhash, nodePairingZZhash, nodePairingZZhashInverse)
+  if (periodicAxisId(2).and.periodicAxisId(3).and.(.not.periodicAxisId(1))) CALL MeshPeriodicEdges(nodePairingYYhash, nodePairingZZhash, nodePairingZZhashInverse)
+
+  if (periodicAxisId(1).and.periodicAxisId(2).and.periodicAxisId(3)) CALL MeshPeriodicCorners()
 endif
 
 ! xx pairs
 startingPair = numBulkNodePairs + 1
 endingPair   = numBulkNodePairs + nodePairingXXhash%key_count()
 
-if (periodicAxisId(1)) call MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingXXhash)
+if (periodicAxisId(1)) CALL MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingXXhash)
 
 do pairId = 1, numBulkNodePairs + nodePairingXXhash%key_count()
   F_m%isZero(pairId) = (nodePairId(pairId) /= pairId)
@@ -363,10 +363,10 @@ enddo
 startingPair = numBulkNodePairs + nodePairingXXhash%key_count() + 1
 endingPair   = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count()
 
-if (periodicAxisId(2)) call MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingYYhash)
+if (periodicAxisId(2)) CALL MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingYYhash)
 
 do pairId = numBulkNodePairs + nodePairingXXhash%key_count() + 1, &
-        numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count()
+            numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count()
   F_m%isZero(pairId) = (nodePairId(pairId) /= pairId)
 enddo
 
@@ -374,14 +374,14 @@ enddo
 startingPair = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + 1
 endingPair   = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + nodePairingZZhash%key_count()
 
-if (periodicAxisId(3)) call MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingZZhash)
+if (periodicAxisId(3)) CALL MeshAppendPeriodicPairs(elemcon, startingPair, endingPair, nodePairingZZhash)
 
 do pairId = numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + 1, &
-        numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + nodePairingZZhash%key_count()
+            numBulkNodePairs + nodePairingXXhash%key_count() + nodePairingYYhash%key_count() + nodePairingZZhash%key_count()
   F_m%isZero(pairId) = (nodePairId(pairId) /= pairId)
 enddo
 
-call MeshDirichletFaces(numElementsTypeFace, numNodesLocalTypeFace, globalNodeIdTypeFace, faceEntityHash)
+CALL MeshDirichletFaces(numElementsTypeFace, numNodesLocalTypeFace, globalNodeIdTypeFace, faceEntityHash)
 
 #ifdef DEBUG_OUTPUTS
 open(unit=77, file = IO_nodePairs)
@@ -403,15 +403,15 @@ do element = 1, numNodes
 enddo
 close(77)
 
-call MeshProfile()
+CALL MeshProfile()
 #endif
 
 #ifdef DEBUG_OUTPUTS
 deallocate(vertexEntityKey%ints, edgeEntityKey%ints, domainEntityKey%ints)
 
-call vertexEntityHash%clear()
-call edgeEntityHash%clear()
-call domainEntityHash%clear()
+CALL vertexEntityHash%clear()
+CALL edgeEntityHash%clear()
+CALL domainEntityHash%clear()
 #endif
 
 ! Deallocate memory
