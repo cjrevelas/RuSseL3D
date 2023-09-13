@@ -39,19 +39,14 @@ F_m%g  = F_m%c + stepSize * (F_m%k + F_m%w)
 F_m%rh = F_m%c
 
 ! Apply periodic boundary conditions
-if (periodicAxisId(1)) call FemApplyPeriodicity(nodePairingXXhash, elemcon)
-if (periodicAxisId(2)) call FemApplyPeriodicity(nodePairingYYhash, elemcon)
-if (periodicAxisId(3)) call FemApplyPeriodicity(nodePairingZZhash, elemcon)
+if (periodicAxisId(1)) CALL FemApplyPeriodicity(nodePairingXXhash, elemcon)
+if (periodicAxisId(2)) CALL FemApplyPeriodicity(nodePairingYYhash, elemcon)
+if (periodicAxisId(3)) CALL FemApplyPeriodicity(nodePairingZZhash, elemcon)
 
-if (periodicity.eq.2) then
-  if (periodicAxisId(1).AND.periodicAxisId(2)) call FemPeriodicEdges(elemcon)
-  if (periodicAxisId(1).AND.periodicAxisId(3)) call FemPeriodicEdges(elemcon)
-  if (periodicAxisId(2).AND.periodicAxisId(3)) call FemPeriodicEdges(elemcon)
-endif
+if (periodicity > 1) then
+  CALL FemPeriodicEdges(elemcon)
 
-if (periodicity.eq.3) then
-  call FemPeriodicEdges(elemcon)
-  call FemPeriodicCorners(elemcon)
+  if (periodicity == 3) CALL FemPeriodicCorners(elemcon)
 endif
 
 ! Prepare stiffness matrix for Dirichlet boundary conditions

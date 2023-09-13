@@ -8,7 +8,7 @@ use fhash_module__ints_double
 use ints_module
 use error_handling_mod
 use write_helper_mod, only: adjl
-use parser_vars_mod,  only: iow, periodicAxisId, domainIsPeriodic
+use parser_vars_mod,  only: iow, domainIsPeriodic, periodicity, periodicAxisId
 use geometry_mod,     only: numNodesLocalTypeDomain, numElementsOfNode, boxLow, boxHigh, boxLength,       &
                             nodeCoord, numNodes, numElementsTypeDomain, globalNodeIdTypeDomain,           &
                             numDimensions, nodePairId, numBulkNodePairs, numTotalNodePairs,               &
@@ -43,7 +43,7 @@ type(fhash_type_iterator__ints_double) :: vertexEntityIt, edgeEntityIt, faceEnti
 type(ints_type)                        :: vertexEntityKey, edgeEntityKey, faceEntityKey, domainEntityKey
 integer                                :: vertexEntityValue, edgeEntityValue, faceEntityValue, domainEntityValue
 
-type(fhash_type__ints_double)          :: xfaceOneHash, xfaceTwoHash, yfaceOneHash, yfaceTwoHash, zfaceOneHash, zfaceTwoHash
+type(fhash_type__ints_double) :: xfaceOneHash, xfaceTwoHash, yfaceOneHash, yfaceTwoHash, zfaceOneHash, zfaceTwoHash
 !----------------------------------------------------------------------------------------------------------------------------!
 open(unit=12, file=IO_meshFile)
 
@@ -341,12 +341,11 @@ CALL MeshBulkNodePairs(elemcon)
 if (domainIsPeriodic) then
   CALL MeshPeriodicDestNeighbors(isDestPeriodicNodeXX, isDestPeriodicNodeYY, isDestPeriodicNodeZZ, elemcon, nodePairId)
 
-  if (periodicAxisId(1).and.periodicAxisId(2)) CALL MeshPeriodicEdges(nodePairingXXhash, nodePairingYYhash, nodePairingYYhashInverse)
+  if (periodicity > 1) then
+    CALL MeshPeriodicEdges()
 
-  if (periodicAxisId(1).and.periodicAxisId(3).and.(.not.periodicAxisId(2))) CALL MeshPeriodicEdges(nodePairingXXhash, nodePairingZZhash, nodePairingZZhashInverse)
-  if (periodicAxisId(2).and.periodicAxisId(3).and.(.not.periodicAxisId(1))) CALL MeshPeriodicEdges(nodePairingYYhash, nodePairingZZhash, nodePairingZZhashInverse)
-
-  if (periodicAxisId(1).and.periodicAxisId(2).and.periodicAxisId(3)) CALL MeshPeriodicCorners()
+    if (periodicity == 3) CALL MeshPeriodicCorners()
+  endif
 endif
 
 ! xx pairs

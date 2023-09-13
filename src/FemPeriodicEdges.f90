@@ -3,7 +3,10 @@ subroutine FemPeriodicEdges(elemcon)
 use fhash_module__ints_double
 use ints_module
 use kcw_mod, only: F_m
-use geometry_mod, only: edgeNodeOne, edgeNodeTwo, edgeNodeThree, edgeNodeFour, numEdgePeriodicPairs
+use parser_vars_mod, only: periodicAxisId
+use geometry_mod,    only: edgeNodeOneXY, edgeNodeTwoXY, edgeNodeThreeXY, edgeNodeFourXY, numEdgePeriodicPairsXY, &
+                           edgeNodeOneXZ, edgeNodeTwoXZ, edgeNodeThreeXZ, edgeNodeFourXZ, numEdgePeriodicPairsXZ, &
+                           edgeNodeOneYZ, edgeNodeTwoYZ, edgeNodeThreeYZ, edgeNodeFourYZ, numEdgePeriodicPairsYZ
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
@@ -14,18 +17,53 @@ integer :: ii, mm, nn
 !------------------------------------------------------------------------------------------------------!
 allocate(elemconKey%ints(2))
 
-do ii = 1, numEdgePeriodicPairs
-  elemconKey%ints(1) = edgeNodeOne(ii)
-  elemconKey%ints(2) = edgeNodeTwo(ii)
-  call elemcon%get(elemconKey, mm) ! id of pair (23,7)
+! Apply correction to periodic node pairs belonging to XY edges
+if (periodicAxisId(1).and.periodicAxisId(2)) then
+  do ii = 1, numEdgePeriodicPairsXY
+    elemconKey%ints(1) = edgeNodeOneXY(ii)
+    elemconKey%ints(2) = edgeNodeTwoXY(ii)
+    call elemcon%get(elemconKey, mm) ! id of pair (23,7)
 
-  elemconKey%ints(1) = edgeNodeThree(ii)
-  elemconKey%ints(2) = edgeNodeFour(ii)
-  call elemcon%get(elemconKey, nn) ! id of pair (38,1)
+    elemconKey%ints(1) = edgeNodeThreeXY(ii)
+    elemconKey%ints(2) = edgeNodeFourXY(ii)
+    call elemcon%get(elemconKey, nn) ! id of pair (38,1)
 
-  F_m%g(mm) = F_m%g(mm) + F_m%g(nn)
-  F_m%g(nn) = 0.0d0
-enddo
+    F_m%g(mm) = F_m%g(mm) + F_m%g(nn)
+    F_m%g(nn) = 0.0d0
+  enddo
+endif
+
+! Apply correction to periodic node pairs belonging to XZ edges
+if (periodicAxisId(1).and.periodicAxisId(3)) then
+  do ii = 1, numEdgePeriodicPairsXZ
+    elemconKey%ints(1) = edgeNodeOneXZ(ii)
+    elemconKey%ints(2) = edgeNodeTwoXZ(ii)
+    call elemcon%get(elemconKey, mm)
+
+    elemconKey%ints(1) = edgeNodeThreeXZ(ii)
+    elemconKey%ints(2) = edgeNodeFourXZ(ii)
+    call elemcon%get(elemconKey, nn)
+
+    F_m%g(mm) = F_m%g(mm) + F_m%g(nn)
+    F_m%g(nn) = 0.0d0
+  enddo
+endif
+
+! Apply correction to periodic node pairs belonging to YZ edges
+if (periodicAxisId(2).and.periodicAxisId(3)) then
+  do ii = 1, numEdgePeriodicPairsYZ
+    elemconKey%ints(1) = edgeNodeOneYZ(ii)
+    elemconKey%ints(2) = edgeNodeTwoYZ(ii)
+    call elemcon%get(elemconKey, mm)
+
+    elemconKey%ints(1) = edgeNodeThreeYZ(ii)
+    elemconKey%ints(2) = edgeNodeFourYZ(ii)
+    call elemcon%get(elemconKey, nn)
+
+    F_m%g(mm) = F_m%g(mm) + F_m%g(nn)
+    F_m%g(nn) = 0.0d0
+  enddo
+endif
 
 deallocate(elemconKey%ints)
 

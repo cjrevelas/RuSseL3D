@@ -16,12 +16,14 @@ integer                              :: numDimensions, numNodes
 integer                              :: numNodesLocalTypeFace, numNodesLocalTypeDomain
 integer                              :: numElementsTypeFace, numElementsTypeDomain
 integer                              :: numBulkNodePairs, numTotalNodePairs
-integer                              :: numEdgePeriodicPairs
+integer                              :: numEdgePeriodicPairsXY, numEdgePeriodicPairsXZ, numEdgePeriodicPairsYZ
 integer                              :: numCornerPeriodicPairsXX, numCornerPeriodicPairsYY
 integer                              :: destTriple
 integer, allocatable, dimension(:)   :: nodePairId, numElementsOfNode
 integer, allocatable, dimension(:)   :: nodeBelongsToFaceId
-integer, allocatable, dimension(:)   :: edgeNodeOne, edgeNodeTwo, edgeNodeThree, edgeNodeFour
+integer, allocatable, dimension(:)   :: edgeNodeOneXY, edgeNodeTwoXY, edgeNodeThreeXY, edgeNodeFourXY
+integer, allocatable, dimension(:)   :: edgeNodeOneXZ, edgeNodeTwoXZ, edgeNodeThreeXZ, edgeNodeFourXZ
+integer, allocatable, dimension(:)   :: edgeNodeOneYZ, edgeNodeTwoYZ, edgeNodeThreeYZ, edgeNodeFourYZ
 integer, allocatable, dimension(:)   :: cornerNodeOneYY, cornerNodeTwoYY, cornerNodeThreeYY, cornerNodeFourYY
 integer, allocatable, dimension(:)   :: cornerNodeOneXX, cornerNodeTwoXX, cornerNodeThreeXX, cornerNodeFourXX
 integer, allocatable, dimension(:,:) :: globalNodeIdTypeDomain, elementOfNode
