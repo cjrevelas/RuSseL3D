@@ -5,12 +5,6 @@ The code is named after the British philosopher and mathematician, Bertrand Russ
 
 It is an open-source code, distributed under the terms of the accompanying LICENSE.
 
-# Authors
-- Dr. Constantinos J. Revelas (cjrevelas@gmail.com)
-- Dr. Aristotelis P. Sgouros (arissgouros@gmail.com)
-- Dr. Apostolos T. Lakkas (tolis1981@gmail.com)
-- Prof. Doros N. Theodorou (doros@central.ntua.gr, scientific advisor and mentor)
-
 # Description
 RuSseL3D is a code developed in Fortran which applies the Finite Element Method to run three-\
 dimensional calculations on heterogeneous polymer systems, based on Self-Consistent Field Theory (SCFT).\
