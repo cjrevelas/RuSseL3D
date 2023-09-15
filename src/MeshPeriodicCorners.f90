@@ -2,15 +2,17 @@ subroutine MeshPeriodicCorners()
 !------------------------------------------------------------------------------------------------------!
 use fhash_module__ints_double
 use ints_module
-use geometry_mod, only: nodePairingZZhash,                   &
-                        nodePairingXXhashInverse,            &
-                        nodePairingYYhashInverse,            &
-                        cornerNodeOneYY, cornerNodeTwoYY,    &
-                        cornerNodeThreeYY, cornerNodeFourYY, &
-                        cornerNodeOneXX, cornerNodeTwoXX,    &
-                        cornerNodeThreeXX, cornerNodeFourXX, &
-                        destTriple, numCornerPeriodicPairsXX,&
-                        numCornerPeriodicPairsYY
+!use constants_mod, only: tol
+use geometry_mod, only: nodePairingZZhash,                    &
+                        nodePairingXXhashInverse,             &
+                        nodePairingYYhashInverse,             &
+                        cornerNodeOneYY, cornerNodeTwoYY,     &
+                        cornerNodeThreeYY, cornerNodeFourYY,  &
+                        cornerNodeOneXX, cornerNodeTwoXX,     &
+                        cornerNodeThreeXX, cornerNodeFourXX,  &
+                        destTriple, numCornerPeriodicPairsXX, &
+                        numCornerPeriodicPairsYY!, nodeCoord,  &
+                        !boxLow, boxHigh
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
@@ -30,46 +32,49 @@ integer :: counter, keyIndex
 allocate(nodePairingYYhashInverseKey%ints(1))
 allocate(nodePairingXXhashInverseKey%ints(1))
 
-call nodePairingZZit%begin(nodePairingZZhash)
+CALL nodePairingZZit%begin(nodePairingZZhash)
 
 counter = 0
 do keyIndex = 1, nodePairingZZhash%key_count()
-  call NodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
+  CALL NodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
 
   sourceZZ = nodePairingZZhashKey%ints(1)
   destZZ   = nodePairingZZvalue
 
   nodePairingYYhashInverseKey%ints(1) = destZZ
-  call nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceYY, success)
+  CALL nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceYY, success)
 
+  !if ((success).and.((abs(nodeCoord(1,destZZ)-boxLow(1))<tol).or.(abs(nodeCoord(1,destZZ)-boxHigh(1))<tol))) counter = counter + 1
   if (success) counter = counter + 1
 enddo
 
 numCornerPeriodicPairsYY = counter
-!write(123,*) "corner yy zz pairs:" , numCornerPeriodicPairsYY
+!write(123,*) "corner yy zz pairs:", numCornerPeriodicPairsYY
+!write(123,*) "-----------------------"
 
 allocate(cornerNodeOneYY(numCornerPeriodicPairsYY))
 allocate(cornerNodeTwoYY(numCornerPeriodicPairsYY))
 allocate(cornerNodeThreeYY(numCornerPeriodicPairsYY))
 allocate(cornerNodeFourYY(numCornerPeriodicPairsYY))
 
-call nodePairingZZit%begin(nodePairingZZhash)
+CALL nodePairingZZit%begin(nodePairingZZhash)
 
 counter = 0
 do keyIndex = 1, nodePairingZZhash%key_count()
-  call nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
+  CALL nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
 
   sourceZZ = nodePairingZZhashKey%ints(1)
   destZZ   = nodePairingZZvalue
 
-  nodePairingYYhashInverseKey%ints(1) = destZZ
-  call nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceYY, success)
+  nodePairingYYhashInverseKey%ints(1) = destZZ ! which is equal to destZZ
+  CALL nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceYY, success)
 
+  !if ((success).and.((abs(nodeCoord(1,destZZ)-boxLow(1))<tol).or.(abs(nodeCoord(1,destZZ)-boxHigh(1))<tol))) then
   if (success) then
     counter = counter + 1
 
     nodePairingYYhashInverseKey%ints(1) = sourceZZ
-    call nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceAux)
+    CALL nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceAux)
 
     cornerNodeOneYY(counter) = sourceZZ
     cornerNodeTwoYY(counter) = sourceAux
@@ -77,57 +82,71 @@ do keyIndex = 1, nodePairingZZhash%key_count()
     cornerNodeThreeYY(counter) = destZZ
     cornerNodeFourYY(counter)  = sourceYY
 
+    !write(123,*) "srcZZ: ", sourceZZ, " -> dstZZ: ", destZZ,    " [", nodeCoord(1,sourceZZ), ", ", nodeCoord(2,sourceZZ), ", ", nodeCoord(3,sourceZZ), "] -> [", nodeCoord(1,destZZ),   ", ", nodeCoord(2,destZZ),   ", ", nodeCoord(3,destZZ),   "]"
+    !write(123,*) "dstYY: ", destZZ,   " -> srcYY: ", sourceYY , " [", nodeCoord(1,destZZ),   ", ", nodeCoord(2,destZZ),   ", ", nodeCoord(3,destZZ),   "] -> [", nodeCoord(1,sourceYY), ", ", nodeCoord(2,sourceYY), ", ", nodeCoord(3,sourceYY), "]"
+    !write(123,*) "-----------------------"
+
     nodePairingXXhashInverseKey%ints(1) = destZZ
-    call nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, successAux)
-    if (successAux) destTriple = destZZ
+    CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, successAux)
+    if (successAux) then
+      destTriple = destZZ
+      !write(123,*) "FOUND dstTriple: ", destZZ
+    endif
   endif
 enddo
 
-call nodePairingZZit%begin(nodePairingZZhash)
+CALL nodePairingZZit%begin(nodePairingZZhash)
 
 counter = 0
 do keyIndex = 1, nodePairingZZhash%key_count()
-  call nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
+  CALL nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
   sourceZZ = nodePairingZZhashKey%ints(1)
   destZZ   = nodePairingZZvalue
 
   nodePairingXXhashInverseKey%ints(1) = destZZ
-  call nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, success)
+  CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, success)
 
+  !if ((success).and.((abs(nodeCoord(2,destZZ)-boxLow(2))<tol).or.(abs(nodeCoord(2,destZZ)-boxHigh(2))<tol))) counter = counter + 1
   if (success) counter = counter + 1
 enddo
 
 numCornerPeriodicPairsXX = counter
-!write(123,*) "corner xx zz pairs:" , numCornerPeriodicPairsXX
+!write(456,*) "corner xx zz pairs:" , numCornerPeriodicPairsXX
+!write(456,*) "-----------------------"
 
 allocate(cornerNodeOneXX(numCornerPeriodicPairsXX))
 allocate(cornerNodeTwoXX(numCornerPeriodicPairsXX))
 allocate(cornerNodeThreeXX(numCornerPeriodicPairsXX))
 allocate(cornerNodeFourXX(numCornerPeriodicPairsXX))
 
-call nodePairingZZit%begin(nodePairingZZhash)
+CALL nodePairingZZit%begin(nodePairingZZhash)
 
 counter = 0
 do keyIndex = 1, nodePairingZZhash%key_count()
-  call nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
+  CALL nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
 
   sourceZZ = nodePairingZZhashKey%ints(1)
   destZZ   = nodePairingZZvalue
 
   nodePairingXXhashInverseKey%ints(1) = destZZ
-  call nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, success)
+  CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, success)
 
+  !if ((success).and.(destZZ.ne.destTriple).and.((abs(nodeCoord(2,destZZ)-boxLow(2))<tol).or.(abs(nodeCoord(2,destZZ)-boxHigh(2))<tol))) then
   if (success.and.(destZZ.ne.destTriple)) then
     counter = counter + 1
 
     nodePairingXXhashInverseKey%ints(1) = sourceZZ
-    call nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceAux)
+    CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceAux)
 
     cornerNodeOneXX(counter) = sourceZZ
     cornerNodeTwoXX(counter) = sourceAux
 
     cornerNodeThreeXX(counter) = destZZ
     cornerNodeFourXX(counter)  = sourceXX
+
+    !write(456,*) "srcZZ: ", sourceZZ, " -> dstZZ: ", destZZ,    " [", nodeCoord(1,sourceZZ), ", ", nodeCoord(2,sourceZZ), ", ", nodeCoord(3,sourceZZ), "] -> [", nodeCoord(1,destZZ),   ", ", nodeCoord(2,destZZ),   ", ", nodeCoord(3,destZZ),   "]"
+    !write(456,*) "dstXX: ", destZZ,   " -> srcXX: ", sourceXX , " [", nodeCoord(1,destZZ),   ", ", nodeCoord(2,destZZ),   ", ", nodeCoord(3,destZZ),   "] -> [", nodeCoord(1,sourceXX), ", ", nodeCoord(2,sourceXX), ", ", nodeCoord(3,sourceXX), "]"
+    !write(456,*) "-----------------------"
   endif
 enddo
 

@@ -17,7 +17,7 @@ implicit none
 character(100) :: line
 character(1)   :: axis
 
-integer :: Reason, ii, id, face1, face2
+integer :: Reason, ii, id
 
 real(8) :: dirichletValue = dflt_dirichletValue
 real(8) :: nanopValue     = dflt_nanopValue
@@ -297,19 +297,13 @@ do
     elseif (INDEX(line,"# periodicity") > 0) then
       read(line,*) periodicity
       do ii = 1, periodicity
-        read(256,*) axis, face1, face2
+        read(256,*) axis
         if (axis=='x') then
           periodicAxisId(1) = .True.
-          periodicFaceId(1) = face1
-          periodicFaceId(2) = face2
         elseif (axis=='y') then
           periodicAxisId(2) = .True.
-          periodicFaceId(3) = face1
-          periodicFaceId(4) = face2
         elseif (axis=='z') then
           periodicAxisId(3) = .True.
-          periodicFaceId(5) = face1
-          periodicFaceId(6) = face2
         else
           write(ERROR_MESSAGE,'("Periodicity axis is not valid. Must be x, y or z.")')
           call exitWithError(1, 1, 1, ERROR_MESSAGE)
