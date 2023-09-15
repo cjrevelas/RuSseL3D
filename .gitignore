@@ -1,7 +1,7 @@
 obj/
 run/
 node_modules/
-test_integrity/
+tests/
 tools/interp_fem/run/
 tools/interp_fem/run_old/
 tools/in.*

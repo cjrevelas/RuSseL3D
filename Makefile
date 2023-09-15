@@ -151,7 +151,7 @@ cleaner:
 
 #-----------------------------------------------------------RUN TESTS TO VERIFY CHANGES-----------------------------------------------------------#
 test:
-	./test_integrity/test_integrity.sh
+	./tests/tests.sh
 
 cleantest:
 	$(RM)  $(OBJDIR)/*.o $(OBJDIR)/*.mod $(RUNDIR)/RuSseL* $(RUNDIR)/o.* $(RUNDIR)/d.* $(RUNDIR)/e.* $(RUNDIR)/*out.bin $(RUNDIR)/fort.* $(RUNDIR)/in.field.bin $(RUNDIR)/LOG*
