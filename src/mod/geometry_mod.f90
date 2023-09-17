@@ -18,7 +18,7 @@ integer                              :: numElementsTypeFace, numElementsTypeDoma
 integer                              :: numBulkNodePairs, numTotalNodePairs
 integer                              :: numEdgePeriodicPairsXY, numEdgePeriodicPairsXZ, numEdgePeriodicPairsYZ
 integer                              :: numCornerPeriodicPairsXX, numCornerPeriodicPairsYY
-integer                              :: destTriple
+integer                              :: dstTriple
 integer, allocatable, dimension(:)   :: nodePairId, numElementsOfNode
 integer, allocatable, dimension(:)   :: nodeBelongsToFaceId
 integer, allocatable, dimension(:)   :: edgeNodeOneXY, edgeNodeTwoXY, edgeNodeThreeXY, edgeNodeFourXY

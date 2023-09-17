@@ -92,7 +92,7 @@ if (file_exists) then
   open(unit=256, file = IO_inputFile)
 else
   write(ERROR_MESSAGE,'("File ",A15," does not exist!")') IO_inputFile
-  call exitWithError(1, 1, 1, ERROR_MESSAGE)
+  call ExitWithError(1, 1, 1, ERROR_MESSAGE)
 endif
 
 do
@@ -189,8 +189,8 @@ do
         continue
       elseif ((exportAllGraftedChains.eq.0).or.(exportAllGraftedChains.eq.2)) then
         read(256,*) numGraftedChainsToExport
-        allocate(gpIndexToExport(numGraftedChainsToExport))
-        read(256,*) (gpIndexToExport(ii), ii = 1, numGraftedChainsToExport)
+        allocate(graftingPointIndexToExport(numGraftedChainsToExport))
+        read(256,*) (graftingPointIndexToExport(ii), ii = 1, numGraftedChainsToExport)
       endif
     elseif (INDEX(line,"# export field") > 0) then
       read(line,*) exportField
@@ -306,7 +306,7 @@ do
           periodicAxisId(3) = .True.
         else
           write(ERROR_MESSAGE,'("Periodicity axis is not valid. Must be x, y or z.")')
-          call exitWithError(1, 1, 1, ERROR_MESSAGE)
+          call ExitWithError(1, 1, 1, ERROR_MESSAGE)
         endif
       enddo
       log_periodicity = .True.
@@ -328,11 +328,11 @@ if (log_temperature) then
     beta = 1.0d0 / (boltz_const_Joule_K * temperature)
   else
     write(ERROR_MESSAGE,'("Temperature is negative: ",E16.9," K")') temperature
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   ERROR_MESSAGE = "Temperature was not detected."
-  call exitWithError(1, 1, 1, ERROR_MESSAGE)
+  call ExitWithError(1, 1, 1, ERROR_MESSAGE)
 endif
 
 
@@ -343,7 +343,7 @@ if (log_pressure) then
     pressure = pressure * atm_to_pa
   else
     write(ERROR_MESSAGE,'("Pressure is negative: ",E16.9, " atm")') pressure
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   pressure = dflt_pressure
@@ -364,11 +364,11 @@ if (log_massDensity) then
     write(6  ,'(3X,A40,E16.9,A8)')adjl("Mass density:",40), massDensity, " [g/cm3]"
   else
     write(ERROR_MESSAGE,'("Mass density is negative: ",E16.9," g/cm3")') massDensity
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   ERROR_MESSAGE = "Mass density was not detected."
-  call exitWithError(1, 1, 1, ERROR_MESSAGE)
+  call ExitWithError(1, 1, 1, ERROR_MESSAGE)
 endif
 
 
@@ -378,11 +378,11 @@ if (log_monomerMass) then
     write(6  ,'(3X,A40,E16.9,A8)')adjl("Monomer mass:",40), massOfMonomer, "[g/mol]"
   else
     write(ERROR_MESSAGE,'("Monomer mass is negative: ",E16.9)') massOfMonomer
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   ERROR_MESSAGE = "Monomer mass not detected."
-  call exitWithError(1, 1, 1, ERROR_MESSAGE)
+  call ExitWithError(1, 1, 1, ERROR_MESSAGE)
 endif
 
 
@@ -392,11 +392,11 @@ if (matrixExist.eq.1) then
       lengthMatrixMax = lengthMatrix
     else
       write(ERROR_MESSAGE,'("Chain length of matrix chains is negative: ",E16.9)') lengthMatrix
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
   else
     ERROR_MESSAGE = "Chain length of matrix chains was not detected."
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 endif
 
@@ -420,7 +420,7 @@ if (graftedExist.eq.1) then
     inquire(file = IO_graftFile, exist = file_exists)
     if (.not.file_exists) then
       write(ERROR_MESSAGE,'("Grafting points file ",A16," does not exist!")') IO_graftFile
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
       STOP
     endif
     write(iow,'(3X,A40,A16)')adjl("Reading grafting points from file:",40), IO_graftFile
@@ -435,7 +435,7 @@ if (graftedExist.eq.1) then
     inquire(file = IO_graftFile, exist = file_exists)
     if (.not.file_exists) then
       write(ERROR_MESSAGE,'("Default grafting points file ",A16," does not exist!")') IO_graftFile
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
       STOP
     endif
   endif
@@ -446,11 +446,11 @@ if (graftedExist.eq.1) then
       write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per grafted monomer:",40), rg2OfGraftedMonomer, "[Angstrom^2]"
     else
       write(ERROR_MESSAGE,'("Rg2 per grafted monomer is negative: ",E16.9)') rg2OfGraftedMonomer
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
   else
     ERROR_MESSAGE = "Rg2 per matrix monomer was not detected."
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 
   if (log_lengthGrafted) then
@@ -464,11 +464,11 @@ if (graftedExist.eq.1) then
       lengthMatrixMax = MAX(lengthMatrix, lengthGrafted)
     else
       write(ERROR_MESSAGE,'("Chain length of grafted chains is negative: ",E16.9)') lengthGrafted
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
   else
     ERROR_MESSAGE = "Chain length of grafted chains was not detected."
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 
   if (log_aveStepGrafted) then
@@ -480,15 +480,15 @@ if (graftedExist.eq.1) then
 
       if (MOD(numEdwPointsGrafted,2).ne.0 .or. MOD(numConvolPointsGrafted,2).ne.0) then
         write(ERROR_MESSAGE,'("ns_grafted is not an even number: ",I16,I16)') numEdwPointsGrafted, numConvolPointsGrafted
-        call exitWithError(1, 1, 1, ERROR_MESSAGE)
+        call ExitWithError(1, 1, 1, ERROR_MESSAGE)
       endif
     else
       write(ERROR_MESSAGE,'("Contour step of grafted chains is negative: ",E16.9,E16.9)') stepEdwAveGrafted, stepConvolAveGrafted
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
   else
     ERROR_MESSAGE = "Contour step of grafted chains was not detected."
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 
   if (log_contourGrafted) then
@@ -503,13 +503,13 @@ if (graftedExist.eq.1) then
       write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "hybrid"
       if (critContourGrafted < 0) then
         write(ERROR_MESSAGE,'("Critical contour point of grafted chains is negative: ",E16.9)') critContourGrafted
-        call exitWithError(1, 1, 1, ERROR_MESSAGE)
+        call ExitWithError(1, 1, 1, ERROR_MESSAGE)
       elseif (critContourGrafted>0) then
         write(iow,'(3X,A40,F16.9)')adjl("Crit contour point of grafted chains:",40), critContourGrafted
         write(6  ,'(3X,A40,F16.9)')adjl("Crit contour point of grafted chains:",40), critContourGrafted
       else
         ERROR_MESSAGE = "Critical contour point of grafted chains was not detected."
-        call exitWithError(1, 1, 1, ERROR_MESSAGE)
+        call ExitWithError(1, 1, 1, ERROR_MESSAGE)
       endif
 
       call ComputeContourStep(stepEdwAveGrafted, critContourGrafted, lengthGrafted, numEdwPointsGrafted)
@@ -519,11 +519,11 @@ if (graftedExist.eq.1) then
       write(6  ,'(3X,A40,A16)') "Edwards contour scheme of graftd chains:", "asymm"
     else
       write(ERROR_MESSAGE,'("Not valid Edwards contour scheme of grafted chains: ",I5)') contourGrafted
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
   else
     ERROR_MESSAGE = "Edwards contour scheme of grafted chains was not detected."
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 endif
 
@@ -549,11 +549,11 @@ if (matrixExist.eq.1) then
       write(6  ,'(3X,A40,E16.9,A13)')adjl("Rg2 per matrix monomer:",40), rg2OfMatrixMonomer, "[Angstrom^2]"
     else
       write(ERROR_MESSAGE,'("Rg2 per matrix monomer is negative: ",E16.9)') rg2OfMatrixMonomer
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
   else
     ERROR_MESSAGE="Rg2 per matrix monomer was not detected."
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 
   write(iow,'(3X,A40,E16.9,A11)')adjl("Chain length of matrix chains:",40), lengthMatrix, "[monomers]"
@@ -574,15 +574,15 @@ if (log_aveStepMatrix) then
 
     if (MOD(numEdwPointsMatrix,2).ne.0 .or. MOD(numConvolPointsMatrix,2).ne.0) then
       write(ERROR_MESSAGE,'("ns_matrix is not an even number: ",I16,I16)') numEdwPointsMatrix, numConvolPointsMatrix
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
   else
     write(ERROR_MESSAGE,'("Contour step of matrix chains is negative: ",E16.9,E16.9)') stepEdwAveMatrix, stepConvolAveMatrix
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   ERROR_MESSAGE="Contour step of matrix chains was not detected."
-  call exitWithError(1, 1, 1, ERROR_MESSAGE)
+  call ExitWithError(1, 1, 1, ERROR_MESSAGE)
 endif
 
 if (log_contourMatrix) then
@@ -597,13 +597,13 @@ if (log_contourMatrix) then
     write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "hybrid"
     if (critContourMatrix < 0) then
       write(ERROR_MESSAGE,'("Critical contour point of matrix chains is negative: ",E16.9)') critContourMatrix
-      call exitWithError(1, 1 , 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1 , 1, ERROR_MESSAGE)
     elseif (critContourMatrix > 0) then
       write(iow,'(3X,A40,F16.9)')adjl("Critical contour point of matrix chains:",40), critContourMatrix
       write(6  ,'(3X,A40,F16.9)')adjl("Critical contour point of matrix chains:",40), critContourMatrix
     else
       ERROR_MESSAGE = "Critical contour point of matrix chains was not detected."
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
 
     call ComputeContourStep(stepEdwAveMatrix, critContourMatrix, lengthMatrixMax, numEdwPointsMatrix)
@@ -613,11 +613,11 @@ if (log_contourMatrix) then
     write(6  ,'(3X,A40,A16)') "Edwards contour scheme of matrix chains:", "asymm"
   else
     write(ERROR_MESSAGE,'("Not valid Edwards contour scheme of matrix chains: ",I5)') contourMatrix
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   ERROR_MESSAGE = "Edwards contour scheme of matrix chains was not detected."
-  call exitWithError(1, 1, 1, ERROR_MESSAGE)
+  call ExitWithError(1, 1, 1, ERROR_MESSAGE)
 endif
 
 if (log_adsorptionDistance) then
@@ -626,7 +626,7 @@ if (log_adsorptionDistance) then
     write(6  ,'(3X,A40,E16.9,A11)')adjl("Adsorption distance for chain segments:",40), adsorptionDistance, "[Angstrom]"
   else
     write(ERROR_MESSAGE,'("Adsorption distance for chain segments is negative:",E16.9)') adsorptionDistance
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   adsorptionDistance = dflt_adsorptionDistance
@@ -678,7 +678,7 @@ if (log_graftedExist.and.graftedExist.ge.1) then
           write(6  ,'(3X,A40,E16.9)')adjl("Number of grafted chains tolerance:",40), numGraftedChainsTol
         else
           write(ERROR_MESSAGE,'("Number of grafted chains tolerance is negative:",E16.9)') numGraftedChainsTol
-          call exitWithError(1, 1, 1, ERROR_MESSAGE)
+          call ExitWithError(1, 1, 1, ERROR_MESSAGE)
         endif
       else
         numGraftedChainsTol = dflt_numGraftedChainsTol
@@ -703,7 +703,7 @@ if (log_graftedExist.and.graftedExist.ge.1) then
       write(6  ,'(3X,A40,E16.9)')adjl("Distance of grafting points from solid:",40), graftPointDistance
     else
       write(ERROR_MESSAGE,'("Distance of grafting points from solid must have a positive value:",E16.9)') graftPointDistance
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+      call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
   else
     graftPointDistance = dflt_graftPointDistance
@@ -722,7 +722,7 @@ endif
 if (log_setInitialIteration) then
   if (initialIterationId.lt.0) then
     write(ERROR_MESSAGE,'("Wrong value of initial iteration.",I16)') initialIterationId
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   initialIterationId = dflt_initialIterationId
@@ -744,7 +744,7 @@ if (log_numIterations) then
     write(6  ,'(3X,A40,I9)')adjl("Maximum number of iterations:",40), iterations
   else
     write(ERROR_MESSAGE,'("Maximum number of iterations is negative:",I10)') iterations
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   iterations = dflt_iterations
@@ -761,7 +761,7 @@ if (log_binThickness) then
     write(6  ,'(3X,A40,E16.9,A11)')adjl("Bin thickness:",40), binThickness, "[Angstrom]"
   else
     write(ERROR_MESSAGE,'("Bin thickness is negative:",E16.9)') binThickness
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   binThickness = dflt_binThickness
@@ -778,7 +778,7 @@ if (log_profileDimensions) then
     write(6  ,'(3X,A40,I9)')adjl("Profile dimension:",40), profileDimensions
   else
     write(ERROR_MESSAGE,'("Profile dimension is not between 1 and 3:",I16)') profileDimensions
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   profileDimensions = dflt_profileDimensions
@@ -798,7 +798,7 @@ if (log_fieldInitScheme) then
       inquire(file=IO_fieldFile, exist=file_exists)
       if (.not.file_exists) then
         write(ERROR_MESSAGE,'("Field input file ",A16," does not exist!")') IO_fieldFile
-        call exitWithError(1, 1, 1, ERROR_MESSAGE)
+        call ExitWithError(1, 1, 1, ERROR_MESSAGE)
         STOP
       endif
       write(iow,'(A43,A16)')adjl("Field will be read from file:",40), IO_fieldFile
@@ -813,7 +813,7 @@ if (log_fieldInitScheme) then
       inquire(file=IO_fieldFile, exist=file_exists)
       if (.not.file_exists) then
         write(ERROR_MESSAGE,'("Default field input file ",A16," does not exist!")') IO_fieldFile
-        call exitWithError(1, 1, 1, ERROR_MESSAGE)
+        call ExitWithError(1, 1, 1, ERROR_MESSAGE)
         STOP
       endif
     endif
@@ -822,7 +822,7 @@ if (log_fieldInitScheme) then
     write(6  ,'(3X,A40)')adjl("Field: -kapa at Dir. and 0 elsewhere.",40)
   else
     write(ERROR_MESSAGE,'("Incorrect field initialization value. Choose between 1-3.",I16)') initialIterationId
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   write(iow,'(A40)')adjl("Field will be initialized to zero.",40)
@@ -842,7 +842,7 @@ if (log_mumpsMatrixType) then
     write(6  ,'(3X,A40,1X,A18,I1,A1)')adjl("MUMPS matrix type:",40), "general symmetric(", mumpsMatrixType, ")"
   else
     write(ERROR_MESSAGE,'("Incorrect MUMPS matrix type.",I16)') mumpsMatrixType
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   mumpsMatrixType = dflt_mumpsMatrixType
@@ -859,7 +859,7 @@ if (log_fractionOfNewField) then
     write(6  ,'(3X,A40,E16.9)')adjl("Initial fraction of new field:",40), frac
   else
     write(ERROR_MESSAGE,'("Initial fraction of new field is negative or larger than unity:",E16.9)') frac
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   frac = dflt_fraction
@@ -876,7 +876,7 @@ if (log_fieldTol) then
     write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on field error:",40), fieldTol
   else
     write(ERROR_MESSAGE,'("Tolerance on field error is negative:",E16.9)') fieldTol
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   fieldTol = dflt_fieldTol
@@ -893,7 +893,7 @@ if (log_freeEnergyTol) then
     write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on free energy error:",40), freeEnergyTol
   else
     write(ERROR_MESSAGE,'("Tolerance on free energy error is negative:",E16.9)') freeEnergyTol
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   freeEnergyTol = dflt_freeEnergyTol
@@ -910,7 +910,7 @@ if (log_freeEnergyTolForDelta) then
     write(6  ,'(3X,A40,E16.9)')adjl("Tolerance on energy error for delta:",40), freeEnergyTolForDelta
   else
     write(ERROR_MESSAGE,'("Tolerance on energy error for delta is negative:",E16.9)') freeEnergyTolForDelta
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   freeEnergyTolForDelta = dflt_freeEnergyTolForDelta
@@ -1180,11 +1180,11 @@ if (log_polymerSigma) then
     write(6  ,'(3X,A40,E16.9,A11)')adjl("Sigma of polymer:",40), polymerSigma, " [Angstrom]"
   else
     write(ERROR_MESSAGE,'("sigma_polymer is negative: ",E16.9," Angstroms")') polymerSigma
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
   endif
 else
   ERROR_MESSAGE="sigma_polymer not detected."
-  call exitWithError(1, 1, 1, ERROR_MESSAGE)
+  call ExitWithError(1, 1, 1, ERROR_MESSAGE)
 endif
 
 
@@ -1280,7 +1280,7 @@ if (log_meshFile) then
   inquire(file=IO_meshFile, exist=file_exists)
   if (.not.file_exists) then
     write(ERROR_MESSAGE,'("Mesh file ",A16," does not exist!")') IO_meshFile
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     STOP
   endif
   write(iow,'(3X,A40,A16)')adjl("Reading mesh from file:",40), IO_meshFile
@@ -1295,7 +1295,7 @@ else
   inquire(file=IO_meshFile, exist=file_exists)
   if (.not.file_exists) then
     write(ERROR_MESSAGE,'("Default mesh file ",A16," does not exist!")') IO_meshFile
-    call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    call ExitWithError(1, 1, 1, ERROR_MESSAGE)
     STOP
   endif
 endif

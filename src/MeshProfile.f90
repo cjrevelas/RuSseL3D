@@ -16,7 +16,7 @@ integer, allocatable, dimension(:) :: profile
 real(8) :: binSize
 !----------------------------------------------------------------------------------------------------------------------------------!
 binSize = 0.5d0
-numBins  = NINT((boxHigh(profileDimensions) - boxLow(profileDimensions)) / binSize) + 1
+numBins = NINT((boxHigh(profileDimensions) - boxLow(profileDimensions)) / binSize) + 1
 
 allocate(profile(numBins))
 

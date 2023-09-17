@@ -29,7 +29,7 @@ allocate(elemconKey%ints(2)) ! Each key is defined by a pair (2) of nodes
 
 ! Total number of required keys
 elemconNumOfKeys = 2 * numNodesLocalTypeDomain * numElementsTypeDomain
-call elemcon%reserve(elemconNumOfKeys)
+CALL elemcon%reserve(elemconNumOfKeys)
 
 nodePair = 0
 do element = 1, numElementsTypeDomain
@@ -45,13 +45,13 @@ do element = 1, numElementsTypeDomain
       F_m%col(nodePair) = elemconKey%ints(2)
 
       ! Assign elemconValue to the pair
-      call elemcon%get(elemconKey, elemconValue, success)
+      CALL elemcon%get(elemconKey, elemconValue, success)
 
       if (success) then
         nodePairId(nodePair) = elemconValue  ! This pair has already been met, thus assigned an elemconValue
       else
-        call elemcon%set(elemconKey, nodePair) ! Store the new elemconValue for next iteration's check
-        nodePairId(nodePair) = nodePair       ! This pair is met for the first time
+        CALL elemcon%set(elemconKey, nodePair) ! Store the new elemconValue for next iteration's check
+        nodePairId(nodePair) = nodePair        ! This pair is met for the first time
       endif
     enddo
   enddo

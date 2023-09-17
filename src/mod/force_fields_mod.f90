@@ -7,7 +7,7 @@ module force_fields_mod
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
   contains
-    subroutine hamaker_sphere_plate(h_12, r_pol, sigma1, sigma2, A1, A2, Urep, Uatt)
+    subroutine HamakerSpherePlate(h_12, r_pol, sigma1, sigma2, A1, A2, Urep, Uatt)
       implicit none
       real(8), intent(in)  :: h_12, r_pol, sigma1, sigma2, A1, A2
       real(8), intent(out) :: Urep, Uatt
@@ -27,10 +27,10 @@ implicit none
       Urep = (hamaker_constant/7.56d3)*(sigma/r_pol)**6.0d0*((8.0d0 + h_12/r_pol)/(2.0d0 + h_12/r_pol)**7.0d0 &
                                                          & + (6.0d0 - h_12/r_pol)/(h_12/r_pol)**7.0d0)
       return
-    end subroutine hamaker_sphere_plate
+    end subroutine HamakerSpherePlate
 
 
-    subroutine hamaker_sphere_sphere(h_12, r1, r2, sigma1, sigma2, A1, A2, Urep, Uatt)
+    subroutine HamakerSphereSphere(h_12, r1, r2, sigma1, sigma2, A1, A2, Urep, Uatt)
       implicit none
       real(8), intent(in)  :: h_12, r1, r2, sigma1, sigma2, A1, A2
       real(8), intent(out) :: Urep, Uatt
@@ -58,7 +58,7 @@ implicit none
             -(r12**2.0d0-7.0d0*r12*(r1-r2)+6.0d0*(r1**2.0d0-7.0d0*r1*r2+r2**2.0d0))/(r12-r1+r2)**7.0d0 )
 
       return
-    end subroutine hamaker_sphere_sphere
+    end subroutine HamakerSphereSphere
 
 
     subroutine hamaker_plate_plate(h_12, A1, A2, Uatt, Urep)

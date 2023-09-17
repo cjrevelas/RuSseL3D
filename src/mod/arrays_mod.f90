@@ -4,9 +4,9 @@
 
 module arrays_mod
 !----------------------------------------------------------------------------------------------------------------------------!
-real(8), allocatable, dimension(:)   :: ds_mx_ed, ds_gr_ed, ds_mx_conv, ds_gr_conv
-real(8), allocatable, dimension(:)   :: coeff_mx_ed, coeff_gr_ed, coeff_mx_conv, coeff_gr_conv
-real(8), allocatable, dimension(:)   :: xs_mx_ed, xs_mx_conv, xs_gr_ed, xs_gr_conv
+real(8), allocatable, dimension(:)   :: dsEdwMatrix, dsEdwGrafted, dsConvMatrix, dsConvGrafted
+real(8), allocatable, dimension(:)   :: coeffEdwMatrix, coeffEdwGrafted, coeffConvMatrix, coeffConvGrafted
+real(8), allocatable, dimension(:)   :: xsEdwMatrix, xsConvMatrix, xsEdwGrafted, xsConvGrafted
 real(8), allocatable, dimension(:)   :: wwField, wwFieldNew, wwFieldMixed, uuField
 real(8), allocatable, dimension(:)   :: phiMatrix, phiGrafted, phiTotal
 real(8), allocatable, dimension(:)   :: nodeVolume

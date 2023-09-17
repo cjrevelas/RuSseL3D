@@ -6,7 +6,7 @@ subroutine ExportIndivProfile(numGraftedChainsToExport, numNodes, nodeCoord, phi
 !------------------------------------------------------------------------------------------------------!
 use error_handling_mod
 use iofiles_mod,      only: IO_indivProfile
-use parser_vars_mod,  only: lengthGrafted, exportAllGraftedChains, gpIndexToExport
+use parser_vars_mod,  only: lengthGrafted, exportAllGraftedChains, graftingPointIndexToExport
 use delta_mod,        only: targetNumGraftedChains
 !------------------------------------------------------------------------------------------------------!
 implicit none
@@ -24,7 +24,7 @@ do ii = 1, numGraftedChainsToExport
   if (exportAllGraftedChains.eq.1) then
     gpIndex = ii
   else
-    gpIndex = gpIndexToExport(ii)
+    gpIndex = graftingPointIndexToExport(ii)
   endif
   call ComputeNumberOfChains(lengthGrafted, phi_gr_indiv(:,gpIndex), nch_gr(gpIndex))
 enddo
@@ -35,7 +35,7 @@ do ii = 1, numGraftedChainsToExport
   if (exportAllGraftedChains.eq.1) then
     gpIndex = ii
   else
-    gpIndex = gpIndexToExport(ii)
+    gpIndex = graftingPointIndexToExport(ii)
   endif
   write(120,'(E19.9E3)',advance='no') nch_gr(gpIndex)
 enddo
@@ -46,7 +46,7 @@ do ii = 1, numGraftedChainsToExport
   if (exportAllGraftedChains.eq.1) then
     gpIndex = ii
   else
-    gpIndex = gpIndexToExport(ii)
+    gpIndex = graftingPointIndexToExport(ii)
   endif
 
   write(120,'(I19)',advance='no') gpIndex
@@ -59,7 +59,7 @@ do kk = 1, numNodes
     if (exportAllGraftedChains.eq.1) then
       gpIndex = ii
     else
-      gpIndex = gpIndexToExport(ii)
+      gpIndex = graftingPointIndexToExport(ii)
     endif
 
     write(120,'(E19.9E3)',advance='no') phi_gr_indiv(kk,gpIndex)

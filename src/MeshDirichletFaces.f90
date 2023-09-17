@@ -38,7 +38,7 @@ isDirichletFace = .False.
 
 do element = 1, numElementsTypeFace
   faceEntityKey%ints(1) = element
-  call faceEntityHash%get(faceEntityKey, faceEntityValue)
+  CALL faceEntityHash%get(faceEntityKey, faceEntityValue)
   do face = 1, numDirichletFaces
     if (faceEntityValue == dirichletFaceId(face)) then
       do localNodeId = 1, nenTypeFace

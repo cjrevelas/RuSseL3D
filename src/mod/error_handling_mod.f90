@@ -8,12 +8,12 @@ use iofiles_mod
 !----------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------!
+logical :: FILE_EXISTS
+integer :: ERROR_TYPE
 character(100) :: ERROR_MESSAGE
-integer        :: ERROR_TYPE
-logical        :: FILE_EXISTS
 !----------------------------------------------------------------------------------------------------------------------------!
   contains
-    subroutine exitWithError(STOP_SIGNAL, ERROR_TYPE, SCREEN, ERROR_MESSAGE)
+    subroutine ExitWithError(STOP_SIGNAL, ERROR_TYPE, SCREEN, ERROR_MESSAGE)
       implicit none
       character(100) :: ERROR_MESSAGE
       integer        :: ERROR_TYPE
@@ -46,6 +46,6 @@ logical        :: FILE_EXISTS
         write(*,*) " Exiting.."
         STOP
       endif
-    end subroutine exitWithError
+    end subroutine ExitWithError
 !----------------------------------------------------------------------------------------------------------------------------!
 end module error_handling_mod

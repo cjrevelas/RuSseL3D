@@ -4,11 +4,11 @@
 
 subroutine ExportComputes(iter, convergence, elemcon)
 !-----------------------------------------------------------------------------------------------------------!
-use arrays_mod,       only: phiMatrix, phiGrafted, phiGraftedIndiv,               &
-                            wwField, wwFieldNew, wwFieldMixed,                    &
-                            qqMatrixFinal, qqMatrixInterp, qqMatrixInterpGrafted, &
-                            qqGraftedFinal, qqGraftedInterp, ds_gr_ed,            &
-                            ds_mx_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv,        &
+use arrays_mod,       only: phiMatrix, phiGrafted, phiGraftedIndiv,                     &
+                            wwField, wwFieldNew, wwFieldMixed,                          &
+                            qqMatrixFinal, qqMatrixInterp, qqMatrixInterpGrafted,       &
+                            qqGraftedFinal, qqGraftedInterp, dsEdwGrafted,              &
+                            dsEdwMatrix, xsEdwGrafted, xsConvGrafted, coeffConvGrafted, &
                             nodeVolume
 use hist_mod,         only: numBins, binLength, planarCellId, sphericalCellId, distanceFromFace, &
                             distanceFromNanop, planarCellVolume, sphericalCellVolume
@@ -81,7 +81,7 @@ if (matrixExist.eq.1) then
           fileName = ""
           write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
           CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planarCellId(:,mm,nn), "mx", rg2OfMatrixMonomer, &
-          lengthMatrix, numEdwPointsMatrix, ds_mx_ed, qqMatrixFinal, phiMatrix, wwField)
+          lengthMatrix, numEdwPointsMatrix, dsEdwMatrix, qqMatrixFinal, phiMatrix, wwField)
         endif
         if (export(exportAdsorbedFree, iter, convergence)) then
           do kk = 1, numNodes
@@ -98,7 +98,7 @@ if (matrixExist.eq.1) then
       fileName = ""
       write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
       CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sphericalCellId(mm,:), "mx", rg2OfMatrixMonomer, lengthMatrix, &
-                            numEdwPointsMatrix, ds_mx_ed, qqMatrixFinal, phiMatrix, wwField)
+                            numEdwPointsMatrix, dsEdwMatrix, qqMatrixFinal, phiMatrix, wwField)
     endif
     if (export(exportAdsorbedFree, iter, convergence)) then
       do kk = 1, numNodes
@@ -121,7 +121,7 @@ if (graftedExist.eq.1) then
   if (export(exportPropagators, iter, convergence))  CALL ExportPropagator(numEdwPointsGrafted, qqGraftedFinal, "gr")
 
   if (export(exportPhiIndividual, iter, convergence)) then
-    CALL ComputeIndivProfile(numNodes, elemcon, qqMatrixInterpGrafted, ds_gr_ed, xs_gr_ed, xs_gr_conv, coeff_gr_conv, wwField, targetNumGraftedChains, graftPointId, graftPointValue, phiGraftedIndiv)
+    CALL ComputeIndivProfile(numNodes, elemcon, qqMatrixInterpGrafted, dsEdwGrafted, xsEdwGrafted, xsConvGrafted, coeffConvGrafted, wwField, targetNumGraftedChains, graftPointId, graftPointValue, phiGraftedIndiv)
 
     if (exportAllGraftedChains.eq.1) then
       CALL ExportIndivProfile(targetNumGraftedChains, numNodes, nodeCoord, phiGraftedIndiv)
@@ -148,7 +148,7 @@ if (graftedExist.eq.1) then
           fileName = ""
           write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
           CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planarCellId(:,mm,nn), "gr", rg2OfGraftedMonomer, &
-                                lengthGrafted, numEdwPointsGrafted, ds_gr_ed, qqGraftedFinal, phiGrafted, wwField)
+                                lengthGrafted, numEdwPointsGrafted, dsEdwGrafted, qqGraftedFinal, phiGrafted, wwField)
         endif
       endif
     enddo
@@ -168,7 +168,7 @@ if (graftedExist.eq.1) then
       fileName = ""
       write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
       CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sphericalCellId(mm,:), "gr", rg2OfGraftedMonomer, lengthGrafted, &
-                            numEdwPointsGrafted, ds_gr_ed, qqGraftedFinal, phiGrafted, wwField)
+                            numEdwPointsGrafted, dsEdwGrafted, qqGraftedFinal, phiGrafted, wwField)
     endif
   enddo
 #ifdef DEBUG_OUTPUTS

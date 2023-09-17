@@ -22,34 +22,34 @@ type(fhash_type_iterator__ints_double)       :: nodePairingIt
 type(ints_type)                              :: nodePairingKey
 integer                                      :: nodePairingValue
 
-integer :: source, dest
+integer :: src, dst
 integer :: pairId
 
 logical :: success
 !----------------------------------------------------------------------------------------------------------------------------------!
 allocate(elemconKey%ints(2))
 
-call nodePairingIt%begin(nodePairingHash)
+CALL nodePairingIt%begin(nodePairingHash)
 
 do pairId = startingPair, endingPair
-  call nodePairingIt%next(nodePairingKey, nodePairingValue)
+  CALL nodePairingIt%next(nodePairingKey, nodePairingValue)
 
-  source = nodePairingKey%ints(1)
-  dest   = nodePairingValue
+  src = nodePairingKey%ints(1)
+  dst = nodePairingValue
 
   ! Append pair
-  F_m%row(pairId) = dest
-  F_m%col(pairId) = source
+  F_m%row(pairId) = dst
+  F_m%col(pairId) = src
 
-  elemconKey%ints(1) = dest
-  elemconKey%ints(2) = source
+  elemconKey%ints(1) = dst
+  elemconKey%ints(2) = src
 
-  call elemcon%get(elemconKey, elemconValue, success)
+  CALL elemcon%get(elemconKey, elemconValue, success)
 
   if (success) then
     nodePairId(pairId) = elemconValue
   else
-    call elemcon%set(elemconKey, pairId)
+    CALL elemcon%set(elemconKey, pairId)
     nodePairId(pairId) = pairId
   endif
 enddo

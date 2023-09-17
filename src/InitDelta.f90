@@ -13,7 +13,7 @@ use error_handling_mod
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
-integer :: ii, iog
+integer :: graftedChain, iog
 !-----------------------------------------------------------------------------------------------------------!
 if (graftedExist.eq.1) then
   iog = 19
@@ -35,12 +35,12 @@ if (graftedExist.eq.1) then
   deltaNumerical  = 0.0d0
   graftPointValue = 0.0d0
 
-  do ii = 1, targetNumGraftedChains
-    read(iog,*) graftPointId(ii), graftPointValue(ii), deltaNumerical(ii)
+  do graftedChain = 1, targetNumGraftedChains
+    read(iog,*) graftPointId(graftedChain), graftPointValue(graftedChain), deltaNumerical(graftedChain)
 
-    if (graftPointId(ii) > numNodes) then
-      write(ERROR_MESSAGE,'("ID of grafted chain (",I10,") is larger from numNodes (",I10,"    )")') graftPointId(ii), numNodes
-      call exitWithError(1, 1, 1, ERROR_MESSAGE)
+    if (graftPointId(graftedChain) > numNodes) then
+      write(ERROR_MESSAGE,'("ID of grafted chain (",I10,") is larger from numNodes (",I10,"    )")') graftPointId(graftedChain), numNodes
+      CALL ExitWithError(1, 1, 1, ERROR_MESSAGE)
     endif
   enddo
 

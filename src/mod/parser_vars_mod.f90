@@ -21,7 +21,7 @@ integer :: exportPhiNodal, exportPhiSmeared, exportPhiIndividual, exportField, e
 integer :: exportFieldBin, exportBrushThickness, exportChainsPerArea, exportAdsorbedFree, exportPhiEndMiddle
 integer :: exportAllGraftedChains
 integer :: numGraftedChainsToExport
-integer, allocatable, dimension(:) :: gpIndexToExport
+integer, allocatable, dimension(:) :: graftingPointIndexToExport
 
 ! Domain
 integer               :: profileDimensions

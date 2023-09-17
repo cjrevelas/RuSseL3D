@@ -40,12 +40,12 @@ elseif (mumpsMatrixType.eq.mumpsGeneralSymmetric) then
   mumps_par%CNTL(1) = 0
 else
   ERROR_MESSAGE="MUMPS SUBROUTINE: mumpsMatrixType not between 0-2."
-  call exitWithError(1, 2, 1, ERROR_MESSAGE)
+  CALL exitWithError(1, 2, 1, ERROR_MESSAGE)
 endif
 
 mumps_par%JOB = -1
 
-call DMUMPS(mumps_par)
+CALL DMUMPS(mumps_par)
 
 if (mumps_par%INFOG(1).lt.0) then
   write(6,'(A,A,I6,A,I9)') " ERROR RETURN: ", "  mumps_par%INFOG(1)= ", mumps_par%INFOG(1), &
@@ -86,7 +86,7 @@ endif
 ! Call package for matrix factorization and solution
 mumps_par%JOB = 6
 
-call DMUMPS(mumps_par)
+CALL DMUMPS(mumps_par)
 
 if (mumps_par%INFOG(1).lt.0) then
   write(6,'(A,A,I6,A,I9)') " ERROR RETURN: ", "  mumps_par%INFOG(1)= ", mumps_par%INFOG(1), &
@@ -111,7 +111,7 @@ endif
 
 ! Destruct the instance (deallocate internal data structures)
 mumps_par%JOB = -2
-call DMUMPS(mumps_par)
+CALL DMUMPS(mumps_par)
 
 if (mumps_par%INFOG(1).lt.0) then
   write(6,'(A,A,I6,A,I9)') " ERROR RETURN: ", "  mumps_par%INFOG(1)= ", mumps_par%INFOG(1), &

@@ -74,7 +74,7 @@ do keyIndex = 1, faceEntityHash%key_count()
 
   if (ABS(centerOfMassCoord - boundaryCoord) < tol) then
     faceKey%ints(1) = element
-    
+
     CALL faceHash%set(faceKey, faceEntityValue)
     cycle
   endif

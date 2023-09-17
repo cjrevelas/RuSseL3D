@@ -61,19 +61,19 @@ endif
 allocate(nodePairingKey%ints(1))
 allocate(nodePairingKeyInverse%ints(1))
 
-call nodePairingHash%reserve(faceOneHash%key_count())
-call nodePairingHashInverse%reserve(faceTwoHash%key_count())
+CALL nodePairingHash%reserve(faceOneHash%key_count())
+CALL nodePairingHashInverse%reserve(faceTwoHash%key_count())
 
 isDestPeriodicNode = .False.
 
-call faceOneIt%begin(faceOneHash)
+CALL faceOneIt%begin(faceOneHash)
 do keyIndex1 = 1, faceOneHash%key_count()
-  call faceOneIt%next(faceOneKey, faceOneValue)
+  CALL faceOneIt%next(faceOneKey, faceOneValue)
   element1 = faceOneKey%ints(1)
 
-  call faceTwoIt%begin(faceTwoHash)
+  CALL faceTwoIt%begin(faceTwoHash)
   do keyIndex2 = 1, faceTwoHash%key_count()
-    call faceTwoIt%next(faceTwoKey, faceTwoValue)
+    CALL faceTwoIt%next(faceTwoKey, faceTwoValue)
     element2 = faceTwoKey%ints(1)
     do localNodeIndex1 = 1, 3
       globalNodeId1 = globalNodeIdTypeFace(localNodeIndex1,element1)
@@ -82,10 +82,10 @@ do keyIndex1 = 1, faceOneHash%key_count()
         if ((ABS(nodeCoord(dimension1,globalNodeId1) - nodeCoord(dimension1,globalNodeId2)) < tol).AND.&
             (ABS(nodeCoord(dimension2,globalNodeId1) - nodeCoord(dimension2,globalNodeId2)) < tol)) then
           nodePairingKey%ints(1) = globalNodeId1
-          call nodePairingHash%set(nodePairingKey, globalNodeId2)
+          CALL nodePairingHash%set(nodePairingKey, globalNodeId2)
 
           nodePairingKeyInverse%ints(1) = globalNodeId2
-          call nodePairingHashInverse%set(nodePairingKeyInverse, globalNodeId1)
+          CALL nodePairingHashInverse%set(nodePairingKeyInverse, globalNodeId1)
 
           isDestPeriodicNode(globalNodeId2) = .True.
        endif
@@ -95,18 +95,18 @@ do keyIndex1 = 1, faceOneHash%key_count()
 enddo
 
 #ifdef DEBUG_OUTPUTS
-call nodePairingIt%begin(nodePairingHash)
-call nodePairingItInverse%begin(nodePairingHashInverse)
+CALL nodePairingIt%begin(nodePairingHash)
+CALL nodePairingItInverse%begin(nodePairingHashInverse)
 
 do keyIndex1 = 1, nodePairingHash%key_count()
-  call nodePairingIt%next(nodePairingKey, nodePairingValue)
+  CALL nodePairingIt%next(nodePairingKey, nodePairingValue)
   write(1111,*) nodePairingKey%ints(1), nodePairingValue
 enddo
 
 write(1111,*)
 
 do keyIndex1 = 1, nodePairingHashInverse%key_count()
-  call nodePairingItInverse%next(nodePairingKeyInverse, nodePairingValueInverse)
+  CALL nodePairingItInverse%next(nodePairingKeyInverse, nodePairingValueInverse)
   write(1111,*) nodePairingKeyInverse%ints(1), nodePairingValueInverse
 enddo
 
@@ -118,8 +118,8 @@ deallocate(nodePairingKeyInverse%ints)
 deallocate(faceOneKey%ints)
 deallocate(faceTwoKey%ints)
 
-call faceOneHash%clear()
-call faceTwoHash%clear()
+CALL faceOneHash%clear()
+CALL faceTwoHash%clear()
 
 return
 !----------------------------------------------------------------------------------------------------------------------------------!

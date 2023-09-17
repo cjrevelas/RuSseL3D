@@ -36,11 +36,11 @@ real(8), intent(inout), dimension(numSteps+1,numNodes) :: qqFinal
 tInit = ToolsSystemTime()
 
 do step = 2, numSteps+1
-  call FemNonZeroEntries(stepSize(step), nodeBelongsToDirichletFace, elemcon)
+  CALL FemNonZeroEntries(stepSize(step), nodeBelongsToDirichletFace, elemcon)
 
 #ifdef USE_MPI
   ! Send a continue (.True.) signal to the slaves
-  call MPI_BCAST(.True., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+  CALL MPI_BCAST(.True., 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
 
   if (numSteps.ge.10.and.MOD(step+1,numSteps/10).eq.0) then
@@ -77,7 +77,7 @@ do step = 2, numSteps+1
   enddo
 
   ! Solve the linear system of equations
-  call SolverMumps(mumpsMatrixType)
+  CALL SolverMumps(mumpsMatrixType)
 
   ! Update solution/propagator
   do node = 1, numNodes

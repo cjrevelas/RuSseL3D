@@ -10,7 +10,7 @@ use geometry_mod, only: nodePairingZZhash,                    &
                         cornerNodeThreeYY, cornerNodeFourYY,  &
                         cornerNodeOneXX, cornerNodeTwoXX,     &
                         cornerNodeThreeXX, cornerNodeFourXX,  &
-                        destTriple, numCornerPeriodicPairsXX, &
+                        dstTriple, numCornerPeriodicPairsXX, &
                         numCornerPeriodicPairsYY!, nodeCoord,  &
                         !boxLow, boxHigh
 !------------------------------------------------------------------------------------------------------!
@@ -23,10 +23,10 @@ integer                                :: nodePairingZZvalue
 
 logical :: success, successAux
 
-integer :: sourceXX
-integer :: sourceYY
-integer :: sourceZZ, destZZ
-integer :: sourceAux = 0
+integer :: srcXX
+integer :: srcYY
+integer :: srcZZ, dstZZ
+integer :: srcAux = 0
 integer :: counter, keyIndex
 !------------------------------------------------------------------------------------------------------!
 allocate(nodePairingYYhashInverseKey%ints(1))
@@ -38,13 +38,13 @@ counter = 0
 do keyIndex = 1, nodePairingZZhash%key_count()
   CALL NodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
 
-  sourceZZ = nodePairingZZhashKey%ints(1)
-  destZZ   = nodePairingZZvalue
+  srcZZ = nodePairingZZhashKey%ints(1)
+  dstZZ = nodePairingZZvalue
 
-  nodePairingYYhashInverseKey%ints(1) = destZZ
-  CALL nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceYY, success)
+  nodePairingYYhashInverseKey%ints(1) = dstZZ
+  CALL nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, srcYY, success)
 
-  !if ((success).and.((abs(nodeCoord(1,destZZ)-boxLow(1))<tol).or.(abs(nodeCoord(1,destZZ)-boxHigh(1))<tol))) counter = counter + 1
+  !if ((success).and.((abs(nodeCoord(1,dstZZ)-boxLow(1))<tol).or.(abs(nodeCoord(1,dstZZ)-boxHigh(1))<tol))) counter = counter + 1
   if (success) counter = counter + 1
 enddo
 
@@ -63,34 +63,34 @@ counter = 0
 do keyIndex = 1, nodePairingZZhash%key_count()
   CALL nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
 
-  sourceZZ = nodePairingZZhashKey%ints(1)
-  destZZ   = nodePairingZZvalue
+  srcZZ = nodePairingZZhashKey%ints(1)
+  dstZZ = nodePairingZZvalue
 
-  nodePairingYYhashInverseKey%ints(1) = destZZ ! which is equal to destZZ
-  CALL nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceYY, success)
+  nodePairingYYhashInverseKey%ints(1) = dstZZ ! which is equal to dstZZ
+  CALL nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, srcYY, success)
 
-  !if ((success).and.((abs(nodeCoord(1,destZZ)-boxLow(1))<tol).or.(abs(nodeCoord(1,destZZ)-boxHigh(1))<tol))) then
+  !if ((success).and.((abs(nodeCoord(1,dstZZ)-boxLow(1))<tol).or.(abs(nodeCoord(1,dstZZ)-boxHigh(1))<tol))) then
   if (success) then
     counter = counter + 1
 
-    nodePairingYYhashInverseKey%ints(1) = sourceZZ
-    CALL nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, sourceAux)
+    nodePairingYYhashInverseKey%ints(1) = srcZZ
+    CALL nodePairingYYhashInverse%get(nodePairingYYhashInverseKey, srcAux)
 
-    cornerNodeOneYY(counter) = sourceZZ
-    cornerNodeTwoYY(counter) = sourceAux
+    cornerNodeOneYY(counter) = srcZZ
+    cornerNodeTwoYY(counter) = srcAux
 
-    cornerNodeThreeYY(counter) = destZZ
-    cornerNodeFourYY(counter)  = sourceYY
+    cornerNodeThreeYY(counter) = dstZZ
+    cornerNodeFourYY(counter)  = srcYY
 
-    !write(123,*) "srcZZ: ", sourceZZ, " -> dstZZ: ", destZZ,    " [", nodeCoord(1,sourceZZ), ", ", nodeCoord(2,sourceZZ), ", ", nodeCoord(3,sourceZZ), "] -> [", nodeCoord(1,destZZ),   ", ", nodeCoord(2,destZZ),   ", ", nodeCoord(3,destZZ),   "]"
-    !write(123,*) "dstYY: ", destZZ,   " -> srcYY: ", sourceYY , " [", nodeCoord(1,destZZ),   ", ", nodeCoord(2,destZZ),   ", ", nodeCoord(3,destZZ),   "] -> [", nodeCoord(1,sourceYY), ", ", nodeCoord(2,sourceYY), ", ", nodeCoord(3,sourceYY), "]"
+    !write(123,*) "srcZZ: ", srcZZ, " -> dstZZ: ", dstZZ,    " [", nodeCoord(1,srcZZ), ", ", nodeCoord(2,srcZZ), ", ", nodeCoord(3,srcZZ), "] -> [", nodeCoord(1,dstZZ),   ", ", nodeCoord(2,dstZZ),   ", ", nodeCoord(3,dstZZ),   "]"
+    !write(123,*) "dstYY: ", dstZZ,   " -> srcYY: ", srcYY , " [", nodeCoord(1,dstZZ),   ", ", nodeCoord(2,dstZZ),   ", ", nodeCoord(3,dstZZ),   "] -> [", nodeCoord(1,srcYY), ", ", nodeCoord(2,srcYY), ", ", nodeCoord(3,srcYY), "]"
     !write(123,*) "-----------------------"
 
-    nodePairingXXhashInverseKey%ints(1) = destZZ
-    CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, successAux)
+    nodePairingXXhashInverseKey%ints(1) = dstZZ
+    CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, srcXX, successAux)
     if (successAux) then
-      destTriple = destZZ
-      !write(123,*) "FOUND dstTriple: ", destZZ
+      dstTriple = dstZZ
+      !write(123,*) "FOUND dstTriple: ", dstZZ
     endif
   endif
 enddo
@@ -100,13 +100,13 @@ CALL nodePairingZZit%begin(nodePairingZZhash)
 counter = 0
 do keyIndex = 1, nodePairingZZhash%key_count()
   CALL nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
-  sourceZZ = nodePairingZZhashKey%ints(1)
-  destZZ   = nodePairingZZvalue
+  srcZZ = nodePairingZZhashKey%ints(1)
+  dstZZ = nodePairingZZvalue
 
-  nodePairingXXhashInverseKey%ints(1) = destZZ
-  CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, success)
+  nodePairingXXhashInverseKey%ints(1) = dstZZ
+  CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, srcXX, success)
 
-  !if ((success).and.((abs(nodeCoord(2,destZZ)-boxLow(2))<tol).or.(abs(nodeCoord(2,destZZ)-boxHigh(2))<tol))) counter = counter + 1
+  !if ((success).and.((abs(nodeCoord(2,dstZZ)-boxLow(2))<tol).or.(abs(nodeCoord(2,dstZZ)-boxHigh(2))<tol))) counter = counter + 1
   if (success) counter = counter + 1
 enddo
 
@@ -125,27 +125,27 @@ counter = 0
 do keyIndex = 1, nodePairingZZhash%key_count()
   CALL nodePairingZZit%next(nodePairingZZhashKey, nodePairingZZvalue)
 
-  sourceZZ = nodePairingZZhashKey%ints(1)
-  destZZ   = nodePairingZZvalue
+  srcZZ = nodePairingZZhashKey%ints(1)
+  dstZZ = nodePairingZZvalue
 
-  nodePairingXXhashInverseKey%ints(1) = destZZ
-  CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceXX, success)
+  nodePairingXXhashInverseKey%ints(1) = dstZZ
+  CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, srcXX, success)
 
-  !if ((success).and.(destZZ.ne.destTriple).and.((abs(nodeCoord(2,destZZ)-boxLow(2))<tol).or.(abs(nodeCoord(2,destZZ)-boxHigh(2))<tol))) then
-  if (success.and.(destZZ.ne.destTriple)) then
+  !if ((success).and.(dstZZ.ne.dstTriple).and.((abs(nodeCoord(2,dstZZ)-boxLow(2))<tol).or.(abs(nodeCoord(2,dstZZ)-boxHigh(2))<tol))) then
+  if (success.and.(dstZZ.ne.dstTriple)) then
     counter = counter + 1
 
-    nodePairingXXhashInverseKey%ints(1) = sourceZZ
-    CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, sourceAux)
+    nodePairingXXhashInverseKey%ints(1) = srcZZ
+    CALL nodePairingXXhashInverse%get(nodePairingXXhashInverseKey, srcAux)
 
-    cornerNodeOneXX(counter) = sourceZZ
-    cornerNodeTwoXX(counter) = sourceAux
+    cornerNodeOneXX(counter) = srcZZ
+    cornerNodeTwoXX(counter) = srcAux
 
-    cornerNodeThreeXX(counter) = destZZ
-    cornerNodeFourXX(counter)  = sourceXX
+    cornerNodeThreeXX(counter) = dstZZ
+    cornerNodeFourXX(counter)  = srcXX
 
-    !write(456,*) "srcZZ: ", sourceZZ, " -> dstZZ: ", destZZ,    " [", nodeCoord(1,sourceZZ), ", ", nodeCoord(2,sourceZZ), ", ", nodeCoord(3,sourceZZ), "] -> [", nodeCoord(1,destZZ),   ", ", nodeCoord(2,destZZ),   ", ", nodeCoord(3,destZZ),   "]"
-    !write(456,*) "dstXX: ", destZZ,   " -> srcXX: ", sourceXX , " [", nodeCoord(1,destZZ),   ", ", nodeCoord(2,destZZ),   ", ", nodeCoord(3,destZZ),   "] -> [", nodeCoord(1,sourceXX), ", ", nodeCoord(2,sourceXX), ", ", nodeCoord(3,sourceXX), "]"
+    !write(456,*) "srcZZ: ", srcZZ, " -> dstZZ: ", dstZZ,    " [", nodeCoord(1,srcZZ), ", ", nodeCoord(2,srcZZ), ", ", nodeCoord(3,srcZZ), "] -> [", nodeCoord(1,dstZZ),   ", ", nodeCoord(2,dstZZ),   ", ", nodeCoord(3,dstZZ),   "]"
+    !write(456,*) "dstXX: ", dstZZ,   " -> srcXX: ", srcXX , " [", nodeCoord(1,dstZZ),   ", ", nodeCoord(2,dstZZ),   ", ", nodeCoord(3,dstZZ),   "] -> [", nodeCoord(1,srcXX), ", ", nodeCoord(2,srcXX), ", ", nodeCoord(3,srcXX), "]"
     !write(456,*) "-----------------------"
   endif
 enddo

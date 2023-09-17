@@ -15,14 +15,14 @@ implicit none
 type(fhash_type_iterator__ints_double) :: nodePairingYYit, nodePairingZZit
 type(ints_type)                        :: nodePairingYYkey, nodePairingZZkey
 type(ints_type)                        :: nodePairingYYinverseKey, nodePairingZZinverseKey
-type(ints_type)                        :: destBothKey
+type(ints_type)                        :: dstBothKey
 integer                                :: nodePairingYYvalue, nodePairingZZvalue
 
-integer :: dest1, source2, destBoth, dest2, keyIndex, pair, numPairs
+integer :: dst1, src2, dstBoth, dst2, keyIndex, pair, numPairs
 
 logical :: success
 !----------------------------------------------------------------------------------------------------------------------------!
-allocate(destBothKey%ints(1))
+allocate(dstBothKey%ints(1))
 allocate(nodePairingYYinverseKey%ints(1))
 allocate(nodePairingZZinverseKey%ints(1))
 
@@ -30,15 +30,15 @@ allocate(nodePairingZZinverseKey%ints(1))
 if (periodicAxisId(1).and.periodicAxisId(2)) then
   numPairs = 0
 
-  call nodePairingYYit%begin(nodePairingYYhash)
+  CALL nodePairingYYit%begin(nodePairingYYhash)
   do keyIndex = 1, nodePairingYYhash%key_count()
-    call nodePairingYYit%next(nodePairingYYkey, nodePairingYYvalue)
+    CALL nodePairingYYit%next(nodePairingYYkey, nodePairingYYvalue)
 
-    source2 = nodePairingYYkey%ints(1) ! source2 = 7 = source1
-    dest2   = nodePairingYYvalue       ! dest2   = 1
+    src2 = nodePairingYYkey%ints(1) ! src2 = 7 = src1
+    dst2 = nodePairingYYvalue       ! dst2 = 1
 
-    destBothKey%ints(1) = dest2
-    call nodePairingXXhash%get(destBothKey, destBoth, success)  ! destBoth = 38
+    dstBothKey%ints(1) = dst2
+    CALL nodePairingXXhash%get(dstBothKey, dstBoth, success) ! dstBoth = 38
 
     if (success) numPairs = numPairs + 1
   enddo
@@ -55,15 +55,15 @@ endif
 if (periodicAxisId(1).and.periodicAxisId(3)) then
   numPairs = 0
 
-  call nodePairingZZit%begin(nodePairingZZhash)
+  CALL nodePairingZZit%begin(nodePairingZZhash)
   do keyIndex = 1, nodePairingZZhash%key_count()
-    call nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
+    CALL nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
 
-    source2 = nodePairingZZkey%ints(1) ! source2 = 7 = source1
-    dest2   = nodePairingZZvalue       ! dest2   = 1
+    src2 = nodePairingZZkey%ints(1) ! src2 = 7 = src1
+    dst2 = nodePairingZZvalue       ! dst2 = 1
 
-    destBothKey%ints(1) = dest2
-    call nodePairingXXhash%get(destBothKey, destBoth, success)  ! destBoth = 38
+    dstBothKey%ints(1) = dst2
+    CALL nodePairingXXhash%get(dstBothKey, dstBoth, success) ! dstBoth = 38
 
     if (success) numPairs = numPairs + 1
   enddo
@@ -80,15 +80,15 @@ endif
 if (periodicAxisId(2).and.periodicAxisId(3)) then
   numPairs = 0
 
-  call nodePairingZZit%begin(nodePairingZZhash)
+  CALL nodePairingZZit%begin(nodePairingZZhash)
   do keyIndex = 1, nodePairingZZhash%key_count()
-    call nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
+    CALL nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
 
-    source2 = nodePairingZZkey%ints(1) ! source2 = 7 = source1
-    dest2   = nodePairingZZvalue       ! dest2   = 1
+    src2 = nodePairingZZkey%ints(1) ! src2 = 7 = src1
+    dst2 = nodePairingZZvalue       ! dst2 = 1
 
-    destBothKey%ints(1) = dest2
-    call nodePairingYYhash%get(destBothKey, destBoth, success)  ! destBoth = 38
+    dstBothKey%ints(1) = dst2
+    CALL nodePairingYYhash%get(dstBothKey, dstBoth, success) ! dstBoth = 38
 
     if (success) numPairs = numPairs + 1
   enddo
@@ -105,64 +105,63 @@ endif
 if (periodicAxisId(1).and.periodicAxisId(2)) then
   pair = 0
 
-  call nodePairingYYit%begin(nodePairingYYhash)
+  CALL nodePairingYYit%begin(nodePairingYYhash)
   do keyIndex = 1, nodePairingYYhash%key_count()
-    call nodePairingYYit%next(nodePairingYYkey, nodePairingYYvalue)
+    CALL nodePairingYYit%next(nodePairingYYkey, nodePairingYYvalue)
 
-    source2 = nodePairingYYkey%ints(1)  ! source2 = 7 = source1
-    dest2   = nodePairingYYvalue        ! dest2   = 1
+    src2 = nodePairingYYkey%ints(1)  ! src2 = 7 = src1
+    dst2 = nodePairingYYvalue        ! dst2 = 1
 
-    destBothKey%ints(1) = dest2
-    call nodePairingXXhash%get(destBothKey, destBoth, success)  ! destBoth = 38
+    dstBothKey%ints(1) = dst2
+    CALL nodePairingXXhash%get(dstBothKey, dstBoth, success)  ! dstBoth = 38
 
     if (success) then
       pair = pair + 1
 
-      ! if success, we want to find the dest1 which has source1 = source2
+      ! if success, we want to find the dst1 which has src1 = src2
       ! we can find it from the inverse hash as follows:
-      ! dest1   = inverse_hash_yy(destBoth)        ! 23 = inverse_hash_yy(38) = hash_xx(7)
-      ! source1 = source2 = inverse_hash_xx(dest1) ! 7
+      ! dst1 = inverseHashYY(dstBoth)     ! 23 = inverseHashYY(38) = hashXX(7)
+      ! src1 = src2 = inverseHashXX(dst1) ! 7
 
-      nodePairingYYinverseKey%ints(1) = destBoth
-      call nodePairingYYhashInverse%get(nodePairingYYinverseKey, dest1)
+      nodePairingYYinverseKey%ints(1) = dstBoth
+      CALL nodePairingYYhashInverse%get(nodePairingYYinverseKey, dst1)
 
-      edgeNodeOneXY(pair) = dest1
-      edgeNodeTwoXY(pair) = source2
+      edgeNodeOneXY(pair) = dst1
+      edgeNodeTwoXY(pair) = src2
 
-      edgeNodeThreeXY(pair) = destBoth
-      edgeNodeFourXY(pair)  = dest2
+      edgeNodeThreeXY(pair) = dstBoth
+      edgeNodeFourXY(pair)  = dst2
     else
       cycle
     endif
   enddo
 endif
 
-
 ! Perform XZ node pair association
 if (periodicAxisId(1).and.periodicAxisId(3)) then
   pair = 0
 
-  call nodePairingZZit%begin(nodePairingZZhash)
+  CALL nodePairingZZit%begin(nodePairingZZhash)
   do keyIndex = 1, nodePairingZZhash%key_count()
-    call nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
+    CALL nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
 
-    source2 = nodePairingZZkey%ints(1)  ! source2 = 7 = source1
-    dest2   = nodePairingZZvalue        ! dest2   = 1
+    src2 = nodePairingZZkey%ints(1)  ! src2 = 7 = src1
+    dst2 = nodePairingZZvalue        ! dst2 = 1
 
-    destBothKey%ints(1) = dest2
-    call nodePairingXXhash%get(destBothKey, destBoth, success)  ! destBoth = 38
+    dstBothKey%ints(1) = dst2
+    CALL nodePairingXXhash%get(dstBothKey, dstBoth, success) ! dstBoth = 38
 
     if (success) then
       pair = pair + 1
 
-      nodePairingZZinverseKey%ints(1) = destBoth
-      call nodePairingZZhashInverse%get(nodePairingZZinverseKey, dest1)
+      nodePairingZZinverseKey%ints(1) = dstBoth
+      CALL nodePairingZZhashInverse%get(nodePairingZZinverseKey, dst1)
 
-      edgeNodeOneXZ(pair) = dest1
-      edgeNodeTwoXZ(pair) = source2
+      edgeNodeOneXZ(pair) = dst1
+      edgeNodeTwoXZ(pair) = src2
 
-      edgeNodeThreeXZ(pair) = destBoth
-      edgeNodeFourXZ(pair)  = dest2
+      edgeNodeThreeXZ(pair) = dstBoth
+      edgeNodeFourXZ(pair)  = dst2
     else
       cycle
     endif
@@ -173,34 +172,34 @@ endif
 if (periodicAxisId(2).and.periodicAxisId(3)) then
   pair = 0
 
-  call nodePairingZZit%begin(nodePairingZZhash)
+  CALL nodePairingZZit%begin(nodePairingZZhash)
   do keyIndex = 1, nodePairingZZhash%key_count()
-    call nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
+    CALL nodePairingZZit%next(nodePairingZZkey, nodePairingZZvalue)
 
-    source2 = nodePairingZZkey%ints(1)  ! source2 = 7 = source1
-    dest2   = nodePairingZZvalue        ! dest2   = 1
+    src2 = nodePairingZZkey%ints(1) ! src2 = 7 = src1
+    dst2 = nodePairingZZvalue       ! dst2 = 1
 
-    destBothKey%ints(1) = dest2
-    call nodePairingYYhash%get(destBothKey, destBoth, success)  ! destBoth = 38
+    dstBothKey%ints(1) = dst2
+    CALL nodePairingYYhash%get(dstBothKey, dstBoth, success) ! dstBoth = 38
 
     if (success) then
       pair = pair + 1
 
-      nodePairingZZinverseKey%ints(1) = destBoth
-      call nodePairingZZhashInverse%get(nodePairingZZinverseKey, dest1)
+      nodePairingZZinverseKey%ints(1) = dstBoth
+      CALL nodePairingZZhashInverse%get(nodePairingZZinverseKey, dst1)
 
-      edgeNodeOneYZ(pair) = dest1
-      edgeNodeTwoYZ(pair) = source2
+      edgeNodeOneYZ(pair) = dst1
+      edgeNodeTwoYZ(pair) = src2
 
-      edgeNodeThreeYZ(pair) = destBoth
-      edgeNodeFourYZ(pair)  = dest2
+      edgeNodeThreeYZ(pair) = dstBoth
+      edgeNodeFourYZ(pair)  = dst2
     else
       cycle
     endif
   enddo
 endif
 
-deallocate(destBothKey%ints)
+deallocate(dstBothKey%ints)
 deallocate(nodePairingYYinverseKey%ints)
 deallocate(nodePairingZZinverseKey%ints)
 

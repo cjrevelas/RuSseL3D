@@ -3,7 +3,7 @@ subroutine ExportVtuIndiv(numGraftedChainsToExport, phi_gr_indiv)
 use geometry_mod,    only: nodeCoord, numNodes, numElementsTypeDomain, numDimensions, numNodesLocalTypeDomain, globalNodeIdTypeDomain
 use delta_mod,       only: targetNumGraftedChains, graftPointId
 use iofiles_mod,     only: IO_VtuGrafted
-use parser_vars_mod, only: exportAllGraftedChains, gpIndexToExport
+use parser_vars_mod, only: exportAllGraftedChains, graftingPointIndexToExport
 !----------------------------------------------------------------------------------------------------------------------------------!
 implicit none
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -60,7 +60,7 @@ if ((exportAllGraftedChains.eq.0).or.(exportAllGraftedChains.eq.1)) then
     if (exportAll) then
       gpIndex = ii
     else
-      gpIndex = gpIndexToExport(ii)
+      gpIndex = graftingPointIndexToExport(ii)
     endif
 
     gpId = graftPointId(gpIndex)
