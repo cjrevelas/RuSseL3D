@@ -26,7 +26,6 @@ integer, allocatable, dimension(:) :: graftingPointIndexToExport
 ! Domain
 integer               :: profileDimensions
 integer               :: periodicity
-integer, dimension(6) :: periodicFaceId
 logical               :: domainIsPeriodic
 logical, dimension(3) :: periodicAxisId
 real(8)               :: graftPointDistance, binThickness

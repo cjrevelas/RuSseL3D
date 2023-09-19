@@ -78,9 +78,6 @@ logical :: log_exportAdsorbedFree    = .False.
 do ii = 1, 3
   periodicAxisId = .False.
 enddo
-do ii = 1, 6
-  periodicFaceId = -1
-enddo
 
 ! Parse input file to retrieve simulation parameters
 call GET_COMMAND_ARGUMENT(1, IO_inputFile)
@@ -1144,21 +1141,15 @@ if (log_periodicity.and.periodicity>0) then
 
   if (periodicAxisId(1)) then
     write(iow,'(3X,A40)')adjl("The domain is periodic along the x-axis",40)
-    write(iow,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(1), periodicFaceId(2)
     write(6  ,'(3X,A40)')adjl("The domain is periodic along the x-axis",40)
-    write(6  ,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(1), periodicFaceId(2)
   endif
   if (periodicAxisId(2)) then
     write(iow,'(3X,A40)')adjl("The domain is periodic along the y-axis",40)
-    write(iow,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(3), periodicFaceId(4)
     write(6  ,'(3X,A40)')adjl("The domain is periodic along the y-axis",40)
-    write(6  ,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(3), periodicFaceId(4)
   endif
   if (periodicAxisId(3)) then
     write(iow,'(3X,A40)')adjl("The domain is periodic along the z-axis",40)
-    write(iow,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(5), periodicFaceId(6)
     write(6  ,'(3X,A40)')adjl("The domain is periodic along the z-axis",40)
-    write(6  ,'(6X,A10,2I3)') "Face ids: ", periodicFaceId(5), periodicFaceId(6)
   endif
 else
   domainIsPeriodic = dflt_domainIsPeriodic
