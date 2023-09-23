@@ -88,7 +88,7 @@ do keyIndex1 = 1, faceOneHash%key_count()
           CALL nodePairingHashInverse%set(nodePairingKeyInverse, globalNodeId1)
 
           isDestPeriodicNode(globalNodeId2) = .True.
-       endif
+        endif
       enddo
     enddo
   enddo
