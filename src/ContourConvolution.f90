@@ -2,29 +2,29 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ContourConvolution(chainLength, ns, coeff, qq1, qq2, phi)
+subroutine ContourConvolution(chainLength, numSteps, coeff, qqOne, qqTwo, phi)
 !-------------------------------------------------------------------------------------------!
 use geometry_mod, only: numNodes
 !-------------------------------------------------------------------------------------------!
 implicit none
 !-------------------------------------------------------------------------------------------!
-integer, intent(in) :: ns
-integer             :: kk, step
+integer, intent(in) :: numSteps
+integer             :: node, step
 
-real(8), intent(in)                           :: chainLength
-real(8), intent(in), dimension(ns+1)          :: coeff
-real(8), intent(in), dimension(ns+1,numNodes) :: qq1, qq2
-real(8), intent(out), dimension(numNodes)     :: phi
-real(8)                                       :: summer
+real(8), intent(in)                                 :: chainLength
+real(8), intent(in), dimension(numSteps+1)          :: coeff
+real(8), intent(in), dimension(numSteps+1,numNodes) :: qqOne, qqTwo
+real(8), intent(out), dimension(numNodes)           :: phi
+real(8)                                             :: summer
 !-------------------------------------------------------------------------------------------!
-do kk = 1, numNodes
+do node = 1, numNodes
   summer = 0.0d0
 
-  do step = 1, ns+1
-    summer = summer + coeff(step) * qq1(step,kk) * qq2(ns+2-step,kk)
+  do step = 1, numSteps+1
+    summer = summer + coeff(step) * qqOne(step,node) * qqTwo(numSteps+2-step,node)
   enddo
 
-  phi(kk) = summer / chainLength
+  phi(node) = summer / chainLength
 enddo
 !-------------------------------------------------------------------------------------------!
 end subroutine ContourConvolution

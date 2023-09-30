@@ -2,67 +2,65 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ExportIndivProfile(numGraftedChainsToExport, numNodes, nodeCoord, phi_gr_indiv)
+subroutine ExportIndivProfile(numGraftedChainsToExport, numNodes, nodeCoord, phiGraftedIndiv)
 !------------------------------------------------------------------------------------------------------!
 use error_handling_mod
-use iofiles_mod,      only: IO_indivProfile
-use parser_vars_mod,  only: lengthGrafted, exportAllGraftedChains, graftingPointIndexToExport
-use delta_mod,        only: targetNumGraftedChains
+use iofiles_mod,     only: IO_indivProfile
+use parser_vars_mod, only: lengthGrafted, exportAllGraftedChains, graftingPointIndexToExport
+use delta_mod,       only: targetNumGraftedChains
 !------------------------------------------------------------------------------------------------------!
 implicit none
 !------------------------------------------------------------------------------------------------------!
 integer, intent(in) :: numGraftedChainsToExport, numNodes
-integer             :: ii, kk
+integer             :: node, graftedChain, graftingPointIndex
 
 real(8), intent(in), dimension(3,numNodes)                      :: nodeCoord
-real(8), intent(in), dimension(numNodes,targetNumGraftedChains) :: phi_gr_indiv
-real(8), dimension(targetNumGraftedChains)                      :: nch_gr
-
-integer :: gpIndex
+real(8), intent(in), dimension(numNodes,targetNumGraftedChains) :: phiGraftedIndiv
+real(8), dimension(targetNumGraftedChains)                      :: numChainsGrafted
 !------------------------------------------------------------------------------------------------------!
-do ii = 1, numGraftedChainsToExport
+do graftedChain = 1, numGraftedChainsToExport
   if (exportAllGraftedChains.eq.1) then
-    gpIndex = ii
+    graftingPointIndex = graftedChain
   else
-    gpIndex = graftingPointIndexToExport(ii)
+    graftingPointIndex = graftingPointIndexToExport(graftedChain)
   endif
-  call ComputeNumberOfChains(lengthGrafted, phi_gr_indiv(:,gpIndex), nch_gr(gpIndex))
+  call ComputeNumberOfChains(lengthGrafted, phiGraftedIndiv(:,graftingPointIndex), numChainsGrafted(graftingPointIndex))
 enddo
 
 open (unit=120, file = IO_indivProfile)
 write(120,'(4(A19))',advance='no') "nch", "#", "#", "#"
-do ii = 1, numGraftedChainsToExport
+do graftedChain = 1, numGraftedChainsToExport
   if (exportAllGraftedChains.eq.1) then
-    gpIndex = ii
+    graftingPointIndex = graftedChain
   else
-    gpIndex = graftingPointIndexToExport(ii)
+    graftingPointIndex = graftingPointIndexToExport(graftedChain)
   endif
-  write(120,'(E19.9E3)',advance='no') nch_gr(gpIndex)
+  write(120,'(E19.9E3)',advance='no') numChainsGrafted(graftingPointIndex)
 enddo
 
 write(120,*)
 write(120,'(4(A19))',advance='no') "np", "x", "y", "z"
-do ii = 1, numGraftedChainsToExport
+do graftedChain = 1, numGraftedChainsToExport
   if (exportAllGraftedChains.eq.1) then
-    gpIndex = ii
+    graftingPointIndex = graftedChain
   else
-    gpIndex = graftingPointIndexToExport(ii)
+    graftingPointIndex = graftingPointIndexToExport(graftedChain)
   endif
 
-  write(120,'(I19)',advance='no') gpIndex
+  write(120,'(I19)',advance='no') graftingPointIndex
 enddo
 
 write(120,*)
-do kk = 1, numNodes
-  write(120,'(I19,3(E19.9E3))',advance='no') kk, nodeCoord(1,kk), nodeCoord(2,kk), nodeCoord(3,kk)
-  do ii = 1, numGraftedChainsToExport
+do node = 1, numNodes
+  write(120,'(I19,3(E19.9E3))',advance='no') node, nodeCoord(1,node), nodeCoord(2,node), nodeCoord(3,node)
+  do graftedChain = 1, numGraftedChainsToExport
     if (exportAllGraftedChains.eq.1) then
-      gpIndex = ii
+      graftingPointIndex = graftedChain
     else
-      gpIndex = graftingPointIndexToExport(ii)
+      graftingPointIndex = graftingPointIndexToExport(graftedChain)
     endif
 
-    write(120,'(E19.9E3)',advance='no') phi_gr_indiv(kk,gpIndex)
+    write(120,'(E19.9E3)',advance='no') phiGraftedIndiv(node,graftingPointIndex)
   enddo
   write(120,*)
 enddo

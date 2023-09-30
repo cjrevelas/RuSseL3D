@@ -85,12 +85,12 @@ if (graftedExist.eq.1) then
   enddo
 endif
 
-E_eos_f             = E_eos_f             * N_to_mN / (interfaceArea()*A2_to_m2)
-E_eos_dfdrho        = E_eos_dfdrho        * N_to_mN / (interfaceArea()*A2_to_m2)
-E_field             = E_field             * N_to_mN / (interfaceArea()*A2_to_m2)
-E_solid             = E_solid             * N_to_mN / (interfaceArea()*A2_to_m2)
+E_eos_f             = E_eos_f      * N_to_mN / (interfaceArea()*A2_to_m2)
+E_eos_dfdrho        = E_eos_dfdrho * N_to_mN / (interfaceArea()*A2_to_m2)
+E_field             = E_field      * N_to_mN / (interfaceArea()*A2_to_m2)
+E_solid             = E_solid      * N_to_mN / (interfaceArea()*A2_to_m2)
 
-if (matrixExist.eq.1) E_entropy_mx        = E_entropy_mx        * N_to_mN / (interfaceArea()*A2_to_m2)
+if (matrixExist.eq.1) E_entropy_mx = E_entropy_mx * N_to_mN / (interfaceArea()*A2_to_m2)
 
 if (graftedExist.eq.1) then
   E_entropy_gr        = E_entropy_gr        * N_to_mN / (interfaceArea()*A2_to_m2)
@@ -109,7 +109,7 @@ if (graftedExist.eq.1) then
     write(837,*)
     write(837,'(4(2X,A16))')  "id", "qmx(ns)", "E_entr_gp", "E_entr_gp_norm"
     do kk = 1, targetNumGraftedChains
-      gnode_id   = graftPointId(kk)
+      gnode_id = graftPointId(kk)
       write(837,'(2X,I16,3(2X,E16.9E2))') gnode_id, qmx_interp_mg(numConvolPointsGrafted+1,gnode_id), term4_gpoint(kk), term4_norm_gpoint(kk)
     enddo
   endif

@@ -38,7 +38,7 @@ logical, intent(in)          :: convergence
 logical, dimension(numNodes) :: adsorbed
 
 integer, intent(in) :: iter
-integer             :: kk, mm, nn
+integer             :: node, axis, face
 
 type(fhash_type__ints_double), intent(inout) :: elemcon
 
@@ -51,21 +51,21 @@ if (export(exportField, iter, convergence))    CALL ExportFieldAscii(wwField, ww
 
 if (export(exportPhiSmeared, iter, convergence)) then
   ! Planar surfaces
-  do mm = 1, 3
-    do nn = 1, 2
-      if (isDirichletFace(mm,nn)) then
+  do axis = 1, 3
+    do face = 1, 2
+      if (isDirichletFace(axis,face)) then
         fileName = ""
-        write(fileName,'("o.phi_smear_w",I1,"_",I1)') mm, nn
-        CALL ExportSmearedProfile(planarCellId(:,mm,nn), planarCellVolume(:,mm,nn), numNodes, fileName, phiMatrix, phiGrafted, nodeVolume, binLength, numBins)
+        write(fileName,'("o.phi_smear_w",I1,"_",I1)') axis, face
+        CALL ExportSmearedProfile(planarCellId(:,axis,face), planarCellVolume(:,axis,face), numNodes, fileName, phiMatrix, phiGrafted, nodeVolume, binLength, numBins)
       endif
     enddo
   enddo
 
   ! Spherical nanoparticles
-  do mm = 1, numNanopFaces
+  do face = 1, numNanopFaces
     fileName = ""
-    write(fileName,'("o.phi_smear_np",I1)') mm
-    CALL ExportSmearedProfile(sphericalCellId(mm,:), sphericalCellVolume(mm,:), numNodes, fileName, phiMatrix, phiGrafted, nodeVolume, binLength, numBins)
+    write(fileName,'("o.phi_smear_np",I1)') face
+    CALL ExportSmearedProfile(sphericalCellId(face,:), sphericalCellVolume(face,:), numNodes, fileName, phiMatrix, phiGrafted, nodeVolume, binLength, numBins)
   enddo
 endif
 
@@ -74,18 +74,18 @@ if (matrixExist.eq.1) then
   if (export(exportPropagators, iter, convergence))  CALL ExportPropagator(numEdwPointsMatrix, qqMatrixFinal, "mx")
 
   ! Planar surfaces
-  do mm = 1, 3
-    do nn = 1, 2
-      if (isDirichletFace(mm,nn)) then
+  do axis = 1, 3
+    do face = 1, 2
+      if (isDirichletFace(axis,face)) then
         if (export(exportChainsPerArea, iter, convergence)) then
           fileName = ""
-          write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
-          CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planarCellId(:,mm,nn), "mx", rg2OfMatrixMonomer, &
-          lengthMatrix, numEdwPointsMatrix, dsEdwMatrix, qqMatrixFinal, phiMatrix, wwField)
+          write(fileName,'("o.chains_area_w",I1,"_",I1)') axis, face
+          CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planarCellId(:,axis,face), "mx", rg2OfMatrixMonomer, &
+                                lengthMatrix, numEdwPointsMatrix, dsEdwMatrix, qqMatrixFinal, phiMatrix, wwField)
         endif
         if (export(exportAdsorbedFree, iter, convergence)) then
-          do kk = 1, numNodes
-            if (distanceFromFace(kk,mm,nn)<adsorptionDistance) adsorbed(kk) = .true.
+          do node = 1, numNodes
+            if (distanceFromFace(node,axis,face)<adsorptionDistance) adsorbed(node) = .True.
           enddo
         endif
       endif
@@ -93,16 +93,16 @@ if (matrixExist.eq.1) then
   enddo
 
   ! Spherical nanoparticles
-  do mm = 1, numNanopFaces
+  do face = 1, numNanopFaces
     if (export(exportChainsPerArea, iter, convergence)) then
       fileName = ""
-      write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
-      CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sphericalCellId(mm,:), "mx", rg2OfMatrixMonomer, lengthMatrix, &
+      write(fileName,'("o.chains_area_w",I1,"_",I1)') face
+      CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sphericalCellId(face,:), "mx", rg2OfMatrixMonomer, lengthMatrix, &
                             numEdwPointsMatrix, dsEdwMatrix, qqMatrixFinal, phiMatrix, wwField)
     endif
     if (export(exportAdsorbedFree, iter, convergence)) then
-      do kk = 1, numNodes
-        if (distanceFromNanop(mm,kk) < adsorptionDistance) adsorbed(kk) = .true.
+      do node = 1, numNodes
+        if (distanceFromNanop(face,node) < adsorptionDistance) adsorbed(node) = .True.
       enddo
     endif
   enddo
@@ -133,21 +133,21 @@ if (graftedExist.eq.1) then
   endif
 
   ! Planar surfaces
-  do mm = 1, 3
-    do nn = 1, 2
-      if (isDirichletFace(mm,nn)) then
+  do axis = 1, 3
+    do face = 1, 2
+      if (isDirichletFace(axis,face)) then
         if (export(exportBrushThickness, iter, convergence)) then
           fileName = ""
-          write(fileName,'("o.brush_w",I1,"_",I1)') mm, nn
-          CALL ExportBrush(targetNumGraftedChains, numNodes, phiGrafted, phiGraftedIndiv, nodeVolume, fileName, distanceFromFace(:,mm,nn))
+          write(fileName,'("o.brush_w",I1,"_",I1)') axis, face
+          CALL ExportBrush(targetNumGraftedChains, numNodes, phiGrafted, phiGraftedIndiv, nodeVolume, fileName, distanceFromFace(:,axis,face))
           fileName = ""
-          write(fileName,'("o.brush99_w",I1,"_",I1)') mm, nn
-          CALL ExportBrush99(planarCellId(:,mm,nn), targetNumGraftedChains, numNodes, fileName, phiGrafted, phiGraftedIndiv, nodeVolume, binLength, numBins)
+          write(fileName,'("o.brush99_w",I1,"_",I1)') axis, face
+          CALL ExportBrush99(planarCellId(:,axis,face), targetNumGraftedChains, numNodes, fileName, phiGrafted, phiGraftedIndiv, nodeVolume, binLength, numBins)
         endif
         if (export(exportChainsPerArea, iter, convergence)) then
           fileName = ""
-          write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
-          CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planarCellId(:,mm,nn), "gr", rg2OfGraftedMonomer, &
+          write(fileName,'("o.chains_area_w",I1,"_",I1)') axis, face
+          CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, planarCellId(:,axis,face), "gr", rg2OfGraftedMonomer, &
                                 lengthGrafted, numEdwPointsGrafted, dsEdwGrafted, qqGraftedFinal, phiGrafted, wwField)
         endif
       endif
@@ -155,19 +155,19 @@ if (graftedExist.eq.1) then
   enddo
 
   ! Spherical nanoparticles
-  do mm = 1, numNanopFaces
+  do face = 1, numNanopFaces
     if (export(exportBrushThickness, iter, convergence)) then
       fileName = ""
-      write(fileName,'("o.brush_np",I1)') mm
-      CALL ExportBrush(targetNumGraftedChains, numNodes, phiGrafted, phiGraftedIndiv, nodeVolume, fileName, distanceFromNanop(mm,:))
+      write(fileName,'("o.brush_np",I1)') face
+      CALL ExportBrush(targetNumGraftedChains, numNodes, phiGrafted, phiGraftedIndiv, nodeVolume, fileName, distanceFromNanop(face,:))
       fileName = ""
-      write(fileName,'("o.brush99_np",I1)') mm
-      CALL ExportBrush99(sphericalCellId(mm,:), targetNumGraftedChains, numNodes, fileName, phiGrafted, phiGraftedIndiv, nodeVolume, binLength, numBins)
+      write(fileName,'("o.brush99_np",I1)') face
+      CALL ExportBrush99(sphericalCellId(face,:), targetNumGraftedChains, numNodes, fileName, phiGrafted, phiGraftedIndiv, nodeVolume, binLength, numBins)
     endif
     if (export(exportChainsPerArea, iter, convergence)) then
       fileName = ""
-      write(fileName,'("o.chains_area_w",I1,"_",I1)') mm, nn
-      CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sphericalCellId(mm,:), "gr", rg2OfGraftedMonomer, lengthGrafted, &
+      write(fileName,'("o.chains_area_w",I1,"_",I1)') face
+      CALL ExportChainsArea(nodeBelongsToDirichletFace, elemcon, sphericalCellId(face,:), "gr", rg2OfGraftedMonomer, lengthGrafted, &
                             numEdwPointsGrafted, dsEdwGrafted, qqGraftedFinal, phiGrafted, wwField)
     endif
   enddo

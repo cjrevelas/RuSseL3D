@@ -2,7 +2,7 @@
 !
 !See the LICENSE file in the root directory for license information.
 
-subroutine ExportFieldAscii(ww, ww_new, ww_mix)
+subroutine ExportFieldAscii(ww, wwNew, wwMix)
 !-----------------------------------------------------------------------------------------------------------!
 use geometry_mod,     only: numNodes, nodeCoord
 use iofiles_mod,      only: IO_field
@@ -10,15 +10,15 @@ use write_helper_mod, only: adjl
 !-----------------------------------------------------------------------------------------------------------!
 implicit none
 !-----------------------------------------------------------------------------------------------------------!
-integer :: kk
+integer :: node
 
-real(8), intent(in), dimension(numNodes) :: ww, ww_new, ww_mix
+real(8), intent(in), dimension(numNodes) :: ww, wwNew, wwMix
 !-----------------------------------------------------------------------------------------------------------!
 write(6,'(2X,A40)')adjl("Exporting field.",40)
 open (unit=120, file = IO_field)
 write(120,'(7(A19))') "np", "x", "y", "z", "ww", "ww_new", "ww_mix"
-do kk = 1, numNodes
-  write(120,'(I19,6(E19.9E3))') kk, nodeCoord(1,kk), nodeCoord(2,kk), nodeCoord(3,kk), ww(kk), ww_new(kk), ww_mix(kk)
+do node = 1, numNodes
+  write(120,'(I19,6(E19.9E3))') node, nodeCoord(1,node), nodeCoord(2,node), nodeCoord(3,node), ww(node), wwNew(node), wwMix(node)
 enddo
 close(120)
 !-----------------------------------------------------------------------------------------------------------!

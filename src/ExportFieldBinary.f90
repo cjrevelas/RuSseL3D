@@ -10,10 +10,10 @@ integer, intent(in) :: numNodes, iter
 
 real(8), intent(in), dimension(numNodes) :: ww
 
-character(40) :: field_filename_aux = ''
+character(40) :: fieldFilename = ''
 !-----------------------------------------------------------------------------------------------------------!
-write(field_filename_aux,'("o.field",I4.4,".bin")') iter
-open(unit=655, file = field_filename_aux, form='unformatted')
+write(fieldFilename,'("o.field",I4.4,".bin")') iter
+open(unit=655, file = fieldFilename, form='unformatted')
 write(655) ww
 close(655)
 !-----------------------------------------------------------------------------------------------------------!
