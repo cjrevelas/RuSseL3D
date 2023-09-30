@@ -150,14 +150,15 @@ def WrapInBox(rr, bounds):
 #
 
 # Nanoparticle configuration
-tbi = True  # two-body interactions
-bcc = False # body-centered cubic
+tbi = False # two-body interactions
+bcc = True  # body-centered cubic
 fcc = False # face-centered cubic
 cc  = False # cubic
 
 # Box bounds
 #Lbox   = [129.40476, 129.40476, 129.40476]
-Lbox   = [120.56, 58.56, 58.56]
+Lbox   = [102.70862, 102.70862, 102.70862]
+#Lbox   = [120.56, 58.56, 58.56]
 bounds = [[-Lbox[0]/2, Lbox[0]/2], [-Lbox[1]/2, Lbox[1]/2],[-Lbox[2]/2, Lbox[2]/2]] # [[xlo,xhi],[ylo,yhi],[zlo,zhi]]
 box    = [bounds[i][1] - bounds[i][0] for i in range(3)]
 
