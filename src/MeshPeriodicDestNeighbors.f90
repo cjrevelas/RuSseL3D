@@ -46,7 +46,7 @@ do pair = 1, numBulkNodePairs
     nodePairingXXkeyInverse%ints(1) = node1
     call nodePairingXXhashInverse%get(nodePairingXXkeyInverse, nodePairingXXvalueInverse)
     F_m%row(pair) = nodePairingXXvalueInverse
-    node1         = nodePairingXXvalueInverse
+    node1         = nodePairingXXvalueInverse ! This change is necessary, so that we know if a src along the X dimension is a dst along another dimension
   endif
 
   if (isDestPeriodicNodeXX(node2)) then
