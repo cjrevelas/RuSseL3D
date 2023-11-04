@@ -156,9 +156,7 @@ fcc = False # face-centered cubic
 cc  = False # cubic
 
 # Box bounds
-#Lbox   = [129.40476, 129.40476, 129.40476]
 Lbox   = [102.70862, 102.70862, 102.70862]
-#Lbox   = [120.56, 58.56, 58.56]
 bounds = [[-Lbox[0]/2, Lbox[0]/2], [-Lbox[1]/2, Lbox[1]/2],[-Lbox[2]/2, Lbox[2]/2]] # [[xlo,xhi],[ylo,yhi],[zlo,zhi]]
 box    = [bounds[i][1] - bounds[i][0] for i in range(3)]
 
@@ -243,7 +241,7 @@ if (fcc or bcc or cc):
 # Two-body interactions - Generate the nanoparticles
 #
 if (tbi):
-    wrap_gps = False
+    wrap_gps      = False
     r_np_actual_1 = 20.0
     r_np_actual_2 = 20.0
     radius        = [r_np_actual_1+h_wall+h_gp, r_np_actual_2+h_wall+h_gp]
@@ -256,14 +254,14 @@ if (tbi):
     for ii in range(len(positions)):
         nanoparticles.append(Nanoparticle(positions[ii], radius[ii], radius_act[ii], n_gp[ii]))
 
-    # first nanoparticle  -> vertical gp configuration
-    # second nanoparticle -> horizontal gp configuration
+    # First nanoparticle  -> vertical gp configuration
+    # Second nanoparticle -> horizontal gp configuration
     biases.append(Bias(-HALF_PI, 0.0, +1.0, 5.0))
     biases.append(Bias(+HALF_PI, 0.0, +1.0, 5.0))
     prob_ref1 = AssemblyProbabilityMap(radius[0], n_the, n_phi, grid_the, grid_phi, biases, prob_bgd)
 
     biases[0] = Bias(0.0, 0.0, +1.0, 5.0)
-    biases[1] = Bias(PI, 0.0, +1.0, 5.0)
+    biases[1] = Bias(PI,  0.0, +1.0, 5.0)
     prob_ref2 = AssemblyProbabilityMap(radius[1], n_the, n_phi, grid_the, grid_phi, biases, prob_bgd)
 
     # Vertical (phi, theta)
@@ -315,7 +313,7 @@ n_gp_tot = 0
 for nanop in nanoparticles:
     n_gp_tot += len(nanop.gps)
 
-# Export a lammpstrj file
+# Export a lammpstrj file to visualize the generated grafting point configuration
 shift = [0.0, 0.0, 0.0]
 if vmd_friendly:
   shift = [-bounds[0][0], -bounds[1][0], -bounds[2][0]]
@@ -347,7 +345,7 @@ for nanop in nanoparticle_images:
     gnodes_file.write("%d %d %f %f %f\n" % (global_id, 1, rr[0] + shift[0], rr[1] + shift[1], rr[2] + shift[2]))
 gnodes_file.close()
 
-# Export a gpoint file
+# Export a gpoint file for quicker accessibility to grafting point coordinates
 gp_coords_file = open("o.gpoints",'w')
 for nanop in nanoparticles:
     for gp in nanop.gps:
@@ -356,7 +354,7 @@ for nanop in nanoparticles:
         gp_coords_file.write("%f %f %f\n" % (rr[0], rr[1], rr[2]))
 gp_coords_file.close()
 
-# Export a mesh input file
+# Export the file (in.mesh_input) to be imported from the mesh generating script (rsl3d_gen_gnodes.py)
 mesh_file = open("o.mesh_input",'w')
 mesh_file.write("BOX\n")
 mesh_file.write("%f %f xlo xhi\n" % (bounds[0][0], bounds[0][1]))
