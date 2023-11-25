@@ -477,7 +477,7 @@ class Geometry:
         return (self.x, self.y, self.z)
 #----------------------------------------------------------------------------------------------------------------------------------#
 def SetVariableValue(variable, value, fileName):
-    strval = "{:.2f}".format(value)
+    strval = "{:.5f}".format(value)
     cmd = "sed -i 's/" + variable + '/' + str(strval) + "/g' " + fileName
     os.system(cmd)
 
@@ -539,7 +539,6 @@ def InsertNanoparticlesToModelFile(numberOfParticles, effectiveRadius, denseMesh
         lines.insert(num+1, newLine2)
         lines.insert(num+1, newLine1)
 
-
     modelFile.truncate(0)
     modelFile.seek(0)
     modelFile.writelines(lines)
@@ -553,7 +552,9 @@ planar     = False
 useGrafted = True
 importt    = True
 
-numberOfParticles = 14
+#numberOfParticles = 1  # cubic
+#numberOfParticles = 9  # bcc
+numberOfParticles = 14 # fcc
 
 centers = np.zeros((3,numberOfParticles), float)
 
@@ -561,7 +562,7 @@ Lx = 0.0
 Ly = 0.0
 Lz = 0.0
 
-radiusEffective = 44.0
+radiusEffective = 24.0
 numberOfPoints  = 0
 
 graftingDistance = 0.4
@@ -572,31 +573,35 @@ moveBy  = np.array([False, False, False], bool)
 reflect = np.array([False, False, False], bool)
 
 # Check different cases
-if (numberOfParticles == 1):
-    os.system("cp ./template_input_files/rsl3d_gen_mesh_template_sph1.m model.m")
+if (not generalPeriodicMesh):
+    if (numberOfParticles == 1):
+        os.system("cp ./template_input_files/rsl3d_gen_mesh_template_sph1.m model.m")
 
-elif (numberOfParticles == 2):
-    os.system("cp ./template_input_files/rsl3d_gen_mesh_template_sph2.m model.m")
+    elif (numberOfParticles == 2):
+        os.system("cp ./template_input_files/rsl3d_gen_mesh_template_sph2.m model.m")
 
-    h_ss_HS = 132.8
-    h_cc    = 2*radiusEffective + h_ss_HS
+        h_ss_HS = 132.8
+        h_cc    = 2*radiusEffective + h_ss_HS
 
-    centers[0][0] = + h_cc / 2.0
-    centers[0][1] = - h_cc / 2.0
+        centers[0][0] = + h_cc / 2.0
+        centers[0][1] = - h_cc / 2.0
 
-    if (not importt):
-        move[0]    = True
-        moveBy[0]  = h_cc / 2.0
-        reflect[0] = True
+        if (not importt):
+            move[0]    = True
+            moveBy[0]  = h_cc / 2.0
+            reflect[0] = True
 
-elif (generalPeriodicMesh):
-    os.system("cp rsl3d_gen_mesh_template_fcc.m model.m")
+if (generalPeriodicMesh):
+    os.system("cp ./template_input_files/rsl3d_gen_mesh_template_fcc_simple.m model.m") # face-centered-cubic napop arrangement with 14 particles representing a 4 nanop lattice
+    #os.system("cp ./template_input_files/rsl3d_gen_mesh_template_bcc.m model.m") # body-centered-cubic napop arrangement with  9 particles representing a 2 nanop lattice
+    #os.system("cp ./template_input_files/rsl3d_gen_mesh_template_cubic.m model.m") # cubic nanop arrangement with 1 nanop in the center of the box
 
-    try:
-        inputFile = open("o.mesh_input", 'r')
-    except:
-        print("ERROR OPENING INPUT FILE o.mesh_input")
-        exit()
+    if (importt):
+        try:
+            inputFile = open("o.mesh_input", 'r')
+        except:
+            print("ERROR OPENING INPUT FILE o.mesh_input")
+            exit()
 
     for line in inputFile:
         if ("BOX" in line):
@@ -604,16 +609,19 @@ elif (generalPeriodicMesh):
             xlo = float(nextLine.split()[0])
             xhi = float(nextLine.split()[1])
             Lx  = xhi - xlo
+            print(Lx)
 
             nextLine = inputFile.readline()
             ylo = float(nextLine.split()[0])
             yhi = float(nextLine.split()[1])
             Ly  = yhi - ylo
+            print(Ly)
 
             nextLine = inputFile.readline()
             zlo = float(nextLine.split()[0])
             zhi = float(nextLine.split()[1])
             Lz  = zhi - zlo
+            print(Lz)
 
         if ("N_NP" in line):
             numberOfParticles = int(inputFile.readline())
@@ -647,9 +655,10 @@ print("Searching for grafting points for in.gnodes file..")
 mesh.CoordsToNodes()
 
 print("Removing temporary files..")
-#os.system("rm t.meshpoints t.elemcon")
+os.system("rm t.meshpoints t.elemcon")
 #os.system("rm model.m")
-#os.system("rm t.graftpoints.m")
+os.system("rm t.graftpoints.m")
 
+print("Done")
 exit()
 #----------------------------------------------------------------------------------------------------------------------------------#
