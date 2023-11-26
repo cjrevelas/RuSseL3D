@@ -150,10 +150,10 @@ def WrapInBox(rr, bounds):
 #
 
 # Nanoparticle configuration
-tbi = False # two-body interactions
-bcc = True  # body-centered cubic
-fcc = False # face-centered cubic
-cc  = False # cubic
+tbi   = False # two-body interactions
+bcc   = True  # body-centered cubic
+fcc   = False # face-centered cubic
+cubic = False # cubic
 
 # Box bounds
 Lbox   = [102.70862, 102.70862, 102.70862]
@@ -180,19 +180,20 @@ prob_maps = []
 nanoparticles       = []
 nanoparticle_images = []
 
-if (fcc or bcc or cc):
+if (fcc or bcc or cubic):
     wrap_gps    = True
-    r_np_actual = 20
+    r_np_actual = 20.0
     radius      = r_np_actual + h_wall + h_gp
     radius_act  = r_np_actual
-    n_gp        = 50
-    prob_bgd    = 1.
-    min_gp_dist = 8.0
+    n_gp        = 50 # number of grafting points per particle
+    prob_bgd    = 1.0
 
     #
     # FCC lattice
     #
     if (fcc):
+        min_gp_dist = 8.0
+
         #Generate the nanoparticles
         nanoparticles.append(Nanoparticle([-bounds[0][0],-bounds[1][0],-bounds[2][0]], radius, radius_act, n_gp))
         nanoparticles.append(Nanoparticle([-bounds[0][0], 0.0         , 0.0         ], radius, radius_act, n_gp))
@@ -215,6 +216,8 @@ if (fcc or bcc or cc):
     # BCC lattice
     #
     if (bcc):
+        min_gp_dist = 8.0
+
         # Generate the nanoparticles
         nanoparticles.append(Nanoparticle([ 0.0         , 0.0         , 0.0         ], radius, radius_act, n_gp))
         nanoparticles.append(Nanoparticle([-bounds[0][0],-bounds[1][0],-bounds[2][0]], radius, radius_act, n_gp))
@@ -231,6 +234,14 @@ if (fcc or bcc or cc):
     #
     # Cubic lattice - Generate the nanoparticles
     #
+    if (cubic):
+        min_gp_dist = 8.8
+
+        # Generate the nanoparticles
+        nanoparticles.append(Nanoparticle([ 0.0         , 0.0         , 0.0         ], radius, radius_act, n_gp))
+
+        # Generate the images of the nanoparticles
+        nanoparticles_images = []
 
     # Generate the probability maps
     # Same probability map for each nanoparticle
