@@ -10,10 +10,10 @@ BOTH_OPTIONS        = -ffree-line-length-512# -DMUMPS_REPORT
 
 ifeq ($(MAKE_MPI_RUN),0)
 MPI_OPTIONS =
-topdir      = /home/cjrevelas/libraries/mumps_serial
+topdir      = /home/cjrevelas/libraries/mumps_serial_cpp
 else
 MPI_OPTIONS = -DUSE_MPI
-topdir      = /home/cjrevelas/libraries/mumps_serial
+topdir      = /home/cjrevelas/libraries/mumps_serial_cpp
 endif
 
 libdir = $(topdir)/lib
